@@ -46,6 +46,7 @@
 
     <modules>
         <module>common</module>
+        <module>workman</module>
     </modules>
 
     <profiles>
