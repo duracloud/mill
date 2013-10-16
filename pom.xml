@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.duracloud</groupId>
+    <groupId>org.duracloud.mill</groupId>
     <artifactId>duplication</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
-    <name>DuraCloud Duplication</name>
+    <name>DuraCloud Duplication Mill</name>
     <url>http://duracloud.org</url>
 
     <prerequisites>
@@ -45,7 +45,7 @@
     </organization>
 
     <modules>
-        <module>mill</module>
+        <module>common</module>
     </modules>
 
     <profiles>
