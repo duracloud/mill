@@ -6,12 +6,26 @@
  *     http://duracloud.org/license/
  */
 package org.duracloud.mill.workman;
+
+import org.duracloud.mill.common.domain.Task;
+
+
 /**
  * The TaskProcessor implements the concrete functionality of a particular 
- * type of task.
+ * type of task.  
  * @author Daniel Bernstein
  *
  */
-public interface TaskProcessor {
+public interface TaskProcessor{
 	
+	/**
+	 * Returns the task associated with the instance.
+	 * @return
+	 */
+	Task getTask();
+
+	/**
+	 * Performs the processing indicated by the task.  The underlying method should execute synchronously.
+	 */
+	void execute() throws TaskExecutionFailedException;
 }
