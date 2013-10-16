@@ -9,7 +9,7 @@
     <url>http://duracloud.org</url>
 
     <prerequisites>
-        <maven>2.2.1</maven>
+        <maven>3.0.0</maven>
     </prerequisites>
 
     <inceptionYear>2013</inceptionYear>
@@ -61,97 +61,17 @@
             </activation>
 
             <properties>
-                <tomcat.port>${tomcat.port.default}</tomcat.port>
                 <log.level>${log.level.default}</log.level>
             </properties>
 
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>tomcat-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>tomcat-deploy</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-only</goal>
-                                </goals>
-                                <configuration>
-                                    <server>tomcat-server</server>
-                                    <url>http://localhost:${tomcat.port}/manager</url>
-                                    <update>true</update>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <id>profile-bootstrap</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>profile</name>
-                    <value>bootstrap</value>
-                </property>
-            </activation>
-
-            <properties>
-                <tomcat.port>${tomcat.port.default}</tomcat.port>
-            </properties>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-scm-plugin</artifactId>
-                        <version>1.0</version>
-                        <configuration>
-                            <goals>compile</goals>
-                            <connectionType>connection</connectionType>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>profile-clover</id>
-
-            <properties>
-                <tomcat.port>${tomcat.port.default}</tomcat.port>
-                <database.home>${database.home.default}</database.home>
-            </properties>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.atlassian.maven.plugins</groupId>
-                        <artifactId>maven-clover2-plugin</artifactId>
-                        <version>3.1.8</version>
-                        <configuration>
-                            <licenseLocation>${cloverLicense}</licenseLocation>
-                            <targetPercentage>50%</targetPercentage>
-                            <includes>
-                                <include>**/*.java</include>
-                            </includes>
-                            <generateHtml>true</generateHtml>
-                            <generateHistorical>true</generateHistorical>
-                            <historyDir>${user.home}/.clover/history/${project.artifact}</historyDir>
-                            <jdk>1.7</jdk>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
     </profiles>
 
     <properties>
-        <tomcat.port.default>8080</tomcat.port.default>
         <unitTests>**/*Test.class</unitTests>
         <integrationTests>**/Test*.class</integrationTests>
         <instrumentedTests>**/*Test*__*.class</instrumentedTests>
@@ -245,11 +165,6 @@
 
     </pluginRepositories>
 
-    <scm>
-        <connection>scm:git:https://github.com/duracloud/duplication</connection>
-        <developerConnection>scm:git:https://github.com/duracloud/duplication</developerConnection>
-    </scm>
-
     <build>
 
         <resources>
@@ -304,27 +219,10 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.0-beta-9</version>
-                <configuration>
-                    <tagBase>https://svn.duraspace.org/duracloud/tags</tagBase>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <trimStackTrace>false</trimStackTrace>
                     <systemProperties>
-                        <property>
-                            <name>unit.database.home</name>
-                            <value>${unit.database.home.default}</value>
-                        </property>
-                        <property>
-                            <name>unit.database.password</name>
-                            <value>${unit.database.password.default}</value>
-                        </property>
                         <property>
                             <name>PROJECT_VERSION</name>
                             <value>${project.version}</value>
@@ -349,14 +247,6 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <systemProperties>
-                                <property>
-                                    <name>unit.database.home</name>
-                                    <value>${unit.database.home.default}</value>
-                                </property>
-                                <property>
-                                    <name>unit.database.password</name>
-                                    <value>${unit.database.password.default}</value>
-                                </property>
                                 <property>
                                     <name>PROJECT_VERSION</name>
                                     <value>${project.version}</value>
