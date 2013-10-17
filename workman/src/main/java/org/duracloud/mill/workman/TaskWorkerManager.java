@@ -88,11 +88,12 @@ public class TaskWorkerManager {
 	
 	public void destroy(){
 		stop = true;
+		timer.cancel();
         executor.shutdown();
 		log.info("terminating...waiting for threads to complete processing...");
         while (!executor.isTerminated()) {
+        	sleep(1000);
         }
 		log.info("terminated");
-
 	}
 }
