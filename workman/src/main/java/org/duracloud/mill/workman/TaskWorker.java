@@ -10,8 +10,8 @@ package org.duracloud.mill.workman;
 /**
  * 
  * @author Daniel Bernstein
- *
+ * 
  */
-public interface TaskWorker extends Runnable{
+public interface TaskWorker extends Runnable {
 
 }

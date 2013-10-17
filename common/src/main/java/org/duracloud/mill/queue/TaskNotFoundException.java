@@ -10,7 +10,7 @@ package org.duracloud.mill.queue;
 /**
  * 
  * @author Daniel Bernstein
- *
+ * 
  */
 public class TaskNotFoundException extends Exception {
 

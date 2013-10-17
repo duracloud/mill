@@ -8,10 +8,11 @@
 package org.duracloud.mill.domain;
 
 /**
- * Represents a basic unit of work.  In essence it describes "what" is to be done.
- * It knows nothing of the "how".
+ * Represents a basic unit of work. In essence it describes "what" is to be
+ * done. It knows nothing of the "how".
+ * 
  * @author Daniel Bernstein
- *
+ * 
  */
 public interface Task {
 }

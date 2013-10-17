@@ -11,7 +11,7 @@ package org.duracloud.mill.queue;
 /**
  * 
  * @author Daniel Bernstein
- *
+ * 
  */
 public class TimeoutException extends Exception {
 

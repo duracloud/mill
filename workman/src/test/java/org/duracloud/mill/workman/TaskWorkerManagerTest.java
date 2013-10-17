@@ -9,38 +9,35 @@ package org.duracloud.mill.workman;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
+
 /**
  * 
  * @author Daniel Bernstein
- *
+ * 
  */
-public class TaskWorkerManagerTest{
+public class TaskWorkerManagerTest {
 
+    @Test
+    public void test() throws Exception {
 
-	@Test
-	public void test() throws Exception{
-		
-		TaskWorkerFactory factory = EasyMock.createMock(TaskWorkerFactory.class);
-		
-		
-		EasyMock.expect(factory.create()).andReturn(new TaskWorker(){
-			@Override
-			public void run() {
-				try{
-					Thread.sleep(2000);
-				}catch(InterruptedException ex){}
-			}
-		}).times(9);
+        TaskWorkerFactory factory = EasyMock
+                .createMock(TaskWorkerFactory.class);
 
+        EasyMock.expect(factory.create()).andReturn(new TaskWorker() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                }
+            }
+        }).times(9);
 
-		
-		TaskWorkerManager manager = new TaskWorkerManager(factory);
+        TaskWorkerManager manager = new TaskWorkerManager(factory);
 
-		manager.setMaxPoolSize(4);
-		
-		Thread.sleep(3000);
-		
-		
-		
-	}
+        manager.setMaxPoolSize(4);
+
+        Thread.sleep(3000);
+
+    }
 }

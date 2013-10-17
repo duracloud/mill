@@ -12,24 +12,26 @@ import org.duracloud.mill.queue.TaskQueue;
 /**
  * 
  * @author Daniel Bernstein
- *
+ * 
  */
 public class TaskWorkerFactoryImpl implements TaskWorkerFactory {
-	private TaskQueue queue;
-	private TaskProcessorFactory processorFactory;
-	public TaskWorkerFactoryImpl(TaskQueue queue, TaskProcessorFactory factory) {
-		if (queue == null)
-			throw new IllegalArgumentException("queue must be non-null");
-		if (factory == null)
-			throw new IllegalArgumentException("processorFactory must be non-null");
-		this.queue = queue;
-		this.processorFactory = factory;
-		
-	}
-	
-	@Override
-	public TaskWorkerImpl create(){
-		return new TaskWorkerImpl(processorFactory, queue);
-	}
-	
+    private TaskQueue queue;
+    private TaskProcessorFactory processorFactory;
+
+    public TaskWorkerFactoryImpl(TaskQueue queue, TaskProcessorFactory factory) {
+        if (queue == null)
+            throw new IllegalArgumentException("queue must be non-null");
+        if (factory == null)
+            throw new IllegalArgumentException(
+                    "processorFactory must be non-null");
+        this.queue = queue;
+        this.processorFactory = factory;
+
+    }
+
+    @Override
+    public TaskWorkerImpl create() {
+        return new TaskWorkerImpl(processorFactory, queue);
+    }
+
 }

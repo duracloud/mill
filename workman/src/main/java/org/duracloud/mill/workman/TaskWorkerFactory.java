@@ -9,6 +9,6 @@ package org.duracloud.mill.workman;
 
 public interface TaskWorkerFactory {
 
-	TaskWorker create();
+    TaskWorker create();
 
 }
