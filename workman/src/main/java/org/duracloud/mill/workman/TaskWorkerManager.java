@@ -23,14 +23,14 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein
  *
  */
-public class TaskWorkerPool {
+public class TaskWorkerManager {
 	static final int DEFAULT_POOL_SIZE = 5;
-	private Logger log = LoggerFactory.getLogger(TaskWorkerPool.class);
+	private Logger log = LoggerFactory.getLogger(TaskWorkerManager.class);
 	private TaskWorkerFactory factory;
 	private ThreadPoolExecutor executor;
 	private boolean stop = false;
 	private Timer timer = new Timer();
-	public TaskWorkerPool(TaskWorkerFactory factory) {
+	public TaskWorkerManager(TaskWorkerFactory factory) {
 		if (factory == null)
 			throw new IllegalArgumentException("factory must be non-null");
 		this.factory = factory;

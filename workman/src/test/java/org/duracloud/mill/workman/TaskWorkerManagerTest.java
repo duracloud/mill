@@ -14,7 +14,7 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *
  */
-public class TaskWorkerPoolTest {
+public class TaskWorkerManagerTest{
 
 
 	@Test
@@ -34,9 +34,9 @@ public class TaskWorkerPoolTest {
 
 
 		
-		TaskWorkerPool pool = new TaskWorkerPool(factory);
+		TaskWorkerManager manager = new TaskWorkerManager(factory);
 
-		pool.setMaxPoolSize(4);
+		manager.setMaxPoolSize(4);
 		
 		Thread.sleep(3000);
 		
