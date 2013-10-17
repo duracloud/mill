@@ -5,13 +5,14 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.workman;
+
+package org.duracloud.mill.queue;
 
 /**
  * 
  * @author Daniel Bernstein
  *
  */
-public interface TaskWorker extends Runnable{
+public class TimeoutException extends Exception {
 
 }

@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.common.domain.Task;
+import org.duracloud.mill.domain.Task;
 
 /**
  * The TaskProcessResolver resolves a <code>TaskProcessor</code> for a given 
@@ -15,6 +15,6 @@ import org.duracloud.mill.common.domain.Task;
  * 
  * @author Daniel Bernstein
  */
-public interface TaskProcessResolver {
-	TaskProcessor resolve(Task task) throws TaskNotResolveableException;
+public interface TaskProcessorFactory {
+	TaskProcessor create(Task task) throws TaskNotResolveableException;
 }

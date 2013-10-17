@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.dup;
 
-import org.duracloud.mill.common.domain.Task;
+import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 

@@ -5,28 +5,33 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.workman;
+package org.duracloud.mill.queue;
 
-import org.duracloud.mill.common.domain.Task;
+import org.duracloud.mill.domain.Task;
 /**
  * 
  * @author Daniel Bernstein
  *
  */
 public interface TaskQueue {
-	
+
+	/**
+	 * puts a task on the queue
+	 * @param task
+	 */
+	void put(Task task);
+
 	/**
 	 * Blocks until a task is available
 	 * @return
 	 */
-	Task nextTask();
+	Task take() throws TimeoutException;
 
 	/**
-	 * 
+	 * Returns the visbility timeout.
 	 * @return
 	 */
-	public long getDefaultVisibilityTimeout();
-	
+	long getDefaultVisibilityTimeout();
 	
 	/**
 	 * Responsible for robustly extending the visibility timeout.
@@ -37,7 +42,7 @@ public interface TaskQueue {
 	void extendVisibilityTimeout(Task task, long milliseconds) throws TaskNotFoundException;
 
 	/**
-	 * 
+	 * Deletes a task from the queue.
 	 * @param task
 	 */
 	void deleteTask(Task task);

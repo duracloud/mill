@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.common.domain.Task;
+import org.duracloud.mill.domain.Task;
 
 
 /**

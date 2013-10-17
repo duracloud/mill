@@ -9,7 +9,8 @@ package org.duracloud.mill.workman;
 
 import java.util.Date;
 
-import org.duracloud.mill.common.domain.Task;
+import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.queue.TaskQueue;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.junit.After;
@@ -20,49 +21,54 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *
  */
-public class TaskWorkerTest {
+public class TaskWorkerImplTest {
 	private Task task;
 	private TaskQueue queue;
 	private TaskProcessor processor;
+	private TaskProcessorFactory factory;
+	private long visibilityTimeout = 1000l;
 	@Before
 	public void setUp() throws Exception {
 		task = EasyMock.createMock(Task.class);
 		processor = EasyMock.createMock(TaskProcessor.class);
 		queue = EasyMock.createMock(TaskQueue.class);
+		factory = EasyMock.createMock(TaskProcessorFactory.class);
+		EasyMock.expect(queue.getDefaultVisibilityTimeout()).andReturn(visibilityTimeout);
+		EasyMock.expect(queue.take()).andReturn(task);
+		EasyMock.expect(factory.create(EasyMock.isA(Task.class))).andReturn(processor);
 
-		EasyMock.expect(processor.getTask()).andReturn(task);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		EasyMock.verify(processor, queue, task);
+		EasyMock.verify(processor, queue, task, factory);
 	}
 
 	private void replay() throws Exception {
-		EasyMock.replay(processor, queue, task);
+		EasyMock.replay(processor, queue, task,factory);
 	}
 
 	@Test
 	public void testRun() throws Exception{
 		processor.execute();
-		final long timeout = 500;
 		final int times = 2;
 		EasyMock.expectLastCall().andAnswer(new IAnswer<Object>() {
 			@Override
 			public Object answer() throws Throwable {
-				Thread.sleep(timeout*times);
+				Thread.sleep(visibilityTimeout*times);
 				return null;
 			}
 		});
 		
 		queue.extendVisibilityTimeout(EasyMock.isA(Task.class), EasyMock.anyLong());
-		EasyMock.expectLastCall().times(times);
+		EasyMock.expectLastCall().times(2, 4);
 		queue.deleteTask(EasyMock.isA(Task.class));
 		EasyMock.expectLastCall();
 
+
+
 		replay();
-		Date received = new Date();
-		TaskWorker w = new TaskWorker(processor, queue, received, TaskWorker.TIMEOUT_BUFFER + timeout);
+		TaskWorkerImpl w = new TaskWorkerImpl(factory,queue);
 		w.run();
 		//sleep to make sure that the internal timer task is being cancelled.
 		Thread.sleep(2000);
@@ -74,8 +80,7 @@ public class TaskWorkerTest {
 		EasyMock.expectLastCall().andThrow(new TaskExecutionFailedException());
 		
 		replay();
-		Date received = new Date();
-		TaskWorker w = new TaskWorker(processor, queue, received, TaskWorker.TIMEOUT_BUFFER + 500);
+		TaskWorkerImpl w = new TaskWorkerImpl(factory, queue);
 		w.run();
 		//sleep to make sure that the internal timer task is being cancelled.
 		Thread.sleep(3000);

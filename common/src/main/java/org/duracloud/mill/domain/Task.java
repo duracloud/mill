@@ -5,8 +5,13 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.workman;
+package org.duracloud.mill.domain;
 
-public class TaskNotFoundException extends Exception {
-
+/**
+ * Represents a basic unit of work.  In essence it describes "what" is to be done.
+ * It knows nothing of the "how".
+ * @author Daniel Bernstein
+ *
+ */
+public interface Task {
 }

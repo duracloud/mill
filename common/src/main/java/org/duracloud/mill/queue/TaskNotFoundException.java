@@ -5,13 +5,13 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.common.domain;
+package org.duracloud.mill.queue;
 
 /**
- * Represents a basic unit of work.  In essence it describes "what" is to be done.
- * It knows nothing of the "how".
+ * 
  * @author Daniel Bernstein
  *
  */
-public interface Task {
+public class TaskNotFoundException extends Exception {
+
 }
