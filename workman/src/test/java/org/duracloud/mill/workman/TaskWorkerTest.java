@@ -21,23 +21,30 @@ import org.junit.Test;
  *
  */
 public class TaskWorkerTest {
-
+	private Task task;
+	private TaskQueue queue;
+	private TaskProcessor processor;
 	@Before
 	public void setUp() throws Exception {
+		task = EasyMock.createMock(Task.class);
+		processor = EasyMock.createMock(TaskProcessor.class);
+		queue = EasyMock.createMock(TaskQueue.class);
+
+		EasyMock.expect(processor.getTask()).andReturn(task);
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		EasyMock.verify(processor, queue, task);
+	}
+
+	private void replay() throws Exception {
+		EasyMock.replay(processor, queue, task);
 	}
 
 	@Test
 	public void testRun() throws Exception{
-		Task task = EasyMock.createMock(Task.class);
-		TaskProcessor processor = EasyMock.createMock(TaskProcessor.class);
-		EasyMock.expect(processor.getTask()).andReturn(task);
-
 		processor.execute();
-		
 		final long timeout = 500;
 		final int times = 2;
 		EasyMock.expectLastCall().andAnswer(new IAnswer<Object>() {
@@ -48,18 +55,30 @@ public class TaskWorkerTest {
 			}
 		});
 		
-		TaskQueue queue = EasyMock.createMock(TaskQueue.class);
 		queue.extendVisibilityTimeout(EasyMock.isA(Task.class), EasyMock.anyLong());
 		EasyMock.expectLastCall().times(times);
 		queue.deleteTask(EasyMock.isA(Task.class));
 		EasyMock.expectLastCall();
-		EasyMock.replay(processor, queue, task);
+
+		replay();
 		Date received = new Date();
 		TaskWorker w = new TaskWorker(processor, queue, received, TaskWorker.TIMEOUT_BUFFER + timeout);
 		w.run();
 		//sleep to make sure that the internal timer task is being cancelled.
 		Thread.sleep(2000);
-		EasyMock.verify(processor, queue, task);
+	}
+
+	@Test
+	public void testRunWithProcessorException() throws Exception{
+		processor.execute();
+		EasyMock.expectLastCall().andThrow(new TaskExecutionFailedException());
+		
+		replay();
+		Date received = new Date();
+		TaskWorker w = new TaskWorker(processor, queue, received, TaskWorker.TIMEOUT_BUFFER + 500);
+		w.run();
+		//sleep to make sure that the internal timer task is being cancelled.
+		Thread.sleep(3000);
 	}
 
 }
