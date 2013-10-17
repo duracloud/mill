@@ -10,12 +10,12 @@ package org.duracloud.mill.workman;
 import org.duracloud.mill.domain.Task;
 
 /**
- * The TaskProcessResolver resolves a <code>TaskProcessor</code> for a given
- * instance of a <code>Task</code>
  * 
  * @author Daniel Bernstein
+ *
  */
-public interface TaskProcessorFactory {
-    TaskProcessor create(Task task) throws TaskNotSupportedException;
-
+public class TaskNotSupportedException extends Exception {
+    public TaskNotSupportedException(String message) {
+        super(message);
+    }
 }

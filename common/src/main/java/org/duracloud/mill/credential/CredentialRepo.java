@@ -5,13 +5,13 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.workman;
+package org.duracloud.mill.credential;
 
 /**
+ * This interface mediates all interaction with the credential-providing subsystem.
  * @author Daniel Bernstein
+ *
  */
-public class TaskNotResolveableException extends Exception {
-
-    private static final long serialVersionUID = 1L;
-
+public interface CredentialRepo {
+    
 }
