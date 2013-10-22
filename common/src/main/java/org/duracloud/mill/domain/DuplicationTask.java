@@ -13,10 +13,19 @@ package org.duracloud.mill.domain;
  */
 public class DuplicationTask implements Task {
 
+    private String account;
     private String sourceStoreId;
     private String destStoreId;
     private String spaceId;
     private String contentId;
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
 
     public String getSourceStoreId() {
         return sourceStoreId;
