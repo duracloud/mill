@@ -18,10 +18,19 @@
   </build>
 
   <dependencies>
+
     <dependency>
       <groupId>org.duracloud.mill</groupId>
       <artifactId>common</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>storageprovider</artifactId>
+      <version>${duracloud.version}</version>
+    </dependency>
+
   </dependencies>
+
 </project>

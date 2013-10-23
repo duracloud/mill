@@ -7,8 +7,6 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
-
 /**
  * The TaskProcessor implements the concrete functionality of a particular type
  * of task.
@@ -17,13 +15,6 @@ import org.duracloud.mill.domain.Task;
  * 
  */
 public interface TaskProcessor {
-
-    /**
-     * Returns the task associated with the instance.
-     * 
-     * @return
-     */
-    Task getTask();
 
     /**
      * Performs the processing indicated by the task. The underlying method
