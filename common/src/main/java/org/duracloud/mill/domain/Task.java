@@ -15,4 +15,6 @@ package org.duracloud.mill.domain;
  * 
  */
 public interface Task {
+
+
 }

@@ -14,4 +14,16 @@ package org.duracloud.mill.workman;
  */
 public class TaskExecutionFailedException extends Exception {
 
+    public TaskExecutionFailedException() {
+        super();
+    }
+
+    public TaskExecutionFailedException(String message) {
+        super(message);
+    }
+
+    public TaskExecutionFailedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
