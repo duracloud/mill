@@ -25,9 +25,6 @@
               <mainClass>org.duracloud.mill.workman.spring.AppDriver</mainClass>
             </manifest>
           </archive>
-          <descriptors>
-            <descriptor>src/main/assembly/dep.xml</descriptor>
-          </descriptors>
         </configuration>
         <executions>
           <execution>
