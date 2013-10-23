@@ -5,25 +5,25 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential;
+package org.duracloud.mill.credentials;
 
 import org.duracloud.storage.domain.StorageProviderType;
 
 /**
+ * A class containing all necessary information for connecting to a provider.
  * 
  * @author Daniel Bernstein
- *
  */
-public class Credentials {
+public class ProviderCredentials {
     private String providerId;
     private String accessKey;
     private String secretKey;
     private StorageProviderType providerType;
-    
+
     public String getProviderId() {
         return providerId;
     }
-    
+
     public void setProviderId(String providerId) {
         this.providerId = providerId;
     }
@@ -43,11 +43,11 @@ public class Credentials {
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
     }
-    
+
     public StorageProviderType getProviderType() {
         return providerType;
     }
-    
+
     public void setProviderType(StorageProviderType providerType) {
         this.providerType = providerType;
     }

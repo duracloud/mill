@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.credential.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.domain.Task;
 
 /**

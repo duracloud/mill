@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential;
+package org.duracloud.mill.credentials;
 
 /**
  * 

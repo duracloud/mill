@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential;
+package org.duracloud.mill.credentials;
 
 import java.util.List;
 
@@ -14,19 +14,19 @@ import java.util.List;
  * @author Daniel Bernstein
  *
  */
-public class CredentialsGroup {
+public class AccountCredentials {
     private String subDomain;
-    private List<Credentials> providerCredentials;
+    private List<ProviderCredentials> providerCredentials;
 
     
-    public Credentials getCredentialsByProviderId(String id){
-        for(Credentials c : providerCredentials){
-            if(id.equals(c.getProviderId())){
+    public ProviderCredentials getProviderCredentials(String providerId){
+        for(ProviderCredentials c : providerCredentials){
+            if(providerId.equals(c.getProviderId())){
                 return c;
             }
         }
         
-        throw new RuntimeException("provider with " + id + " not found.");
+        throw new RuntimeException("provider with providerId=" + providerId + " not found.");
     }
 
     public void setSubDomain(String subDomain) {
@@ -37,11 +37,11 @@ public class CredentialsGroup {
         return subDomain;
     }
 
-    public List<Credentials> getProviderCredentials() {
+    public List<ProviderCredentials> getProviderCredentials() {
         return providerCredentials;
     }
 
-    public void setSProviderCredentials(List<Credentials> storageProviderCredentials) {
+    public void setSProviderCredentials(List<ProviderCredentials> storageProviderCredentials) {
         this.providerCredentials = storageProviderCredentials;
     }
 

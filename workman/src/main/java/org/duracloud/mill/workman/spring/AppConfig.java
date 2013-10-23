@@ -1,7 +1,7 @@
 package org.duracloud.mill.workman.spring;
 
-import org.duracloud.mill.credential.CredentialRepo;
-import org.duracloud.mill.credential.file.ConfigFileCredentialRepo;
+import org.duracloud.mill.credentials.CredentialRepo;
+import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskNotFoundException;
 import org.duracloud.mill.queue.TaskQueue;

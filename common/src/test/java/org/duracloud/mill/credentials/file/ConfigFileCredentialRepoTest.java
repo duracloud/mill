@@ -5,16 +5,16 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential.file;
+package org.duracloud.mill.credentials.file;
 
 import java.io.File;
 
 import junit.framework.Assert;
 
-import org.duracloud.mill.credential.CredentialRepo;
-import org.duracloud.mill.credential.Credentials;
-import org.duracloud.mill.credential.CredentialsGroup;
-import org.duracloud.mill.credential.file.ConfigFileCredentialRepo;
+import org.duracloud.mill.credentials.CredentialRepo;
+import org.duracloud.mill.credentials.ProviderCredentials;
+import org.duracloud.mill.credentials.AccountCredentials;
+import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +40,10 @@ public class ConfigFileCredentialRepoTest {
         Assert.assertTrue(testCredFile.exists());
         System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
         CredentialRepo repo = new ConfigFileCredentialRepo();
-        CredentialsGroup group = repo.getCredentialGroupByAccountId("0");
+        AccountCredentials group = repo.getAccoundCredentials("0");
         Assert.assertNotNull(group);
         Assert.assertNotNull(group.getSubdomain());
-        Credentials storage = group.getCredentialsByProviderId("0");
+        ProviderCredentials storage = group.getProviderCredentials("0");
         Assert.assertNotNull(storage);
         Assert.assertNotNull(storage.getAccessKey());
         Assert.assertNotNull(storage.getSecretKey());

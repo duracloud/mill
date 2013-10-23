@@ -5,15 +5,15 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential.file;
+package org.duracloud.mill.credentials.file;
 
 import java.io.File;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.duracloud.mill.credential.CredentialRepoBase;
-import org.duracloud.mill.credential.CredentialsGroup;
+import org.duracloud.mill.credentials.CredentialRepoBase;
+import org.duracloud.mill.credentials.AccountCredentials;
 
 /**
  * A simple implementation of the Credential Repo based on a local configuration file.
@@ -23,7 +23,7 @@ import org.duracloud.mill.credential.CredentialsGroup;
  */
 public class ConfigFileCredentialRepo extends CredentialRepoBase {
     private static final String CREDENTIALS_FILE_PATH = "credentials.file.path";
-    private Map<String, CredentialsGroup> map;
+    private Map<String, AccountCredentials> map;
 
     public ConfigFileCredentialRepo() {
 
@@ -43,7 +43,7 @@ public class ConfigFileCredentialRepo extends CredentialRepoBase {
         ObjectMapper m = new ObjectMapper();
         try {
             this.map = m.readValue(file,
-                    new TypeReference<Map<String, CredentialsGroup>>() {
+                    new TypeReference<Map<String, AccountCredentials>>() {
                     });
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,7 +53,7 @@ public class ConfigFileCredentialRepo extends CredentialRepoBase {
     }
 
     @Override
-    public CredentialsGroup getCredentialGroupByAccountId(String key) {
+    public AccountCredentials getAccoundCredentials(String key) {
         return map.get(key);
     }
 }

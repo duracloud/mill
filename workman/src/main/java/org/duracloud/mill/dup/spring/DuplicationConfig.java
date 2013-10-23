@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.dup.spring;
 
-import org.duracloud.mill.credential.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.springframework.context.annotation.Bean;

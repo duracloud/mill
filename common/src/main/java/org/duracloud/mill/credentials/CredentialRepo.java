@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential;
+package org.duracloud.mill.credentials;
 
 
 /**
@@ -19,6 +19,6 @@ public interface CredentialRepo {
      * @param accountId
      * @return
      */
-    CredentialsGroup getCredentialGroupByAccountId(String accountId);
+    AccountCredentials getAccoundCredentials(String accountId);
     
 }

@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.dup;
 
-import org.duracloud.mill.credential.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
