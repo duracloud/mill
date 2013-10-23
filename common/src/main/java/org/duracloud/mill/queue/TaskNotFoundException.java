@@ -14,4 +14,19 @@ package org.duracloud.mill.queue;
  */
 public class TaskNotFoundException extends Exception {
 
+    public TaskNotFoundException() {
+        super();
+    }
+
+    public TaskNotFoundException(String message) {
+        super(message);
+    }
+
+    public TaskNotFoundException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public TaskNotFoundException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }

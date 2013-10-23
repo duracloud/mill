@@ -31,20 +31,13 @@ public interface TaskQueue {
     Task take() throws TimeoutException;
 
     /**
-     * Returns the visbility timeout.
-     * 
-     * @return
-     */
-    long getDefaultVisibilityTimeout();
-
-    /**
      * Responsible for robustly extending the visibility timeout.
      * 
      * @param task
-     * @param milliseconds
+     * @param seconds
      * @throws TaskNotFoundException
      */
-    void extendVisibilityTimeout(Task task, long milliseconds)
+    void extendVisibilityTimeout(Task task, Integer seconds)
             throws TaskNotFoundException;
 
     /**
@@ -52,5 +45,5 @@ public interface TaskQueue {
      * 
      * @param task
      */
-    void deleteTask(Task task);
+    void deleteTask(Task task) throws TaskNotFoundException;
 }

@@ -14,5 +14,19 @@ package org.duracloud.mill.queue;
  * 
  */
 public class TimeoutException extends Exception {
+    public TimeoutException() {
+        super();
+    }
 
+    public TimeoutException(String message) {
+        super(message);
+    }
+
+    public TimeoutException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public TimeoutException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }
