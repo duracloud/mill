@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential.simpledb;
+package org.duracloud.mill.credential.file;
 
 import java.io.File;
 import java.util.Map;
@@ -14,16 +14,18 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.duracloud.mill.credential.CredentialRepoBase;
 import org.duracloud.mill.credential.CredentialsGroup;
+
 /**
+ * A simple implementation of the Credential Repo based on a local configuration file.
  * 
  * @author Daniel Bernstein
- *
+ * 
  */
-public class SimpleDBCredentialRepo extends CredentialRepoBase {
+public class ConfigFileCredentialRepo extends CredentialRepoBase {
     private static final String CREDENTIALS_FILE_PATH = "credentials.file.path";
-    private Map<String,CredentialsGroup> map;
-    
-    public SimpleDBCredentialRepo() {
+    private Map<String, CredentialsGroup> map;
+
+    public ConfigFileCredentialRepo() {
 
         String path = System.getProperty(CREDENTIALS_FILE_PATH);
 
@@ -37,10 +39,12 @@ public class SimpleDBCredentialRepo extends CredentialRepoBase {
             throw new RuntimeException("File not found: "
                     + file.getAbsoluteFile());
         }
-        
+
         ObjectMapper m = new ObjectMapper();
         try {
-            this.map = m.readValue(file, new TypeReference<Map<String,CredentialsGroup>>() { });
+            this.map = m.readValue(file,
+                    new TypeReference<Map<String, CredentialsGroup>>() {
+                    });
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

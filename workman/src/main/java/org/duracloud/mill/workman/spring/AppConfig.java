@@ -1,7 +1,7 @@
 package org.duracloud.mill.workman.spring;
 
 import org.duracloud.mill.credential.CredentialRepo;
-import org.duracloud.mill.credential.simpledb.SimpleDBCredentialRepo;
+import org.duracloud.mill.credential.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskNotFoundException;
 import org.duracloud.mill.queue.TaskQueue;
@@ -24,7 +24,7 @@ public class AppConfig {
 
     @Bean
     public CredentialRepo credentialRepo() {
-        return new SimpleDBCredentialRepo();
+        return new ConfigFileCredentialRepo();
     }
 
     @Bean(initMethod="init")

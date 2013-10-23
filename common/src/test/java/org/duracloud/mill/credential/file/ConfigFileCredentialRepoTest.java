@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.credential;
+package org.duracloud.mill.credential.file;
 
 import java.io.File;
 
@@ -14,7 +14,7 @@ import junit.framework.Assert;
 import org.duracloud.mill.credential.CredentialRepo;
 import org.duracloud.mill.credential.Credentials;
 import org.duracloud.mill.credential.CredentialsGroup;
-import org.duracloud.mill.credential.simpledb.SimpleDBCredentialRepo;
+import org.duracloud.mill.credential.file.ConfigFileCredentialRepo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,7 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *
  */
-public class SimpleDBCredentialRepoTest {
+public class ConfigFileCredentialRepoTest {
 
     @Before
     public void setUp() throws Exception {
@@ -39,7 +39,7 @@ public class SimpleDBCredentialRepoTest {
         File testCredFile = new File("src/test/resources/test.credentials.json");
         Assert.assertTrue(testCredFile.exists());
         System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
-        CredentialRepo repo = new SimpleDBCredentialRepo();
+        CredentialRepo repo = new ConfigFileCredentialRepo();
         CredentialsGroup group = repo.getCredentialGroupByAccountId("0");
         Assert.assertNotNull(group);
         Assert.assertNotNull(group.getSubdomain());
