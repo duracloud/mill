@@ -27,7 +27,7 @@ public class AppConfig {
         return new ConfigFileCredentialRepo();
     }
 
-    @Bean(initMethod="init")
+    @Bean(initMethod="init", destroyMethod="destroy")
     public TaskWorkerManager taskWorkerManager(
             RootTaskProcessorFactory factory, TaskQueue taskQueue) {
         return new TaskWorkerManager(new TaskWorkerFactoryImpl(taskQueue,
