@@ -7,11 +7,18 @@
  */
 package org.duracloud.mill.credential;
 
+
 /**
  * This interface mediates all interaction with the credential-providing subsystem.
  * @author Daniel Bernstein
  *
  */
 public interface CredentialRepo {
+    /**
+     * Returns a set of credentials associated with an accountId.
+     * @param accountId
+     * @return
+     */
+    CredentialsGroup getCredentialGroupByAccountId(String accountId);
     
 }

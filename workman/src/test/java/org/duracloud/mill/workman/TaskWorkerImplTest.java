@@ -7,8 +7,6 @@
  */
 package org.duracloud.mill.workman;
 
-import java.util.Date;
-
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskQueue;
 import org.easymock.EasyMock;

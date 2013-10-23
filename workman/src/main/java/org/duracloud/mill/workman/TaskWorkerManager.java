@@ -50,7 +50,7 @@ public class TaskWorkerManager {
                     try {
                         executor.execute(factory.create());
                     } catch (RejectedExecutionException ex) {
-                        sleep(1000);
+                        sleep(2000);
                     }
                 }
             }
@@ -66,7 +66,7 @@ public class TaskWorkerManager {
                                 executor.getCompletedTaskCount() });
             }
 
-        }, new Date(), 5 * 60 * 000);
+        }, new Date(), 5 * 60 * 1000);
 
     }
 

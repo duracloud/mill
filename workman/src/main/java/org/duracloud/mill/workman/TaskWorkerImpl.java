@@ -93,6 +93,8 @@ public class TaskWorkerImpl implements TaskWorker {
                     new Object[] { this, started, done });
             return;
         }
+        
+        started = true;
 
         try {
             Task task = this.queue.take();
@@ -104,7 +106,10 @@ public class TaskWorkerImpl implements TaskWorker {
             this.queue.deleteTask(task);
         } catch (TimeoutException e) {
             log.info("queue.take() invocation timed out: no queue items to read.");
-            // TODO re-queue at this point or send to error queue?
+            //sleep a second before finishing.
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e1) {}
         } catch (TaskExecutionFailedException e) {
             log.error("failed to complete task execution: " + e.getMessage(), e);
             // TODO re-queue at this point or send to error queue?

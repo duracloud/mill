@@ -7,9 +7,12 @@
  */
 package org.duracloud.mill.workman;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.duracloud.mill.domain.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class delegates TaskProcessor creation to a list of possible factories.
@@ -20,15 +23,11 @@ import org.duracloud.mill.domain.Task;
  * 
  */
 public class RootTaskProcessorFactory implements TaskProcessorFactory {
+    private static Logger log = LoggerFactory.getLogger(RootTaskProcessorFactory.class);
     private List<TaskProcessorFactory> factories;
 
-    public RootTaskProcessorFactory(List<TaskProcessorFactory> factories) {
-        if (factories == null || factories.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "you must specify at least one TaskProcessorFactory");
-        }
-
-        this.factories = factories;
+    public RootTaskProcessorFactory() {
+        this.factories = new LinkedList<TaskProcessorFactory>();
     }
 
     @Override
@@ -50,5 +49,9 @@ public class RootTaskProcessorFactory implements TaskProcessorFactory {
         }
         return p;
     }
-
+    
+    public void addTaskProcessorFactory(TaskProcessorFactory factory){
+        log.debug("Adding {}", factory);
+        this.factories.add(factory);
+    }
 }
