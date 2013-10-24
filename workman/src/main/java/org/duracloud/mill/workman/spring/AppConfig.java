@@ -10,6 +10,7 @@ package org.duracloud.mill.workman.spring;
 import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.mill.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
@@ -41,5 +42,14 @@ public class AppConfig {
             RootTaskProcessorFactory factory, TaskQueue taskQueue) {
         return new TaskWorkerManager(new TaskWorkerFactoryImpl(taskQueue,
                 factory));
+    }
+    
+    @Bean
+    public TaskQueue taskQueue(){
+        //This is just a placeholder implementation.
+        //We will likely want to perform queue configuration: namely pass queue name
+        //and credentials to the concrete SQSTaskQueue object.
+        //return new SQSTaskQueue("url");
+        return new LocalTaskQueue();
     }
 }
