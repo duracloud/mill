@@ -12,6 +12,8 @@ import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 /**
  * This class is responsible for creating DuplicationTaskProcessors 
  * 
@@ -26,12 +28,11 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     
     @Override
     protected boolean isSupported(Task task) {
-        return true;
+        return task.getType().equals(Task.Type.DUP);
     }
 
     @Override
     protected TaskProcessor createImpl(Task task) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new NotImplementedException();
     }    
 }
