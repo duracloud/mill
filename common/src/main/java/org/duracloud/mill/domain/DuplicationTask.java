@@ -11,7 +11,7 @@ package org.duracloud.mill.domain;
  * @author Bill Branan
  *         Date: 10/18/13
  */
-public class DuplicationTask implements Task {
+public class DuplicationTask {
 
     private String account;
     private String sourceStoreId;

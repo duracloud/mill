@@ -1,3 +1,10 @@
+/*
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ *     http://duracloud.org/license/
+ */
 package org.duracloud.mill.workman.spring;
 
 import org.duracloud.mill.credentials.CredentialRepo;
@@ -50,13 +57,13 @@ public class AppConfig {
             }
 
             @Override
-            public long getDefaultVisibilityTimeout() {
+            public Integer getDefaultVisibilityTimeout() {
                 // TODO Auto-generated method stub
                 return 10000;
             }
 
             @Override
-            public void extendVisibilityTimeout(Task task, long milliseconds)
+            public void extendVisibilityTimeout(Task task, Integer seconds)
                     throws TaskNotFoundException {
                 // TODO Auto-generated method stub
                 

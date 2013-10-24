@@ -25,7 +25,7 @@ public class TaskWorkerImplTest {
     private TaskQueue queue;
     private TaskProcessor processor;
     private TaskProcessorFactory factory;
-    private long visibilityTimeout = 1000l;
+    private Integer visibilityTimeout = Integer.valueOf(10001);
 
     @Before
     public void setUp() throws Exception {
@@ -63,7 +63,7 @@ public class TaskWorkerImplTest {
         });
 
         queue.extendVisibilityTimeout(EasyMock.isA(Task.class),
-                EasyMock.anyLong());
+                                      EasyMock.isA(Integer.class));
         EasyMock.expectLastCall().times(2, 4);
         queue.deleteTask(EasyMock.isA(Task.class));
         EasyMock.expectLastCall();

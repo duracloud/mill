@@ -17,7 +17,7 @@ import java.util.Map;
  * @author Daniel Bernstein
  * 
  */
-public final class Task {
+public class Task {
 
     public static final String KEY_TYPE = "type";
     public enum Type {

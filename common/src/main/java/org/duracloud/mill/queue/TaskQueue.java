@@ -21,14 +21,21 @@ public interface TaskQueue {
      * 
      * @param task
      */
-    void put(Task task);
+    public void put(Task task);
 
     /**
      * Blocks until a task is available
      * 
      * @return
      */
-    Task take() throws TimeoutException;
+    public Task take() throws TimeoutException;
+
+    /**
+     * Provides the default visibility value
+     *
+     * @return
+     */
+    public Integer getDefaultVisibilityTimeout();
 
     /**
      * Responsible for robustly extending the visibility timeout.
@@ -37,7 +44,7 @@ public interface TaskQueue {
      * @param seconds
      * @throws TaskNotFoundException
      */
-    void extendVisibilityTimeout(Task task, Integer seconds)
+    public void extendVisibilityTimeout(Task task, Integer seconds)
             throws TaskNotFoundException;
 
     /**
@@ -45,5 +52,5 @@ public interface TaskQueue {
      * 
      * @param task
      */
-    void deleteTask(Task task) throws TaskNotFoundException;
+    public void deleteTask(Task task) throws TaskNotFoundException;
 }

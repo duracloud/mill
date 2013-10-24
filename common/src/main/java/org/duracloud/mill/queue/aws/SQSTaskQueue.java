@@ -96,11 +96,13 @@ public class SQSTaskQueue implements TaskQueue {
         return msgBody;
     }
 
+    @Override
     public void put(Task task) {
         String msgBody = unmarshallTask(task);
         sqsClient.sendMessage(new SendMessageRequest(queueUrl, msgBody));
     }
 
+    @Override
     public Task take() throws TimeoutException {
         ReceiveMessageResult result = sqsClient.receiveMessage(
             new ReceiveMessageRequest()
@@ -116,6 +118,13 @@ public class SQSTaskQueue implements TaskQueue {
         }
     }
 
+    @Override
+    public Integer getDefaultVisibilityTimeout() {
+        // TODO: Implement
+        throw new RuntimeException("This method is not yet implemented!");
+    }
+
+    @Override
     public void extendVisibilityTimeout(Task task, Integer seconds) throws TaskNotFoundException {
         try {
             sqsClient.changeMessageVisibility(new ChangeMessageVisibilityRequest()
@@ -127,6 +136,7 @@ public class SQSTaskQueue implements TaskQueue {
         }
     }
 
+    @Override
     public void deleteTask(Task task) throws TaskNotFoundException {
         try {
             sqsClient.deleteMessage(new DeleteMessageRequest()

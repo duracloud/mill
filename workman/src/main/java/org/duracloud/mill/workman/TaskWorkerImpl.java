@@ -7,15 +7,15 @@
  */
 package org.duracloud.mill.workman;
 
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * It is responsible for executing a single <code>TaskProcessor</code>. During
@@ -40,8 +40,6 @@ public class TaskWorkerImpl implements TaskWorker {
      * 
      * @param processorFactory
      * @param queue
-     * @param taskReceivedTime
-     * @param visibilityTimeout
      */
     public TaskWorkerImpl(TaskProcessorFactory processorFactory, TaskQueue queue) {
         if (queue == null)
@@ -55,11 +53,12 @@ public class TaskWorkerImpl implements TaskWorker {
     }
 
     private void scheduleVisibilityTimeoutExtender(final Task task,
-            Date timeFrom, final long visibilityTimeout) {
+                                                   Date timeFrom,
+                                                   final Integer visibilityTimeout) {
         // schedule task to run two seconds before the expiration of the task
         // lest the timer task execute late for any reason.
-        Date executionTime = new Date(timeFrom.getTime() + visibilityTimeout
-                - TIMEOUT_BUFFER);
+        Date executionTime =
+            new Date(timeFrom.getTime() + visibilityTimeout - TIMEOUT_BUFFER);
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
