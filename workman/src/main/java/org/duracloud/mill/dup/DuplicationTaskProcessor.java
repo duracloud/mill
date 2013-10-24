@@ -8,6 +8,7 @@
 package org.duracloud.mill.dup;
 
 import org.duracloud.mill.domain.DuplicationTask;
+import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.util.Retriable;
 import org.duracloud.mill.util.Retrier;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
@@ -25,14 +26,15 @@ import java.util.Map;
  */
 public class DuplicationTaskProcessor implements TaskProcessor {
 
-    private DuplicationTask task;
+    private DuplicationTask dupTask;
     private StorageProvider sourceStore;
     private StorageProvider destStore;
 
-    public DuplicationTaskProcessor(DuplicationTask task,
+    public DuplicationTaskProcessor(Task task,
                                     StorageProvider sourceStore,
                                     StorageProvider destStore) {
-        this.task = task;
+        this.dupTask = new DuplicationTask();
+        this.dupTask.readTask(task);
         this.sourceStore = sourceStore;
         this.destStore = destStore;
     }
@@ -40,8 +42,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
     @Override
     public void execute() throws TaskExecutionFailedException {
         // Read task
-        String spaceId = task.getSpaceId();
-        String contentId = task.getContentId();
+        String spaceId = dupTask.getSpaceId();
+        String contentId = dupTask.getContentId();
 
         // Retrieve properties for content items from both providers
         Map<String, String> sourceProperties =
@@ -169,15 +171,15 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         builder.append("Failure to duplicate content item due to:");
         builder.append(message);
         builder.append(" Account: ");
-        builder.append(task.getAccount());
+        builder.append(dupTask.getAccount());
         builder.append(" Source StoreID: ");
-        builder.append(task.getSourceStoreId());
+        builder.append(dupTask.getStoreId());
         builder.append(" Destination StoreID: ");
-        builder.append(task.getDestStoreId());
+        builder.append(dupTask.getDestStoreId());
         builder.append(" SpaceID: ");
-        builder.append(task.getSpaceId());
+        builder.append(dupTask.getSpaceId());
         builder.append(" ContentID: ");
-        builder.append(task.getContentId());
+        builder.append(dupTask.getContentId());
         return builder.toString();
     }
 

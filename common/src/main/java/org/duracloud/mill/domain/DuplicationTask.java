@@ -7,32 +7,35 @@
  */
 package org.duracloud.mill.domain;
 
+import java.util.Map;
+
 /**
+ * Provides the information necessary to complete a content
+ * duplication activity.
+ *
  * @author Bill Branan
  *         Date: 10/18/13
  */
-public class DuplicationTask {
+public class DuplicationTask extends TypedTask {
 
-    private String account;
-    private String sourceStoreId;
+    public static final String DEST_STORE_ID_PROP = "destStoreId";
+
     private String destStoreId;
-    private String spaceId;
-    private String contentId;
 
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
+    /**
+     * Gets the source store ID. This is equivalent to calling getStoreId()
+     * @return source store ID
+     */
     public String getSourceStoreId() {
-        return sourceStoreId;
+        return getStoreId();
     }
 
+    /**
+     * Sets the source store ID. This is equivalent to calling setStoreId(storeId)
+     * @param sourceStoreId
+     */
     public void setSourceStoreId(String sourceStoreId) {
-        this.sourceStoreId = sourceStoreId;
+        setStoreId(sourceStoreId);
     }
 
     public String getDestStoreId() {
@@ -43,20 +46,20 @@ public class DuplicationTask {
         this.destStoreId = destStoreId;
     }
 
-    public String getSpaceId() {
-        return spaceId;
+    @Override
+    public void readTask(Task task) {
+        super.readTask(task);
+
+        Map<String, String> props = task.getProperties();
+        setDestStoreId(props.get(DEST_STORE_ID_PROP));
     }
 
-    public void setSpaceId(String spaceId) {
-        this.spaceId = spaceId;
-    }
-
-    public String getContentId() {
-        return contentId;
-    }
-
-    public void setContentId(String contentId) {
-        this.contentId = contentId;
+    @Override
+    public Task writeTask() {
+        Task task = super.writeTask();
+        task.setType(Task.Type.DUP);
+        task.addProperty(DEST_STORE_ID_PROP, getDestStoreId());
+        return task;
     }
 
 }
