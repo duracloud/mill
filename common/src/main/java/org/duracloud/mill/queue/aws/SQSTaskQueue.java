@@ -18,6 +18,7 @@ import com.amazonaws.services.sqs.model.ReceiptHandleIsInvalidException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskNotFoundException;
 import org.duracloud.mill.queue.TaskQueue;
@@ -31,6 +32,10 @@ import java.io.StringWriter;
 import java.util.Properties;
 
 /**
+ * SQSTaskQueue acts as the interface for interacting with an Amazon
+ * Simple Queue Service (SQS) queue.
+ * This class provides a way to interact with a remote SQS Queue, it
+ * emulates the functionality of a queue.
  * @author Erik Paulsson
  *         Date: 10/21/13
  */
@@ -53,16 +58,20 @@ public class SQSTaskQueue implements TaskQueue {
      * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html#AmazonSQSClient()
      */
     public SQSTaskQueue(String queueUrl) {
-        sqsClient = new AmazonSQSClient();
+        this(new AmazonSQSClient(), queueUrl);
+    }
+
+    public SQSTaskQueue(AmazonSQSClient sqsClient, String queueUrl) {
+        this.sqsClient = sqsClient;
         this.queueUrl = queueUrl;
         this.visibilityTimeout = getVisibilityTimeout();
     }
 
-    protected Task marshallTask(String msgBody) {
+    protected Task marshallTask(Message msg) {
         Properties props = new Properties();
         Task task = null;
         try {
-            props.load(new StringReader(msgBody));
+            props.load(new StringReader(msg.getBody()));
 
             if(props.containsKey(Task.KEY_TYPE)) {
                 task = new Task();
@@ -73,6 +82,8 @@ public class SQSTaskQueue implements TaskQueue {
                         task.addProperty(key, props.getProperty(key));
                     }
                 }
+                task.addProperty(MsgProp.MSG_ID.name(), msg.getMessageId());
+                task.addProperty(MsgProp.RECEIPT_HANDLE.name(), msg.getReceiptHandle());
             } else {
                 log.error("SQS message from " + queueUrl +" does not contain a 'task type'");
             }
@@ -110,10 +121,27 @@ public class SQSTaskQueue implements TaskQueue {
         ReceiveMessageResult result = sqsClient.receiveMessage(
             new ReceiveMessageRequest()
                 .withQueueUrl(queueUrl)
-                .withMaxNumberOfMessages(1));
+                .withMaxNumberOfMessages(1)
+                .withAttributeNames("SentTimestamp"));
         if(result.getMessages() != null && result.getMessages().size() > 0) {
             Message msg = result.getMessages().get(0);
-            Task task = marshallTask(msg.getBody());
+
+            // The Amazon docs claim this attribute is 'returned as an integer
+            // representing the epoch time in milliseconds.'
+            // http://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/Query_QueryReceiveMessage.html
+            try {
+                Long sentTime = Long.parseLong(msg.getAttributes().get("SentTimestamp"));
+                Long preworkQueueTime = System.currentTimeMillis() - sentTime;
+                log.info("SQS message id: {}, preworkQueueTime: {}"
+                    , msg.getMessageId()
+                    , DurationFormatUtils.formatDuration(preworkQueueTime, "HH:mm:ss,SSS"));
+            } catch(NumberFormatException nfe) {
+                log.error("Error converting 'SentTimestamp' SQS message" +
+                              " attribute to Long, messageId: " +
+                              msg.getMessageId(), nfe);
+            }
+
+            Task task = marshallTask(msg);
             task.setVisibilityTimeout(visibilityTimeout);
             return task;
         } else {
@@ -126,7 +154,7 @@ public class SQSTaskQueue implements TaskQueue {
         try {
             sqsClient.changeMessageVisibility(new ChangeMessageVisibilityRequest()
                                                   .withQueueUrl(queueUrl)
-                                                  .withReceiptHandle(task.getProperty(MsgProp.RECEIPT_HANDLE.toString()))
+                                                  .withReceiptHandle(task.getProperty(MsgProp.RECEIPT_HANDLE.name()))
                                                   .withVisibilityTimeout(task.getVisibilityTimeout()));
         } catch(ReceiptHandleIsInvalidException rhe) {
             throw new TaskNotFoundException(rhe);
