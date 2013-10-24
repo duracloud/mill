@@ -27,6 +27,7 @@ public class RootTaskProcessorFactory implements TaskProcessorFactory {
     private List<TaskProcessorFactory> factories;
 
     public RootTaskProcessorFactory() {
+        log.debug("creating new...");
         this.factories = new LinkedList<TaskProcessorFactory>();
     }
 

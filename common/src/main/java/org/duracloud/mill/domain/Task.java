@@ -10,6 +10,8 @@ package org.duracloud.mill.domain;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * Represents a basic unit of work. In essence it describes "what" is to be
  * done. It knows nothing of the "how".
@@ -21,7 +23,7 @@ public class Task {
 
     public static final String KEY_TYPE = "type";
     public enum Type {
-        BIT, DUP;
+        BIT, DUP, NOOP;
     }
 
     private Type type;
@@ -60,5 +62,13 @@ public class Task {
 
     public void setVisibilityTimeout(Integer visibilityTimeout) {
         this.visibilityTimeout = visibilityTimeout;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

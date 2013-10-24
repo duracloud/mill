@@ -7,11 +7,13 @@
  */
 package org.duracloud.mill.noop;
 
+import java.util.Map;
+
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
-
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A task processor which does nothing more than print a bit of output about
@@ -21,7 +23,7 @@ import java.util.Map;
  *         Date: 10/23/13
  */
 public class NoopTaskProcessor implements TaskProcessor {
-
+    private static Logger log = LoggerFactory.getLogger(NoopTaskProcessor.class);
     private Task task;
 
     public NoopTaskProcessor(Task task) {
@@ -32,7 +34,7 @@ public class NoopTaskProcessor implements TaskProcessor {
     public void execute() throws TaskExecutionFailedException {
         StringBuilder results = new StringBuilder();
         results.append("Executing NOOP Task Processor\nTask Properties:\n");
-
+        
         Map<String, String> props = task.getProperties();
         for(String key : props.keySet()) {
             results.append(key);
@@ -41,6 +43,11 @@ public class NoopTaskProcessor implements TaskProcessor {
             results.append("\n");
         }
 
-        System.out.println(results.toString());
+        log.info(results.toString());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

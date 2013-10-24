@@ -25,7 +25,6 @@ public class TaskWorkerImplTest {
     private TaskQueue queue;
     private TaskProcessor processor;
     private TaskProcessorFactory factory;
-    private Integer visibilityTimeout = Integer.valueOf(10001);
 
     @Before
     public void setUp() throws Exception {
@@ -34,7 +33,7 @@ public class TaskWorkerImplTest {
         queue = EasyMock.createMock(TaskQueue.class);
         factory = EasyMock.createMock(TaskProcessorFactory.class);
         EasyMock.expect(task.getVisibilityTimeout()).andReturn(
-                visibilityTimeout);
+                1);
         EasyMock.expect(queue.take()).andReturn(task);
         EasyMock.expect(factory.create(EasyMock.isA(Task.class))).andReturn(
                 processor);
@@ -53,11 +52,10 @@ public class TaskWorkerImplTest {
     @Test
     public void testRun() throws Exception {
         processor.execute();
-        final int times = 2;
         EasyMock.expectLastCall().andAnswer(new IAnswer<Object>() {
             @Override
             public Object answer() throws Throwable {
-                Thread.sleep(visibilityTimeout * times);
+                Thread.sleep(2000);
                 return null;
             }
         });
