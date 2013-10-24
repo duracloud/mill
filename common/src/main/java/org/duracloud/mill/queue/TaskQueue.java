@@ -32,13 +32,12 @@ public interface TaskQueue {
 
 
     /**
-     * Responsible for robustly extending the visibility timeout.
+     * Responsible for robustly extending the visibility timeout of a Task.
      * 
      * @param task
-     * @param seconds
      * @throws TaskNotFoundException
      */
-    public void extendVisibilityTimeout(Task task, Integer seconds)
+    public void extendVisibilityTimeout(Task task)
             throws TaskNotFoundException;
 
     /**

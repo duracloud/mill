@@ -66,7 +66,7 @@ public class TaskWorkerImpl implements TaskWorker {
                     try {
                         log.debug("extending timeout of {} {} milliseconds",
                                 task, visibilityTimeout);
-                        queue.extendVisibilityTimeout(task, visibilityTimeout);
+                        queue.extendVisibilityTimeout(task);
                         log.debug("timeout extended for {}", task);
                         // reschedule task
                         scheduleVisibilityTimeoutExtender(task, new Date(),

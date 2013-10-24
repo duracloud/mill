@@ -62,8 +62,7 @@ public class TaskWorkerImplTest {
             }
         });
 
-        queue.extendVisibilityTimeout(EasyMock.isA(Task.class),
-                                      EasyMock.isA(Integer.class));
+        queue.extendVisibilityTimeout(EasyMock.isA(Task.class));
         EasyMock.expectLastCall().times(2, 4);
         queue.deleteTask(EasyMock.isA(Task.class));
         EasyMock.expectLastCall();

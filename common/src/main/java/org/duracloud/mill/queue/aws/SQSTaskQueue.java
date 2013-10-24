@@ -10,7 +10,10 @@ package org.duracloud.mill.queue.aws;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.model.ChangeMessageVisibilityRequest;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
+import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
+import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.QueueAttributeName;
 import com.amazonaws.services.sqs.model.ReceiptHandleIsInvalidException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
@@ -49,10 +52,10 @@ public class SQSTaskQueue implements TaskQueue {
      * described here:
      * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html#AmazonSQSClient()
      */
-    public SQSTaskQueue(String queueUrl, Integer visibilityTimeout) {
+    public SQSTaskQueue(String queueUrl) {
         sqsClient = new AmazonSQSClient();
         this.queueUrl = queueUrl;
-        this.visibilityTimeout = visibilityTimeout;
+        this.visibilityTimeout = getVisibilityTimeout();
     }
 
     protected Task marshallTask(String msgBody) {
@@ -107,25 +110,24 @@ public class SQSTaskQueue implements TaskQueue {
         ReceiveMessageResult result = sqsClient.receiveMessage(
             new ReceiveMessageRequest()
                 .withQueueUrl(queueUrl)
-                .withMaxNumberOfMessages(1)
-                .withVisibilityTimeout(visibilityTimeout));
+                .withMaxNumberOfMessages(1));
         if(result.getMessages() != null && result.getMessages().size() > 0) {
             Message msg = result.getMessages().get(0);
             Task task = marshallTask(msg.getBody());
+            task.setVisibilityTimeout(visibilityTimeout);
             return task;
         } else {
             throw new TimeoutException("No tasks available from queue: " + queueUrl);
         }
     }
 
-
     @Override
-    public void extendVisibilityTimeout(Task task, Integer seconds) throws TaskNotFoundException {
+    public void extendVisibilityTimeout(Task task) throws TaskNotFoundException {
         try {
             sqsClient.changeMessageVisibility(new ChangeMessageVisibilityRequest()
                                                   .withQueueUrl(queueUrl)
                                                   .withReceiptHandle(task.getProperty(MsgProp.RECEIPT_HANDLE.toString()))
-                                                  .withVisibilityTimeout(seconds));
+                                                  .withVisibilityTimeout(task.getVisibilityTimeout()));
         } catch(ReceiptHandleIsInvalidException rhe) {
             throw new TaskNotFoundException(rhe);
         }
@@ -141,5 +143,15 @@ public class SQSTaskQueue implements TaskQueue {
         } catch(ReceiptHandleIsInvalidException rhe) {
             throw new TaskNotFoundException(rhe);
         }
+    }
+
+    private Integer getVisibilityTimeout() {
+        GetQueueAttributesResult result = sqsClient.getQueueAttributes(
+            new GetQueueAttributesRequest().withQueueUrl(queueUrl)
+                                           .withAttributeNames(
+                                               QueueAttributeName.VisibilityTimeout));
+        String visStr = result.getAttributes().get(QueueAttributeName.VisibilityTimeout.name());
+        Integer visibilityTimeout = Integer.parseInt(visStr);
+        return visibilityTimeout;
     }
 }
