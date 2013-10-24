@@ -2,5 +2,11 @@ language: java
 jdk:
   - oraclejdk7
   - openjdk7
+notifications:
+  email:
+    recipients:
+      - duracloud-codewatch@googlegroups.com
+    on_success: change
+    on_failure: always
 after_script:
   - mvn cobertura:cobertura coveralls:cobertura
