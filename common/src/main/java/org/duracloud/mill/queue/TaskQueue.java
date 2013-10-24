@@ -30,12 +30,6 @@ public interface TaskQueue {
      */
     public Task take() throws TimeoutException;
 
-    /**
-     * Provides the default visibility value
-     *
-     * @return
-     */
-    public Integer getDefaultVisibilityTimeout();
 
     /**
      * Responsible for robustly extending the visibility timeout.

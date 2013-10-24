@@ -99,7 +99,7 @@ public class TaskWorkerImpl implements TaskWorker {
             Task task = this.queue.take();
             log.debug("{} dequeued {}", this, task);
             scheduleVisibilityTimeoutExtender(task, new Date(),
-                    queue.getDefaultVisibilityTimeout());
+                    task.getVisibilityTimeout());
             TaskProcessor processor = this.processorFactory.create(task);
             processor.execute();
             this.queue.deleteTask(task);

@@ -118,11 +118,6 @@ public class SQSTaskQueue implements TaskQueue {
         }
     }
 
-    @Override
-    public Integer getDefaultVisibilityTimeout() {
-        // TODO: Implement
-        throw new RuntimeException("This method is not yet implemented!");
-    }
 
     @Override
     public void extendVisibilityTimeout(Task task, Integer seconds) throws TaskNotFoundException {

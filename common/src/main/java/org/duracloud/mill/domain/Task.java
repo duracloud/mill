@@ -26,10 +26,13 @@ public class Task {
 
     private Type type;
     private Map<String, String> properties = new HashMap<>();
-
+    private Integer visibilityTimeout;
+    
     public Type getType() {
         return type;
     }
+    
+    
 
     public void setType(Type type) {
         this.type = type;
@@ -49,5 +52,13 @@ public class Task {
 
     public String removeProperty(String key) {
         return properties.remove(key);
+    }
+
+    public Integer getVisibilityTimeout() {
+        return visibilityTimeout;
+    }
+
+    public void setVisibilityTimeout(Integer visibilityTimeout) {
+        this.visibilityTimeout = visibilityTimeout;
     }
 }

@@ -33,7 +33,7 @@ public class TaskWorkerImplTest {
         processor = EasyMock.createMock(TaskProcessor.class);
         queue = EasyMock.createMock(TaskQueue.class);
         factory = EasyMock.createMock(TaskProcessorFactory.class);
-        EasyMock.expect(queue.getDefaultVisibilityTimeout()).andReturn(
+        EasyMock.expect(task.getVisibilityTimeout()).andReturn(
                 visibilityTimeout);
         EasyMock.expect(queue.take()).andReturn(task);
         EasyMock.expect(factory.create(EasyMock.isA(Task.class))).andReturn(

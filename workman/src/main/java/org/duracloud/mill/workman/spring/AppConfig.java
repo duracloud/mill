@@ -57,12 +57,6 @@ public class AppConfig {
             }
 
             @Override
-            public Integer getDefaultVisibilityTimeout() {
-                // TODO Auto-generated method stub
-                return 10000;
-            }
-
-            @Override
             public void extendVisibilityTimeout(Task task, Integer seconds)
                     throws TaskNotFoundException {
                 // TODO Auto-generated method stub
