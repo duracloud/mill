@@ -58,13 +58,13 @@ public class TaskWorkerImpl implements TaskWorker {
         // schedule task to run two seconds before the expiration of the task
         // lest the timer task execute late for any reason.
         Date executionTime =
-            new Date(timeFrom.getTime() + visibilityTimeout - TIMEOUT_BUFFER);
+            new Date(timeFrom.getTime() + (visibilityTimeout*1000) - TIMEOUT_BUFFER);
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
                 if (!done) {
                     try {
-                        log.debug("extending timeout of {} {} milliseconds",
+                        log.debug("extending timeout of {} {} seconds",
                                 task, visibilityTimeout);
                         queue.extendVisibilityTimeout(task);
                         log.debug("timeout extended for {}", task);
