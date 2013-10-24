@@ -40,6 +40,7 @@ public class NoopProcessorRoundTest {
     public static class TestAppConfig extends AppConfig {
 
         @Bean
+        @Override
         public TaskQueue taskQueue() {
             return QUEUE;
         }
@@ -60,7 +61,7 @@ public class NoopProcessorRoundTest {
      */
     @After
     public void tearDown() throws Exception {
-
+        context = null;
     }
 
     @Test
