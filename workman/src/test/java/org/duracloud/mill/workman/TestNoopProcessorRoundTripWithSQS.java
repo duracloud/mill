@@ -11,6 +11,7 @@ import java.io.File;
 
 import junit.framework.Assert;
 
+import org.duracloud.common.util.ApplicationConfig;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskQueue;
@@ -27,33 +28,29 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * This class tests a round trip for processing Noop Tasks, from task creation
- * to task processing.
+ * to task processing using an sqs queue.
  * 
  * @author Daniel Bernstein Date: Oct 24, 2013
  */
-public class NoopProcessorRoundTest {
-    private static LocalTaskQueue QUEUE = new LocalTaskQueue();
+
+public class TestNoopProcessorRoundTripWithSQS {
+
     private ApplicationContext context;
-
-    @Configuration
-    @ComponentScan(basePackages={"org.duracloud.mill"})
-    public static class TestAppConfig extends AppConfig {
-
-        @Bean
-        @Override
-        public TaskQueue taskQueue() {
-            return QUEUE;
-        }
-    }
+    private TaskQueue queue;
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    //@Before
     public void setUp() throws Exception {
         File testCredFile = new File("../common/src/test/resources/test.credentials.json");
         Assert.assertTrue(testCredFile.exists());
         System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
-        context = new AnnotationConfigApplicationContext(TestAppConfig.class);
+        System.setProperty("duracloud.sqsQueueUrl", "{your queue url}");
+        System.setProperty("aws.accessKeyId", "{your access key here}");
+        System.setProperty("aws.secretKey", "{your secret key}");
+        
+        context = new AnnotationConfigApplicationContext(AppConfig.class);
+        queue = (TaskQueue)context.getBean("taskQueue");
     }
 
     /**
@@ -64,21 +61,24 @@ public class NoopProcessorRoundTest {
         context = null;
     }
 
-    @Test
+    //@Test
     public void test() {
-        int count = 15;
+        
+        int count = 10000;
         for(int i = 0; i < count; i++){
             NoopTask noopTask = new NoopTask();
+            noopTask.setAccount("foobar");
+            noopTask.setContentId("foobar");
+            noopTask.setSpaceId("foobar");
+            noopTask.setStoreId("foobar");
             Task task = noopTask.writeTask();
             task.setVisibilityTimeout(600);
-            QUEUE.put(task);
+            queue.put(task);
         }
 
+        sleep(60*60*1000);
+
         
-        sleep(10000);
-        
-        Assert.assertEquals(0, this.QUEUE.getInprocessCount());
-        Assert.assertEquals(count, this.QUEUE.getCompletedCount());
     }
 
     private void sleep(long ms) {

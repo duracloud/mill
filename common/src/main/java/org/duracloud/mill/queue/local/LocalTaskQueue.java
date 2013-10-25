@@ -83,6 +83,11 @@ public class LocalTaskQueue implements TaskQueue {
         this.completedCount++;
         log.info("{} complete", task);
     }
+
+    @Override
+    public Integer size() {
+        return queue.size();
+    }
     
     public int getInprocessCount(){
         return this.inprocess.size();

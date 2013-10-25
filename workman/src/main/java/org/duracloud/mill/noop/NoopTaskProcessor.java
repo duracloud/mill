@@ -45,7 +45,7 @@ public class NoopTaskProcessor implements TaskProcessor {
 
         log.info(results.toString());
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

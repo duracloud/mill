@@ -206,4 +206,5 @@ public class SQSTaskQueue implements TaskQueue {
             .withQueueUrl(queueUrl)
             .withAttributeNames(attrNames));
     }
+
 }
