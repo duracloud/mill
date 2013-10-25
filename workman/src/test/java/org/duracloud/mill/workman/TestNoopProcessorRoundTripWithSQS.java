@@ -32,20 +32,22 @@ import org.springframework.context.annotation.Configuration;
  * 
  * @author Daniel Bernstein Date: Oct 24, 2013
  */
+
 public class TestNoopProcessorRoundTripWithSQS {
+
     private ApplicationContext context;
     private TaskQueue queue;
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    //@Before
     public void setUp() throws Exception {
         File testCredFile = new File("../common/src/test/resources/test.credentials.json");
         Assert.assertTrue(testCredFile.exists());
         System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
-//        System.setProperty("duracloud.sqsQueueUrl", "{your queue url}");
-//        System.setProperty("aws.accessKeyId", "{your access key here}");
-//        System.setProperty("aws.secretKey", "{your secret key}");
+        System.setProperty("duracloud.sqsQueueUrl", "{your queue url}");
+        System.setProperty("aws.accessKeyId", "{your access key here}");
+        System.setProperty("aws.secretKey", "{your secret key}");
         
         context = new AnnotationConfigApplicationContext(AppConfig.class);
         queue = (TaskQueue)context.getBean("taskQueue");
@@ -59,7 +61,7 @@ public class TestNoopProcessorRoundTripWithSQS {
         context = null;
     }
 
-    @Test
+    //@Test
     public void test() {
         
         int count = 10000;
