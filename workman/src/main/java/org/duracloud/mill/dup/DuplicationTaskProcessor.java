@@ -99,9 +99,11 @@ public class DuplicationTaskProcessor implements TaskProcessor {
             } else { // Item in source but not in destination, duplicate
                 duplicateContent(spaceId, contentId, sourceProperties);
             }
-        } else { // Item does not exist, it must have been deleted
-            // Perform delete on destination
-            duplicateDeletion(spaceId, contentId);
+        } else { // Item does not exist in source, it must have been deleted
+            if(null != destProperties) { // Item does exist in dest
+                // Perform delete on destination
+                duplicateDeletion(spaceId, contentId);
+            }
         }
     }
 
@@ -110,7 +112,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      *
      * @param spaceId
      */
-    protected void checkSpace(final String spaceId) {
+    private void checkSpace(final String spaceId) {
         try {
             destStore.createSpace(spaceId);
         } catch(Exception e) {
@@ -127,9 +129,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * @return
      * @throws TaskExecutionFailedException
      */
-    protected Map<String, String> getContentProperties(final StorageProvider store,
-                                                       final String spaceId,
-                                                       final String contentId)
+    private Map<String, String> getContentProperties(final StorageProvider store,
+                                                     final String spaceId,
+                                                     final String contentId)
         throws TaskExecutionFailedException {
         try {
             return new Retrier().execute(new Retriable() {
@@ -187,9 +189,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * @param contentId
      * @param sourceProperties
      */
-    protected void duplicateProperties(final String spaceId,
-                                       final String contentId,
-                                       final Map<String, String> sourceProperties)
+    private void duplicateProperties(final String spaceId,
+                                     final String contentId,
+                                     final Map<String, String> sourceProperties)
         throws TaskExecutionFailedException {
         try {
             new Retrier().execute(new Retriable() {
@@ -214,9 +216,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * @param spaceId
      * @param contentId
      */
-    protected void duplicateContent(final String spaceId,
-                                    final String contentId,
-                                    final Map<String, String> sourceProperties)
+    private void duplicateContent(final String spaceId,
+                                  final String contentId,
+                                  final Map<String, String> sourceProperties)
         throws TaskExecutionFailedException {
 
         String srcChecksum = sourceProperties.get(
@@ -267,7 +269,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * Gets content item from source storage provider
      */
     private InputStream getSourceContent(final String spaceId,
-                                  final String contentId)
+                                         final String contentId)
         throws TaskExecutionFailedException {
         try {
             return new Retrier().execute(new Retriable() {
@@ -318,14 +320,20 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                         StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
 
                     // Push to destination
-                    destStore.addContent(spaceId,
-                                         contentId,
-                                         srcMimetype,
-                                         sourceProperties,
-                                         file.length(),
-                                         sourceChecksum,
-                                         FileUtils.openInputStream(file));
-                    return "success";
+                    String destChecksum =
+                        destStore.addContent(spaceId,
+                                             contentId,
+                                             srcMimetype,
+                                             sourceProperties,
+                                             file.length(),
+                                             sourceChecksum,
+                                             FileUtils.openInputStream(file));
+                    if(sourceChecksum.equals(destChecksum)) {
+                        return "success";
+                    } else {
+                        throw new RuntimeException("Checksum in dest does not " +
+                                                   "match source");
+                    }
                 }
             });
         } catch(Exception e) {
@@ -350,8 +358,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * @param spaceId
      * @param contentId
      */
-    protected void duplicateDeletion(final String spaceId,
-                                     final String contentId)
+    private void duplicateDeletion(final String spaceId,
+                                   final String contentId)
         throws TaskExecutionFailedException {
         try {
             new Retrier().execute(new Retriable() {
@@ -368,13 +376,13 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         }
     }
 
-    protected void failTask(String message)
+    private void failTask(String message)
         throws DuplicationTaskExecutionFailedException {
         throw new DuplicationTaskExecutionFailedException(
             buildFailureMessage(message));
     }
 
-    protected void failTask(String message, Throwable cause)
+    private void failTask(String message, Throwable cause)
         throws DuplicationTaskExecutionFailedException {
         throw new DuplicationTaskExecutionFailedException(
             buildFailureMessage(message), cause);
