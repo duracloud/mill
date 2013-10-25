@@ -46,4 +46,9 @@ public interface TaskQueue {
      * @param task
      */
     public void deleteTask(Task task) throws TaskNotFoundException;
+
+    /**
+     * @return the number of elements in this queue.
+     */
+    public Integer size();
 }

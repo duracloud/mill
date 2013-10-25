@@ -12,6 +12,7 @@ import com.amazonaws.services.sqs.model.ChangeMessageVisibilityRequest;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
+import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueAttributeName;
 import com.amazonaws.services.sqs.model.ReceiptHandleIsInvalidException;
@@ -43,6 +44,7 @@ public class SQSTaskQueue implements TaskQueue {
     private static Logger log = LoggerFactory.getLogger(SQSTaskQueue.class);
 
     private AmazonSQSClient sqsClient;
+    private String queueName;
     private String queueUrl;
     private Integer visibilityTimeout;  // in seconds
 
@@ -57,13 +59,14 @@ public class SQSTaskQueue implements TaskQueue {
      * described here:
      * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html#AmazonSQSClient()
      */
-    public SQSTaskQueue(String queueUrl) {
-        this(new AmazonSQSClient(), queueUrl);
+    public SQSTaskQueue(String queueName) {
+        this(new AmazonSQSClient(), queueName);
     }
 
-    public SQSTaskQueue(AmazonSQSClient sqsClient, String queueUrl) {
+    public SQSTaskQueue(AmazonSQSClient sqsClient, String queueName) {
         this.sqsClient = sqsClient;
-        this.queueUrl = queueUrl;
+        this.queueName = queueName;
+        this.queueUrl = getQueueUrl();
         this.visibilityTimeout = getVisibilityTimeout();
     }
 
@@ -85,7 +88,8 @@ public class SQSTaskQueue implements TaskQueue {
                 task.addProperty(MsgProp.MSG_ID.name(), msg.getMessageId());
                 task.addProperty(MsgProp.RECEIPT_HANDLE.name(), msg.getReceiptHandle());
             } else {
-                log.error("SQS message from " + queueUrl +" does not contain a 'task type'");
+                log.error("SQS message from queue: "+ queueName+", queueUrl: " +
+                              queueUrl +" does not contain a 'task type'");
             }
         } catch(IOException ioe) {
             log.error("Error creating Task", ioe);
@@ -105,7 +109,8 @@ public class SQSTaskQueue implements TaskQueue {
             props.store(sw, null);
             msgBody = sw.toString();
         } catch(IOException ioe) {
-            log.error("Error unmarshalling Task", ioe);
+            log.error("Error unmarshalling Task, queue: " + queueName +
+                          ", msgBody: " + msgBody, ioe);
         }
         return msgBody;
     }
@@ -122,7 +127,7 @@ public class SQSTaskQueue implements TaskQueue {
             new ReceiveMessageRequest()
                 .withQueueUrl(queueUrl)
                 .withMaxNumberOfMessages(1)
-                .withAttributeNames("SentTimestamp"));
+                .withAttributeNames("SentTimestamp", "ApproximateReceiveCount"));
         if(result.getMessages() != null && result.getMessages().size() > 0) {
             Message msg = result.getMessages().get(0);
 
@@ -132,9 +137,11 @@ public class SQSTaskQueue implements TaskQueue {
             try {
                 Long sentTime = Long.parseLong(msg.getAttributes().get("SentTimestamp"));
                 Long preworkQueueTime = System.currentTimeMillis() - sentTime;
-                log.info("SQS message id: {}, preworkQueueTime: {}"
-                    , msg.getMessageId()
-                    , DurationFormatUtils.formatDuration(preworkQueueTime, "HH:mm:ss,SSS"));
+                log.info("SQS message received - queue: {}, queueUrl: {}, msgId: {}," +
+                             " preworkQueueTime: {}, previousRecvCnt: {}"
+                    , queueName, queueUrl, msg.getMessageId()
+                    , DurationFormatUtils.formatDuration(preworkQueueTime, "HH:mm:ss,SSS")
+                    , msg.getAttributes().get("ApproximateReceiveCount"));
             } catch(NumberFormatException nfe) {
                 log.error("Error converting 'SentTimestamp' SQS message" +
                               " attribute to Long, messageId: " +
@@ -145,7 +152,8 @@ public class SQSTaskQueue implements TaskQueue {
             task.setVisibilityTimeout(visibilityTimeout);
             return task;
         } else {
-            throw new TimeoutException("No tasks available from queue: " + queueUrl);
+            throw new TimeoutException("No tasks available from queue: " +
+                                           queueName + ", queueUrl: " + queueUrl);
         }
     }
 
@@ -173,13 +181,29 @@ public class SQSTaskQueue implements TaskQueue {
         }
     }
 
+    @Override
+    public Integer size() {
+        GetQueueAttributesResult result = queryQueueAttributes(QueueAttributeName.ApproximateNumberOfMessages);
+        String sizeStr = result.getAttributes().get(QueueAttributeName.ApproximateNumberOfMessages.name());
+        Integer size = Integer.parseInt(sizeStr);
+        return size;
+    }
+
     private Integer getVisibilityTimeout() {
-        GetQueueAttributesResult result = sqsClient.getQueueAttributes(
-            new GetQueueAttributesRequest().withQueueUrl(queueUrl)
-                                           .withAttributeNames(
-                                               QueueAttributeName.VisibilityTimeout));
+        GetQueueAttributesResult result = queryQueueAttributes(QueueAttributeName.VisibilityTimeout);
         String visStr = result.getAttributes().get(QueueAttributeName.VisibilityTimeout.name());
         Integer visibilityTimeout = Integer.parseInt(visStr);
         return visibilityTimeout;
+    }
+
+    private String getQueueUrl() {
+        return sqsClient.getQueueUrl(
+            new GetQueueUrlRequest().withQueueName(queueName)).getQueueUrl();
+    }
+
+    private GetQueueAttributesResult queryQueueAttributes(QueueAttributeName... attrNames) {
+        return sqsClient.getQueueAttributes(new GetQueueAttributesRequest()
+            .withQueueUrl(queueUrl)
+            .withAttributeNames(attrNames));
     }
 }
