@@ -63,15 +63,56 @@
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>common</artifactId>
-      <version>${duracloud.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>storageprovider</artifactId>
-      <version>${duracloud.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>s3storageprovider</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>glacierstorageprovider</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>sdscstorageprovider</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>rackspacestorageprovider</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
   </dependencies>
 
 </project>

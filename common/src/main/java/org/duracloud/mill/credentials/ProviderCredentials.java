@@ -20,6 +20,24 @@ public class ProviderCredentials {
     private String secretKey;
     private StorageProviderType providerType;
 
+    public ProviderCredentials(){
+        
+    }
+    /**
+     * @param providerId
+     * @param accessKey
+     * @param secretKey
+     * @param providerType
+     */
+    public ProviderCredentials(String providerId, String accessKey,
+            String secretKey, StorageProviderType providerType) {
+        super();
+        this.providerId = providerId;
+        this.accessKey = accessKey;
+        this.secretKey = secretKey;
+        this.providerType = providerType;
+    }
+
     public String getProviderId() {
         return providerId;
     }

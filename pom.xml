@@ -460,10 +460,30 @@
         <artifactId>common</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>storageprovider</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>s3storageprovider</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>glacierstorageprovider</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.duracloud</groupId>
-        <artifactId>storeclient</artifactId>
+        <artifactId>sdscstorageprovider</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>rackspacestorageprovider</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
 
