@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
  * 
  * @author Daniel Bernstein Date: Oct 24, 2013
  */
-public class NoopProcessorRoundTest {
+public class NoopProcessorLocalRoundTripTest {
     private static LocalTaskQueue QUEUE = new LocalTaskQueue();
     private ApplicationContext context;
 
@@ -41,7 +41,7 @@ public class NoopProcessorRoundTest {
 
         @Bean
         @Override
-        public TaskQueue taskQueue() {
+        public TaskQueue taskQueue(ConfigurationManager configurationManager) {
             return QUEUE;
         }
     }
@@ -50,9 +50,9 @@ public class NoopProcessorRoundTest {
      */
     @Before
     public void setUp() throws Exception {
-        File testCredFile = new File("../common/src/test/resources/test.credentials.json");
-        Assert.assertTrue(testCredFile.exists());
-        System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
+        File testProperties = new File("src/test/resources/workman-test.properties");
+        Assert.assertTrue(testProperties.exists());
+        System.setProperty(ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY, testProperties.getAbsolutePath());
         context = new AnnotationConfigApplicationContext(TestAppConfig.class);
     }
 
@@ -66,7 +66,7 @@ public class NoopProcessorRoundTest {
 
     @Test
     public void test() {
-        int count = 15;
+        int count = 10;
         for(int i = 0; i < count; i++){
             NoopTask noopTask = new NoopTask();
             Task task = noopTask.writeTask();
@@ -75,7 +75,7 @@ public class NoopProcessorRoundTest {
         }
 
         
-        sleep(10000);
+        sleep(5000);
         
         Assert.assertEquals(0, this.QUEUE.getInprocessCount());
         Assert.assertEquals(count, this.QUEUE.getCompletedCount());

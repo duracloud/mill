@@ -11,6 +11,7 @@ import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
+import org.duracloud.mill.workman.ConfigurationManager;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
@@ -33,7 +34,7 @@ public class AppConfig {
     }
 
     @Bean
-    public CredentialRepo credentialRepo() {
+    public CredentialRepo credentialRepo(ConfigurationManager configurationManager) {
         return new ConfigFileCredentialRepo();
     }
 
@@ -45,12 +46,12 @@ public class AppConfig {
     }
     
     @Bean
-    public TaskQueue taskQueue(){
-        String prop = "duracloud.sqsQueueUrl";
-        String url = System.getProperty(prop);
-        if(url == null){
-            throw new IllegalArgumentException("The '"+prop+"' system property is not set.");
-        }
-        return new SQSTaskQueue(url);
+    public TaskQueue taskQueue(ConfigurationManager configurationManager){
+        return new SQSTaskQueue(configurationManager.getQueueUrl());
+    }
+    
+    @Bean(initMethod="init")
+    public ConfigurationManager configurationManager(){
+        return new ConfigurationManager();
     }
 }

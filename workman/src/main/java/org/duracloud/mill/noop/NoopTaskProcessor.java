@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class NoopTaskProcessor implements TaskProcessor {
     private static Logger log = LoggerFactory.getLogger(NoopTaskProcessor.class);
     private Task task;
+    private static long completedCount = 0;
 
     public NoopTaskProcessor(Task task) {
         this.task = task;
@@ -49,5 +50,11 @@ public class NoopTaskProcessor implements TaskProcessor {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        
+        NoopTaskProcessor.completedCount++;
+    }
+
+    public static long getCompletedCount() {
+        return completedCount;
     }
 }
