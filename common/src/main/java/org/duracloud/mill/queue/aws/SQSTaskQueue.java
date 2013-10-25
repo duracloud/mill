@@ -182,4 +182,5 @@ public class SQSTaskQueue implements TaskQueue {
         Integer visibilityTimeout = Integer.parseInt(visStr);
         return visibilityTimeout;
     }
+    
 }
