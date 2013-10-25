@@ -52,6 +52,8 @@ public class Retrier {
      * way to execute a variety of methods and allow a retry to occur on
      * method failure.
      *
+     * Returns the necessary object type.
+     *
      * This method, along with the Retriable interface is an implementation
      * of the command pattern.
      *
