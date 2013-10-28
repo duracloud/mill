@@ -9,4 +9,4 @@ notifications:
     on_success: change
     on_failure: always
 after_script:
-  - mvn cobertura:cobertura coveralls:cobertura
+  - mvn test jacoco:report coveralls:jacoco
