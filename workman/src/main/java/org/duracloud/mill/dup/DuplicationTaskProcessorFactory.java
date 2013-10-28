@@ -9,10 +9,12 @@ package org.duracloud.mill.dup;
 
 import org.duracloud.glacierstorage.GlacierStorageProvider;
 import org.duracloud.mill.credentials.AccountCredentials;
+import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.credentials.ProviderCredentials;
 import org.duracloud.mill.domain.DuplicationTask;
 import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 import org.duracloud.rackspacestorage.RackspaceStorageProvider;
@@ -39,17 +41,26 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     }
 
     @Override
-    protected TaskProcessor createImpl(Task task) {
+    protected TaskProcessor createImpl(Task task) throws TaskProcessorCreationFailedException {
+
         DuplicationTask dtask = new DuplicationTask();
         dtask.readTask(task);
-        AccountCredentials account = getCredentialRepo().getAccoundCredentials(
-                dtask.getAccount());
-        account.getProviderCredentials(dtask.getSourceStoreId());
-        StorageProvider sourceStore = createStorageProvider(
-                dtask.getSourceStoreId(), account);
-        StorageProvider destStore = createStorageProvider(
-                dtask.getDestStoreId(), account);
-        return new DuplicationTaskProcessor(task, sourceStore, destStore);
+        String subdomain = dtask.getAccount();
+
+        try {
+            AccountCredentials account = getCredentialRepo().getAccoundCredentialsBySubdomain(
+                    subdomain);
+            account.getProviderCredentials(dtask.getSourceStoreId());
+            StorageProvider sourceStore = createStorageProvider(
+                    dtask.getSourceStoreId(), account);
+            StorageProvider destStore = createStorageProvider(
+                    dtask.getDestStoreId(), account);
+            return new DuplicationTaskProcessor(task, sourceStore, destStore);
+        } catch (AccountCredentialsNotFoundException e) {
+            throw new TaskProcessorCreationFailedException(
+                    "failed to create task: unable to locate credentials for subdomain: "
+                            + subdomain);
+        }
     }
 
     /**

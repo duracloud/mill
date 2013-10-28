@@ -8,12 +8,13 @@
 package org.duracloud.mill.credentials.file;
 
 import java.io.File;
-import java.util.Map;
+import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.duracloud.mill.credentials.CredentialRepoBase;
 import org.duracloud.mill.credentials.AccountCredentials;
+import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
+import org.duracloud.mill.credentials.CredentialRepoBase;
 
 /**
  * A simple implementation of the Credential Repo based on a local configuration file.
@@ -23,7 +24,7 @@ import org.duracloud.mill.credentials.AccountCredentials;
  */
 public class ConfigFileCredentialRepo extends CredentialRepoBase {
     private static final String CREDENTIALS_FILE_PATH = "credentials.file.path";
-    private Map<String, AccountCredentials> map;
+    private List<AccountCredentials> accountList;
 
     public ConfigFileCredentialRepo() {
 
@@ -42,8 +43,8 @@ public class ConfigFileCredentialRepo extends CredentialRepoBase {
 
         ObjectMapper m = new ObjectMapper();
         try {
-            this.map = m.readValue(file,
-                    new TypeReference<Map<String, AccountCredentials>>() {
+            this.accountList = m.readValue(file,
+                    new TypeReference<List<AccountCredentials>>() {
                     });
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,7 +54,14 @@ public class ConfigFileCredentialRepo extends CredentialRepoBase {
     }
 
     @Override
-    public AccountCredentials getAccoundCredentials(String key) {
-        return map.get(key);
+    public AccountCredentials getAccoundCredentialsBySubdomain(String subdomain) throws AccountCredentialsNotFoundException {
+        for(AccountCredentials accountCreds : accountList){
+            if(accountCreds.getSubdomain().equals(subdomain)){
+                return accountCreds;
+            }
+        }
+        
+        throw new AccountCredentialsNotFoundException("No account found with subdomain \""+ subdomain + "\".");
+        
     }
 }

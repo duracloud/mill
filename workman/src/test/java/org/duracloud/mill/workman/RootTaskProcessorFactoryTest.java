@@ -21,13 +21,13 @@ public class RootTaskProcessorFactoryTest {
 
     /**
      * Test method for {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.mill.domain.Task)}.
-     * @throws TaskNotSupportedException 
+     * @throws TaskProcessorCreationFailedException 
      */
     @Test
-    public void test() throws TaskNotSupportedException {
+    public void test() throws TaskProcessorCreationFailedException {
         TaskProcessor taskProcessor = EasyMock.createMock(TaskProcessor.class);
         TaskProcessorFactory bad = EasyMock.createMock(TaskProcessorFactory.class);
-        EasyMock.expect(bad.create(EasyMock.isA(Task.class))).andThrow(new TaskNotSupportedException("test"));
+        EasyMock.expect(bad.create(EasyMock.isA(Task.class))).andThrow(new TaskProcessorCreationFailedException("test"));
         TaskProcessorFactory good = EasyMock.createMock(TaskProcessorFactory.class);
         EasyMock.expect(good.create(EasyMock.isA(Task.class))).andReturn(taskProcessor);
         EasyMock.replay(taskProcessor, bad, good);

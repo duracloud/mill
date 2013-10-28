@@ -7,15 +7,17 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
 
 /**
- * 
+ * An exception that's thrown when a <code>TaskProcessor</code> cannot be created for any reason.
  * @author Daniel Bernstein
  *
  */
-public class TaskNotSupportedException extends Exception {
-    public TaskNotSupportedException(String message) {
+public class TaskProcessorCreationFailedException extends Exception {
+    
+    private static final long serialVersionUID = 1L;
+
+    public TaskProcessorCreationFailedException(String message) {
         super(message);
     }
 }

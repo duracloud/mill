@@ -16,6 +16,6 @@ import org.duracloud.mill.domain.Task;
  * @author Daniel Bernstein
  */
 public interface TaskProcessorFactory {
-    TaskProcessor create(Task task) throws TaskNotSupportedException;
+    TaskProcessor create(Task task) throws TaskProcessorCreationFailedException;
 
 }

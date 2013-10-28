@@ -15,10 +15,13 @@ package org.duracloud.mill.credentials;
  */
 public interface CredentialRepo {
     /**
-     * Returns a set of credentials associated with an accountId.
+     * Returns a set of credentials associated with a subdomain.
+     * 
      * @param accountId
      * @return
+     * @throws AccountCredentialsNotFoundException
      */
-    AccountCredentials getAccoundCredentials(String accountId);
+    AccountCredentials getAccoundCredentialsBySubdomain(String accountId)
+            throws AccountCredentialsNotFoundException;
     
 }

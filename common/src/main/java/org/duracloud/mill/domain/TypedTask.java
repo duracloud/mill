@@ -27,6 +27,11 @@ public abstract class TypedTask {
     private String spaceId;
     private String contentId;
 
+    /**
+     * The unique identifier for the account, ie the account's subdomain.
+     * 
+     * @return
+     */
     public String getAccount() {
         return account;
     }

@@ -32,19 +32,19 @@ public class RootTaskProcessorFactory implements TaskProcessorFactory {
     }
 
     @Override
-    public TaskProcessor create(Task task) throws TaskNotSupportedException {
+    public TaskProcessor create(Task task) throws TaskProcessorCreationFailedException {
         TaskProcessor p = null;
         for (TaskProcessorFactory factory : factories) {
             try {
                 p = factory.create(task);
                 break;
-            } catch (TaskNotSupportedException e) {
+            } catch (TaskProcessorCreationFailedException e) {
                 continue;
             }
         }
 
         if (p == null) {
-            throw new TaskNotSupportedException(
+            throw new TaskProcessorCreationFailedException(
                     task
                             + " is not supported: no compatible TaskProcessorFactory found.");
         }

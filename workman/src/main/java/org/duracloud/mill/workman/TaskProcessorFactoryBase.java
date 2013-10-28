@@ -27,9 +27,9 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
     @Override
     public final TaskProcessor create(Task task)
-            throws TaskNotSupportedException {
+            throws TaskProcessorCreationFailedException {
         if (!isSupported(task)) {
-            throw new TaskNotSupportedException(task + " is not supported");
+            throw new TaskProcessorCreationFailedException(task + " is not supported");
         }
 
         return createImpl(task);
@@ -41,5 +41,5 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
     protected abstract boolean isSupported(Task task);
 
-    protected abstract TaskProcessor createImpl(Task task);
+    protected abstract TaskProcessor createImpl(Task task) throws TaskProcessorCreationFailedException;
 }

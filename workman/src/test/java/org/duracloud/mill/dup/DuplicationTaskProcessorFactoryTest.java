@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.duracloud.mill.credentials.AccountCredentials;
+import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.credentials.ProviderCredentials;
 import org.duracloud.mill.domain.DuplicationTask;
@@ -28,7 +29,7 @@ import org.junit.Test;
 public class DuplicationTaskProcessorFactoryTest {
 
     @Test
-    public void test() {
+    public void test() throws AccountCredentialsNotFoundException {
         List<StorageProviderType[]> successfulProviderList = new LinkedList<>();
         successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.AMAZON_GLACIER });
@@ -62,20 +63,20 @@ public class DuplicationTaskProcessorFactoryTest {
  
     }
     
-    private void testDuplicationTaskProcessorFactory(StorageProviderType source,
-            StorageProviderType destination, boolean expectedOutcome) {
+    private void testDuplicationTaskProcessorFactory(
+            StorageProviderType source, StorageProviderType destination,
+            boolean expectedOutcome) throws AccountCredentialsNotFoundException {
 
         CredentialRepo repo = EasyMock.createMock(CredentialRepo.class);
 
         AccountCredentials a = new AccountCredentials();
         a.setSProviderCredentials(Arrays.asList(new ProviderCredentials[] {
-                new ProviderCredentials("0", "test", "test",
-                        source),
-                new ProviderCredentials("1", "test", "test",
-                        destination)}));
+                new ProviderCredentials("0", "test", "test", source),
+                new ProviderCredentials("1", "test", "test", destination) }));
 
-        EasyMock.expect(repo.getAccoundCredentials(EasyMock.isA(String.class)))
-                .andReturn(a);
+        EasyMock.expect(
+                repo.getAccoundCredentialsBySubdomain(EasyMock
+                        .isA(String.class))).andReturn(a);
         EasyMock.replay(repo);
 
         DuplicationTaskProcessorFactory f = new DuplicationTaskProcessorFactory(
@@ -88,19 +89,20 @@ public class DuplicationTaskProcessorFactoryTest {
 
         Task task = dupTask.writeTask();
         TaskProcessor processor = null;
-        
-        try { 
+
+        try {
             processor = f.create(task);
-            if(!expectedOutcome){
+            if (!expectedOutcome) {
                 Assert.assertTrue(false);
             }
-        }catch(Exception ex){
+        } catch (Exception ex) {
             Assert.assertFalse(expectedOutcome);
         }
 
-        if(expectedOutcome){
+        if (expectedOutcome) {
             Assert.assertNotNull(processor);
-            Assert.assertEquals(DuplicationTaskProcessor.class, processor.getClass());
+            Assert.assertEquals(DuplicationTaskProcessor.class,
+                    processor.getClass());
         }
 
         EasyMock.verify(repo);
