@@ -31,9 +31,9 @@ public class ConfigurationManager {
                 "no-credentials-file-path-set");
     }
 
-    public String getQueueUrl() {
-        return System.getProperty("duracloud.sqsQueueUrl",
-                "no-duracloud-sqs-queue-url-set");
+    public String getQueueName() {
+        return System.getProperty("duracloud.sqsQueue",
+                "no-duracloud-sqs-queue-set");
     }
 
     public void init() {
@@ -66,14 +66,5 @@ public class ConfigurationManager {
         }
 
         log.info("successfully loaded {}", configFile);
-
-        // String filePath = cmd.getOptionValue("f");
-        // if(filePath != null){
-        // System.setProperty("credentials.file.path", filePath);
-        // if(!new File(filePath).exists()){
-        // System.err.print("Specified file " + filePath + " not found.");
-        // die();
-        // }
-        // }
     }
 }

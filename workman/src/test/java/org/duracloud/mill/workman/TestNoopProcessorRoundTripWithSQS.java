@@ -7,25 +7,18 @@
  */
 package org.duracloud.mill.workman;
 
-import java.io.File;
-
 import junit.framework.Assert;
 
-import org.duracloud.common.util.ApplicationConfig;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.noop.NoopTaskProcessor;
 import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * This class tests a round trip for processing Noop Tasks, from task creation

@@ -30,7 +30,7 @@ public class ConfigurationManagerTest {
                 "src/test/resources/workman-test.properties");
         c.init();
         Assert.assertNotNull(c.getCredentialsFilePath());
-        Assert.assertNotNull(c.getQueueUrl());
+        Assert.assertNotNull(c.getQueueName());
 
     }
 
