@@ -7,9 +7,9 @@
  */
 package org.duracloud.mill.queue.aws;
 
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.util.Retriable;
 import org.duracloud.mill.util.Retrier;
 import org.junit.Before;
@@ -36,7 +36,12 @@ public class TestSQSTaskQueue {
 
     @Before
     public void setUp() {
-        queue = new SQSTaskQueue("test-queue");
+        System.setProperty(
+            ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
+            "src/test/resources/mill-config-test.properties");
+        ConfigurationManager confMgr = new ConfigurationManager();
+        confMgr.init();
+        queue = new SQSTaskQueue(confMgr.getQueueName());
     }
 
     @Test

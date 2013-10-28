@@ -11,6 +11,7 @@ import java.io.File;
 
 import junit.framework.Assert;
 
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskQueue;

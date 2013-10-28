@@ -5,10 +5,11 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.workman;
+package org.duracloud.mill.config;
 
 import junit.framework.Assert;
 
+import org.duracloud.mill.config.ConfigurationManager;
 import org.junit.Test;
 
 /**
@@ -19,7 +20,7 @@ public class ConfigurationManagerTest {
 
     /**
      * Test method for
-     * {@link org.duracloud.mill.workman.ConfigurationManager#getCredentialsFilePath()}
+     * {@link org.duracloud.mill.config.ConfigurationManager#getCredentialsFilePath()}
      * .
      */
     @Test
@@ -27,7 +28,7 @@ public class ConfigurationManagerTest {
         ConfigurationManager c = new ConfigurationManager();
         System.setProperty(
                 ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
-                "src/test/resources/workman-test.properties");
+                "src/test/resources/mill-config-test.properties");
         c.init();
         Assert.assertNotNull(c.getCredentialsFilePath());
         Assert.assertNotNull(c.getQueueName());

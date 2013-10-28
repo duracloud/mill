@@ -11,7 +11,7 @@ import org.duracloud.mill.credentials.CredentialRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
-import org.duracloud.mill.workman.ConfigurationManager;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;

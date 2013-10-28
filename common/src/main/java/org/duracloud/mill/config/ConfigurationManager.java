@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.workman;
+package org.duracloud.mill.config;
 
 import java.io.File;
 import java.io.FileInputStream;
