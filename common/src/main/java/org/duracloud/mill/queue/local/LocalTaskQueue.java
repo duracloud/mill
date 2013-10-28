@@ -21,9 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class implements a local task queue 
- * @author Daniel Bernstein
- *	       Date: Oct 24, 2013
+ * This class implements a local, in-memory task queue. (It is intended to use
+ * for testing purposes.)
+ * 
+ * @author Daniel Bernstein Date: Oct 24, 2013
  */
 public class LocalTaskQueue implements TaskQueue {
     private Queue<Task> queue;
