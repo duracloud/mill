@@ -119,6 +119,9 @@ public class SQSTaskQueue implements TaskQueue {
     public void put(Task task) {
         String msgBody = unmarshallTask(task);
         sqsClient.sendMessage(new SendMessageRequest(queueUrl, msgBody));
+        log.info("SQS message successfully placed {} on queue - queue: {}",
+                task, queueName);
+   
     }
 
     @Override
@@ -164,7 +167,12 @@ public class SQSTaskQueue implements TaskQueue {
                                                   .withQueueUrl(queueUrl)
                                                   .withReceiptHandle(task.getProperty(MsgProp.RECEIPT_HANDLE.name()))
                                                   .withVisibilityTimeout(task.getVisibilityTimeout()));
+            log.info("extended visibility timeout {} seconds for {}",
+                    task.getVisibilityTimeout(), task);
         } catch(ReceiptHandleIsInvalidException rhe) {
+            log.error("failed to extend visibility timeout on task " + task
+                    + ": " + rhe.getMessage(), rhe);
+
             throw new TaskNotFoundException(rhe);
         }
     }
@@ -176,7 +184,13 @@ public class SQSTaskQueue implements TaskQueue {
                     .withQueueUrl(queueUrl)
                     .withReceiptHandle(
                         task.getProperty(MsgProp.RECEIPT_HANDLE.name())));
+            log.info("successfully deleted {}", task);
+
         } catch(ReceiptHandleIsInvalidException rhe) {
+            log.error(
+                    "failed to delete task " + task + ": " + rhe.getMessage(),
+                    rhe);
+
             throw new TaskNotFoundException(rhe);
         }
     }
