@@ -138,7 +138,7 @@ public class SQSTaskQueue implements TaskQueue {
                 Long sentTime = Long.parseLong(msg.getAttributes().get("SentTimestamp"));
                 Long preworkQueueTime = System.currentTimeMillis() - sentTime;
                 log.info("SQS message received - queue: {}, queueUrl: {}, msgId: {}," +
-                             " preworkQueueTime: {}, previousRecvCnt: {}"
+                             " preworkQueueTime: {}, receiveCount: {}"
                     , queueName, queueUrl, msg.getMessageId()
                     , DurationFormatUtils.formatDuration(preworkQueueTime, "HH:mm:ss,SSS")
                     , msg.getAttributes().get("ApproximateReceiveCount"));
