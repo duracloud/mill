@@ -16,6 +16,8 @@ import org.duracloud.mill.util.Retriable;
 import org.duracloud.mill.util.Retrier;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.s3storage.S3StorageProvider;
+import org.duracloud.sdscstorage.SDSCStorageProvider;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
@@ -49,6 +51,14 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                                     StorageProvider destStore) {
         this.dupTask = new DuplicationTask();
         this.dupTask.readTask(task);
+        this.sourceStore = sourceStore;
+        this.destStore = destStore;
+    }
+
+    protected DuplicationTaskProcessor(DuplicationTask dupTask,
+                                       StorageProvider sourceStore,
+                                       StorageProvider destStore) {
+        this.dupTask = dupTask;
         this.sourceStore = sourceStore;
         this.destStore = destStore;
     }
@@ -403,6 +413,40 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         builder.append(" ContentID: ");
         builder.append(dupTask.getContentId());
         return builder.toString();
+    }
+
+    /**
+     * Allows for some simple testing of this class
+     */
+    public static void main(String[] args) throws Exception {
+        if(args.length != 6) {
+            throw new RuntimeException("6 arguments expected:\n " +
+                "spaceId\n contentId\n sourceProviderUsername\n " +
+                "sourceProviderPassword\n destProviderUsername\n " +
+                "destProviderPassword");
+        }
+
+        String spaceId = args[0];
+        String contentId = args[1];
+        String srcProvCredUser = args[2];
+        String srcProvCredPass = args[3];
+        String destProvCredUser = args[4];
+        String destProvCredPass = args[5];
+
+        DuplicationTask task = new DuplicationTask();
+        task.setAccount("Dup Testing");
+        task.setSpaceId(spaceId);
+        task.setContentId(contentId);
+
+        StorageProvider srcProvider =
+            new S3StorageProvider(srcProvCredUser, srcProvCredPass);
+        // Making an assumption here that the secondary provider is SDSC
+        StorageProvider destProvider =
+            new SDSCStorageProvider(destProvCredUser, destProvCredPass);
+
+        DuplicationTaskProcessor dupProcessor =
+            new DuplicationTaskProcessor(task, srcProvider, destProvider);
+        dupProcessor.execute();
     }
 
 }
