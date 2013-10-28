@@ -29,34 +29,34 @@ public class DuplicationTaskProcessorFactoryTest {
 
     @Test
     public void test() {
-        List<StorageProviderType[]> p = new LinkedList<>();
-        p.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        List<StorageProviderType[]> successfulProviderList = new LinkedList<>();
+        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.AMAZON_GLACIER });
-        p.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.SDSC });
-        p.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.RACKSPACE });
-        p.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.RACKSPACE });
         
         //successes
-        for(StorageProviderType[] a : p){
+        for(StorageProviderType[] a : successfulProviderList){
             testDuplicationTaskProcessorFactory(a[0], a[1], true);
         }
         
         //expected failures
-        List<StorageProviderType[]> f = new LinkedList<>();
-        f.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        List<StorageProviderType[]> failedProviderList = new LinkedList<>();
+        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.EMC });
-        f.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.HP });
-        f.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.IRODS });
-        f.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.MICROSOFT_AZURE });
-        f.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.UNKNOWN });
-        for(StorageProviderType[] a : f){
+        for(StorageProviderType[] a : failedProviderList){
             testDuplicationTaskProcessorFactory(a[0], a[1], false);
         }
  
@@ -87,10 +87,10 @@ public class DuplicationTaskProcessorFactoryTest {
         dupTask.setDestStoreId("1");
 
         Task task = dupTask.writeTask();
-        TaskProcessor p = null;
+        TaskProcessor processor = null;
         
         try { 
-            p = f.create(task);
+            processor = f.create(task);
             if(!expectedOutcome){
                 Assert.assertTrue(false);
             }
@@ -99,8 +99,8 @@ public class DuplicationTaskProcessorFactoryTest {
         }
 
         if(expectedOutcome){
-            Assert.assertNotNull(p);
-            Assert.assertEquals(DuplicationTaskProcessor.class, p.getClass());
+            Assert.assertNotNull(processor);
+            Assert.assertEquals(DuplicationTaskProcessor.class, processor.getClass());
         }
 
         EasyMock.verify(repo);
