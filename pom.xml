@@ -48,6 +48,7 @@
   <modules>
     <module>common</module>
     <module>workman</module>
+    <module>taskproducertool</module>
   </modules>
 
   <profiles>
@@ -240,7 +241,7 @@
         <artifactId>maven-war-plugin</artifactId>
         <version>2.3</version>
         <configuration>
-          <warName>${artifactId}-${version}</warName>
+          <warName>${project.artifactId}-${project.version}</warName>
           <webResources>
             <resource>
               <directory>src/main/resources</directory>

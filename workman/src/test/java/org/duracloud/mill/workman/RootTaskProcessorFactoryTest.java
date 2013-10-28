@@ -25,18 +25,18 @@ public class RootTaskProcessorFactoryTest {
      */
     @Test
     public void test() throws TaskNotSupportedException {
-        TaskProcessor p = EasyMock.createMock(TaskProcessor.class);
+        TaskProcessor taskProcessor = EasyMock.createMock(TaskProcessor.class);
         TaskProcessorFactory bad = EasyMock.createMock(TaskProcessorFactory.class);
         EasyMock.expect(bad.create(EasyMock.isA(Task.class))).andThrow(new TaskNotSupportedException("test"));
         TaskProcessorFactory good = EasyMock.createMock(TaskProcessorFactory.class);
-        EasyMock.expect(good.create(EasyMock.isA(Task.class))).andReturn(p);
-        EasyMock.replay(p, bad, good);
-        RootTaskProcessorFactory f = new RootTaskProcessorFactory();
-        f.addTaskProcessorFactory(bad);
-        f.addTaskProcessorFactory(good);
-        TaskProcessor p2 = f.create(new Task());
-        Assert.assertEquals(p,p2);
-        EasyMock.verify(p, bad, good);
+        EasyMock.expect(good.create(EasyMock.isA(Task.class))).andReturn(taskProcessor);
+        EasyMock.replay(taskProcessor, bad, good);
+        RootTaskProcessorFactory taskProcessorFactory = new RootTaskProcessorFactory();
+        taskProcessorFactory.addTaskProcessorFactory(bad);
+        taskProcessorFactory.addTaskProcessorFactory(good);
+        TaskProcessor p2 = taskProcessorFactory.create(new Task());
+        Assert.assertEquals(taskProcessor,p2);
+        EasyMock.verify(taskProcessor, bad, good);
     }
 
 }
