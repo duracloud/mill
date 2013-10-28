@@ -7,24 +7,18 @@
  */
 package org.duracloud.mill.workman;
 
-import java.io.File;
-
 import junit.framework.Assert;
 
-import org.duracloud.common.util.ApplicationConfig;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.noop.NoopTaskProcessor;
 import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * This class tests a round trip for processing Noop Tasks, from task creation
@@ -40,15 +34,8 @@ public class TestNoopProcessorRoundTripWithSQS {
     /**
      * @throws java.lang.Exception
      */
-    //@Before
+    @Before
     public void setUp() throws Exception {
-        File testCredFile = new File("../common/src/test/resources/test.credentials.json");
-        Assert.assertTrue(testCredFile.exists());
-        System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
-        System.setProperty("duracloud.sqsQueueUrl", "{your queue url}");
-        System.setProperty("aws.accessKeyId", "{your access key here}");
-        System.setProperty("aws.secretKey", "{your secret key}");
-        
         context = new AnnotationConfigApplicationContext(AppConfig.class);
         queue = (TaskQueue)context.getBean("taskQueue");
     }
@@ -61,10 +48,10 @@ public class TestNoopProcessorRoundTripWithSQS {
         context = null;
     }
 
-    //@Test
+    @Test
     public void test() {
         
-        int count = 10000;
+        int count = 10;
         for(int i = 0; i < count; i++){
             NoopTask noopTask = new NoopTask();
             noopTask.setAccount("foobar");
@@ -76,9 +63,8 @@ public class TestNoopProcessorRoundTripWithSQS {
             queue.put(task);
         }
 
-        sleep(60*60*1000);
-
-        
+        sleep(3000);
+        Assert.assertEquals(count, NoopTaskProcessor.getCompletedCount());
     }
 
     private void sleep(long ms) {

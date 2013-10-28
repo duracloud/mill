@@ -1,6 +1,11 @@
 package org.duracloud.mill.workman.spring;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -9,6 +14,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.duracloud.mill.workman.ConfigurationManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -45,29 +51,36 @@ public class AppDriver {
     
     private static Options getOptions() {
         Options options = new Options();
-        
-        Option credentialsFile = new Option("f",
-                                     "credentials-file",
-                                     true,
-                                     "A json file containing provider credential lists.");
-        credentialsFile.setArgs(1);
-        credentialsFile.setArgName("file");
-        credentialsFile.setRequired(true);
+        Option configFile = new Option("c", "config-file", true,
+                "A properties file containing configuration info");
+        configFile.setArgs(1);
+        configFile.setArgName("file");
+        options.addOption(configFile);
 
-        options.addOption(credentialsFile);
+//        Option credentialsFile = new Option("f",
+//                                     "credentials-file",
+//                                     true,
+//                                     "A json file containing provider credential lists.");
+//        credentialsFile.setArgs(1);
+//        credentialsFile.setArgName("file");
+//
+//        options.addOption(credentialsFile);
+        
         
         return options;
     }
     
     public static void main(String[] args) {
         CommandLine cmd = parseArgs(args);
-        String filePath = cmd.getOptionValue("f");
-        System.setProperty("credentials.file.path", filePath);
-        
-        if(!new File(filePath).exists()){
-            System.err.print("Specified file " +  filePath + " not found.");
-            die();
+
+        String configPath = cmd.getOptionValue("c");
+
+        if(configPath != null){
+            System.setProperty(
+                    ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
+                    configPath);
         }
+        
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);
     }
