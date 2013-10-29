@@ -7,7 +7,15 @@
  */
 package org.duracloud.mill.dup;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A set of data showing, for a single DuraCloud account, which spaces
@@ -22,12 +30,48 @@ import java.io.InputStream;
  */
 public class DuplicationPolicy {
 
-    public static DuplicationPolicy parse(InputStream policyStream) {
-        DuplicationPolicy policy = new DuplicationPolicy();
+    private static final ObjectMapper objMapper = new ObjectMapper();
 
-        // TODO implement unmarshalling of data
+    private Map<String, LinkedHashSet<DuplicationStorePolicy>> spaceDuplicationStorePolicies = new HashMap<>();
 
+    public Map<String, LinkedHashSet<DuplicationStorePolicy>> getSpaceDuplicationStorePolicies() {
+        return spaceDuplicationStorePolicies;
+    }
+
+    @JsonIgnore
+    public Set<String> getSpaces() {
+        return spaceDuplicationStorePolicies.keySet();
+    }
+
+    public Set<DuplicationStorePolicy> getDuplicationStorePolicies(String spaceId) {
+        return spaceDuplicationStorePolicies.get(spaceId);
+    }
+
+    /**
+     * Adds a DuplicationStorePolicy for the specified space ID.
+     * @param spaceId the space ID to add the DuplicationStorePolicy for
+     * @param dupStore the DuplicationStorePolicy
+     * @return true if added, false otherwise.  False will be returned if the
+     * Set<DuplicationStorePolicy> for the specified space already contains the
+     * dupStore.
+     */
+    public boolean addDuplicationStorePolicy(String spaceId, DuplicationStorePolicy dupStore) {
+        LinkedHashSet<DuplicationStorePolicy> dupStores = spaceDuplicationStorePolicies
+            .get(spaceId);
+        if(dupStores == null) {
+            dupStores = new LinkedHashSet<DuplicationStorePolicy>();
+            spaceDuplicationStorePolicies.put(spaceId, dupStores);
+        }
+        return dupStores.add(dupStore);
+    }
+
+    public static DuplicationPolicy unmarshall(InputStream policyStream) throws IOException {
+        DuplicationPolicy policy = objMapper.readValue(policyStream, DuplicationPolicy.class);
         return policy;
     }
 
+    public static String marshall(DuplicationPolicy duplicationPolicy)
+            throws IOException {
+        return objMapper.writeValueAsString(duplicationPolicy);
+    }
 }

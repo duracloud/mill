@@ -1,0 +1,20 @@
+{
+    "spaceDuplicationStorePolicies": {
+        "testSpace1": [
+            {
+                "srcStoreId":"1",
+                "destStoreId":"2"
+            },
+            {
+                "srcStoreId":"1",
+                "destStoreId":"3"
+            }
+        ],
+        "testSpace2": [
+            {
+                "srcStoreId":"1",
+                "destStoreId":"2"
+            }
+        ]
+    }
+}
