@@ -307,8 +307,10 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         try {
             // TODO: Allow for temp files to be stored in a preferred location
             localFile = File.createTempFile("content-item", ".tmp");
-            OutputStream outStream = FileUtils.openOutputStream(localFile);
-            IOUtils.copy(inStream, outStream);
+            try(OutputStream outStream = FileUtils.openOutputStream(localFile)) {
+                IOUtils.copy(inStream, outStream);
+            }
+            inStream.close();
         } catch(IOException e) {
             failTask("Unable to cache content file due to: " +
                      e.getMessage(), e);
@@ -330,19 +332,21 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                         StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
 
                     // Push to destination
-                    String destChecksum =
-                        destStore.addContent(spaceId,
-                                             contentId,
-                                             srcMimetype,
-                                             sourceProperties,
-                                             file.length(),
-                                             sourceChecksum,
-                                             FileUtils.openInputStream(file));
-                    if(sourceChecksum.equals(destChecksum)) {
-                        return "success";
-                    } else {
-                        throw new RuntimeException("Checksum in dest does not " +
-                                                   "match source");
+                    try(InputStream destStream = FileUtils.openInputStream(file)) {
+                        String destChecksum =
+                            destStore.addContent(spaceId,
+                                                 contentId,
+                                                 srcMimetype,
+                                                 sourceProperties,
+                                                 file.length(),
+                                                 sourceChecksum,
+                                                 destStream);
+                        if(sourceChecksum.equals(destChecksum)) {
+                            return "success";
+                        } else {
+                            throw new RuntimeException("Checksum in dest does not " +
+                                                       "match source");
+                        }
                     }
                 }
             });
@@ -433,6 +437,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         String destProvCredUser = args[4];
         String destProvCredPass = args[5];
 
+        System.out.println("Performing duplication check for content item " +
+                           contentId + " in space " + spaceId);
+
         DuplicationTask task = new DuplicationTask();
         task.setAccount("Dup Testing");
         task.setSpaceId(spaceId);
@@ -447,6 +454,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         DuplicationTaskProcessor dupProcessor =
             new DuplicationTaskProcessor(task, srcProvider, destProvider);
         dupProcessor.execute();
+
+        System.out.println("Duplication check completed successfully!");
     }
 
 }
