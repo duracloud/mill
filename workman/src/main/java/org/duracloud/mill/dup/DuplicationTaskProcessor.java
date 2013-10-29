@@ -23,6 +23,7 @@ import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,27 +80,34 @@ public class DuplicationTaskProcessor implements TaskProcessor {
             getContentProperties(destStore, spaceId, contentId);
 
         if(null != sourceProperties) { // Item exists in source provider
+            String sourceChecksum = sourceProperties.get(
+                StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+            cleanProperties(sourceProperties);
+
             if(null != destProperties) { // Item exists in dest provider
-                // Item exists in both providers, compare checksums
-                String srcChecksum = sourceProperties.get(
-                    StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
                 String destChecksum = destProperties.get(
                     StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+                cleanProperties(destProperties);
 
-                if(null != srcChecksum) {
-                    if(srcChecksum.equals(destChecksum)) {
+                // Item exists in both providers, compare checksums
+                if(null != sourceChecksum) {
+                    if(sourceChecksum.equals(destChecksum)) {
                         // Source and destination checksums are equal
                         // Check to see if content properties are consistent
                         boolean propertiesEqual =
                             compareProperties(sourceProperties, destProperties);
                         if(!propertiesEqual) {
                             // Properties are not equal, duplicate the props
-                            duplicateProperties(spaceId, contentId,
+                            duplicateProperties(spaceId,
+                                                contentId,
                                                 sourceProperties);
                         }
                     } else {
                         // Source and destination content is not equal, duplicate
-                        duplicateContent(spaceId, contentId, sourceProperties);
+                        duplicateContent(spaceId,
+                                         contentId,
+                                         sourceChecksum,
+                                         sourceProperties);
                     }
                 } else {
                     // Source item properties has no checksum!
@@ -107,7 +115,10 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                              "included no checksum!");
                 }
             } else { // Item in source but not in destination, duplicate
-                duplicateContent(spaceId, contentId, sourceProperties);
+                duplicateContent(spaceId,
+                                 contentId,
+                                 sourceChecksum,
+                                 sourceProperties);
             }
         } else { // Item does not exist in source, it must have been deleted
             if(null != destProperties) { // Item does exist in dest
@@ -164,7 +175,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
 
     /**
      * Determines if source and destination properties are consistent.
-     * This consistentcy check just ensures that all properties stored in the
+     * This consistency check just ensures that all properties stored in the
      * source are also stored in the destination. Additional properties in
      * the destination will not cause this check to fail.
      *
@@ -203,6 +214,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                                      final String contentId,
                                      final Map<String, String> sourceProperties)
         throws TaskExecutionFailedException {
+        log.info("Duplicating properties for " + contentId + " in space " +
+                 spaceId + " in account " + dupTask.getAccount());
         try {
             new Retrier().execute(new Retriable() {
                 @Override
@@ -220,6 +233,25 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         }
     }
 
+    private void cleanProperties(Map<String, String> props) {
+        if(props != null){
+            props.remove(StorageProvider.PROPERTIES_CONTENT_MD5);
+            props.remove(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+            props.remove(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
+            props.remove(StorageProvider.PROPERTIES_CONTENT_SIZE);
+            props.remove(HttpHeaders.CONTENT_LENGTH);
+            props.remove(HttpHeaders.CONTENT_TYPE);
+            props.remove(HttpHeaders.LAST_MODIFIED);
+            props.remove(HttpHeaders.DATE);
+            props.remove(HttpHeaders.ETAG);
+            props.remove(HttpHeaders.CONTENT_LENGTH.toLowerCase());
+            props.remove(HttpHeaders.CONTENT_TYPE.toLowerCase());
+            props.remove(HttpHeaders.LAST_MODIFIED.toLowerCase());
+            props.remove(HttpHeaders.DATE.toLowerCase());
+            props.remove(HttpHeaders.ETAG.toLowerCase());
+        }
+    }
+
     /**
      * Copies a content item from the source store to the destination store
      *
@@ -228,11 +260,12 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      */
     private void duplicateContent(final String spaceId,
                                   final String contentId,
+                                  final String sourceChecksum,
                                   final Map<String, String> sourceProperties)
         throws TaskExecutionFailedException {
+        log.info("Duplicating" + contentId + " in space " + spaceId +
+                 " in account " + dupTask.getAccount());
 
-        String srcChecksum = sourceProperties.get(
-            StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
         ChecksumUtil checksumUtil = new ChecksumUtil(MD5);
         boolean localChecksumMatch = false;
         int attempt = 0;
@@ -248,7 +281,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
             // Check content
             try {
                 String localChecksum = checksumUtil.generateChecksum(localFile);
-                if(srcChecksum.equals(localChecksum)) {
+                if(sourceChecksum.equals(localChecksum)) {
                     localChecksumMatch = true;
                 } else {
                     cleanup(localFile);
@@ -264,13 +297,13 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         if(localChecksumMatch) {
             putDestinationContent(spaceId,
                                   contentId,
-                                  srcChecksum,
+                                  sourceChecksum,
                                   sourceProperties,
                                   localFile);
         } else {
             cleanup(localFile);
             failTask("Unable to retrieve content which matches the expected " +
-                     "source checksum of: " + srcChecksum);
+                     "source checksum of: " + sourceChecksum);
         }
         cleanup(localFile);
     }
@@ -456,6 +489,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         dupProcessor.execute();
 
         System.out.println("Duplication check completed successfully!");
+        System.exit(0);
     }
 
 }

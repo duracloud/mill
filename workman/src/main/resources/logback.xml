@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<configuration debug="true" scan="true">
+<configuration debug="false" scan="false">
   <jmxConfigurator/>
   <property name="LOG_FILENAME" value="${duracloud.home}/logs/duracloud-mill.log" />
 
