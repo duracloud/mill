@@ -28,6 +28,7 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 public class TestSimpleDBCredentialsRepo {
     private AmazonSimpleDBClient client;
     private SimpleDBCredentialsRepo repo;
+    private String testSubdomain = "test";
 
     @Before
     public void setup() {
@@ -41,7 +42,6 @@ public class TestSimpleDBCredentialsRepo {
 
     @Test
     public void test() throws AccountCredentialsNotFoundException {
-        String testSubdomain = "test";
 
         AccountCredentials accountCreds = repo
                 .getAccoundCredentialsBySubdomain(testSubdomain);
@@ -54,6 +54,23 @@ public class TestSimpleDBCredentialsRepo {
         Assert.assertTrue(creds.size() > 0);
     }
 
+    @Test
+    public void testCache() throws AccountCredentialsNotFoundException {
+
+        repo.getAccoundCredentialsBySubdomain(testSubdomain);
+        
+        long time = System.currentTimeMillis();
+        
+        for(int i = 0; i < 100; i++){
+            repo.getAccoundCredentialsBySubdomain(testSubdomain);
+        }
+        
+        Assert.assertTrue(System.currentTimeMillis()-time < 2000);
+        
+        
+    }
+
+    
     @Test
     public void testAccountNotFound() {
         String testSubdomain = "testx";

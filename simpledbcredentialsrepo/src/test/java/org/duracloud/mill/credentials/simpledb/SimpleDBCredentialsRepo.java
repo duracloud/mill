@@ -7,8 +7,10 @@
  */
 package org.duracloud.mill.credentials.simpledb;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
@@ -25,13 +27,14 @@ import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
 
 /**
- * A simpledb-based implementation of the <code>CredentialsRepo</code>
+ * A simpledb-based implementation of the <code>CredentialsRepo</code>. Once it has been
+ * read from simpledb all account information is cached indefinitely.
  * @author Daniel Bernstein 
  *         Date: Oct 29, 2013
  */
 public class SimpleDBCredentialsRepo implements CredentialRepo {
     private AmazonSimpleDBClient client;
-
+    private Map<String,AccountCredentials> cache = new HashMap<>();
     /**
      * @param client
      */
@@ -48,6 +51,11 @@ public class SimpleDBCredentialsRepo implements CredentialRepo {
     @Override
     public AccountCredentials getAccoundCredentialsBySubdomain(String subdomain)
             throws AccountCredentialsNotFoundException {
+        AccountCredentials accountCredentials = cache.get(subdomain);
+        if(accountCredentials != null){
+            return accountCredentials;
+        }
+        
         //get server details id
         SelectResult result = this.client.select(new SelectRequest("select SERVER_DETAILS_ID from DURACLOUD_ACCOUNTS where SUBDOMAIN = '"+subdomain+"'"));
         List<Item> items = result.getItems();
@@ -74,11 +82,13 @@ public class SimpleDBCredentialsRepo implements CredentialRepo {
         for(String secondaryId : secondaryIds){
             creds.add(getProviderCredentials(secondaryId));
         }
+        
         //build account credentials object.
-        AccountCredentials accountCreds = new AccountCredentials();
-        accountCreds.setSProviderCredentials(creds);
-        accountCreds.setSubDomain(subdomain);
-        return accountCreds;
+        accountCredentials = new AccountCredentials();
+        accountCredentials.setSProviderCredentials(creds);
+        accountCredentials.setSubDomain(subdomain);
+        this.cache.put(subdomain,  accountCredentials);
+        return accountCredentials;
     }
     
 
