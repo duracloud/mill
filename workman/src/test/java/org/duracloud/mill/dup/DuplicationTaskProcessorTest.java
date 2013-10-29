@@ -115,7 +115,12 @@ public class DuplicationTaskProcessorTest {
         String fourKey = "four";
         String fourVal = "yellow";
         destProps.put(fourKey, fourVal);
-        assertEquals("Extra props in destination should be true (equal)",
+        assertEquals("Extra props in destination should be false (not equal)",
+                     false,
+                     taskProcessor.compareProperties(srcProps, destProps));
+
+        srcProps.put(fourKey, fourVal);
+        assertEquals("Same props in both should be true (equal)",
                      true,
                      taskProcessor.compareProperties(srcProps, destProps));
 

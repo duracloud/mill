@@ -174,33 +174,15 @@ public class DuplicationTaskProcessor implements TaskProcessor {
     }
 
     /**
-     * Determines if source and destination properties are consistent.
-     * This consistency check just ensures that all properties stored in the
-     * source are also stored in the destination. Additional properties in
-     * the destination will not cause this check to fail.
+     * Determines if source and destination properties are equal.
      *
      * @param sourceProps properties from the source content item
      * @param destProps properties from the destination content item
-     * @return true if all properties from source are available in dest
+     * @return true if all properties match
      */
     protected boolean compareProperties(Map<String, String> sourceProps,
                                         Map<String, String> destProps) {
-        for(String sourceKey : sourceProps.keySet()) { // Check all source keys
-            if(destProps.containsKey(sourceKey)) {
-                String sourceVal = sourceProps.get(sourceKey);
-                String destVal = destProps.get(sourceKey);
-                if(null == sourceVal) {
-                    if(null != destVal) {
-                        return false; // Source value is empty and dest is not
-                    }
-                } else if(!sourceVal.equals(destVal)) {
-                    return false; // Source and dest values are not equal
-                }
-            } else {
-                return false; // Dest does not include key
-            }
-        }
-        return true; // All items in source match in destination
+        return sourceProps.equals(destProps);
     }
 
     /**
@@ -263,7 +245,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                                   final String sourceChecksum,
                                   final Map<String, String> sourceProperties)
         throws TaskExecutionFailedException {
-        log.info("Duplicating" + contentId + " in space " + spaceId +
+        log.info("Duplicating " + contentId + " in space " + spaceId +
                  " in account " + dupTask.getAccount());
 
         ChecksumUtil checksumUtil = new ChecksumUtil(MD5);
@@ -408,6 +390,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
     private void duplicateDeletion(final String spaceId,
                                    final String contentId)
         throws TaskExecutionFailedException {
+        log.info("Duplicating deletion of " + contentId + " in space " + spaceId +
+                 " in account " + dupTask.getAccount());
         try {
             new Retrier().execute(new Retriable() {
                 @Override
