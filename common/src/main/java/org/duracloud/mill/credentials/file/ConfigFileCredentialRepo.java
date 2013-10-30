@@ -14,7 +14,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
-import org.duracloud.mill.credentials.CredentialRepoBase;
+import org.duracloud.mill.credentials.CredentialsRepoBase;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 
 /**
  * A simple implementation of the Credential Repo based on a local configuration file.
@@ -22,7 +24,7 @@ import org.duracloud.mill.credentials.CredentialRepoBase;
  * @author Daniel Bernstein
  * 
  */
-public class ConfigFileCredentialRepo extends CredentialRepoBase {
+public class ConfigFileCredentialRepo extends CredentialsRepoBase {
     private static final String CREDENTIALS_FILE_PATH = "credentials.file.path";
     private List<AccountCredentials> accountList;
 
@@ -53,15 +55,31 @@ public class ConfigFileCredentialRepo extends CredentialRepoBase {
 
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.credentials.CredentialRepo#getStorageProviderCredentials(java.lang.String, java.lang.String)
+     */
     @Override
-    public AccountCredentials getAccoundCredentialsBySubdomain(String subdomain) throws AccountCredentialsNotFoundException {
+    public StorageProviderCredentials getStorageProviderCredentials(
+            String subdomain, String storeId)
+            throws AccountCredentialsNotFoundException,
+            StorageProviderCredentialsNotFoundException {
+
         for(AccountCredentials accountCreds : accountList){
             if(accountCreds.getSubdomain().equals(subdomain)){
-                return accountCreds;
+                for(StorageProviderCredentials storeCred : accountCreds.getProviderCredentials()){
+                    if(storeCred.getProviderId().equals(storeId)){
+                        return storeCred;
+                    }
+                }
+                
+                throw new StorageProviderCredentialsNotFoundException(
+                        "storeId=" + storeId + " not found for subdomain "
+                                + subdomain);
             }
+
         }
         
         throw new AccountCredentialsNotFoundException("No account found with subdomain \""+ subdomain + "\".");
-        
     }
 }

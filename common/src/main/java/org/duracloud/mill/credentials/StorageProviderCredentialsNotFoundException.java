@@ -8,16 +8,16 @@
 package org.duracloud.mill.credentials;
 
 /**
- * An exception indicating an account was not found.
  * @author Daniel Bernstein
- *	       Date: Oct 28, 2013
+ *	       Date: Oct 30, 2013
  */
-public class AccountCredentialsNotFoundException extends
+public class StorageProviderCredentialsNotFoundException extends
         CredentialsRepoException {
 
     private static final long serialVersionUID = 1L;
 
-    public AccountCredentialsNotFoundException(String message) {
+    public StorageProviderCredentialsNotFoundException(String message) {
         super(message);
     }
+
 }

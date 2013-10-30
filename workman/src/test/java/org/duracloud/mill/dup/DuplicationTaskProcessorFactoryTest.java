@@ -13,8 +13,9 @@ import java.util.List;
 
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
-import org.duracloud.mill.credentials.CredentialRepo;
-import org.duracloud.mill.credentials.ProviderCredentials;
+import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.CredentialsRepoException;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.domain.DuplicationTask;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskProcessor;
@@ -29,7 +30,7 @@ import org.junit.Test;
 public class DuplicationTaskProcessorFactoryTest {
 
     @Test
-    public void test() throws AccountCredentialsNotFoundException {
+    public void test() throws CredentialsRepoException {
         List<StorageProviderType[]> successfulProviderList = new LinkedList<>();
         successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.AMAZON_GLACIER });
@@ -65,18 +66,25 @@ public class DuplicationTaskProcessorFactoryTest {
     
     private void testDuplicationTaskProcessorFactory(
             StorageProviderType source, StorageProviderType destination,
-            boolean expectedOutcome) throws AccountCredentialsNotFoundException {
+            boolean expectedOutcome) throws CredentialsRepoException {
 
-        CredentialRepo repo = EasyMock.createMock(CredentialRepo.class);
+        CredentialsRepo repo = EasyMock.createMock(CredentialsRepo.class);
 
         AccountCredentials a = new AccountCredentials();
-        a.setSProviderCredentials(Arrays.asList(new ProviderCredentials[] {
-                new ProviderCredentials("0", "test", "test", source),
-                new ProviderCredentials("1", "test", "test", destination) }));
+        a.setSProviderCredentials(Arrays.asList(new StorageProviderCredentials[] {
+                new StorageProviderCredentials("0", "test", "test", source),
+                new StorageProviderCredentials("1", "test", "test", destination) }));
 
         EasyMock.expect(
-                repo.getAccoundCredentialsBySubdomain(EasyMock
-                        .isA(String.class))).andReturn(a);
+                repo.getStorageProviderCredentials(EasyMock.isA(String.class),
+                        EasyMock.isA(String.class)))
+                .andReturn(
+                        new StorageProviderCredentials("0", "test", "test",
+                                source))
+                .andReturn(
+                        new StorageProviderCredentials("1", "test", "test",
+                                destination));
+
         EasyMock.replay(repo);
 
         DuplicationTaskProcessorFactory f = new DuplicationTaskProcessorFactory(

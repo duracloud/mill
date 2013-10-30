@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.noop;
 
-import org.duracloud.mill.credentials.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 public class NoopConfig {
     @Bean
     public NoopTaskProcessorFactory noopTaskProcessorFactory(
-            CredentialRepo repo, RootTaskProcessorFactory root) {
+            CredentialsRepo repo, RootTaskProcessorFactory root) {
         NoopTaskProcessorFactory f = new NoopTaskProcessorFactory(
                 repo);
         root.addTaskProcessorFactory(f);

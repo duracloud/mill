@@ -7,12 +7,10 @@
  */
 package org.duracloud.mill.credentials.simpledb;
 
-import java.util.List;
-
 import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
-import org.duracloud.mill.credentials.ProviderCredentials;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,41 +26,48 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 public class TestSimpleDBCredentialsRepo {
     private AmazonSimpleDBClient client;
     private SimpleDBCredentialsRepo repo;
-    private String testSubdomain = "test";
-
+    private String testSubdomain;
+    private String testStoreId;
+   
     @Before
     public void setup() {
+
         ConfigurationManager configurationManager = new ConfigurationManager();
         configurationManager.init();
 
+        testSubdomain = System.getProperty("testSubdomain");
+        if(testSubdomain == null){
+            throw new RuntimeException("testSubdomain parameter is null: add to configuration file or use jvm arg -DtestSubdomain={subdomain}");
+        }
+        testStoreId =  System.getProperty("testStoreId");
+        if(testStoreId == null){
+            throw new RuntimeException("testStoreId parameter is null: add to configuration file or use jvm arg -DtestStoreId={storeId}");
+        }
+ 
         client = new AmazonSimpleDBClient();
         repo = new SimpleDBCredentialsRepo(client);
 
     }
 
     @Test
-    public void test() throws AccountCredentialsNotFoundException {
+    public void test() throws AccountCredentialsNotFoundException,StorageProviderCredentialsNotFoundException {
 
-        AccountCredentials accountCreds = repo
-                .getAccoundCredentialsBySubdomain(testSubdomain);
+        StorageProviderCredentials accountCreds = repo
+                .getStorageProviderCredentials(testSubdomain, testStoreId);
 
         Assert.assertNotNull(accountCreds);
 
-        List<ProviderCredentials> creds = accountCreds.getProviderCredentials();
-
-        Assert.assertNotNull(creds);
-        Assert.assertTrue(creds.size() > 0);
     }
 
     @Test
-    public void testCache() throws AccountCredentialsNotFoundException {
+    public void testCache() throws AccountCredentialsNotFoundException, StorageProviderCredentialsNotFoundException {
 
-        repo.getAccoundCredentialsBySubdomain(testSubdomain);
+        repo.getStorageProviderCredentials(testSubdomain, testStoreId);
         
         long time = System.currentTimeMillis();
         
         for(int i = 0; i < 100; i++){
-            repo.getAccoundCredentialsBySubdomain(testSubdomain);
+            repo.getStorageProviderCredentials(testSubdomain, testStoreId);
         }
         
         Assert.assertTrue(System.currentTimeMillis()-time < 2000);
@@ -76,11 +81,13 @@ public class TestSimpleDBCredentialsRepo {
         String testSubdomain = "testx";
 
         try {
-            repo.getAccoundCredentialsBySubdomain(testSubdomain);
+            repo.getStorageProviderCredentials(testSubdomain, testStoreId);
             Assert.assertTrue(false);
 
         } catch (AccountCredentialsNotFoundException e) {
             Assert.assertTrue(true);
+        } catch (StorageProviderCredentialsNotFoundException e) {
+            Assert.assertTrue(false);
         }
 
     }

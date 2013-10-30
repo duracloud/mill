@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman.spring;
 
-import org.duracloud.mill.credentials.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
@@ -34,7 +34,7 @@ public class AppConfig {
     }
 
     @Bean
-    public CredentialRepo credentialRepo(ConfigurationManager configurationManager) {
+    public CredentialsRepo credentialRepo(ConfigurationManager configurationManager) {
         return new ConfigFileCredentialRepo();
     }
 

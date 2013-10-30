@@ -14,13 +14,13 @@ import org.duracloud.storage.domain.StorageProviderType;
  * 
  * @author Daniel Bernstein
  */
-public class ProviderCredentials {
+public class StorageProviderCredentials {
     private String providerId;
     private String accessKey;
     private String secretKey;
     private StorageProviderType providerType;
 
-    public ProviderCredentials(){
+    public StorageProviderCredentials(){
         
     }
     /**
@@ -29,7 +29,7 @@ public class ProviderCredentials {
      * @param secretKey
      * @param providerType
      */
-    public ProviderCredentials(String providerId, String accessKey,
+    public StorageProviderCredentials(String providerId, String accessKey,
             String secretKey, StorageProviderType providerType) {
         super();
         this.providerId = providerId;

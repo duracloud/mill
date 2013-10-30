@@ -16,18 +16,7 @@ import java.util.List;
  */
 public class AccountCredentials {
     private String subDomain;
-    private List<ProviderCredentials> providerCredentials;
-
-    
-    public ProviderCredentials getProviderCredentials(String providerId){
-        for(ProviderCredentials c : providerCredentials){
-            if(providerId.equals(c.getProviderId())){
-                return c;
-            }
-        }
-        
-        throw new RuntimeException("provider with providerId=" + providerId + " not found.");
-    }
+    private List<StorageProviderCredentials> providerCredentials;
 
     public void setSubDomain(String subDomain) {
         this.subDomain = subDomain;
@@ -37,11 +26,11 @@ public class AccountCredentials {
         return subDomain;
     }
 
-    public List<ProviderCredentials> getProviderCredentials() {
+    public List<StorageProviderCredentials> getProviderCredentials() {
         return providerCredentials;
     }
 
-    public void setSProviderCredentials(List<ProviderCredentials> storageProviderCredentials) {
+    public void setSProviderCredentials(List<StorageProviderCredentials> storageProviderCredentials) {
         this.providerCredentials = storageProviderCredentials;
     }
 

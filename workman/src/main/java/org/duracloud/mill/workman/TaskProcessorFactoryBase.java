@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.credentials.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.domain.Task;
 
 /**
@@ -19,9 +19,9 @@ import org.duracloud.mill.domain.Task;
  */
 public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
-    private CredentialRepo credentialRepo;
+    private CredentialsRepo credentialRepo;
 
-    public TaskProcessorFactoryBase(CredentialRepo credentialRepo) {
+    public TaskProcessorFactoryBase(CredentialsRepo credentialRepo) {
         this.credentialRepo = credentialRepo;
     }
 
@@ -35,7 +35,7 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
         return createImpl(task);
     }
 
-    protected CredentialRepo getCredentialRepo() {
+    protected CredentialsRepo getCredentialRepo() {
         return credentialRepo;
     }
 

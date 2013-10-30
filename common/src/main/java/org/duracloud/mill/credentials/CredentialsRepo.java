@@ -13,15 +13,16 @@ package org.duracloud.mill.credentials;
  * @author Daniel Bernstein
  *
  */
-public interface CredentialRepo {
+public interface CredentialsRepo {
     /**
      * Returns a set of credentials associated with a subdomain.
      * 
-     * @param accountId
+     * @param subdomain The subdomain of the DuraCloud account.
+     * @param storeId The storage provider id
      * @return
-     * @throws AccountCredentialsNotFoundException
+     * @throws CredentialsRepoException
      */
-    AccountCredentials getAccoundCredentialsBySubdomain(String accountId)
-            throws AccountCredentialsNotFoundException;
+    StorageProviderCredentials getStorageProviderCredentials(String subdomain,
+            String storeId) throws CredentialsRepoException;
     
 }

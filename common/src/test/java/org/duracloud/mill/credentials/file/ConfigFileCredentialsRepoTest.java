@@ -9,14 +9,13 @@ package org.duracloud.mill.credentials.file;
 
 import java.io.File;
 
-import junit.framework.Assert;
-
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
-import org.duracloud.mill.credentials.CredentialRepo;
-import org.duracloud.mill.credentials.ProviderCredentials;
-import org.duracloud.mill.credentials.AccountCredentials;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
+import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.CredentialsRepoException;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,8 +24,8 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *
  */
-public class ConfigFileCredentialRepoTest {
-    private CredentialRepo repo;
+public class ConfigFileCredentialsRepoTest {
+    private CredentialsRepo repo;
     
     @Before
     public void setUp() throws Exception {
@@ -42,10 +41,8 @@ public class ConfigFileCredentialRepoTest {
 
     @Test
     public void test() throws Exception  {
-        AccountCredentials group = repo.getAccoundCredentialsBySubdomain("test");
-        Assert.assertNotNull(group);
-        Assert.assertNotNull(group.getSubdomain());
-        ProviderCredentials storage = group.getProviderCredentials("0");
+        StorageProviderCredentials storage = repo.getStorageProviderCredentials("test", "0");
+        Assert.assertNotNull(storage);
         Assert.assertNotNull(storage);
         Assert.assertNotNull(storage.getAccessKey());
         Assert.assertNotNull(storage.getSecretKey());
@@ -53,12 +50,22 @@ public class ConfigFileCredentialRepoTest {
     }
     
     @Test 
-    public void testNotFound(){
+    public void testAccountNotFound(){
         try {
-            repo.getAccoundCredentialsBySubdomain("nonExistentSubDomain");
+            repo.getStorageProviderCredentials("nonExistentSubDomain", "0");
             Assert.assertTrue(false);
-        } catch (AccountCredentialsNotFoundException e) {
-            Assert.assertTrue(true);
+        } catch (CredentialsRepoException e) {
+            Assert.assertTrue(e instanceof AccountCredentialsNotFoundException);
+        }
+    }
+
+    @Test 
+    public void testProviderNotFound(){
+        try {
+            repo.getStorageProviderCredentials("test", "xxx");
+            Assert.assertTrue(false);
+        } catch (CredentialsRepoException e) {
+            Assert.assertTrue(e instanceof StorageProviderCredentialsNotFoundException);
         }
     }
 

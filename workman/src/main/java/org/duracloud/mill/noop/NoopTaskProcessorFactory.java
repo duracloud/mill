@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.noop;
 
-import org.duracloud.mill.credentials.CredentialRepo;
+import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
@@ -22,7 +22,7 @@ public class NoopTaskProcessorFactory extends TaskProcessorFactoryBase {
     /**
      * @param credentialRepo
      */
-    public NoopTaskProcessorFactory(CredentialRepo credentialRepo) {
+    public NoopTaskProcessorFactory(CredentialsRepo credentialRepo) {
         super(credentialRepo);
     }
 

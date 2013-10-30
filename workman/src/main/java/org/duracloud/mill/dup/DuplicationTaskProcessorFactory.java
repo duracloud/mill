@@ -8,14 +8,13 @@
 package org.duracloud.mill.dup;
 
 import org.duracloud.glacierstorage.GlacierStorageProvider;
-import org.duracloud.mill.credentials.AccountCredentials;
-import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
-import org.duracloud.mill.credentials.CredentialRepo;
-import org.duracloud.mill.credentials.ProviderCredentials;
+import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.CredentialsRepoException;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.domain.DuplicationTask;
 import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 import org.duracloud.rackspacestorage.RackspaceStorageProvider;
 import org.duracloud.s3storage.S3StorageProvider;
@@ -31,7 +30,7 @@ import org.duracloud.storage.provider.StorageProvider;
  */
 public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
 
-    public DuplicationTaskProcessorFactory(CredentialRepo repo){
+    public DuplicationTaskProcessorFactory(CredentialsRepo repo){
         super(repo);
     }
     
@@ -48,15 +47,12 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
         String subdomain = dtask.getAccount();
 
         try {
-            AccountCredentials account = getCredentialRepo().getAccoundCredentialsBySubdomain(
-                    subdomain);
-            account.getProviderCredentials(dtask.getSourceStoreId());
             StorageProvider sourceStore = createStorageProvider(
-                    dtask.getSourceStoreId(), account);
+                    dtask.getSourceStoreId(), subdomain);
             StorageProvider destStore = createStorageProvider(
-                    dtask.getDestStoreId(), account);
+                    dtask.getDestStoreId(), subdomain);
             return new DuplicationTaskProcessor(task, sourceStore, destStore);
-        } catch (AccountCredentialsNotFoundException e) {
+        } catch (Exception e) {
             throw new TaskProcessorCreationFailedException(
                     "failed to create task: unable to locate credentials for subdomain: "
                             + subdomain);
@@ -69,20 +65,31 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
      * @return
      */
     private StorageProvider createStorageProvider(String providerId,
-            AccountCredentials account) {
+            String subdomain) {
         
-        ProviderCredentials c = account.getProviderCredentials(providerId);
-        StorageProviderType ptype = c.getProviderType();
-        
-        if(ptype.equals(StorageProviderType.AMAZON_S3)){
-            return new S3StorageProvider(c.getAccessKey(),c.getSecretKey());
-        }else if(ptype.equals(StorageProviderType.SDSC)){
-            return new SDSCStorageProvider(c.getAccessKey(),c.getSecretKey());
-        }else if(ptype.equals(StorageProviderType.AMAZON_GLACIER)){
-            return new GlacierStorageProvider(c.getAccessKey(),c.getSecretKey());
-        }else if(ptype.equals(StorageProviderType.RACKSPACE)){
-            return new RackspaceStorageProvider(c.getAccessKey(),c.getSecretKey());
+        StorageProviderCredentials c;
+        try {
+            c = getCredentialRepo().getStorageProviderCredentials(subdomain,
+                    providerId);
+
+            StorageProviderType ptype = c.getProviderType();
+
+            if (ptype.equals(StorageProviderType.AMAZON_S3)) {
+                return new S3StorageProvider(c.getAccessKey(), c.getSecretKey());
+            } else if (ptype.equals(StorageProviderType.SDSC)) {
+                return new SDSCStorageProvider(c.getAccessKey(),
+                        c.getSecretKey());
+            } else if (ptype.equals(StorageProviderType.AMAZON_GLACIER)) {
+                return new GlacierStorageProvider(c.getAccessKey(),
+                        c.getSecretKey());
+            } else if (ptype.equals(StorageProviderType.RACKSPACE)) {
+                return new RackspaceStorageProvider(c.getAccessKey(),
+                        c.getSecretKey());
+            }
+            throw new RuntimeException(ptype
+                    + " is not a supported storage provider type");
+        } catch (CredentialsRepoException e) {
+            throw new RuntimeException(e);
         }
-        throw new RuntimeException(ptype + " is not a supported storage provider type");
     }    
 }
