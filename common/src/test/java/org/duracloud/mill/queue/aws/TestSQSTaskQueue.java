@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
@@ -46,21 +48,40 @@ public class TestSQSTaskQueue {
 
     @Test
     public void putTake10() throws Exception {
-        putThenTake(10);
+        putThenTake(10, false);
     }
 
     @Test
     public void putTake100() throws Exception {
-        putThenTake(100);
+        putThenTake(100, false);
     }
 
-    public void putThenTake(int numTasks) throws Exception {
+    @Test
+    public void putBatchTake18() throws Exception {
+        putThenTake(18, true);
+    }
+
+    @Test
+    public void putBatchTake97() throws Exception {
+        putThenTake(97, true);
+    }
+
+    public void putThenTake(int numTasks, boolean batchLoad) throws Exception {
         Integer[] taskNums = new Integer[numTasks];
         int emptyArrHashcode = Arrays.hashCode(taskNums);
 
-        for(int i=1; i<=numTasks; i++) {
-            queue.put(createTask(i));
-            taskNums[i-1] = i;
+        if(batchLoad) {
+            Set<Task> tasks = new HashSet<>();
+            for(int i=1; i<=numTasks; i++) {
+                tasks.add(createTask(i));
+                taskNums[i-1] = i;
+            }
+            queue.put(tasks);
+        } else {
+            for(int i=1; i<=numTasks; i++) {
+                queue.put(createTask(i));
+                taskNums[i-1] = i;
+            }
         }
 
         assertThat(emptyArrHashcode, not(equalTo(Arrays.hashCode(taskNums))));

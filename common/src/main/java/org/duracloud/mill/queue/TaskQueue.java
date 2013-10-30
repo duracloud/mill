@@ -9,6 +9,8 @@ package org.duracloud.mill.queue;
 
 import org.duracloud.mill.domain.Task;
 
+import java.util.Set;
+
 /**
  * 
  * @author Daniel Bernstein
@@ -22,6 +24,20 @@ public interface TaskQueue {
      * @param task
      */
     public void put(Task task);
+
+    /**
+     * puts multiple tasks on the queue using batch puts if the queue
+     * implementation supports batch puts
+     * @param tasks
+     */
+    public void put(Task... tasks);
+
+    /**
+     * puts multiple tasks on the queue using batch puts if the queue
+     * implementation supports batch puts
+     * @param tasks
+     */
+    public void put(Set<Task> tasks);
 
     /**
      * Blocks until a task is available

@@ -18,6 +18,8 @@ import com.amazonaws.services.sqs.model.QueueAttributeName;
 import com.amazonaws.services.sqs.model.ReceiptHandleIsInvalidException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
+import com.amazonaws.services.sqs.model.SendMessageBatchRequest;
+import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.duracloud.mill.domain.Task;
@@ -30,7 +32,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * SQSTaskQueue acts as the interface for interacting with an Amazon
@@ -121,7 +127,58 @@ public class SQSTaskQueue implements TaskQueue {
         sqsClient.sendMessage(new SendMessageRequest(queueUrl, msgBody));
         log.info("SQS message successfully placed {} on queue - queue: {}",
                 task, queueName);
-   
+    }
+
+    /**
+     * Convenience method that calls put(Set<Task>)
+     * @param tasks
+     */
+    @Override
+    public void put(Task... tasks) {
+        Set<Task> taskSet = new HashSet<>();
+        taskSet.addAll(Arrays.asList(tasks));
+        this.put(taskSet);
+    }
+
+    /**
+     * Puts multiple tasks on the queue using batch puts.  The tasks argument
+     * can contain more than 10 Tasks, in that case there will be multiple SQS
+     * batch send requests made each containing up to 10 messages.
+     * @param tasks
+     */
+    @Override
+    public void put(Set<Task> tasks) {
+        String msgBody = null;
+        SendMessageBatchRequestEntry msgEntry = null;
+        Set<SendMessageBatchRequestEntry> msgEntries = new HashSet<>();
+        for(Task task: tasks) {
+            msgBody = unmarshallTask(task);
+            msgEntry = new SendMessageBatchRequestEntry()
+                .withMessageBody(msgBody)
+                .withId(msgEntries.size()+"");  // must set unique ID for each msg in the batch request
+            msgEntries.add(msgEntry);
+
+            // Can only send batch of max 10 messages in a SQS queue request
+            if(msgEntries.size() == 10) {
+                this.sendBatchMessages(msgEntries);
+                msgEntries.clear();  // clear the already sent messages
+            }
+        }
+
+        // After for loop check to see if there are msgs in msgEntries that
+        // haven't been sent yet because the size never reached 10.
+        if(! msgEntries.isEmpty()) {
+            this.sendBatchMessages(msgEntries);
+        }
+    }
+
+    private void sendBatchMessages(Set<SendMessageBatchRequestEntry> msgEntries) {
+        SendMessageBatchRequest sendMessageBatchRequest = new SendMessageBatchRequest()
+            .withQueueUrl(queueUrl)
+            .withEntries(msgEntries);
+        sqsClient.sendMessageBatch(sendMessageBatchRequest);
+        log.info("{} SQS messages successfully placed on queue - queue: {}",
+                 msgEntries.size(), queueName);
     }
 
     @Override

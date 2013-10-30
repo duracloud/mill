@@ -7,10 +7,13 @@
  */
 package org.duracloud.mill.queue.local;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.duracloud.mill.domain.Task;
@@ -45,6 +48,18 @@ public class LocalTaskQueue implements TaskQueue {
     @Override
     public synchronized void put(Task task) {
         queue.add(task);
+    }
+
+    @Override
+    public synchronized void put(Task... tasks) {
+        Set<Task> taskSet = new HashSet<>();
+        taskSet.addAll(Arrays.asList(tasks));
+        this.put(taskSet);
+    }
+
+    @Override
+    public synchronized void put(Set<Task> tasks) {
+        queue.addAll(tasks);
     }
 
     /* (non-Javadoc)
