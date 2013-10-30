@@ -7,7 +7,11 @@
  */
 package org.duracloud.mill.workman;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.easymock.EasyMock;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -18,26 +22,43 @@ import org.junit.Test;
 public class TaskWorkerManagerTest {
 
     @Test
-    public void test() throws Exception {
-
+    public void testInit() throws Exception {
+        
+        final CountDownLatch latch = new CountDownLatch(4);
+        
         TaskWorkerFactory factory = EasyMock
                 .createMock(TaskWorkerFactory.class);
 
         EasyMock.expect(factory.create()).andReturn(new TaskWorker() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException ex) {
-                }
-            }
-        }).times(9);
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    latch.countDown();
 
+            }
+        }).times(5,6);
+
+        EasyMock.replay(factory);
+        
         TaskWorkerManager manager = new TaskWorkerManager(factory);
 
-        manager.setMaxPoolSize(4);
+        //set max workers
+        System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY, "4");
 
-        Thread.sleep(3000);
+        manager.init();
 
+        Assert.assertEquals(4, manager.getMaxPoolSize());
+
+        Assert.assertTrue(latch.await(2000, TimeUnit.MILLISECONDS));
+        
+        manager.destroy();
+        
+        EasyMock.verify(factory);
+        
     }
 }

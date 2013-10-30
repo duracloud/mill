@@ -8,6 +8,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.workman.TaskWorkerManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -50,6 +51,19 @@ public class AppDriver {
         configFile.setArgName("file");
         options.addOption(configFile);
 
+        Option maxWorkers = new Option(
+                "w",
+                "max-workers",
+                true,
+                "The max number of worker threads that can run at a time. " +
+                "The default value is " + TaskWorkerManager.DEFAULT_POOL_SIZE + ". " + 
+                "Setting with value will override the "
+                        + TaskWorkerManager.MAX_WORKER_PROPERTY_KEY
+                        + " if set in the configuration file.");
+        maxWorkers.setArgs(1);
+        maxWorkers.setArgName("count");
+        options.addOption(maxWorkers);
+
         return options;
     }
     
@@ -62,6 +76,13 @@ public class AppDriver {
             System.setProperty(
                     ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
                     configPath);
+        }
+        
+        
+        String workerCount = cmd.getOptionValue("w");
+        if(workerCount != null){
+            Integer.parseInt(workerCount);
+            System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY, workerCount);
         }
         
         ApplicationContext context = 

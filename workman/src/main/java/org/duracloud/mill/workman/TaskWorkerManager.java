@@ -24,12 +24,14 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class TaskWorkerManager {
-    static final int DEFAULT_POOL_SIZE = 5;
+    public static final int DEFAULT_POOL_SIZE = 5;
+    public static final String MAX_WORKER_PROPERTY_KEY = "duracloud.maxWorkers";
     private Logger log = LoggerFactory.getLogger(TaskWorkerManager.class);
     private TaskWorkerFactory factory;
     private ThreadPoolExecutor executor;
     private boolean stop = false;
     private Timer timer = new Timer();
+
 
     public TaskWorkerManager(TaskWorkerFactory factory) {
         if (factory == null)
@@ -38,11 +40,15 @@ public class TaskWorkerManager {
 
         this.executor = new ThreadPoolExecutor(1, 1, 60 * 000,
                 TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>());
-
-        setMaxPoolSize(DEFAULT_POOL_SIZE);
     }
 
     public void init() {
+        
+        String maxPoolSize = System.getProperty(MAX_WORKER_PROPERTY_KEY,
+                String.valueOf(DEFAULT_POOL_SIZE));
+
+        setMaxPoolSize(new Integer(maxPoolSize));
+        
         this.executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -70,12 +76,13 @@ public class TaskWorkerManager {
 
     }
 
-    private int getMaxPoolSize() {
+    public int getMaxPoolSize() {
         return executor.getMaximumPoolSize() - 1;
     }
 
     public void setMaxPoolSize(int max) {
         this.executor.setMaximumPoolSize(max + 1);
+        log.info("max workers set to {}", max);
     }
 
     private void sleep(long ms) {
