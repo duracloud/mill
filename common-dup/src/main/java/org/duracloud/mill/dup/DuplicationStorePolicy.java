@@ -8,7 +8,7 @@
 package org.duracloud.mill.dup;
 
 /**
- * DeuplicationStorePolicy defines the source store to duplicate from and which
+ * DuplicationStorePolicy defines the source store to duplicate from and which
  * destination store to duplicate to.  This class is used in DuplicationPolicy,
  * each space to be duplicated as defined in DuplicationPolicy will have a list
  * of one or more DuplicationStorePolicy defining the duplication order for the

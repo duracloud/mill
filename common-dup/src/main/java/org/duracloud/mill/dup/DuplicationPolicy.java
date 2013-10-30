@@ -32,9 +32,11 @@ public class DuplicationPolicy {
 
     private static final ObjectMapper objMapper = new ObjectMapper();
 
-    private Map<String, LinkedHashSet<DuplicationStorePolicy>> spaceDuplicationStorePolicies = new HashMap<>();
+    private Map<String, LinkedHashSet<DuplicationStorePolicy>>
+        spaceDuplicationStorePolicies = new HashMap<>();
 
-    public Map<String, LinkedHashSet<DuplicationStorePolicy>> getSpaceDuplicationStorePolicies() {
+    public Map<String, LinkedHashSet<DuplicationStorePolicy>>
+    getSpaceDuplicationStorePolicies() {
         return spaceDuplicationStorePolicies;
     }
 
@@ -55,9 +57,10 @@ public class DuplicationPolicy {
      * Set<DuplicationStorePolicy> for the specified space already contains the
      * dupStore.
      */
-    public boolean addDuplicationStorePolicy(String spaceId, DuplicationStorePolicy dupStore) {
-        LinkedHashSet<DuplicationStorePolicy> dupStores = spaceDuplicationStorePolicies
-            .get(spaceId);
+    public boolean addDuplicationStorePolicy(String spaceId,
+                                             DuplicationStorePolicy dupStore) {
+        LinkedHashSet<DuplicationStorePolicy> dupStores =
+            spaceDuplicationStorePolicies.get(spaceId);
         if(dupStores == null) {
             dupStores = new LinkedHashSet<DuplicationStorePolicy>();
             spaceDuplicationStorePolicies.put(spaceId, dupStores);
@@ -65,8 +68,10 @@ public class DuplicationPolicy {
         return dupStores.add(dupStore);
     }
 
-    public static DuplicationPolicy unmarshall(InputStream policyStream) throws IOException {
-        DuplicationPolicy policy = objMapper.readValue(policyStream, DuplicationPolicy.class);
+    public static DuplicationPolicy unmarshall(InputStream policyStream)
+        throws IOException {
+        DuplicationPolicy policy =
+            objMapper.readValue(policyStream, DuplicationPolicy.class);
         return policy;
     }
 
