@@ -50,16 +50,6 @@ public class AppDriver {
         configFile.setArgName("file");
         options.addOption(configFile);
 
-//        Option credentialsFile = new Option("f",
-//                                     "credentials-file",
-//                                     true,
-//                                     "A json file containing provider credential lists.");
-//        credentialsFile.setArgs(1);
-//        credentialsFile.setArgName("file");
-//
-//        options.addOption(credentialsFile);
-        
-        
         return options;
     }
     
