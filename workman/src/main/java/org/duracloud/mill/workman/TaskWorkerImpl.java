@@ -26,7 +26,6 @@ import java.util.TimerTask;
  * 
  */
 public class TaskWorkerImpl implements TaskWorker {
-    static final long TIMEOUT_BUFFER = 500;
     private static Logger log = LoggerFactory.getLogger(TaskWorkerImpl.class);
     private static Timer timer = new Timer();
 
@@ -58,7 +57,7 @@ public class TaskWorkerImpl implements TaskWorker {
         // schedule task to run two seconds before the expiration of the task
         // lest the timer task execute late for any reason.
         Date executionTime =
-            new Date(timeFrom.getTime() + (visibilityTimeout*1000) - TIMEOUT_BUFFER);
+            new Date(timeFrom.getTime() + ((long)(visibilityTimeout*1000*0.5)));
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
