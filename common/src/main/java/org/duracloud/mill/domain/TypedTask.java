@@ -9,6 +9,8 @@ package org.duracloud.mill.domain;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * Contains the base information necessary to handle tasks.
  *
@@ -62,6 +64,14 @@ public abstract class TypedTask {
 
     public void setContentId(String contentId) {
         this.contentId = contentId;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 
     /**
