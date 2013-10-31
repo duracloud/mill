@@ -36,12 +36,23 @@ import com.amazonaws.services.simpledb.model.SelectResult;
 public class SimpleDBCredentialsRepo implements CredentialsRepo {
     private AmazonSimpleDBClient client;
     private Map<String, AccountCredentials> cache = new HashMap<>();
+    private String tablePrefix;
+    
+    /**
+     * 
+     * @param client
+     * @param tablePrefix
+     */
+    public SimpleDBCredentialsRepo(AmazonSimpleDBClient client, String tablePrefix) {
+        this.client = client;
+        this.tablePrefix = tablePrefix;
+    }
 
     /**
      * @param client
      */
     public SimpleDBCredentialsRepo(AmazonSimpleDBClient client) {
-        this.client = client;
+        this(client, "");
     }
 
     /*
@@ -68,7 +79,7 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
 
         // get server details id
         SelectResult result = this.client.select(new SelectRequest(
-                "select SERVER_DETAILS_ID from DURACLOUD_ACCOUNTS where SUBDOMAIN = '"
+                "select SERVER_DETAILS_ID from " + tablePrefix + "DURACLOUD_ACCOUNTS where SUBDOMAIN = '"
                         + subdomain + "'"));
         List<Item> items = result.getItems();
 
@@ -80,7 +91,7 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
         String serverDetailsId = items.get(0).getAttributes().get(0).getValue();
 
         // get server details
-        String serverDetailsDomain = "DURACLOUD_SERVER_DETAILS";
+        String serverDetailsDomain = tablePrefix + "DURACLOUD_SERVER_DETAILS";
         GetAttributesResult getResult = this.client
                 .getAttributes(new GetAttributesRequest(serverDetailsDomain,
                         serverDetailsId));
@@ -127,13 +138,12 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
         return null;
     }
 
- 
     /**
      * @param primaryId
      * @return
      */
     private StorageProviderCredentials getProviderCredentials(String id) {
-        String domain = "DURACLOUD_STORAGE_PROVIDER_ACCOUNTS";
+        String domain = tablePrefix + "DURACLOUD_STORAGE_PROVIDER_ACCOUNTS";
         GetAttributesResult result = this.client
                 .getAttributes(new GetAttributesRequest(domain, id));
         String username = getValue(result, "USERNAME", domain);

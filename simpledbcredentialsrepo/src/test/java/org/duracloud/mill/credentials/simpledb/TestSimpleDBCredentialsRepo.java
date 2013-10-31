@@ -35,17 +35,17 @@ public class TestSimpleDBCredentialsRepo {
         ConfigurationManager configurationManager = new ConfigurationManager();
         configurationManager.init();
 
-        testSubdomain = System.getProperty("testSubdomain");
+        testSubdomain = System.getProperty("testSubdomain", "test");
         if(testSubdomain == null){
             throw new RuntimeException("testSubdomain parameter is null: add to configuration file or use jvm arg -DtestSubdomain={subdomain}");
         }
-        testStoreId =  System.getProperty("testStoreId");
+        testStoreId =  System.getProperty("testStoreId", "0");
         if(testStoreId == null){
             throw new RuntimeException("testStoreId parameter is null: add to configuration file or use jvm arg -DtestStoreId={storeId}");
         }
  
         client = new AmazonSimpleDBClient();
-        repo = new SimpleDBCredentialsRepo(client);
+        repo = new SimpleDBCredentialsRepo(client, "TEST_");
 
     }
 
