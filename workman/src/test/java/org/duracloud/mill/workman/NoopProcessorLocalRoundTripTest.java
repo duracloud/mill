@@ -9,8 +9,6 @@ package org.duracloud.mill.workman;
 
 import java.io.File;
 
-import junit.framework.Assert;
-
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
@@ -18,6 +16,7 @@ import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -53,7 +52,7 @@ public class NoopProcessorLocalRoundTripTest {
     public void setUp() throws Exception {
         File testProperties = new File("src/test/resources/workman-test.properties");
         Assert.assertTrue(testProperties.exists());
-        System.setProperty(ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY, testProperties.getAbsolutePath());
+        System.setProperty(ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY, testProperties.getAbsolutePath());
         context = new AnnotationConfigApplicationContext(TestAppConfig.class);
     }
 

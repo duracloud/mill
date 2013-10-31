@@ -47,7 +47,7 @@ public class AppConfig {
     
     @Bean
     public TaskQueue taskQueue(ConfigurationManager configurationManager){
-        return new SQSTaskQueue(configurationManager.getQueueName());
+        return new SQSTaskQueue(configurationManager.getDuplicationQueueName());
     }
     
     @Bean(initMethod="init")

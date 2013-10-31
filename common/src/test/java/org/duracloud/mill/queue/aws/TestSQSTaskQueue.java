@@ -39,11 +39,11 @@ public class TestSQSTaskQueue {
     @Before
     public void setUp() {
         System.setProperty(
-            ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
+            ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
             "src/test/resources/mill-config-test.properties");
         ConfigurationManager confMgr = new ConfigurationManager();
         confMgr.init();
-        queue = new SQSTaskQueue(confMgr.getQueueName());
+        queue = new SQSTaskQueue(confMgr.getDuplicationQueueName());
     }
 
     @Test

@@ -7,13 +7,13 @@
  */
 package org.duracloud.mill.config;
 
-import junit.framework.Assert;
-
-import org.duracloud.mill.config.ConfigurationManager;
+import org.junit.Assert;
 import org.junit.Test;
 
+
 /**
- * @author Daniel Bernstein Date: Oct 25, 2013
+ * @author Daniel Bernstein 
+ *         Date: Oct 25, 2013
  */
 public class ConfigurationManagerTest {
 
@@ -27,11 +27,11 @@ public class ConfigurationManagerTest {
     public void test() {
         ConfigurationManager c = new ConfigurationManager();
         System.setProperty(
-                ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
+                ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                 "src/test/resources/mill-config-test.properties");
         c.init();
         Assert.assertNotNull(c.getCredentialsFilePath());
-        Assert.assertNotNull(c.getQueueName());
+        Assert.assertNotNull(c.getDuplicationQueueName());
 
     }
 

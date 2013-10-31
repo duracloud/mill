@@ -74,7 +74,7 @@ public class AppDriver {
 
         if(configPath != null){
             System.setProperty(
-                    ConfigurationManager.DURACLOUD_WORKMAN_CONFIG_FILE_KEY,
+                    ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                     configPath);
         }
         

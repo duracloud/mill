@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepoBase;
@@ -25,16 +26,15 @@ import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundExceptio
  * 
  */
 public class ConfigFileCredentialRepo extends CredentialsRepoBase {
-    private static final String CREDENTIALS_FILE_PATH = "credentials.file.path";
     private List<AccountCredentials> accountList;
 
     public ConfigFileCredentialRepo() {
 
-        String path = System.getProperty(CREDENTIALS_FILE_PATH);
+        String path = System.getProperty(ConfigurationManager.CREDENTIALS_FILE_PATH_KEY);
 
         if (path == null) {
             throw new RuntimeException("System property "
-                    + CREDENTIALS_FILE_PATH + " not defined.");
+                    + ConfigurationManager.CREDENTIALS_FILE_PATH_KEY + " not defined.");
         }
 
         File file = new File(path);
