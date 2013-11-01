@@ -7,13 +7,10 @@
  */
 package org.duracloud.mill.durastore.spring;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
+import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
+import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.duracloud.mill.durastore.DurastoreTaskProducerConfigurationManager;
 import org.duracloud.mill.durastore.MessageListenerContainerManager;
 import org.duracloud.mill.queue.TaskQueue;
@@ -34,43 +31,22 @@ public class AppConfig {
     }
 
     @Bean 
-    public TaskQueue duplicationTaskQueue (DurastoreTaskProducerConfigurationManager configurationManager) {
+    public TaskQueue duplicationTaskQueue (
+        DurastoreTaskProducerConfigurationManager configurationManager) {
         return new SQSTaskQueue(configurationManager.getDuplicationQueueName());
     }
     
     @Bean
-    public DuplicationPolicyManager duplicationPolicyManager(DurastoreTaskProducerConfigurationManager configurationManager){
-        String file = configurationManager.getDuplicationPolicyFile();
-        if(file != null){
-            //return new DuplicationPolicyManager(file);
+    public DuplicationPolicyManager duplicationPolicyManager(
+        DurastoreTaskProducerConfigurationManager configurationManager){
+        String dupPolicyDir = configurationManager.getDuplicationPolicyDir();
+        DuplicationPolicyRepo policyRepo;
+        if(null != dupPolicyDir) {
+            policyRepo = new LocalDuplicationPolicyRepo(dupPolicyDir);
+        } else {
+            policyRepo = new S3DuplicationPolicyRepo();
         }
-
-        DuplicationPolicyManager policy = new DuplicationPolicyManager(){
-          /* (non-Javadoc)
-             * @see org.duracloud.mill.dup.DuplicationPolicyManager#getDuplicationAccounts()
-             */
-            @Override
-            public Set<String> getDuplicationAccounts() {
-                return new HashSet<String>(Arrays.asList(System.getProperty("config.domain")));
-            }  
-            
-            /* (non-Javadoc)
-             * @see org.duracloud.mill.dup.DuplicationPolicyManager#getDuplicationPolicy(java.lang.String)
-             */
-            @Override
-            public DuplicationPolicy getDuplicationPolicy(String account) {
-                DuplicationPolicy policy = new DuplicationPolicy();
-                DuplicationStorePolicy dupStore = new DuplicationStorePolicy();
-                dupStore.setSrcStoreId(System.getProperty("config.primaryStoreId"));
-                dupStore.setDestStoreId(System.getProperty("config.secondaryStoreId"));
-                policy.addDuplicationStorePolicy(System.getProperty("config.space"), dupStore);
-                return policy;
-            }
-        };
-
-        return policy; 
-        
-
+        return new DuplicationPolicyManager(policyRepo);
     }
     
     @Bean(initMethod="init", destroyMethod="destroy")

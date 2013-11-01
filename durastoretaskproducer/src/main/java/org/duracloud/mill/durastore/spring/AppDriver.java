@@ -7,8 +7,6 @@
  */
 package org.duracloud.mill.durastore.spring;
 
-import java.io.File;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -21,6 +19,8 @@ import org.duracloud.mill.durastore.DurastoreTaskProducerConfigurationManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.io.File;
+
 /**
  * @author Daniel Bernstein
  *	       Date: Oct 30, 2013
@@ -28,7 +28,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class AppDriver {
 
     private static final String CONFIG_FILE_OPTION = "c";
-    private static final String LOCAL_DUPLICATION_FILE_OPTION = "l";
+    private static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -67,11 +67,13 @@ public class AppDriver {
         duplicationQueueName.setArgName("name");
         options.addOption(duplicationQueueName);
 
-        Option localDuplicationFile = new Option(LOCAL_DUPLICATION_FILE_OPTION, "local-duplication-policy", true,
-                "Indicates that a local duplication policy file should be used.");
-        localDuplicationFile.setArgs(1);
-        localDuplicationFile.setArgName("file");
-        options.addOption(localDuplicationFile);
+        Option localDuplicationDir =
+            new Option(LOCAL_DUPLICATION_DIR_OPTION, "local-duplication-dir",
+                       true, "Indicates that a local duplication policy " +
+                             "directory should be used.");
+        localDuplicationDir.setArgs(1);
+        localDuplicationDir.setArgName("file");
+        options.addOption(localDuplicationDir);
 
         return options;
     }
@@ -87,17 +89,23 @@ public class AppDriver {
                     configPath);
         }
 
-        String localDuplicationPolicyFile = cmd.getOptionValue(LOCAL_DUPLICATION_FILE_OPTION);
-        if(localDuplicationPolicyFile != null){
-            System.setProperty(DurastoreTaskProducerConfigurationManager.DUPLICATION_POLICY_FILE_KEY, localDuplicationPolicyFile);
-            if(!new File(localDuplicationPolicyFile).exists()){
-                System.err.print("The local duplication policy file you specified, "+localDuplicationPolicyFile + " does not exist: ");
+        String localDuplicationPolicyDirPath =
+            cmd.getOptionValue(LOCAL_DUPLICATION_DIR_OPTION);
+        if(localDuplicationPolicyDirPath != null){
+            if(!new File(localDuplicationPolicyDirPath).exists()){
+                System.err.print("The local duplication policy directory " +
+                                 "path you specified, " +
+                                 localDuplicationPolicyDirPath +
+                                 " does not exist: ");
                 die();
+            } else {
+                System.setProperty(
+                    DurastoreTaskProducerConfigurationManager.
+                        DUPLICATION_POLICY_DIR_KEY,
+                    localDuplicationPolicyDirPath);
             }
-
         }
 
-        
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);
     }

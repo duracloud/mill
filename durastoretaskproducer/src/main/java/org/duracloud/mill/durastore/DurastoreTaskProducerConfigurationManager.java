@@ -15,9 +15,9 @@ import org.duracloud.mill.config.ConfigurationManager;
  */
 public class DurastoreTaskProducerConfigurationManager extends ConfigurationManager{
 
-    public static final String DUPLICATION_POLICY_FILE_KEY = "duplicationPolicyFile";
+    public static final String DUPLICATION_POLICY_DIR_KEY = "duplicationPolicyDir";
 
-    public String getDuplicationPolicyFile(){
-        return System.getProperty(DUPLICATION_POLICY_FILE_KEY);
+    public String getDuplicationPolicyDir() {
+        return System.getProperty(DUPLICATION_POLICY_DIR_KEY);
     }
 }
