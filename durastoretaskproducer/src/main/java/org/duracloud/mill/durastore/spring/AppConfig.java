@@ -51,21 +51,21 @@ public class AppConfig {
              */
             @Override
             public Set<String> getDuplicationAccounts() {
-                return new HashSet<String>(Arrays.asList("danny"));
+                return new HashSet<String>(Arrays.asList(System.getProperty("config.domain")));
             }  
             
             /* (non-Javadoc)
-                 * @see org.duracloud.mill.dup.DuplicationPolicyManager#getDuplicationPolicy(java.lang.String)
-                 */
-                @Override
-                public DuplicationPolicy getDuplicationPolicy(String account) {
-                    DuplicationPolicy policy = new DuplicationPolicy();
-                    DuplicationStorePolicy dupStore = new DuplicationStorePolicy();
-                    dupStore.setSrcStoreId("0");
-                    dupStore.setSrcStoreId("1");
-                    policy.addDuplicationStorePolicy("testspace", dupStore);
-                    return policy;
-                }
+             * @see org.duracloud.mill.dup.DuplicationPolicyManager#getDuplicationPolicy(java.lang.String)
+             */
+            @Override
+            public DuplicationPolicy getDuplicationPolicy(String account) {
+                DuplicationPolicy policy = new DuplicationPolicy();
+                DuplicationStorePolicy dupStore = new DuplicationStorePolicy();
+                dupStore.setSrcStoreId(System.getProperty("config.primaryStoreId"));
+                dupStore.setDestStoreId(System.getProperty("config.secondaryStoreId"));
+                policy.addDuplicationStorePolicy(System.getProperty("config.space"), dupStore);
+                return policy;
+            }
         };
 
         return policy; 
