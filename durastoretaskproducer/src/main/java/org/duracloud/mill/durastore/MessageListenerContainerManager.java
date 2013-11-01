@@ -9,7 +9,9 @@ package org.duracloud.mill.durastore;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 
@@ -20,6 +22,8 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.duracloud.storage.aop.ContentMessageConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 
@@ -30,10 +34,11 @@ import org.springframework.jms.listener.adapter.MessageListenerAdapter;
  * @author Daniel Bernstein Date: Oct 30, 2013
  */
 public class MessageListenerContainerManager {
-
+    private static Logger log = LoggerFactory.getLogger(MessageListenerContainerManager.class);
+    
     private static final String DEFAULT_CONNECTION_FACTORY_TEMPLATE = "tcp://{0}.duracloud.org:61617";
 
-    private List<DefaultMessageListenerContainer> containers;
+    private List<Map<String,DefaultMessageListenerContainer>> containers;
 
     private DuplicationPolicyManager duplicationPolicyManager;
     private TaskQueue duplicationTaskQueue;
@@ -59,6 +64,7 @@ public class MessageListenerContainerManager {
     }
 
     private void initializeMessageContainers() {
+        log.info("initializing message containers...");
         ACTION[] actions = {ACTION.DELETE, ACTION.COPY, ACTION.INGEST, ACTION.UPDATE};
 
         ContentMessageConverter converter = new ContentMessageConverter();
@@ -83,26 +89,53 @@ public class MessageListenerContainerManager {
                 MessageListenerAdapter adapter = new MessageListenerAdapter(listener);
                 adapter.setDefaultListenerMethod("onMessage");
                 adapter.setMessageConverter(converter);
-                containers.add(container);
+                log.info(
+                        "created message listener container for subdomain {}: " +
+                        "destination: {}, connectionFactory: {}, converter:{}",
+                        subdomain, destination, connectionFactory, converter);
+                Map<String,DefaultMessageListenerContainer> map = new HashMap<>();
+                map.put(subdomain, container);
+                containers.add(map);
             }
         }
+        
+        log.info("message containers initialized.");
+
     }
 
     private ConnectionFactory jmsFactory(String subdomain) {
         String url = MessageFormat.format(connectionFactoryURLTemplate,
                 subdomain);
-        return new PooledConnectionFactory(new ActiveMQConnectionFactory(url));
+        log.info("creating connection factory for {}", url);
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
+        factory.setUserName("root");
+        factory.setPassword("rpw");
+        return new PooledConnectionFactory(factory);
     }
 
     private void start() {
-        for (DefaultMessageListenerContainer container : containers) {
-            container.start();
+        for (Map<String,DefaultMessageListenerContainer> map : containers) {
+            for(Map.Entry<String, DefaultMessageListenerContainer> e : map.entrySet()){
+                DefaultMessageListenerContainer container = e.getValue();
+                container.start();
+                log.info("started container subscribed to {} on connection {} on subdomain: {}",
+                        container.getDestination(),
+                        container.getConnectionFactory(),
+                        e.getKey());
+            }
         }
     }
 
     public void destroy() {
-        for (DefaultMessageListenerContainer container : containers) {
-            container.stop();
+        for (Map<String,DefaultMessageListenerContainer> map : containers) {
+            for(Map.Entry<String, DefaultMessageListenerContainer> e : map.entrySet()){
+                DefaultMessageListenerContainer container = e.getValue();
+                container.stop();
+                log.info("stopped container subscribed to {} on connection {} on subdomain: {}",
+                        container.getDestination(),
+                        container.getConnectionFactory(),
+                        e.getKey());
+            }
         }
     }
 
