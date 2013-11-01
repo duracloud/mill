@@ -15,7 +15,6 @@ import org.junit.Test;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 
@@ -45,13 +44,12 @@ public class DuplicationPolicyManagerTest extends BaseDuplicationPolicyTester {
         DuplicationPolicyManager policyManager =
             new DuplicationPolicyManager(policyRepo);
 
-        Set<String> dupAccounts =
-            policyManager.getDuplicationAccounts();
+        Set<String> dupAccounts = policyManager.getDuplicationAccounts();
         assertThat(dupAccounts, hasItems("account1", "account2", "account3"));
         for(String dupAccount : dupAccounts) {
             DuplicationPolicy policy =
                 policyManager.getDuplicationPolicy(dupAccount);
-            assertNotNull(policy);
+            assertThat(policy.getSpaces(), hasItems("testSpace1", "testSpace2"));
         }
 
         EasyMock.verify(policyRepo);
