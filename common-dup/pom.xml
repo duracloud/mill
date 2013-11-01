@@ -12,7 +12,12 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <dependencies>
-   
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>common</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
