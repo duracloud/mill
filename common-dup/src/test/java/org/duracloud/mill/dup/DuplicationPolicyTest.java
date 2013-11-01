@@ -7,16 +7,14 @@
  */
 package org.duracloud.mill.dup;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -26,15 +24,7 @@ import static org.junit.Assert.assertTrue;
  * @author Erik Paulsson
  *         Date: 10/29/13
  */
-public class DuplicationPolicyTest {
-
-    private File policyTestFile;
-
-    @Before
-    public void setUp() {
-        policyTestFile = new File("src/test/resources/duplication-policy.json");
-        assertTrue(policyTestFile.exists());
-    }
+public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
 
     //@Test
     public void testDuplicationPolicyMarshall() throws Exception {
@@ -58,7 +48,7 @@ public class DuplicationPolicyTest {
     @Test
     public void testDuplicationPolicyUnmarshall() throws Exception {
         DuplicationPolicy duplicationPolicy =
-            DuplicationPolicy.unmarshall(new FileInputStream(policyTestFile));
+            DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
         assertThat(2, is(equalTo(duplicationPolicy.getSpaces().size())));
         assertTrue(duplicationPolicy.getSpaces().contains("testSpace1"));
         assertTrue(duplicationPolicy.getSpaces().contains("testSpace2"));

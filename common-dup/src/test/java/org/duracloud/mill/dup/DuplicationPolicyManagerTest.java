@@ -10,37 +10,20 @@ package org.duracloud.mill.dup;
 import org.duracloud.common.util.IOUtil;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.easymock.EasyMock;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.matchers.JUnitMatchers.hasItems;
+
 
 /**
  * @author Bill Branan
  *         Date: 10/31/13
  */
-public class DuplicationPolicyManagerTest {
-
-    private File policyAccountsFile =
-        new File("src/test/resources/duplication-accounts.json");
-    private File policyFile =
-        new File("src/test/resources/duplication-policy.json");
-
-    @Before
-    public void setUp() {
-        policyAccountsFile =
-            new File("src/test/resources/duplication-accounts.json");
-        policyFile = new File("src/test/resources/duplication-policy.json");
-
-        assertTrue(policyAccountsFile.exists());
-        assertTrue(policyFile.exists());
-    }
+public class DuplicationPolicyManagerTest extends BaseDuplicationPolicyTester {
 
     @Test
     public void testDupPolicyManager() {
@@ -52,16 +35,11 @@ public class DuplicationPolicyManagerTest {
 
         // Expecting dup policy to be read 3 times, requires a fresh
         // InputStream each time.
-        EasyMock.expect(policyRepo.getDuplicationPolicy(
-            EasyMock.<String>anyObject()))
-                .andReturn(IOUtil.getFileStream(policyFile));
-        EasyMock.expect(policyRepo.getDuplicationPolicy(
-            EasyMock.<String>anyObject()))
-                .andReturn(IOUtil.getFileStream(policyFile));
-        EasyMock.expect(policyRepo.getDuplicationPolicy(
-            EasyMock.<String>anyObject()))
-                .andReturn(IOUtil.getFileStream(policyFile));
-
+        for(int i=0; i<3; i++) {
+            EasyMock.expect(policyRepo.getDuplicationPolicy(
+                EasyMock.<String>anyObject()))
+                    .andReturn(IOUtil.getFileStream(policyFile));
+        }
         EasyMock.replay(policyRepo);
 
         DuplicationPolicyManager policyManager =
