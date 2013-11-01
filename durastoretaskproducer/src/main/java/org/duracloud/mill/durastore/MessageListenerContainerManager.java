@@ -108,8 +108,8 @@ public class MessageListenerContainerManager {
                 subdomain);
         log.info("creating connection factory for {}", url);
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-        factory.setUserName("root");
-        factory.setPassword("rpw");
+//        factory.setUserName("root");
+//        factory.setPassword("rpw");
         return new PooledConnectionFactory(factory);
     }
 
