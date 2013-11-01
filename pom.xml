@@ -467,6 +467,12 @@
         <groupId>org.duracloud</groupId>
         <artifactId>common</artifactId>
         <version>${duracloud.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.duracloud</groupId>
@@ -483,7 +489,6 @@
         <artifactId>glacierstorageprovider</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
-
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>sdscstorageprovider</artifactId>
