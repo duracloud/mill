@@ -6,3 +6,5 @@
 *.iml
 *.ipr
 *.iws
+.DS_STORE
+duracloud.home_IS_UNDEFINED
