@@ -132,7 +132,7 @@ public class MessageListenerContainerManager {
                 subdomain);
         log.info("creating connection factory for {}", url);
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
-        factory.setBrokerURL(url);
+        factory.setBrokerURL("failover:"+ url);
         PooledConnectionFactory pooledFactory = new PooledConnectionFactory(factory);
         return pooledFactory;
     }
