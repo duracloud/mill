@@ -15,6 +15,8 @@ import org.duracloud.mill.durastore.DurastoreTaskProducerConfigurationManager;
 import org.duracloud.mill.durastore.MessageListenerContainerManager;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class AppConfig {
-
+    private static Logger log = LoggerFactory.getLogger(AppConfig.class);
     @Bean(initMethod="init")
     public DurastoreTaskProducerConfigurationManager configurationManager(){
         return new DurastoreTaskProducerConfigurationManager();
@@ -52,8 +54,18 @@ public class AppConfig {
     @Bean(initMethod="init", destroyMethod="destroy")
     public MessageListenerContainerManager messageListenerContainerManager(
             TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager) {
-        return new MessageListenerContainerManager(duplicationTaskQueue,
-                                                   duplicationPolicyManager);
+            DuplicationPolicyManager duplicationPolicyManager, DurastoreTaskProducerConfigurationManager configurationManager) {
+         
+        String template = configurationManager.getJMSConnectionUrlTemplate();
+        if(template != null){
+            log.info("using jms connection url template {}", template);
+            return new MessageListenerContainerManager(duplicationTaskQueue,
+                    duplicationPolicyManager, 
+                    template);
+        }else{
+            log.info("Using default jms connection url template...");
+            return new MessageListenerContainerManager(duplicationTaskQueue,
+                    duplicationPolicyManager);
+        }
     }
 }

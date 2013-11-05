@@ -20,4 +20,11 @@ public class DurastoreTaskProducerConfigurationManager extends ConfigurationMana
     public String getDuplicationPolicyDir() {
         return System.getProperty(DUPLICATION_POLICY_DIR_KEY);
     }
+
+    /**
+     * @return
+     */
+    public String getJMSConnectionUrlTemplate() {
+        return System.getProperty("jms.connection.url.template");
+    }
 }
