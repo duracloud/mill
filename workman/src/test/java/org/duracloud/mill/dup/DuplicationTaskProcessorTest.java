@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -179,6 +180,85 @@ public class DuplicationTaskProcessorTest {
         replayMocks();
 
         taskProcessor.execute();
+    }
+
+    /**
+     * Verifies the flow of actions that occur when the source space does not
+     * exist. If the destination space exists, and is empty, it should be
+     * removed
+     *
+     * @throws Exception on error
+     */
+    @Test
+    public void testExecuteMissingSrcSpace() throws Exception {
+        // Check source space
+        EasyMock.expect(srcStore.getSpaceProperties(spaceId))
+                .andThrow(new NotFoundException("")).anyTimes();
+
+        // Check dest space
+        EasyMock.expect(destStore.getSpaceProperties(spaceId))
+                .andThrow(new NotFoundException(""))
+                .andReturn(new HashMap<String, String>());
+
+        // Check dest space, indicate that space exists but is empty
+        EasyMock.expect(destStore.getSpaceContents(spaceId, null))
+                .andReturn(new ArrayList<String>().iterator());
+
+        // Delete space
+        destStore.deleteSpace(spaceId);
+        EasyMock.expectLastCall();
+
+        replayMocks();
+
+        // Change task to provide an empty contentId value
+        DuplicationTask dupTask = new DuplicationTask();
+        dupTask.setAccount(account);
+        dupTask.setSourceStoreId(srcStoreId);
+        dupTask.setDestStoreId(destStoreId);
+        dupTask.setSpaceId(spaceId);
+        dupTask.setContentId(null);
+
+        taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
+                                                     srcStore,
+                                                     destStore);
+
+        taskProcessor.execute();
+    }
+
+    /**
+     * Verifies the flow of actions that occur when an error occurs. In this
+     * case, the error is prompted by the contentId and spaceId values being
+     * null.
+     *
+     * @throws Exception on error
+     */
+    @Test
+    public void testExecuteErrorInvalidInput() throws Exception {
+        replayMocks();
+
+        // Change task to provide an empty contentId value
+        DuplicationTask dupTask = new DuplicationTask();
+        dupTask.setAccount(account);
+        dupTask.setSourceStoreId(srcStoreId);
+        dupTask.setDestStoreId(destStoreId);
+        dupTask.setSpaceId(null);
+        dupTask.setContentId(null);
+
+        taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
+                                                     srcStore,
+                                                     destStore);
+
+        try {
+            taskProcessor.execute();
+        } catch(DuplicationTaskExecutionFailedException e) {
+            String msg = e.getMessage();
+            assertTrue("Error message should contain account id",
+                       msg.contains(account));
+            assertTrue("Error message should contain account source store id",
+                       msg.contains(srcStoreId));
+            assertTrue("Error message should contain account dest store id",
+                       msg.contains(destStoreId));
+        }
     }
 
     /**
