@@ -64,6 +64,16 @@ public class AppDriver {
         maxWorkers.setArgName("count");
         options.addOption(maxWorkers);
 
+        Option queueName = new Option(
+                "q",
+                "queue-name",
+                true,
+                "The name of the amazon sqs queue");
+        queueName.setArgs(1);
+        queueName.setRequired(true);
+        queueName.setArgName("name");
+        options.addOption(queueName);
+
         return options;
     }
     
@@ -78,11 +88,16 @@ public class AppDriver {
                     configPath);
         }
         
-        
+
         String workerCount = cmd.getOptionValue("w");
         if(workerCount != null){
             Integer.parseInt(workerCount);
             System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY, workerCount);
+        }
+
+        String queueName = cmd.getOptionValue("q");
+        if(queueName != null){
+            System.setProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY, queueName);
         }
         
         ApplicationContext context = 
