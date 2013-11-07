@@ -62,7 +62,7 @@ public class DuplicationPolicy {
         LinkedHashSet<DuplicationStorePolicy> dupStores =
             spaceDuplicationStorePolicies.get(spaceId);
         if(dupStores == null) {
-            dupStores = new LinkedHashSet<DuplicationStorePolicy>();
+            dupStores = new LinkedHashSet<>();
             spaceDuplicationStorePolicies.put(spaceId, dupStores);
         }
         return dupStores.add(dupStore);
@@ -70,9 +70,7 @@ public class DuplicationPolicy {
 
     public static DuplicationPolicy unmarshall(InputStream policyStream)
         throws IOException {
-        DuplicationPolicy policy =
-            objMapper.readValue(policyStream, DuplicationPolicy.class);
-        return policy;
+        return objMapper.readValue(policyStream, DuplicationPolicy.class);
     }
 
     public static String marshall(DuplicationPolicy duplicationPolicy)

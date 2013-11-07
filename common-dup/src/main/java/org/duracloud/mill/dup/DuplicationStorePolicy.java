@@ -21,6 +21,14 @@ public class DuplicationStorePolicy {
     private String srcStoreId;
     private String destStoreId;
 
+    public DuplicationStorePolicy() {
+    }
+
+    public DuplicationStorePolicy(String srcStoreId, String destStoreId) {
+        this.srcStoreId = srcStoreId;
+        this.destStoreId = destStoreId;
+    }
+
     public String getSrcStoreId() {
         return srcStoreId;
     }

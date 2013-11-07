@@ -19,6 +19,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>storeclient</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
     </dependency>
