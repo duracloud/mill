@@ -52,6 +52,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>simpledbcredentialsrepo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
     </dependency>

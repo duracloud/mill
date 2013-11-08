@@ -7,17 +7,22 @@
  */
 package org.duracloud.mill.workman.spring;
 
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
+import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
-import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
  * 
@@ -28,6 +33,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
     
+    private static Logger log = LoggerFactory.getLogger(AppConfig.class);
+    
     @Bean
     public RootTaskProcessorFactory rootTaskProcessorFactory() {
         return new RootTaskProcessorFactory();
@@ -35,7 +42,13 @@ public class AppConfig {
 
     @Bean
     public CredentialsRepo credentialRepo(ConfigurationManager configurationManager) {
-        return new ConfigFileCredentialRepo();
+        if(configurationManager.getCredentialsFilePath() != null){
+            log.info("found credentials file path ({}): using config file based credential repo...");
+            return new ConfigFileCredentialRepo();
+        }else{
+            log.info("no credentials file path: using simpledb based credential repo...");
+            return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
+        }
     }
 
     @Bean(initMethod="init", destroyMethod="destroy")
