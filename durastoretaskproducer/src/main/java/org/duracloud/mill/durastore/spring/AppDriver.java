@@ -59,6 +59,10 @@ public class AppDriver {
     
     private static Options getOptions() {
         Options options = new Options();
+
+        Option help = new Option("h", "help");
+        options.addOption(help);
+
         Option configFile = new Option(CONFIG_FILE_OPTION, "config-file", true,
                 "A properties file containing configuration info");
         configFile.setArgs(1);
@@ -85,6 +89,10 @@ public class AppDriver {
     public static void main(String[] args) {
         CommandLine cmd = parseArgs(args);
 
+        if(cmd.hasOption("h")){
+            die();
+        }
+        
         String configPath = cmd.getOptionValue(CONFIG_FILE_OPTION);
 
         if(configPath != null){
