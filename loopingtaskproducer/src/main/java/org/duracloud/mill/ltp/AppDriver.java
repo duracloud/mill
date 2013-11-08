@@ -23,6 +23,7 @@ import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
@@ -77,11 +78,15 @@ public class AppDriver {
     
     private static Options getOptions() {
         Options options = new Options();
+
         Option configFile = new Option(CONFIG_FILE_OPTION, "config-file", true,
                 "A properties file containing configuration info");
         configFile.setArgs(1);
         configFile.setArgName("file");
         options.addOption(configFile);
+
+        Option help = new Option("h", "help");
+        options.addOption(help);
 
         Option duplicationQueueName = new Option(DUPLICATION_QUEUE_OPTION, "duplication-queue", true,
                 "Name of the duplication queue.");
@@ -114,13 +119,17 @@ public class AppDriver {
         maxTaskQueueSize.setArgs(1);
         maxTaskQueueSize.setArgName("integer");
         options.addOption(maxTaskQueueSize);
-
+        
         return options;
     }
     
     public static void main(String[] args) {
         CommandLine cmd = parseArgs(args);
-
+        
+        if(cmd.hasOption("h")){
+            die();
+        }
+        
         String configPath = cmd.getOptionValue(CONFIG_FILE_OPTION);
 
         if(configPath != null){
@@ -158,13 +167,13 @@ public class AppDriver {
         log.info("max task queue size: {}", maxTaskQueueSize);
         
         String stateFilePath = cmd.getOptionValue(STATE_FILE_PATH);
-        if (stateFilePath == null) {
+        if (stateFilePath != null) {
             File parent = new File(stateFilePath).getParentFile();
             if(parent.exists()){
                 System.err.print("The state file's parent directory, \"" + stateFilePath + "\", does not exist.");
                 die();
             }
-
+        }else{
             stateFilePath = System.getProperty("java.io.tmpdir")
                     + File.separator
                     + "duracloud-looping-task-producer-state.json";
@@ -184,8 +193,15 @@ public class AppDriver {
             TaskProducerConfigurationManager config = new TaskProducerConfigurationManager();
             config.init();
             
-            CredentialsRepo credentialsRepo = 
-                    new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
+            CredentialsRepo credentialsRepo;
+            
+            if(config.getCredentialsFilePath() != null){
+                credentialsRepo = 
+                        new ConfigFileCredentialRepo(config.getCredentialsFilePath());
+            }else{
+                credentialsRepo = 
+                        new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
+            }
             
             StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
             

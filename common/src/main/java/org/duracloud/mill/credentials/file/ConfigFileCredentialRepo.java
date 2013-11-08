@@ -28,9 +28,12 @@ import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundExceptio
 public class ConfigFileCredentialRepo extends CredentialsRepoBase {
     private List<AccountCredentials> accountList;
 
-    public ConfigFileCredentialRepo() {
+    public ConfigFileCredentialRepo(){
+        this(System.getProperty(ConfigurationManager.CREDENTIALS_FILE_PATH_KEY));
+    }
+    
+    public ConfigFileCredentialRepo(String path) {
 
-        String path = System.getProperty(ConfigurationManager.CREDENTIALS_FILE_PATH_KEY);
 
         if (path == null) {
             throw new RuntimeException("System property "

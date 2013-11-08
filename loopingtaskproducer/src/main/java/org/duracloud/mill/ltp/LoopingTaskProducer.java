@@ -26,6 +26,7 @@ import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,7 +244,16 @@ public class LoopingTaskProducer implements Runnable {
         }
         
         //get all items from dest
-        Iterator<String> destContentIds = destProvider.getSpaceContents(spaceId, null);
+        Iterator<String> destContentIds = null;
+        
+        try{
+            destContentIds = destProvider.getSpaceContents(spaceId, null);
+        }catch(NotFoundException ex){
+            log.info("space not found on destination provider: " +
+                     "subdomain={}, spaceId={}, storeId={}",
+                     subdomain, spaceId, destProvider);
+            return;
+        }
         
         int deletionTaskCount = 0;
         //for each one 
