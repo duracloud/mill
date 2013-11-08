@@ -7,19 +7,14 @@
  */
 package org.duracloud.mill.durastore;
 
-import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
+
 
 /**
  * @author Daniel Bernstein
  *	       Date: Oct 31, 2013
  */
-public class DurastoreTaskProducerConfigurationManager extends ConfigurationManager{
-
-    public static final String DUPLICATION_POLICY_DIR_KEY = "duplicationPolicyDir";
-
-    public String getDuplicationPolicyDir() {
-        return System.getProperty(DUPLICATION_POLICY_DIR_KEY);
-    }
+public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfigurationManager{
 
     /**
      * @return

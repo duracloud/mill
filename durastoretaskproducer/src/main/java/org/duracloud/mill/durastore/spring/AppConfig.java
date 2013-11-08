@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 /**
  * @author Daniel Bernstein
  *	       Date: Oct 30, 2013

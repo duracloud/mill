@@ -7,23 +7,27 @@
  */
 package org.duracloud.mill.durastore.spring;
 
+import java.io.File;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.ParseException;
+
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.durastore.DurastoreTaskProducerConfigurationManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.io.File;
 
 /**
- * @author Daniel Bernstein
- *	       Date: Oct 30, 2013
+ * A main class responsible for parsing command line arguments and launching the
+ * DuraStore Task Producer service.
+ * 
+ * @author Daniel Bernstein Date: Oct 30, 2013
  */
 public class AppDriver {
 

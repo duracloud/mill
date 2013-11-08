@@ -16,12 +16,11 @@ import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.storage.aop.ContentCopyMessage;
 import org.duracloud.storage.aop.ContentMessage;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
-import org.duracloud.storage.aop.IngestMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * This class is responsible for delegating <code>ContentMessage</code> objects

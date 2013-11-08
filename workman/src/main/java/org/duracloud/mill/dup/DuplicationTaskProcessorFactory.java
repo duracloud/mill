@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.dup;
 
-import org.duracloud.glacierstorage.GlacierStorageProvider;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
@@ -16,11 +16,9 @@ import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
-import org.duracloud.rackspacestorage.RackspaceStorageProvider;
-import org.duracloud.s3storage.S3StorageProvider;
-import org.duracloud.sdscstorage.SDSCStorageProvider;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
+
 
 /**
  * This class is responsible for creating DuplicationTaskProcessors 
@@ -29,9 +27,11 @@ import org.duracloud.storage.provider.StorageProvider;
  * 
  */
 public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
+    private StorageProviderFactory storageProviderFactory;
 
     public DuplicationTaskProcessorFactory(CredentialsRepo repo){
         super(repo);
+        this.storageProviderFactory = new StorageProviderFactory();
     }
     
     @Override
@@ -64,7 +64,7 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
      * @param account
      * @return
      */
-    private StorageProvider createStorageProvider(String providerId,
+    public StorageProvider createStorageProvider(String providerId,
             String subdomain) {
         
         StorageProviderCredentials c;
@@ -72,24 +72,9 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
             c = getCredentialRepo().getStorageProviderCredentials(subdomain,
                     providerId);
 
-            StorageProviderType ptype = c.getProviderType();
-
-            if (ptype.equals(StorageProviderType.AMAZON_S3)) {
-                return new S3StorageProvider(c.getAccessKey(), c.getSecretKey());
-            } else if (ptype.equals(StorageProviderType.SDSC)) {
-                return new SDSCStorageProvider(c.getAccessKey(),
-                        c.getSecretKey());
-            } else if (ptype.equals(StorageProviderType.AMAZON_GLACIER)) {
-                return new GlacierStorageProvider(c.getAccessKey(),
-                        c.getSecretKey());
-            } else if (ptype.equals(StorageProviderType.RACKSPACE)) {
-                return new RackspaceStorageProvider(c.getAccessKey(),
-                        c.getSecretKey());
-            }
-            throw new RuntimeException(ptype
-                    + " is not a supported storage provider type");
+            return this.storageProviderFactory.create(c);
         } catch (CredentialsRepoException e) {
             throw new RuntimeException(e);
         }
-    }    
+    }
 }

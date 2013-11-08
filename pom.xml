@@ -48,8 +48,11 @@
   <modules>
     <module>common</module>
     <module>common-dup</module>
+    <module>common-taskproducer</module>
+    <module>common-storageprovider</module>
     <module>simpledbcredentialsrepo</module>
     <module>durastoretaskproducer</module>
+    <module>loopingtaskproducer</module>
     <module>workman</module>
     <module>taskproducertool</module>
   </modules>

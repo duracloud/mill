@@ -3,9 +3,9 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
-  <artifactId>workman</artifactId>
+  <artifactId>loopingtaskproducer</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>DuraCloud Mill Workman</name>
+  <name>DuraCloud Mill Looping Task Producer</name>
 
   <parent>
     <artifactId>duplication</artifactId>
@@ -22,7 +22,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.duracloud.mill.workman.spring.AppDriver</mainClass>
+              <mainClass>org.duracloud.mill.ltp.AppDriver</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -47,16 +47,29 @@
 
     <dependency>
       <groupId>org.duracloud.mill</groupId>
-      <artifactId>common-storageprovider</artifactId>
+      <artifactId>common-taskproducer</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>simpledbcredentialsrepo</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>common-dup</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>common-storageprovider</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
@@ -74,34 +87,28 @@
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>storageprovider</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-jms</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>s3storageprovider</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>glacierstorageprovider</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>sdscstorageprovider</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>rackspacestorageprovider</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
@@ -125,6 +132,11 @@
       </exclusions>
     </dependency>
     
+    <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>2.7.4</version>
+    </dependency>
   </dependencies>
 
 </project>
