@@ -11,6 +11,8 @@ import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
+import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
+import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
@@ -36,8 +38,11 @@ public class AppConfig {
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
     
     @Bean
-    public RootTaskProcessorFactory rootTaskProcessorFactory() {
-        return new RootTaskProcessorFactory();
+    public RootTaskProcessorFactory rootTaskProcessorFactory(CredentialsRepo repo) {
+        RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
+        factory.addTaskProcessorFactory(new DuplicationTaskProcessorFactory(repo));
+        factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo));
+        return factory;
     }
 
     @Bean
@@ -67,4 +72,6 @@ public class AppConfig {
     public ConfigurationManager configurationManager(){
         return new ConfigurationManager();
     }
+    
+    
 }
