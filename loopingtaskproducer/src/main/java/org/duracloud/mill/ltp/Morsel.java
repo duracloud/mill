@@ -20,11 +20,12 @@ import org.duracloud.mill.dup.DuplicationStorePolicy;
  *         Date: Nov 7, 2013
  */
 public class Morsel {
-    private static final String[] EXCLUSIONS = {"marker"};
+    private static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
     private String subdomain;
     private String spaceId;
     private String marker;
     private DuplicationStorePolicy storePolicy;
+    private boolean deletePerformed = false;
     
     public Morsel() {
         
@@ -105,5 +106,19 @@ public class Morsel {
      */
     public DuplicationStorePolicy getStorePolicy() {
         return storePolicy;
+    }
+
+    /**
+     * @return the deletePerformed
+     */
+    public boolean isDeletePerformed() {
+        return deletePerformed;
+    }
+
+    /**
+     * @param deletePerformed the deletePerformed to set
+     */
+    public void setDeletePerformed(boolean deletePerformed) {
+        this.deletePerformed = deletePerformed;
     }
 }

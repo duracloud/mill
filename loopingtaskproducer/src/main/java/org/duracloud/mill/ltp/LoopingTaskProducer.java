@@ -7,10 +7,12 @@
  */
 package org.duracloud.mill.ltp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.ehcache.Cache;
@@ -59,6 +61,13 @@ public class LoopingTaskProducer implements Runnable {
     private StorageProviderFactory storageProviderFactory;
     private List<Morsel> morselsToReload = new LinkedList<>();
     
+    private static class RunStats {
+        int deletes;
+        int dups;
+    }
+    
+    private Map<String,RunStats> runstats = new HashMap<>();
+
     public LoopingTaskProducer(CredentialsRepo credentialsRepo,
                                StorageProviderFactory storageProviderFactory,
                                DuplicationPolicyManager policyManager, 
@@ -92,6 +101,23 @@ public class LoopingTaskProducer implements Runnable {
             nibble(morselQueue.poll());
             persistMorsels(morselQueue, morselsToReload);
         }
+        
+        int totalDups = 0, totalDeletes = 0;
+        
+        for(String subdomain : runstats.keySet()){
+            RunStats stats = runstats.get(subdomain);
+            log.info("Totals for subdomain \"{}\": dups = {}, deletes = {}",
+                    subdomain, 
+                    stats.dups, 
+                    stats.deletes);
+            totalDeletes += stats.deletes;
+            totalDups    += stats.dups;
+        }
+        
+        log.info(
+                "Run ended: {} domains processed, {} dups, {} deletes.",
+                runstats.keySet().size(), totalDups, totalDeletes);
+        
     }
 
     /**
@@ -117,18 +143,21 @@ public class LoopingTaskProducer implements Runnable {
         //load morsels from state;
         Set<Morsel> morsels = new HashSet<>(this.stateManager.getMorsels());
 
+        morselQueue.addAll(morsels);
+
         //generate set of morsels based on duplication policy
         for(String account : this.policyManager.getDuplicationAccounts()){
             DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
             for(String spaceId : policy.getSpaces()){
                 Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
                 for(DuplicationStorePolicy storePolicy : storePolicies){
-                    morselQueue.add(new Morsel(account, spaceId, null, storePolicy));
+                    Morsel morsel = new Morsel(account, spaceId, null, storePolicy);
+                    if(!morselQueue.contains(morsel)){
+                        morselQueue.add(morsel);
+                    }
                 }
             }
         }
-        
-        morselQueue.addAll(morsels);
         
         return morselQueue;
     }
@@ -148,7 +177,6 @@ public class LoopingTaskProducer implements Runnable {
         
         String subdomain = morsel.getSubdomain();
         String spaceId = morsel.getSpaceId();
-        String marker = morsel.getMarker();
         DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
         
         //get all items from source
@@ -159,13 +187,13 @@ public class LoopingTaskProducer implements Runnable {
                 getStorageProvider(subdomain, 
                                    storePolicy.getDestStoreId());
 
-        //only perform deletes at the beginning of the space run.
-        if(marker == null){
+        if(!morsel.isDeletePerformed()){
             addDuplicationTasksForContentNotInSource(subdomain,
                                                         spaceId, 
                                                         storePolicy, 
                                                         sourceProvider, 
                                                         destProvider);
+            morsel.setDeletePerformed(true);
         }
         
         int taskQueueSize = taskQueue.size();
@@ -181,7 +209,10 @@ public class LoopingTaskProducer implements Runnable {
             log.info(
                     "All tasks that could be created were created for subdomain={}, spaceId={}, storePolicy={}. Taskqueue.size = {}",
                     subdomain, spaceId, storePolicy, taskQueue.size());
+            log.info("morsel completely nibbled. No reload necessary in this round.", morsel);
+
         }else{
+            log.info("morsel nibbled: adding to set for reloading later: {}", morsel);
             morselsToReload.add(morsel);
         }
     }
@@ -194,7 +225,7 @@ public class LoopingTaskProducer implements Runnable {
      * @param morsel
      * @param sourceProvider
      * @param maxContentIdsToAdd
-     * @return true if morsel exhausted.
+     * @return true if morsel exhausted, false if morsel needs to be requeued.
      */
     private boolean addDuplicationTasksFromSource(Morsel morsel, StorageProvider sourceProvider, int maxContentIdsToAdd) {
 
@@ -211,25 +242,46 @@ public class LoopingTaskProducer implements Runnable {
         //add to queue
         int contentIdCount = contentIds.size();
         
-        
-        if(contentIdCount > 0){
-            int added = addToTaskQueue(subdomain, spaceId, storePolicy,
-                    contentIds);
-
-            //if no tasks were added, it means that this morsel has been
-            //fully consumed in this run.
+        if(contentIdCount == 0){
+            // if no contentIds, set marker to null
+            // to ensure at least one more round from the beginning of the
+            // space.
+            // if the morsel has already been processed from
+            // the beginning in this run, on the next pass
+            // through this method, no items will be added
+            // to the queue since those tasks will exist already
+            // in the queued task set.
+            morsel.setMarker(null);
+        }else {
+            int added = addToTaskQueue(subdomain, 
+                                       spaceId, 
+                                       storePolicy,
+                                       contentIds);
+            getStats(subdomain).dups += added;
+            //if no tasks were added, it means that all contentIds in this morsel
+            //have been touched in this run.
             if(added == 0){
                 return true;
+            }else{
+                marker = contentIds.get(contentIds.size()-1);
+                morsel.setMarker(marker);
             }
-            
-            marker = contentIds.get(contentIds.size()-1);
-            morsel.setMarker(marker);
-        } else {
-            morsel.setMarker(null);
+        } 
+        
+        return false;
+    }
+
+    /**
+     * @param subdomain
+     * @return
+     */
+    private RunStats getStats(String subdomain) {
+        RunStats stats = this.runstats.get(subdomain);
+        if(stats == null){
+            this.runstats.put(subdomain, stats = new RunStats());
         }
         
-
-        return false;
+        return stats;
     }
 
     private void addDuplicationTasksForContentNotInSource(
@@ -268,13 +320,15 @@ public class LoopingTaskProducer implements Runnable {
                 if(deletions.size() == 10000){
                     //create dup task
                     deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
-                    deletions = new LinkedList<String>();
+                    deletions.clear();
                 }
             }
         }
 
         //add any remaining deletions
         deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
+        getStats(subdomain).deletes += deletionTaskCount;
+
         log.info(
                 "added {} deletion tasks: subdomain={}, spaceId={}, sourceStoreId={}, destStoreId={}",
                 deletionTaskCount, 

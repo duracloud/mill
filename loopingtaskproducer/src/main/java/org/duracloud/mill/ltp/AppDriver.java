@@ -105,10 +105,10 @@ public class AppDriver {
         Option stateFile =
                 new Option(STATE_FILE_PATH, "state-file-path",
                            true, "Indicates the path of file containing state info");
-            stateFile.setArgs(1);
-            stateFile.setArgName("file");
-            options.addOption(stateFile);
-
+        stateFile.setArgs(1);
+        stateFile.setRequired(true);
+        stateFile.setArgName("file");
+        options.addOption(stateFile);
         
         Option maxTaskQueueSize = new Option(
                 MAX_TASK_QUEUE_SIZE_OPTION,
@@ -168,15 +168,15 @@ public class AppDriver {
         
         String stateFilePath = cmd.getOptionValue(STATE_FILE_PATH);
         if (stateFilePath != null) {
-            File parent = new File(stateFilePath).getParentFile();
-            if(parent.exists()){
-                System.err.print("The state file's parent directory, \"" + stateFilePath + "\", does not exist.");
-                die();
+            File stateFile = new File(stateFilePath);
+            if(!stateFile.exists()){
+                File parent = stateFile.getParentFile();
+                parent.mkdirs();
+                if(!parent.exists()){
+                    System.err.print("The state file's parent directory, \"" + stateFilePath + "\", does not exist.");
+                    die();
+                }
             }
-        }else{
-            stateFilePath = System.getProperty("java.io.tmpdir")
-                    + File.separator
-                    + "duracloud-looping-task-producer-state.json";
         }
 
         log.info("state file path = {}", stateFilePath);
@@ -233,11 +233,13 @@ public class AppDriver {
                                                                    maxTaskQueueSize);
             producer.run();
             
-            cacheManager.shutdown();
         }catch(Exception ex){
             log.error(ex.getMessage(), ex);
             System.exit(1);
         }
         
+        log.info("looping task producer completed successfully.");
+        System.exit(0);
+
     }
 }
