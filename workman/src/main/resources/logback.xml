@@ -27,6 +27,10 @@
   <logger name="org.duracloud.mill" level="${log.level}">
     <appender-ref ref="DURACLOUD"/>
   </logger>
+  
+  <logger name="org.springframework" level="${log.level}">
+    <appender-ref ref="DURACLOUD"/>
+  </logger>
   <root level="WARN">
     <appender-ref ref="STDOUT"/>
   </root>

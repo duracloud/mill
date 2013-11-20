@@ -39,6 +39,11 @@ public class RootTaskProcessorFactory implements TaskProcessorFactory {
                 p = factory.create(task);
                 break;
             } catch (TaskProcessorCreationFailedException e) {
+                if(log.isDebugEnabled()){
+                    log.debug("task processor failed, moving on to the next...");
+                    log.warn(e.getMessage(), e);
+                    e.printStackTrace();
+                }
                 continue;
             }
         }

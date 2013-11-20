@@ -20,4 +20,12 @@ public class TaskProcessorCreationFailedException extends Exception {
     public TaskProcessorCreationFailedException(String message) {
         super(message);
     }
+
+    /**
+     * @param message
+     * @param e
+     */
+    public TaskProcessorCreationFailedException(String message, Exception e) {
+        super(message,e);
+    }
 }

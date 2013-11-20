@@ -42,6 +42,7 @@ public class AppConfig {
         RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(new DuplicationTaskProcessorFactory(repo));
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo));
+        log.info("RootTaskProcessorFactory created.");
         return factory;
     }
 
