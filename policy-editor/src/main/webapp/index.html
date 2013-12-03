@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content=
+"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script type="text/javascript" src=
+"lib/jquery/jquery-1.10.2.min.js">
+</script>
+
+<script type="text/javascript" src=
+"lib/jquery/xml2json.js">
+</script>
+<link type="text/css" href=
+"lib/bootstrap/css/bootstrap.min.css"
+ rel="stylesheet">
+<link type="text/css" href=
+"lib/font-awesome/3.2.1/css/font-awesome.min.css"
+ rel="stylesheet">
+<script type="text/javascript" src=
+"lib/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src=
+"lib/bootstrap-growl/1.0.0/bootstrap-growl.min.js"></script>
+
+<link type="text/css" href="css/style.css" rel="stylesheet">
+<title>Duplication Policy Editor : DuraCloud</title>
+</head>
+<body>
+  <script type="text/x-handlebars" id="loading" data-template-name="modal">
+<div class="modal fade" id="loading-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="container">
+            <div class="col-xs-1">
+             <p> <img src="img/loading.gif"/></p>
+            </div>
+            <div class="col-md-6">
+            <h1>Working...</h1>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</script>
+
+
+<script type="text/x-handlebars" id="loading" data-template-name="loading">
+	<h5>loading...</h5>
+
+	<div id="image">
+    </div>
+</script>
+
+<script type="text/x-handlebars" data-template-name="application">
+   {{partial "header"}}
+     <div class="container">
+	   {{outlet left}}
+ 	   {{outlet center}}
+	   {{outlet right}}
+	</div>
+</script>
+
+<script type="text/x-handlebars" data-template-name="index">
+
+<div class="row">
+  <div class="col-md-2 col-md-offset-5 well">
+   	<h1>Welcome</h1>  
+	<p>
+        {{#link-to 'accounts'}}View Accounts{{/link-to}}
+	</p>
+  </div>
+</div>
+	
+	
+</script>
+
+<script type="text/x-handlebars" data-template-name="accounts.index">
+	Accounts Index page
+</script>
+
+<script type="text/x-handlebars" data-template-name="accounts">
+       <div class="col-md-3">
+         <div class="form-group"> 
+		<span data-toggle='tooltip' title='To set up an account, enter a valid account subdomain.' data-placement='right'>
+           {{input class="form-control"  
+             type="text" 
+             id="new-account" 
+             placeholder="Enter a valid subdomain" 
+             value=newId 
+             action="createAccount"}}
+		</span>
+
+         </div>
+           <div class="list-group">
+             {{#each}}
+              {{#link-to 'policy' id class="list-group-item"}}
+				<span>{{id}}</span>
+				<button class="btn  col-xs-2 pull-right" {{action 'deleteAccount' this bubbles=false}}>
+					<span class="glyphicon glyphicon-trash"></span>
+				</button>
+
+			  {{/link-to}}                    
+            {{else}}
+                 <p class="alert alert-info">To set up an account, enter a valid account subdomain above.</p>
+            {{/each}}
+           </div>
+      </div>
+  
+</script>
+
+<script type="text/x-handlebars" data-template-name="policy">
+      <div class="col-md-3">
+       <div class="row">
+         <div class="col-xs-12 form-group">
+            <label class="control-label" style="padding-top:6px">{{id}}'s Configs </label> 
+            <button type="button" class="btn btn-default  dropdown-toggle pull-right" data-toggle="dropdown">
+              <span class="glyphicon glyphicon-plus-sign"></span> Add <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              {{#each space in availableSpaces}}
+                     <li><a {{action 'addSpace' space }}>{{space}}</a></li>
+              {{/each}}
+		   </ul>
+	     </div>
+       </div>
+       <div class="list-group">
+           {{#each space in spaces}}
+			 {{#view App.SpaceItemView spaceBinding=space}}
+               {{#link-to 'space' space.spaceId  class="list-group-item"}}
+	  		    	<span>{{space.spaceId}}<span>
+	     		     <button class="btn  col-xs-2 pull-right" {{action 'deleteSpace' space bubbles=false}}>
+						<span class="glyphicon glyphicon-trash"></span>
+					 </button>
+		    	 {{/link-to}} 
+			 {{/view}}
+           {{else}}
+                 <p class="alert alert-info">There are policies set up for this account. To add policies, 
+                    click the add button above and select the space for which you would like 
+                    to configure duplication policies.</p>
+           {{/each}}
+       </div>
+     </div>
+
+</script>
+
+<script type="text/x-handlebars" data-template-name="space">
+      <div class="col-md-6">
+     <table class="table">
+       <thead>
+         <tr>
+            <th>Source Store</th>
+            <th>Destination Store</th>
+            <th></th>
+         </tr>
+            <th>{{view Ember.Select 
+                    class="form-control"
+                    contentBinding=storageProviders
+                    optionLabelPath="content.storageProviderType"
+                    optionValuePath="content.id"
+					prompt="select a source"
+                    selectionBinding="controller.srcStore"}}
+
+				</th>
+            <th>{{view Ember.Select 
+                    class="form-control"
+                    contentBinding=storageProviders
+                    optionLabelPath="content.storageProviderType"
+                    optionValuePath="content.id"
+					prompt="select a destination"
+                    selectionBinding="controller.destStore"
+                 }}
+			</th>
+            <th><button class="btn col-xs-9" {{action 'addStorePolicy' controller.srcStore controller.destStore}}>Add</button></th>
+         </tr>
+       </thead>
+       <tbody>
+        {{#each storePolicy in storePolicies}}
+          <tr>
+             <td>  
+				{{storePolicy.source.storageProviderType}}
+             </td>
+             <td>
+				{{storePolicy.destination.storageProviderType}}
+             </td>
+             <td>
+                <button class="btn  col-xs-9"  {{action 'deleteStorePolicy' storePolicy }}>
+					<span class="glyphicon glyphicon-trash"></span> 
+				</button>
+             </td>
+             </tr>
+          {{else}}
+          <tr>
+            <td colspan="3" class="alert alert-info">There are no policies currently configured.
+                         To configure a policy select source and destination
+                         stores and click add.</td>
+          </tr>
+          {{/each}}
+       </tbody>
+     </table>
+     </div>
+  
+</script>
+
+<script type="text/x-handlebars" data-template-name="header">
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapsed-nav">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="#">Duplication Policy Editor</a>
+  </div>  
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse" id="collapsed-nav">
+    <ul class="nav navbar-nav">
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+	  <!--
+      <li><a href="#">Sign Out</a></li>
+	  -->
+    </ul>
+  </div><!-- /.navbar-collapse -->
+</nav>
+</script>
+
+<script type="text/x-handlebars" data-template-name="sessions/new">
+    <div class="col-md-6">
+      <form class="col-md-5">
+	  <div class="form-group">
+		<span data-toggle='tooltip' title='DuraCloud root username' data-placement='right'>
+        {{input id="username" type="text" class="form-control" placeholder="Username" value=username}}
+		</span>
+      </div>
+      <div class="form-group">
+		<span data-toggle='tooltip' title='DuraCloud root password' data-placement='right'>
+        {{input type="password" class="form-control" placeholder="Password" value=password}}
+		</span>
+      </div>
+      <div class="form-group">
+       <span data-toggle="tooltip"  title="For example, if your DuraCloud hostname is myinstitution.duracloud.org, enter 'myinstitution'." data-placement='right' >  {{input type="text"  class="form-control" placeholder="DuraCloud Subdomain" value=subdomain  }}</span>
+	  </div>
+
+ 	   {{#view App.LoginButtonView id="loginButton" }}
+			<span class="spinner">
+			<i class='icon-spin icon-refresh'></i></span>
+			</span>
+			Sign In
+	   {{/view}}            
+      </form>
+	</div>
+</script>
+
+<script type="text/javascript" src=
+"lib/handlebars/handlebars-1.0.0.js">
+</script>
+
+<script type="text/javascript" src="lib/ember/ember-1.0.0.js">
+</script>
+
+<script type="text/javascript"  src="lib/ember/ember-data-1.0.0-beta.3.js"></script>
+
+
+<script type="text/javascript" src="js/app.js">
+</script>
+
+<script type="text/javascript" src="js/misc.js">
+</script>
+
+<script type="text/javascript" src="js/router.js">
+</script>
+
+<script type="text/javascript" src="js/data_model.js">
+</script>
+
+<script type="text/javascript" src="js/data_adapter.js">
+</script>
+
+<script type="text/javascript" src=
+"js/controllers/accounts_controller.js">
+</script>
+
+<script type="text/javascript" src=
+"js/controllers/policy_controller.js">
+</script>
+
+<script type="text/javascript" src=
+"js/controllers/store_policy_controller.js">
+</script>
+
+</body>
+</html>
+
