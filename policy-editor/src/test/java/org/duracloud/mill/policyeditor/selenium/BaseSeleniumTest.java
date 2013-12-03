@@ -60,9 +60,9 @@ public abstract class BaseSeleniumTest {
     
     protected static Properties getProperties() throws Exception{
         Properties p = new Properties();
-//        p.load(BaseSeleniumTest.class.getClassLoader()
-//                   .getResourceAsStream("test-init.properties"));
-//
+        p.load(BaseSeleniumTest.class.getClassLoader()
+                   .getResourceAsStream("test.properties"));
+
         return p;
     }
 

@@ -9,19 +9,14 @@ package org.duracloud.mill.policyeditor.selenium;
 
 import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.browserlaunchers.Sleeper;
-
-import com.thoughtworks.selenium.DefaultSelenium;
 
 /**
  * @author Daniel Bernstein
  *	       Date: Dec 2, 2013
  */
 public class TestPolicyEditor extends BaseSeleniumTest {
-
+    private static final String LOGIN_LOCATOR = "css=#loginButton";
     /**
      * @throws java.lang.Exception
      */
@@ -38,14 +33,52 @@ public class TestPolicyEditor extends BaseSeleniumTest {
 
     @Test
     public void testLoginFailure() {
-        sc.start();
-        sc.open("#/accounts");
-        String loginLocator = "css=#loginButton";
-        assertTrue(sc.isVisible(loginLocator));
+        openAccounts();
         assertTrue(!sc.isElementPresent("css=.alert"));
-        sc.click(loginLocator);
-        sleep(3000);
+        clickLoginButton();
         assertTrue(sc.isVisible("css=.alert"));
+    }
+
+    /**
+     * 
+     */
+    private void clickLoginButton() {
+        assertTrue(sc.isVisible(LOGIN_LOCATOR));
+        sc.click(LOGIN_LOCATOR);
+        sleep(3000);
+    }
+    
+    @Test
+    public void testAccounts() {
+        openAccounts();
+        doLogin();
+        assertTrue(sc.isVisible("css=#new-account"));
+    }
+
+    /**
+     * 
+     */
+    private void doLogin() {
+        typeField("username");
+        typeField("password");
+        typeField("subdomain");
+        clickLoginButton();
+        sleep(3000);
+    }
+
+    /**
+     * @param string
+     */
+    private void typeField(String field) {
+        assertTrue(sc.isVisible("css=#" + field));
+        sc.type("css=#" + field, this.props.get(field).toString());
+    }
+
+    /**
+     * 
+     */
+    private void openAccounts() {
+        sc.open("#/accounts");
     }
 
 }

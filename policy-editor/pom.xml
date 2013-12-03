@@ -20,6 +20,9 @@
     <skipUTs>false</skipUTs>
     <jetty.port>8888</jetty.port>
     <jetty.version>8.1.4.v20120524</jetty.version>
+    <policyeditor.username>admin</policyeditor.username>
+    <policyeditor.password>apw</policyeditor.password>
+    <policyeditor.subdomain>danny</policyeditor.subdomain>
   </properties>
   
   <build>
