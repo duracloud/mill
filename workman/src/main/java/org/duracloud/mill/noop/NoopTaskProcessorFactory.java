@@ -12,6 +12,8 @@ import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 
+import java.io.File;
+
 /**
  * A processor factory for a noop task.
  * 
@@ -22,8 +24,9 @@ public class NoopTaskProcessorFactory extends TaskProcessorFactoryBase {
     /**
      * @param credentialRepo
      */
-    public NoopTaskProcessorFactory(CredentialsRepo credentialRepo) {
-        super(credentialRepo);
+    public NoopTaskProcessorFactory(CredentialsRepo credentialRepo,
+                                    File workDir) {
+        super(credentialRepo, workDir);
     }
 
     /*

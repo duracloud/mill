@@ -10,6 +10,8 @@ package org.duracloud.mill.workman;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.domain.Task;
 
+import java.io.File;
+
 /**
  * An abstract base class for building TaskProcessor factories that require
  * access to credentials.
@@ -20,9 +22,12 @@ import org.duracloud.mill.domain.Task;
 public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
     private CredentialsRepo credentialRepo;
+    private File workDir;
 
-    public TaskProcessorFactoryBase(CredentialsRepo credentialRepo) {
+    public TaskProcessorFactoryBase(CredentialsRepo credentialRepo,
+                                    File workDir) {
         this.credentialRepo = credentialRepo;
+        this.workDir = workDir;
     }
 
     @Override
@@ -37,6 +42,10 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
     protected CredentialsRepo getCredentialRepo() {
         return credentialRepo;
+    }
+
+    protected File getWorkDir() {
+        return workDir;
     }
 
     protected abstract boolean isSupported(Task task);

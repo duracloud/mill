@@ -17,6 +17,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,9 +42,10 @@ public class DuplicationTaskProcessorTest {
     private StorageProvider srcStore;
     private StorageProvider destStore;
     private DuplicationTaskProcessor taskProcessor;
+    private File workDir;
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         srcStore = EasyMock.createMock(StorageProvider.class);
         destStore = EasyMock.createMock(StorageProvider.class);
 
@@ -53,9 +56,14 @@ public class DuplicationTaskProcessorTest {
         dupTask.setSpaceId(spaceId);
         dupTask.setContentId(contentId);
 
+        workDir = new File("target", "dup-task-processor-test");
+        workDir.mkdirs();
+        workDir.deleteOnExit();
+
         taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
                                                      srcStore,
-                                                     destStore);
+                                                     destStore,
+                                                     workDir);
     }
 
     private void replayMocks() {
@@ -65,6 +73,7 @@ public class DuplicationTaskProcessorTest {
     @After
     public void teardown() {
         EasyMock.verify(srcStore, destStore);
+        workDir.delete();
     }
 
     @Test
@@ -220,7 +229,8 @@ public class DuplicationTaskProcessorTest {
 
         taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
                                                      srcStore,
-                                                     destStore);
+                                                     destStore,
+                                                     workDir);
 
         taskProcessor.execute();
     }
@@ -246,7 +256,8 @@ public class DuplicationTaskProcessorTest {
 
         taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
                                                      srcStore,
-                                                     destStore);
+                                                     destStore,
+                                                     workDir);
 
         try {
             taskProcessor.execute();

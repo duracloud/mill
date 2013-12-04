@@ -25,14 +25,14 @@ public class ConfigurationManagerTest {
      */
     @Test
     public void test() {
-        ConfigurationManager c = new ConfigurationManager();
+        ConfigurationManager config = new ConfigurationManager();
         System.setProperty(
                 ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                 "src/test/resources/mill-config-test.properties");
-        c.init();
-        Assert.assertNotNull(c.getCredentialsFilePath());
-        Assert.assertNotNull(c.getDuplicationQueueName());
-
+        config.init();
+        Assert.assertNotNull(config.getCredentialsFilePath());
+        Assert.assertNotNull(config.getDuplicationQueueName());
+        Assert.assertNotNull(config.getWorkDirectoryPath());
     }
 
 }

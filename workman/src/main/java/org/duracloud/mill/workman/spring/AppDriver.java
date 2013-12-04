@@ -56,10 +56,10 @@ public class AppDriver {
                 "max-workers",
                 true,
                 "The max number of worker threads that can run at a time. " +
-                "The default value is " + TaskWorkerManager.DEFAULT_POOL_SIZE + ". " + 
-                "Setting with value will override the "
-                        + TaskWorkerManager.MAX_WORKER_PROPERTY_KEY
-                        + " if set in the configuration file.");
+                "The default value is " + TaskWorkerManager.DEFAULT_POOL_SIZE +
+                ". Setting with value will override the " +
+                TaskWorkerManager.MAX_WORKER_PROPERTY_KEY +
+                " if set in the configuration file.");
         maxWorkers.setArgs(1);
         maxWorkers.setArgName("count");
         options.addOption(maxWorkers);
@@ -87,17 +87,18 @@ public class AppDriver {
                     ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                     configPath);
         }
-        
 
         String workerCount = cmd.getOptionValue("w");
         if(workerCount != null){
             Integer.parseInt(workerCount);
-            System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY, workerCount);
+            System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY,
+                               workerCount);
         }
 
         String queueName = cmd.getOptionValue("q");
         if(queueName != null){
-            System.setProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY, queueName);
+            System.setProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY,
+                               queueName);
         }
         
         ApplicationContext context = 

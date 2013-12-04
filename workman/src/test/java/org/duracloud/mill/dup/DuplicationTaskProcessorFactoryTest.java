@@ -7,12 +7,7 @@
  */
 package org.duracloud.mill.dup;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.duracloud.mill.credentials.AccountCredentials;
-import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
@@ -23,6 +18,11 @@ import org.duracloud.storage.domain.StorageProviderType;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Daniel Bernstein Date: Oct 25, 2013
@@ -87,8 +87,8 @@ public class DuplicationTaskProcessorFactoryTest {
 
         EasyMock.replay(repo);
 
-        DuplicationTaskProcessorFactory f = new DuplicationTaskProcessorFactory(
-                repo);
+        DuplicationTaskProcessorFactory f =
+            new DuplicationTaskProcessorFactory(repo, new File("workdir"));
 
         DuplicationTask dupTask = new DuplicationTask();
         dupTask.setAccount("account");

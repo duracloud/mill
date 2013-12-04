@@ -20,6 +20,8 @@ import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 
 /**
  * This class is responsible for creating DuplicationTaskProcessors 
@@ -29,12 +31,11 @@ import org.slf4j.LoggerFactory;
  */
 public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     private StorageProviderFactory storageProviderFactory;
-    private static Logger log = LoggerFactory
-                                    .getLogger(
-                                         DuplicationTaskProcessorFactory.class);
+    private static Logger log =
+        LoggerFactory.getLogger(DuplicationTaskProcessorFactory.class);
 
-    public DuplicationTaskProcessorFactory(CredentialsRepo repo){
-        super(repo);
+    public DuplicationTaskProcessorFactory(CredentialsRepo repo, File workDir){
+        super(repo, workDir);
         this.storageProviderFactory = new StorageProviderFactory();
     }
     
@@ -44,29 +45,32 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     }
 
     @Override
-    protected TaskProcessor createImpl(Task task) throws TaskProcessorCreationFailedException {
+    protected TaskProcessor createImpl(Task task)
+        throws TaskProcessorCreationFailedException {
 
         DuplicationTask dtask = new DuplicationTask();
         dtask.readTask(task);
         String subdomain = dtask.getAccount();
 
         try {
-            StorageProvider sourceStore = createStorageProvider(
-                    dtask.getSourceStoreId(), subdomain);
-            StorageProvider destStore = createStorageProvider(
-                    dtask.getDestStoreId(), subdomain);
-            return new DuplicationTaskProcessor(task, sourceStore, destStore);
+            StorageProvider sourceStore =
+                createStorageProvider(dtask.getSourceStoreId(), subdomain);
+            StorageProvider destStore =
+                createStorageProvider(dtask.getDestStoreId(), subdomain);
+            return new DuplicationTaskProcessor(dtask, sourceStore, destStore,
+                                                getWorkDir());
         } catch (Exception e) {
-            log.error("failed to create task: unable to locate credentials for subdomain: "+e.getMessage(), e);
+            log.error("failed to create task: unable to locate credentials " +
+                      "for subdomain: " + e.getMessage(), e);
             throw new TaskProcessorCreationFailedException(
-                    "failed to create task: unable to locate credentials for subdomain: "
-                            + subdomain, e);
+                "failed to create task: unable to locate credentials " +
+                "for subdomain: "+ subdomain, e);
         }
     }
 
     /**
-     * @param sourceStoreId
-     * @param account
+     * @param providerId
+     * @param subdomain
      * @return
      */
     public StorageProvider createStorageProvider(String providerId,

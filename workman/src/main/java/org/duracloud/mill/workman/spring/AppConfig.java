@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.workman.spring;
 
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
@@ -24,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import java.io.File;
 
 /**
  * 
@@ -38,10 +39,13 @@ public class AppConfig {
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
     
     @Bean
-    public RootTaskProcessorFactory rootTaskProcessorFactory(CredentialsRepo repo) {
+    public RootTaskProcessorFactory rootTaskProcessorFactory(CredentialsRepo repo,
+                                                             File workDir) {
         RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
-        factory.addTaskProcessorFactory(new DuplicationTaskProcessorFactory(repo));
-        factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo));
+        factory.addTaskProcessorFactory(
+            new DuplicationTaskProcessorFactory(repo, workDir));
+        factory.addTaskProcessorFactory(
+            new NoopTaskProcessorFactory(repo, workDir));
         log.info("RootTaskProcessorFactory created.");
         return factory;
     }
@@ -55,6 +59,24 @@ public class AppConfig {
             log.info("no credentials file path: using simpledb based credential repo...");
             return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
         }
+    }
+
+    @Bean
+    public File workDir(ConfigurationManager configurationManager) {
+        File workDir;
+
+        String workDirPath = configurationManager.getWorkDirectoryPath();
+        if(null != workDirPath) {
+            workDir = new File(workDirPath);
+        } else {
+            workDir = new File(System.getProperty("java.io.tmpdir"),
+                               "duplication-work");
+        }
+        if(!workDir.exists()) {
+            workDir.mkdirs();
+        }
+
+        return workDir;
     }
 
     @Bean(initMethod="init", destroyMethod="destroy")

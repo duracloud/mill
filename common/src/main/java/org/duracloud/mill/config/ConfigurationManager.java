@@ -7,14 +7,14 @@
  */
 package org.duracloud.mill.config;
 
+import org.duracloud.mill.util.SystemPropertyLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.duracloud.mill.util.SystemPropertyLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
@@ -27,6 +27,7 @@ public class ConfigurationManager {
 
     public static final String DUPLICATION_QUEUE_KEY = "duplicationQueue";
     public static final String CREDENTIALS_FILE_PATH_KEY = "credentialsFilePath";
+    public static final String WORK_DIRECTORY_PATH_KEY = "workDirectoryPath";
     public static final String DURACLOUD_MILL_CONFIG_FILE_KEY = "duracloud.mill.configFile";
     private Set<String> requiredProperties = new HashSet<>();
     
@@ -37,7 +38,11 @@ public class ConfigurationManager {
     public String getDuplicationQueueName() {
         return System.getProperty(DUPLICATION_QUEUE_KEY);
     }
-    
+
+    public String getWorkDirectoryPath() {
+        return System.getProperty(WORK_DIRECTORY_PATH_KEY);
+    }
+
     protected void addRequiredProperties(){
         addRequiredProperty(DUPLICATION_QUEUE_KEY);
     }

@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -44,25 +45,30 @@ public class DuplicationTaskProcessor implements TaskProcessor {
     private DuplicationTask dupTask;
     private StorageProvider sourceStore;
     private StorageProvider destStore;
+    private File workDir;
 
     private final Logger log =
         LoggerFactory.getLogger(DuplicationTaskProcessor.class);
 
     public DuplicationTaskProcessor(Task task,
                                     StorageProvider sourceStore,
-                                    StorageProvider destStore) {
+                                    StorageProvider destStore,
+                                    File workDir) {
         this.dupTask = new DuplicationTask();
         this.dupTask.readTask(task);
         this.sourceStore = sourceStore;
         this.destStore = destStore;
+        this.workDir = workDir;
     }
 
     protected DuplicationTaskProcessor(DuplicationTask dupTask,
                                        StorageProvider sourceStore,
-                                       StorageProvider destStore) {
+                                       StorageProvider destStore,
+                                       File workDir) {
         this.dupTask = dupTask;
         this.sourceStore = sourceStore;
         this.destStore = destStore;
+        this.workDir = workDir;
     }
 
     @Override
@@ -427,8 +433,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         throws TaskExecutionFailedException {
         File localFile = null;
         try {
-            // TODO: Allow for temp files to be stored in a preferred location
-            localFile = File.createTempFile("content-item", ".tmp");
+            localFile = File.createTempFile("content-item", ".tmp", workDir);
             try(OutputStream outStream = FileUtils.openOutputStream(localFile)) {
                 IOUtils.copy(inStream, outStream);
             }
@@ -569,8 +574,14 @@ public class DuplicationTaskProcessor implements TaskProcessor {
         StorageProvider destProvider =
             new SDSCStorageProvider(destProvCredUser, destProvCredPass);
 
+        File workDir = Files.createTempDirectory("dup-work", null).toFile();
+        workDir.deleteOnExit();
+
         DuplicationTaskProcessor dupProcessor =
-            new DuplicationTaskProcessor(task, srcProvider, destProvider);
+            new DuplicationTaskProcessor(task,
+                                         srcProvider,
+                                         destProvider,
+                                         workDir);
         dupProcessor.execute();
 
         System.out.println("Duplication check completed successfully!");
