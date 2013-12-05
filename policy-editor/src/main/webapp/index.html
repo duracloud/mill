@@ -246,6 +246,11 @@
 		{{input id="subdomain" type="text"  class="form-control" placeholder="DuraCloud Subdomain" value=subdomain  }}
 		</span>
 	  </div>
+      <div class="form-group">
+       <span data-toggle="tooltip"  title="An optional prefix for the space containing the duplication policies." data-placement='right' >  
+		{{input id="spacePrefix" type="text"  class="form-control" placeholder="Space prefix" value=spacePrefix  }}
+		</span>
+	  </div>
 
  	   {{#view App.LoginButtonView id="loginButton" }}
 			<span class="spinner">
@@ -294,6 +299,9 @@
 "js/controllers/store_policy_controller.js">
 </script>
 
+<script type="text/javascript" src=
+"js/controllers/session_new_controller.js">
+</script>
 </body>
 </html>
 

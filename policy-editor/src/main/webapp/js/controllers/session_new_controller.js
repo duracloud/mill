@@ -12,25 +12,28 @@
 
 App.SessionsNewController = Ember.ObjectController.extend({
 
-  attemptedTransition: null,
+	attemptedTransition : null,
+	content: {},
+	
+	
+	actions: {
+		login: function(success, failure){
+			var self = this;
+			var router = this.get('target');
+			var data = this.getProperties('username', 'password', 'subdomain','spacePrefix');
+			App.loginOptions.spacePrefix = data.spacePrefix;
+			var attemptedTrans = this.get('attemptedTransition');
 
-  loginUser: function() {
-    var self = this;
-    var router = this.get('target');
-    var data = this.getProperties('username', 'password');
-    var attemptedTrans = this.get('attemptedTransition');
-
-      App.AuthManager.authenticate(data.username, password)
-		 .then(function(){
-			 alert("success");
-		      if (attemptedTrans) {
-		          attemptedTrans.retry();
-		          self.set('attemptedTransition', null);
-		        } else {
-		          router.transitionTo('index');
-		        }
-		 }, function(reason){
-			 alert("failure:  "+ reason);
-		 });
-  }
+			App.authManager.authenticate(data.username, data.password,
+					data.subdomain).then(function() {
+				success();
+				if (attemptedTrans) {
+					attemptedTrans.retry();
+					self.set('attemptedTransition', null);
+				} else {
+					router.transitionTo('index');
+				}
+			}, failure);
+		}
+	}
 });

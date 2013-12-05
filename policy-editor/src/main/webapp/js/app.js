@@ -18,8 +18,9 @@ window.App = Ember.Application.create();
 
 
 
-App.Credentials = Ember.Object.create({
+App.loginOptions = Ember.Object.create({
 	subdomain: null,
+	spacePrefix: null,
 });
 
 
@@ -36,7 +37,7 @@ App.AuthManager = Ember.Object.extend({
 		var that = this;
 		return new Ember.RSVP.Promise(function(resolve, reject){
 			that._token =  btoa(username + ":" + password);
-			App.Credentials.subdomain = subdomain;
+			App.loginOptions.subdomain = subdomain;
 			
 			App.DuraStoreClient.listAccounts().then(function(){
 				that._authenticated = true;
@@ -60,7 +61,13 @@ App.DuraStoreClient = Ember.Object.create({
 	},
 
 	_formatDuplicationPolicyRepoUrl:function(){
-		return this._formatDuraStoreUrl(App.Credentials.subdomain) + "/duplication-policy-repo/";
+		var spacePrefix = App.loginOptions.spacePrefix;
+		var prefix = "";
+		if(spacePrefix && spacePrefix.trim() != ''){
+			prefix = spacePrefix + "-";
+		}
+		
+		return this._formatDuraStoreUrl(App.loginOptions.subdomain) + "/"+ prefix + "duplication-policy-repo/";
 	},
 
 	_formatDuplicationPolicyUrl:function(accountSubdomain){
@@ -177,36 +184,6 @@ App.beforeSend = function(){
 	};
 };
 
-
-App.SessionsNewController = Ember.ObjectController.extend({
-
-	attemptedTransition : null,
-	content: {},
-	
-	
-	actions: {
-		login: function(success, failure){
-			var self = this;
-			var router = this.get('target');
-			var data = this.getProperties('username', 'password', 'subdomain');
-			var attemptedTrans = this.get('attemptedTransition');
-
-			App.authManager.authenticate(data.username, data.password,
-					data.subdomain).then(function() {
-				success();
-				if (attemptedTrans) {
-					attemptedTrans.retry();
-					self.set('attemptedTransition', null);
-				} else {
-					router.transitionTo('index');
-				}
-			}, failure);
-		}
-	
-	}
-
-
-});
 
 App.LoginButtonView = Ember.View.extend({
 	  tagName: 'button',
