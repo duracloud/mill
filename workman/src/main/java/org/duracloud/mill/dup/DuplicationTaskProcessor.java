@@ -235,6 +235,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      */
     private void deleteDestSpace(final String spaceId)
         throws TaskExecutionFailedException {
+        log.info("Deleting space " + spaceId +
+                 " from dest provider in account " + dupTask.getAccount());
         try {
             new Retrier().execute(new Retriable() {
                 @Override
@@ -250,6 +252,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
             throw new DuplicationTaskExecutionFailedException(
                 buildFailureMessage(msg), e);
         }
+        log.info("Successfully deleted space " + spaceId +
+                 " from dest provider in account " + dupTask.getAccount());
     }
 
     /**
@@ -325,6 +329,8 @@ public class DuplicationTaskProcessor implements TaskProcessor {
             throw new DuplicationTaskExecutionFailedException(
                 buildFailureMessage(msg), e);
         }
+        log.info("Successfully duplicated properties for " + contentId +
+                 " in space " + spaceId + " in account " + dupTask.getAccount());
     }
 
     private void cleanProperties(Map<String, String> props) {
@@ -402,6 +408,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                 buildFailureMessage(msg));
         }
         cleanup(localFile);
+
+        log.info("Successfully duplicated " + contentId + " in space " +
+                 spaceId + " in account " + dupTask.getAccount());
     }
 
     /*
@@ -506,7 +515,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
     private void duplicateDeletion(final String spaceId,
                                    final String contentId)
         throws TaskExecutionFailedException {
-        log.info("Duplicating deletion of " + contentId + " in space " +
+        log.info("Duplicating deletion of " + contentId + " in dest space " +
                  spaceId + " in account " + dupTask.getAccount());
         try {
             new Retrier().execute(new Retriable() {
@@ -523,6 +532,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
             throw new DuplicationTaskExecutionFailedException(
                 buildFailureMessage(msg), e);
         }
+
+        log.info("Successfully deleted " + contentId + " in dest space " +
+                 spaceId + " in account " + dupTask.getAccount());
     }
 
     private String buildFailureMessage(String message) {
