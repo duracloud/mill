@@ -74,6 +74,14 @@ public class AppDriver {
         queueName.setArgName("name");
         options.addOption(queueName);
 
+        Option workDirPath = new Option("d", "work-dir", true,
+                                        "Directory that will be used to " +
+                                        "temporarily store files as they " +
+                                        "are being processed.");
+        workDirPath.setArgs(1);
+        workDirPath.setRequired(true);
+        options.addOption(workDirPath);
+
         return options;
     }
     
@@ -100,7 +108,13 @@ public class AppDriver {
             System.setProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY,
                                queueName);
         }
-        
+
+        String workDirPath = cmd.getOptionValue("d");
+        if(workDirPath != null){
+            System.setProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY,
+                               workDirPath);
+        }
+
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);
     }
