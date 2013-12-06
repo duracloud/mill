@@ -110,15 +110,15 @@ public class AppDriver {
 
         String queueName = cmd.getOptionValue("q");
         if(queueName != null){
-            System.setProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY,
-                               queueName);
-            
             setSystemProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY, queueName);
         }
 
         String workDirPath = cmd.getOptionValue("d");
-        if(workDirPath == null){
-            workDirPath = System.getProperty("java.io.tmpdir") + File.separator + "duplication-work";
+        if(workDirPath == null || workDirPath.trim() == ""){
+            //this should never happen since workDirPath is required,
+            //but I'll leave this in here as a sanity check.
+            workDirPath = System.getProperty("java.io.tmpdir") + 
+                            File.separator + "duplication-work";
         }
 
         setSystemProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY, workDirPath);
@@ -139,8 +139,9 @@ public class AppDriver {
             if(!workDir.exists()) {
                 if(!workDir.mkdirs()){
                     String message = "Unable to create work dir: "
-                            + workDir.getAbsolutePath()
-                            + ". Check that workman process has permission to create this directory";
+                            + workDir.getAbsolutePath() +
+                            ". Check that workman process has " +
+                            "permission to create this directory";
                     log.error(message);
                     System.exit(1);
                 }
@@ -156,8 +157,11 @@ public class AppDriver {
     }
 
     /**
-     * @param duplicationQueueKey
-     * @param queueName
+     * A util method that logs the property set action before setting the
+     * property.
+     * 
+     * @param key
+     * @param value
      */
     private static void setSystemProperty(String key, String value) {
         log.info("Setting system property {} to {}", key, value);
