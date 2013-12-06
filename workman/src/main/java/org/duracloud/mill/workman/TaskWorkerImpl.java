@@ -34,17 +34,22 @@ public class TaskWorkerImpl implements TaskWorker {
     private boolean done = false;
     private boolean started = false;
     private TimerTask currentTimerTask;
+    private Task task;
+    private boolean initialized = false;
 
     /**
-     * 
+     * @param task
      * @param processorFactory
      * @param queue
      */
-    public TaskWorkerImpl(TaskProcessorFactory processorFactory, TaskQueue queue) {
+    public TaskWorkerImpl(Task task, TaskProcessorFactory processorFactory, TaskQueue queue) {
+        if (task == null)
+            throw new IllegalArgumentException("task must be non-null");
         if (queue == null)
-            throw new IllegalArgumentException("queue non-null");
+            throw new IllegalArgumentException("queue must be non-null");
         if (processorFactory == null)
-            throw new IllegalArgumentException("processor non-null");
+            throw new IllegalArgumentException("processor must be non-null");
+        this.task = task;
         this.processorFactory = processorFactory;
         this.queue = queue;
         log.debug("new worker created {}", this);
@@ -80,11 +85,32 @@ public class TaskWorkerImpl implements TaskWorker {
         this.currentTimerTask = timerTask;
         timer.schedule(currentTimerTask, executionTime);
     }
+    
+    /**
+     * This method be called before run since it is possible that there may be significant
+     * delay between when the TaskWorker is initialized and when it is executed. 
+     */
+    protected void init(){
+        log.debug("taskworker {} initializing...", this);
+        
+        scheduleVisibilityTimeoutExtender(task, new Date(),
+                task.getVisibilityTimeout());
+
+        log.debug("taskworker {} initialized", this);
+        initialized  = true;
+
+    }
 
     @Override
     public void run() {
         log.debug("taskworker run starting...", this);
-
+        
+        if(!initialized) {
+            String error = "The taskworker must be initialized before it can be run";
+            log.error(error);
+            throw new RuntimeException(error);
+        }
+        
         if (done || started) {
             log.warn(
                     "task worker {} can only be run once:  started={}, done={}. Ignoring...",
@@ -95,20 +121,11 @@ public class TaskWorkerImpl implements TaskWorker {
         started = true;
 
         try {
-            Task task = this.queue.take();
-            log.debug("{} dequeued {}", this, task);
-            scheduleVisibilityTimeoutExtender(task, new Date(),
-                    task.getVisibilityTimeout());
+            log.debug("{} dequeued {}", this, this.task);
             TaskProcessor processor = this.processorFactory.create(task);
             processor.execute();
             this.queue.deleteTask(task);
-        } catch (TimeoutException e) {
-            log.info("queue.take() invocation timed out: no queue items to read.");
-            //sleep a second before finishing.
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e1) {}
-        } catch (TaskExecutionFailedException e) {
+        }  catch (TaskExecutionFailedException e) {
             log.error("failed to complete task execution: " + e.getMessage(), e);
             // TODO re-queue at this point or send to error queue?
         } catch (Exception e) {

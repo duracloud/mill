@@ -31,6 +31,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public class AppDriver {
 
+    /**
+     * 
+     */
+    private static final String DUPLICATION_QUEUE_OPTION = "d";
     private static final String CONFIG_FILE_OPTION = "c";
     private static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
 
@@ -69,8 +73,8 @@ public class AppDriver {
         configFile.setArgName("file");
         options.addOption(configFile);
 
-        Option duplicationQueueName = new Option("d", "duplication-queue", true,
-                "Name of the duplication queue.");
+        Option duplicationQueueName = new Option(DUPLICATION_QUEUE_OPTION, "high-priority-duplication-queue", true,
+                "Name of the high priority duplication queue.");
         duplicationQueueName.setArgs(1);
         duplicationQueueName.setArgName("name");
         options.addOption(duplicationQueueName);
@@ -117,6 +121,14 @@ public class AppDriver {
                     localDuplicationPolicyDirPath);
             }
         }
+        
+        String duplicationQueueName = cmd.getOptionValue(DUPLICATION_QUEUE_OPTION);
+        if(duplicationQueueName != null){
+            System.setProperty(
+                    DurastoreTaskProducerConfigurationManager.HIGH_PRIORITY_DUPLICATION_QUEUE_KEY,
+                    duplicationQueueName);
+        }
+
 
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);

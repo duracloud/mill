@@ -9,7 +9,6 @@ package org.duracloud.mill.workman;
 
 import java.io.File;
 
-import org.codehaus.jackson.map.DeserializerFactory.Config;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
@@ -33,7 +32,9 @@ import org.springframework.context.annotation.Configuration;
  * @author Daniel Bernstein Date: Oct 24, 2013
  */
 public class NoopProcessorLocalRoundTripTest {
-    private static LocalTaskQueue QUEUE = new LocalTaskQueue();
+    private static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
+    private static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
+
     private ApplicationContext context;
 
     @Configuration
@@ -42,9 +43,16 @@ public class NoopProcessorLocalRoundTripTest {
 
         @Bean
         @Override
-        public TaskQueue taskQueue(ConfigurationManager configurationManager) {
-            return QUEUE;
+        public TaskQueue lowPriorityQueue(ConfigurationManager configurationManager) {
+            return LOW_PRIORITY_QUEUE;
         }
+
+        @Bean
+        @Override
+        public TaskQueue highPriorityQueue(ConfigurationManager configurationManager) {
+            return HIGH_PRIORITY_QUEUE;
+        }
+
     }
     /**
      * @throws java.lang.Exception
@@ -55,6 +63,8 @@ public class NoopProcessorLocalRoundTripTest {
         Assert.assertTrue(testProperties.exists());
         System.setProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY, "target");
         System.setProperty(ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY, testProperties.getAbsolutePath());
+        System.setProperty(TaskWorkerManager.MIN_WAIT_BEFORE_TAKE_KEY, "1");
+
         context = new AnnotationConfigApplicationContext(TestAppConfig.class);
     }
 
@@ -73,14 +83,18 @@ public class NoopProcessorLocalRoundTripTest {
             NoopTask noopTask = new NoopTask();
             Task task = noopTask.writeTask();
             task.setVisibilityTimeout(600);
-            QUEUE.put(task);
+            LOW_PRIORITY_QUEUE.put(task);
+            HIGH_PRIORITY_QUEUE.put(task);
+            
         }
 
         
-        sleep(5000);
+        sleep(4000);
         
-        Assert.assertEquals(0, this.QUEUE.getInprocessCount());
-        Assert.assertEquals(count, this.QUEUE.getCompletedCount());
+        Assert.assertEquals(0, this.LOW_PRIORITY_QUEUE.getInprocessCount());
+        Assert.assertEquals(count, this.LOW_PRIORITY_QUEUE.getCompletedCount());
+        Assert.assertEquals(0, this.HIGH_PRIORITY_QUEUE.getInprocessCount());
+        Assert.assertEquals(count, this.HIGH_PRIORITY_QUEUE.getCompletedCount());
     }
 
     private void sleep(long ms) {

@@ -43,7 +43,7 @@ public class TestSQSTaskQueue {
             "src/test/resources/mill-config-test.properties");
         ConfigurationManager confMgr = new ConfigurationManager();
         confMgr.init();
-        queue = new SQSTaskQueue(confMgr.getDuplicationQueueName());
+        queue = new SQSTaskQueue(confMgr.getLowPriorityDuplicationQueue());
     }
 
     @Test

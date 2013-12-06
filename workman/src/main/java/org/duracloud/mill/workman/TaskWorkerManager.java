@@ -10,11 +10,13 @@ package org.duracloud.mill.workman;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.mill.queue.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,66 +26,158 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class TaskWorkerManager {
-    public static final int DEFAULT_POOL_SIZE = 5;
-    public static final String MAX_WORKER_PROPERTY_KEY = "duracloud.maxWorkers";
     private Logger log = LoggerFactory.getLogger(TaskWorkerManager.class);
+
+    public static final int DEFAULT_MAX_WORKERS = 5;
+    public static final String MAX_WORKER_PROPERTY_KEY = "duracloud.maxWorkers";
+    public static final String MIN_WAIT_BEFORE_TAKE_KEY = "duracloud.minWaitBeforeTake";
+    public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 60*1000;
+    private static final long DEFAULT_MAX_WAIT_BEFORE_TAKE = 8*60*1000;
+    private long minWaitTime = DEFAULT_MIN_WAIT_BEFORE_TAKE;
+    private long maxWaitTime = DEFAULT_MAX_WAIT_BEFORE_TAKE;
+
     private TaskWorkerFactory factory;
     private ThreadPoolExecutor executor;
     private boolean stop = false;
     private Timer timer = new Timer();
+    private TaskQueue lowPriorityQueue = null;
+    private TaskQueue highPriorityQueue = null;
 
-
-    public TaskWorkerManager(TaskWorkerFactory factory) {
-        if (factory == null)
+    public TaskWorkerManager(TaskQueue lowPriorityQueue,
+                             TaskQueue highPriorityQueue,
+                             TaskWorkerFactory factory) {
+        if (factory == null){
             throw new IllegalArgumentException("factory must be non-null");
-        this.factory = factory;
+        }
+ 
+        if (lowPriorityQueue == null){
+            throw new IllegalArgumentException("lowPriorityQueue must be non-null");
+        }
 
-        this.executor = new ThreadPoolExecutor(1, 1, 60 * 000,
-                TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>());
+        if (highPriorityQueue == null){
+            throw new IllegalArgumentException("highPriorityQueue must be non-null");
+        }
+
+        this.factory = factory;
+        this.lowPriorityQueue = lowPriorityQueue;
+        this.highPriorityQueue = highPriorityQueue;
+
+
     }
 
     public void init() {
         
-        String maxPoolSize = System.getProperty(MAX_WORKER_PROPERTY_KEY,
-                String.valueOf(DEFAULT_POOL_SIZE));
-
-        setMaxPoolSize(new Integer(maxPoolSize));
+        this.minWaitTime = new Long(System.getProperty(MIN_WAIT_BEFORE_TAKE_KEY,
+                DEFAULT_MIN_WAIT_BEFORE_TAKE+""));
         
-        this.executor.execute(new Runnable() {
+        Integer maxThreadCount = new Integer(System.getProperty(
+                MAX_WORKER_PROPERTY_KEY, String.valueOf(DEFAULT_MAX_WORKERS)));
+
+        //With a bound pool and unbounded queue, rejection should never occur.
+        this.executor = new ThreadPoolExecutor(maxThreadCount, maxThreadCount, 60 * 000,
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!stop) {
-                    try {
-                        executor.execute(factory.create());
-                    } catch (RejectedExecutionException ex) {
-                        sleep(2000);
-                    }
-                }
+                runManager();
             }
-        });
+        }).start();
+        
+        
 
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 log.debug(
                         "Status: max worker pool size: {}, currently running workers: {}, completed workers {}",
-                        new Object[] { getMaxPoolSize(),
+                        new Object[] { getMaxWorkers(),
                                 executor.getActiveCount(),
                                 executor.getCompletedTaskCount() });
             }
 
         }, new Date(), 5 * 60 * 1000);
+    }
+    
+    private void runManager() {
+        
+        long currentWaitBeforeTaskMs = minWaitTime;
+        //high priority tasks should wait only a short time
+        //and should not wait more than say a minute at the most
+        //to prevent perceived delays for the duradmin and durastore
+        //api users.
+        long currentWaitBeforeHighPriortyTaskMs = 1000;
+        long maxHighPriorityWaitTime = 30*1000;
+        
+        Date nextHighPriorityAttempt = null;
+        
+        while(!stop){
+            int active = this.executor.getActiveCount();
+            int poolSize = this.executor.getMaximumPoolSize();
+            if(active < poolSize && this.executor.getQueue().size() < poolSize){
+                //pull up to 10 items off queue
+                //(that is when takeMany() is implemented).
 
+                //always try high priority queue first: if nothing in it set time for next 
+                //attempt using exponential back-off to ensure high priority queue is not
+                //called on every round
+                if(nextHighPriorityAttempt == null || 
+                          nextHighPriorityAttempt.getTime() < System.currentTimeMillis()){
+                    try{
+                        executeTask(highPriorityQueue.take(), highPriorityQueue);
+                        //reset exponential backoff
+                        nextHighPriorityAttempt = null;
+                        currentWaitBeforeHighPriortyTaskMs = minWaitTime;
+                        //skip low priority take
+                        continue;
+                    }catch(TimeoutException e){
+                        log.debug("high priority queue is empty - trying low priority queue");
+                        nextHighPriorityAttempt = new Date(
+                                System.currentTimeMillis()
+                                        + currentWaitBeforeHighPriortyTaskMs);
+                        currentWaitBeforeHighPriortyTaskMs = 
+                                Math.min(currentWaitBeforeHighPriortyTaskMs*2,maxHighPriorityWaitTime);
+                    }
+                }
+
+                try {
+                    executeTask(lowPriorityQueue.take(), lowPriorityQueue);
+                    currentWaitBeforeTaskMs = minWaitTime;
+                } catch (TimeoutException e) {
+                    currentWaitBeforeTaskMs = 
+                            Math.min(currentWaitBeforeTaskMs, maxWaitTime);
+                    log.warn(
+                            "timeout while taking tasks: no tasks currently available " +
+                            "for the take on {}, waiting {} ms...",
+                            lowPriorityQueue, currentWaitBeforeTaskMs);
+                    sleep(currentWaitBeforeTaskMs);
+                    currentWaitBeforeTaskMs = 
+                            Math.min(currentWaitBeforeTaskMs*2, maxWaitTime);
+
+                }
+                
+            }else{
+                //wait only a moment before trying again since 
+                //the worker pool is expected to move relatively quickly.
+                sleep(1000);
+            }
+        }
     }
 
-    public int getMaxPoolSize() {
-        return executor.getMaximumPoolSize() - 1;
+
+    /**
+     * @param take
+     * @param queue
+     */
+    private void executeTask(Task task, TaskQueue queue) {
+        TaskWorker worker = factory.create(task, queue);
+        this.executor.execute(worker);
     }
 
-    public void setMaxPoolSize(int max) {
-        this.executor.setMaximumPoolSize(max + 1);
-        log.info("max workers set to {}", max);
+    public int getMaxWorkers() {
+        return executor.getMaximumPoolSize();
     }
+
 
     private void sleep(long ms) {
         try {

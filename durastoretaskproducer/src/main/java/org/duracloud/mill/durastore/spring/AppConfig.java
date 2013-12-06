@@ -36,7 +36,7 @@ public class AppConfig {
     @Bean 
     public TaskQueue duplicationTaskQueue (
         DurastoreTaskProducerConfigurationManager configurationManager) {
-        return new SQSTaskQueue(configurationManager.getDuplicationQueueName());
+        return new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
     }
     
     @Bean
@@ -55,7 +55,8 @@ public class AppConfig {
     @Bean(initMethod="init", destroyMethod="destroy")
     public MessageListenerContainerManager messageListenerContainerManager(
             TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager, DurastoreTaskProducerConfigurationManager configurationManager) {
+            DuplicationPolicyManager duplicationPolicyManager, 
+            DurastoreTaskProducerConfigurationManager configurationManager) {
          
         String template = configurationManager.getJMSConnectionUrlTemplate();
         if(template != null){

@@ -34,7 +34,6 @@ public class TaskWorkerImplTest {
         factory = EasyMock.createMock(TaskProcessorFactory.class);
         EasyMock.expect(task.getVisibilityTimeout()).andReturn(
                 1);
-        EasyMock.expect(queue.take()).andReturn(task);
         EasyMock.expect(factory.create(EasyMock.isA(Task.class))).andReturn(
                 processor);
 
@@ -66,7 +65,8 @@ public class TaskWorkerImplTest {
         EasyMock.expectLastCall();
 
         replay();
-        TaskWorkerImpl w = new TaskWorkerImpl(factory, queue);
+        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue);
+        w.init();
         w.run();
         // sleep to make sure that the internal timer task is being cancelled.
         Thread.sleep(2000);
@@ -78,7 +78,8 @@ public class TaskWorkerImplTest {
         EasyMock.expectLastCall().andThrow(new TaskExecutionFailedException());
 
         replay();
-        TaskWorkerImpl w = new TaskWorkerImpl(factory, queue);
+        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue);
+        w.init();
         w.run();
         // sleep to make sure that the internal timer task is being cancelled.
         Thread.sleep(3000);

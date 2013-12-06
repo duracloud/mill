@@ -184,7 +184,7 @@ public class AppDriver {
         String duplicationQueueName = cmd.getOptionValue(DUPLICATION_QUEUE_OPTION);
         if(duplicationQueueName != null){
             System.setProperty(
-                    TaskProducerConfigurationManager.DUPLICATION_QUEUE_KEY,
+                    LoopingTaskProducerConfigurationManager.LOW_PRIORITY_DUPLICATION_QUEUE_KEY,
                     duplicationQueueName);
         }
         
@@ -215,7 +215,7 @@ public class AppDriver {
                                         new S3DuplicationPolicyRepo());
             }
             
-            TaskQueue taskQueue = new SQSTaskQueue(config.getDuplicationQueueName());
+            TaskQueue taskQueue = new SQSTaskQueue(config.getLowPriorityDuplicationQueue());
             
             CacheManager cacheManager = CacheManager.create();
             Cache cache = new Cache("contentIdCache", 100*1000, true, true, 60*5,60*5);

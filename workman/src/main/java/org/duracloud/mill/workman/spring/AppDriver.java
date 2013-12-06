@@ -23,8 +23,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 
 public class AppDriver {
-    private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
 
+    private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
+    private static final String MAX_WORKERS_OPTION = "w";
+    private static final String LOW_PRIORITY_QUEUE_OPTION = "q";
+    private static final String HIGH_PRIORITY_QUEUE_OPTION = "p";
+    
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
         help.setWidth(80);
@@ -57,11 +61,11 @@ public class AppDriver {
         options.addOption(configFile);
 
         Option maxWorkers = new Option(
-                "w",
+                MAX_WORKERS_OPTION,
                 "max-workers",
                 true,
                 "The max number of worker threads that can run at a time. " +
-                "The default value is " + TaskWorkerManager.DEFAULT_POOL_SIZE +
+                "The default value is " + TaskWorkerManager.DEFAULT_MAX_WORKERS +
                 ". Setting with value will override the " +
                 TaskWorkerManager.MAX_WORKER_PROPERTY_KEY +
                 " if set in the configuration file.");
@@ -69,15 +73,25 @@ public class AppDriver {
         maxWorkers.setArgName("count");
         options.addOption(maxWorkers);
 
-        Option queueName = new Option(
-                "q",
-                "queue-name",
+        Option lowPriorityQueueName = new Option(
+                LOW_PRIORITY_QUEUE_OPTION,
+                "low-priority-queue-name",
                 true,
-                "The name of the amazon sqs queue");
-        queueName.setArgs(1);
-        queueName.setRequired(true);
-        queueName.setArgName("name");
-        options.addOption(queueName);
+                "The name of the low priority amazon sqs queue");
+        lowPriorityQueueName.setArgs(1);
+        lowPriorityQueueName.setRequired(true);
+        lowPriorityQueueName.setArgName("name");
+        options.addOption(lowPriorityQueueName);
+        
+        Option highPriorityQueueName = new Option(
+                HIGH_PRIORITY_QUEUE_OPTION,
+                "high-priority-queue-name",
+                true,
+                "The name of the high priority amazon sqs queue");
+        highPriorityQueueName.setArgs(1);
+        highPriorityQueueName.setRequired(true);
+        highPriorityQueueName.setArgName("name");
+        options.addOption(highPriorityQueueName);        
 
         Option workDirPath = new Option("d", "work-dir", true,
                                         "Directory that will be used to " +
@@ -101,18 +115,29 @@ public class AppDriver {
                     configPath);
         }
 
-        String workerCount = cmd.getOptionValue("w");
-        if(workerCount != null){
+        String workerCount = cmd.getOptionValue(MAX_WORKERS_OPTION);
+        if (workerCount != null) {
             Integer.parseInt(workerCount);
             setSystemProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY,
-                               workerCount);
+                    workerCount);
         }
 
-        String queueName = cmd.getOptionValue("q");
-        if(queueName != null){
-            setSystemProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY, queueName);
+        String lowPriorityQueueName = cmd
+                .getOptionValue(LOW_PRIORITY_QUEUE_OPTION);
+        if (lowPriorityQueueName != null) {
+            setSystemProperty(
+                    ConfigurationManager.LOW_PRIORITY_DUPLICATION_QUEUE_KEY,
+                    lowPriorityQueueName);
         }
 
+        String highPriorityQueueName = cmd
+                .getOptionValue(HIGH_PRIORITY_QUEUE_OPTION);
+        if (highPriorityQueueName != null) {
+            setSystemProperty(
+                    ConfigurationManager.HIGH_PRIORITY_DUPLICATION_QUEUE_KEY,
+                    highPriorityQueueName);
+        }
+        
         String workDirPath = cmd.getOptionValue("d");
         if(workDirPath == null || workDirPath.trim() == ""){
             //this should never happen since workDirPath is required,

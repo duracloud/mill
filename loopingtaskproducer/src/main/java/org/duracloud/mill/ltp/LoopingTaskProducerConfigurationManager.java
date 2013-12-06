@@ -5,30 +5,21 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.durastore;
+package org.duracloud.mill.ltp;
 
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 
-
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 31, 2013
+ *	       Date: Dec 6, 2013
  */
-public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfigurationManager{
-
-    /**
-     * @return
-     */
-    public String getJMSConnectionUrlTemplate() {
-        return System.getProperty("jms.connection.url.template");
-    }
-    
+public class LoopingTaskProducerConfigurationManager extends TaskProducerConfigurationManager {
     /* (non-Javadoc)
      * @see org.duracloud.mill.config.ConfigurationManager#addRequiredProperties()
      */
     @Override
     protected void addRequiredProperties() {
         super.addRequiredProperties();
-        addRequiredProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
+        addRequiredProperty(LOW_PRIORITY_DUPLICATION_QUEUE_KEY);
     }
 }

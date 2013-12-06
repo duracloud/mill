@@ -52,8 +52,11 @@ public class AppConfig {
 
     @Bean
     public CredentialsRepo credentialRepo(ConfigurationManager configurationManager) {
-        if(configurationManager.getCredentialsFilePath() != null){
-            log.info("found credentials file path ({}): using config file based credential repo...");
+        String path = configurationManager.getCredentialsFilePath();
+        if(path != null){
+            log.info(
+                    "found credentials file path ({}): using config file based credential repo...",
+                    path);
             return new ConfigFileCredentialRepo();
         }else{
             log.info("no credentials file path: using simpledb based credential repo...");
@@ -68,19 +71,25 @@ public class AppConfig {
 
     @Bean(initMethod="init", destroyMethod="destroy")
     public TaskWorkerManager taskWorkerManager(
-            RootTaskProcessorFactory factory, TaskQueue taskQueue) {
-        return new TaskWorkerManager(new TaskWorkerFactoryImpl(taskQueue,
-                factory));
+            RootTaskProcessorFactory factory, TaskQueue lowPriorityQueue,  TaskQueue highPriorityQueue) {
+        return new TaskWorkerManager(lowPriorityQueue, 
+                                     highPriorityQueue,
+                                     new TaskWorkerFactoryImpl(factory));
     }
     
     @Bean
-    public TaskQueue taskQueue(ConfigurationManager configurationManager){
-        return new SQSTaskQueue(configurationManager.getDuplicationQueueName());
+    public TaskQueue lowPriorityQueue(ConfigurationManager configurationManager){
+        return new SQSTaskQueue(configurationManager.getLowPriorityDuplicationQueue());
     }
-    
+
+    @Bean
+    public TaskQueue highPriorityQueue(ConfigurationManager configurationManager){
+        return new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
+    }
+
     @Bean(initMethod="init")
     public ConfigurationManager configurationManager(){
-        return new ConfigurationManager();
+        return new WorkmanConfigurationManager();
     }
     
     

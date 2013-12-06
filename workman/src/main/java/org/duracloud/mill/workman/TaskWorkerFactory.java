@@ -7,8 +7,22 @@
  */
 package org.duracloud.mill.workman;
 
-public interface TaskWorkerFactory {
+import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.queue.TaskQueue;
 
-    TaskWorker create();
+/**
+ * A <code>TaskWorker</code> factory.
+ * 
+ * @author Daniel Bernstein Date: Dec 6, 2013
+ */
+public interface TaskWorkerFactory {
+    /**
+     * Creates a task worker for the specified task.
+     * 
+     * @param task
+     * @param taskQueue
+     * @return
+     */
+    TaskWorker create(Task task, TaskQueue taskQueue);
 
 }
