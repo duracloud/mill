@@ -69,20 +69,16 @@ public class AppConfig {
         if(null != workDirPath) {
             workDir = new File(workDirPath);
         } else {
-            workDir = new File(System.getProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY),
+            workDir = new File(System.getProperty("java.io.tmpdir"),
                                "duplication-work");
         }
         if(!workDir.exists()) {
             if(!workDir.mkdirs()){
-                throw new RuntimeException(
-                        "Unable to create work dir: "
-                                + workDir.getAbsolutePath()
-                                + ". Check that workman process has permission to create this directory");
+                throw new RuntimeException("Unable to create work dir: " +
+                    workDir.getAbsolutePath() + ". Check that workman " +
+                    "process has permission to create this directory");
             }
-
-
         }
-
         
         return workDir;
     }
