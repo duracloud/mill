@@ -9,6 +9,7 @@ package org.duracloud.mill.workman;
 
 import java.io.File;
 
+import org.codehaus.jackson.map.DeserializerFactory.Config;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.domain.NoopTask;
 import org.duracloud.mill.domain.Task;
@@ -52,6 +53,7 @@ public class NoopProcessorLocalRoundTripTest {
     public void setUp() throws Exception {
         File testProperties = new File("src/test/resources/workman-test.properties");
         Assert.assertTrue(testProperties.exists());
+        System.setProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY, "target");
         System.setProperty(ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY, testProperties.getAbsolutePath());
         context = new AnnotationConfigApplicationContext(TestAppConfig.class);
     }

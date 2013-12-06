@@ -1,5 +1,7 @@
 package org.duracloud.mill.workman.spring;
 
+import java.io.File;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -9,6 +11,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.workman.TaskWorkerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -19,6 +23,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 
 public class AppDriver {
+    private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -91,7 +96,7 @@ public class AppDriver {
         String configPath = cmd.getOptionValue("c");
 
         if(configPath != null){
-            System.setProperty(
+            setSystemProperty(
                     ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                     configPath);
         }
@@ -99,7 +104,7 @@ public class AppDriver {
         String workerCount = cmd.getOptionValue("w");
         if(workerCount != null){
             Integer.parseInt(workerCount);
-            System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY,
+            setSystemProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY,
                                workerCount);
         }
 
@@ -107,15 +112,55 @@ public class AppDriver {
         if(queueName != null){
             System.setProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY,
                                queueName);
+            
+            setSystemProperty(ConfigurationManager.DUPLICATION_QUEUE_KEY, queueName);
         }
 
         String workDirPath = cmd.getOptionValue("d");
-        if(workDirPath != null){
-            System.setProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY,
-                               workDirPath);
+        if(workDirPath == null){
+            workDirPath = System.getProperty("java.io.tmpdir") + File.separator + "duplication-work";
         }
+
+        setSystemProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY, workDirPath);
+        initializeWorkDir(workDirPath);
 
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);
+    }
+
+    /**
+     * @param workDirPath
+     */
+    private static void initializeWorkDir(String workDirPath) {
+
+        try{
+            File workDir = new File(workDirPath);
+
+            if(!workDir.exists()) {
+                if(!workDir.mkdirs()){
+                    String message = "Unable to create work dir: "
+                            + workDir.getAbsolutePath()
+                            + ". Check that workman process has permission to create this directory";
+                    log.error(message);
+                    System.exit(1);
+                }
+            }
+            
+        }catch(Exception ex){
+            log.error(
+                    "failed to initialize workDir " + workDirPath + ":"
+                            + ex.getMessage(), ex);
+            System.exit(1);
+        }
+        
+    }
+
+    /**
+     * @param duplicationQueueKey
+     * @param queueName
+     */
+    private static void setSystemProperty(String key, String value) {
+        log.info("Setting system property {} to {}", key, value);
+        System.setProperty(key, value);
     }
 }

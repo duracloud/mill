@@ -63,24 +63,7 @@ public class AppConfig {
 
     @Bean
     public File workDir(ConfigurationManager configurationManager) {
-        File workDir;
-
-        String workDirPath = configurationManager.getWorkDirectoryPath();
-        if(null != workDirPath) {
-            workDir = new File(workDirPath);
-        } else {
-            workDir = new File(System.getProperty("java.io.tmpdir"),
-                               "duplication-work");
-        }
-        if(!workDir.exists()) {
-            if(!workDir.mkdirs()){
-                throw new RuntimeException("Unable to create work dir: " +
-                    workDir.getAbsolutePath() + ". Check that workman " +
-                    "process has permission to create this directory");
-            }
-        }
-        
-        return workDir;
+        return new File(configurationManager.getWorkDirectoryPath());
     }
 
     @Bean(initMethod="init", destroyMethod="destroy")
