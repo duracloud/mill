@@ -37,6 +37,7 @@ public class AppDriver {
     private static final String DUPLICATION_QUEUE_OPTION = "d";
     private static final String CONFIG_FILE_OPTION = "c";
     private static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
+    private static final String POLICY_BUCKET_SUFFIX = "p";
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -87,6 +88,15 @@ public class AppDriver {
         localDuplicationDir.setArgName("file");
         options.addOption(localDuplicationDir);
 
+        Option policyBucketSuffix =
+                new Option(POLICY_BUCKET_SUFFIX,
+                           "policy-bucket-suffix",
+                           true,
+                           "The last portion of the name of the S3 bucket where " +
+                           "duplication policies can be found.");
+            policyBucketSuffix.setRequired(false);
+            options.addOption(policyBucketSuffix);
+        
         return options;
     }
     
@@ -122,6 +132,14 @@ public class AppDriver {
             }
         }
         
+        String policyBucketSuffix =
+                cmd.getOptionValue(POLICY_BUCKET_SUFFIX);
+        if(policyBucketSuffix != null){
+            System.setProperty(
+                    DurastoreTaskProducerConfigurationManager.DUPLICATION_POLICY_BUCKET_SUFFIX,
+                    policyBucketSuffix);
+        }
+            
         String duplicationQueueName = cmd.getOptionValue(DUPLICATION_QUEUE_OPTION);
         if(duplicationQueueName != null){
             System.setProperty(

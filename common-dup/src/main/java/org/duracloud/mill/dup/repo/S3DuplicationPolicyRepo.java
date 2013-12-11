@@ -27,6 +27,7 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
 
     private AmazonS3Client s3Client;
     private String policyRepoBucketName;
+    private String policyRepoBucketSuffix;
 
     /**
      * Creates an S3 policy repo connection. Expects that S3 credentials
@@ -35,11 +36,28 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
      */
     public S3DuplicationPolicyRepo() {
         this.s3Client = new AmazonS3Client();
+        this.policyRepoBucketSuffix = DUP_POLICY_REPO_BUCKET_SUFFIX;
         init();
     }
 
+    /**
+     * Creates an S3 policy repo connection. Uses the provided bucket suffix.
+     * Expects that S3 credentials will be available from the environment,
+     * as described here:
+     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client.html#AmazonS3Client%28%29
+     */
+    public S3DuplicationPolicyRepo(String policyRepoBucketSuffix) {
+        this.s3Client = new AmazonS3Client();
+        this.policyRepoBucketSuffix = policyRepoBucketSuffix;
+        init();
+    }
+
+    /**
+     * Intended for testing
+     */
     protected S3DuplicationPolicyRepo(AmazonS3Client s3Client) {
         this.s3Client = s3Client;
+        this.policyRepoBucketSuffix = DUP_POLICY_REPO_BUCKET_SUFFIX;
         init();
     }
 
@@ -47,14 +65,15 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
         List<Bucket> buckets = s3Client.listBuckets();
         for(Bucket bucket : buckets) {
             String bucketName = bucket.getName();
-            if(bucketName.endsWith(DUP_POLICY_REPO_BUCKET_SUFFIX)) {
+            if(bucketName.endsWith(policyRepoBucketSuffix)) {
                 policyRepoBucketName = bucketName;
             }
         }
 
         if(null == policyRepoBucketName) {
             throw new RuntimeException("Unable to find duplication policy " +
-                                       "repo bucket in S3");
+                                       "repo bucket in S3. Bucket suffix: " +
+                                       policyRepoBucketSuffix);
         }
     }
 

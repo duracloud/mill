@@ -7,11 +7,9 @@
  */
 package org.duracloud.mill.ltp;
 
-import java.io.File;
-
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -26,6 +24,7 @@ import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
+import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.duracloud.mill.queue.TaskQueue;
@@ -33,7 +32,7 @@ import org.duracloud.mill.queue.aws.SQSTaskQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import java.io.File;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -52,6 +51,7 @@ public class AppDriver {
     private static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
     private static final String MAX_TASK_QUEUE_SIZE_OPTION = "m";
     private static final String STATE_FILE_PATH = "s";
+    private static final String POLICY_BUCKET_SUFFIX = "p";
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -119,7 +119,16 @@ public class AppDriver {
         maxTaskQueueSize.setArgs(1);
         maxTaskQueueSize.setArgName("integer");
         options.addOption(maxTaskQueueSize);
-        
+
+        Option policyBucketSuffix =
+            new Option(POLICY_BUCKET_SUFFIX,
+                       "policy-bucket-suffix",
+                       true,
+                       "The last portion of the name of the S3 bucket where " +
+                       "duplication policies can be found.");
+        policyBucketSuffix.setRequired(false);
+        options.addOption(policyBucketSuffix);
+
         return options;
     }
     
@@ -211,8 +220,14 @@ public class AppDriver {
                         new LocalDuplicationPolicyRepo(
                                 config.getDuplicationPolicyDir()));
             }else{
-                policyManager = new DuplicationPolicyManager(
-                                        new S3DuplicationPolicyRepo());
+                DuplicationPolicyRepo policyRepo;
+                if(cmd.hasOption(POLICY_BUCKET_SUFFIX)) {
+                    policyRepo = new S3DuplicationPolicyRepo(
+                        cmd.getOptionValue(POLICY_BUCKET_SUFFIX));
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo();
+                }
+                policyManager = new DuplicationPolicyManager(policyRepo);
             }
             
             TaskQueue taskQueue = new SQSTaskQueue(config.getLowPriorityDuplicationQueue());

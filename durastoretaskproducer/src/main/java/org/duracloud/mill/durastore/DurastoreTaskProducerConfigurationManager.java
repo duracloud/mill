@@ -16,6 +16,8 @@ import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
  */
 public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfigurationManager{
 
+    public static final String DUPLICATION_POLICY_BUCKET_SUFFIX = "policyBucketSuffix";
+
     /**
      * @return
      */
@@ -30,5 +32,12 @@ public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfi
     protected void addRequiredProperties() {
         super.addRequiredProperties();
         addRequiredProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
+    }
+
+    /**
+     * @return
+     */
+    public String getPolicyBucketSuffix() {
+        return System.getProperty(DUPLICATION_POLICY_BUCKET_SUFFIX);
     }
 }

@@ -42,14 +42,25 @@ public class AppConfig {
     @Bean
     public DuplicationPolicyManager duplicationPolicyManager(
         DurastoreTaskProducerConfigurationManager configurationManager){
-        String dupPolicyDir = configurationManager.getDuplicationPolicyDir();
+
         DuplicationPolicyRepo policyRepo;
-        if(null != dupPolicyDir) {
-            policyRepo = new LocalDuplicationPolicyRepo(dupPolicyDir);
-        } else {
-            policyRepo = new S3DuplicationPolicyRepo();
-        }
+        String policyDir = configurationManager.getDuplicationPolicyDir();
+        
+        if(policyDir != null) {
+            policyRepo = new LocalDuplicationPolicyRepo(
+                            policyDir);
+        }else{
+            String suffix = configurationManager.getPolicyBucketSuffix();
+            if(suffix != null){
+                policyRepo = new S3DuplicationPolicyRepo(
+                    suffix);
+            } else {
+                policyRepo = new S3DuplicationPolicyRepo();
+            }
+        }        
+
         return new DuplicationPolicyManager(policyRepo);
+
     }
     
     @Bean(initMethod="init", destroyMethod="destroy")
