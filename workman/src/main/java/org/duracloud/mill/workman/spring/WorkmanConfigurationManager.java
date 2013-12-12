@@ -14,6 +14,14 @@ import org.duracloud.mill.config.ConfigurationManager;
  *	       Date: Dec 6, 2013
  */
 public class WorkmanConfigurationManager extends ConfigurationManager {
+
+    public static final String DEAD_LETTER_QUEUE_KEY = "deadLetterQueue";
+
+    public String getDeadLetterQueueName() {
+        return System.getProperty(DEAD_LETTER_QUEUE_KEY);
+    }
+
+    
     /* (non-Javadoc)
      * @see org.duracloud.mill.config.ConfigurationManager#addRequiredProperties()
      */

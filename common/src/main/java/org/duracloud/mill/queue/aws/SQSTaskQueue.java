@@ -251,6 +251,24 @@ public class SQSTaskQueue implements TaskQueue {
             throw new TaskNotFoundException(rhe);
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.queue.TaskQueue#requeue(org.duracloud.mill.domain.Task)
+     */
+    @Override
+    public void requeue(Task task) {
+        int attempts = task.getAttempts();
+        task.incrementAttempts();
+        try {
+            deleteTask(task);
+        } catch (TaskNotFoundException e) {
+            log.error("unable to delete " + task+ " ignoring - requeuing anyway");
+        }
+
+        put(task);
+        log.warn("requeued {} after {} failed attempts.", task, attempts);
+        
+    }
 
     @Override
     public Integer size() {

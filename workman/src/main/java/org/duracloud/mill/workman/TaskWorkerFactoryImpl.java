@@ -17,17 +17,23 @@ import org.duracloud.mill.queue.TaskQueue;
  */
 public class TaskWorkerFactoryImpl implements TaskWorkerFactory {
     private TaskProcessorFactory processorFactory;
-
-    public TaskWorkerFactoryImpl(TaskProcessorFactory factory) {
+    private TaskQueue deadLetterQueue;
+    public TaskWorkerFactoryImpl(TaskProcessorFactory factory, TaskQueue deadLetterQueue) {
         if (factory == null)
             throw new IllegalArgumentException(
                     "processorFactory must be non-null");
         this.processorFactory = factory;
+
+        if (deadLetterQueue == null)
+            throw new IllegalArgumentException(
+                    "deadLetterQueue must be non-null");
+        this.deadLetterQueue = deadLetterQueue;
+
     }
 
     @Override
     public TaskWorkerImpl create(Task task, TaskQueue queue) {
-        TaskWorkerImpl taskWorker = new TaskWorkerImpl(task, processorFactory, queue);
+        TaskWorkerImpl taskWorker = new TaskWorkerImpl(task, processorFactory, queue, deadLetterQueue);
         taskWorker.init();
         return taskWorker;
     }

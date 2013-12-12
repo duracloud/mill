@@ -8,8 +8,8 @@
 package org.duracloud.mill.workman;
 
 import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.queue.TaskNotFoundException;
 import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +26,13 @@ import java.util.TimerTask;
  * 
  */
 public class TaskWorkerImpl implements TaskWorker {
+    private static final int MAX_ATTEMPTS = 3;
     private static Logger log = LoggerFactory.getLogger(TaskWorkerImpl.class);
     private static Timer timer = new Timer();
 
     private TaskProcessorFactory processorFactory;
     private TaskQueue queue;
+    private TaskQueue deadLetterQueue;
     private boolean done = false;
     private boolean started = false;
     private TimerTask currentTimerTask;
@@ -42,16 +44,20 @@ public class TaskWorkerImpl implements TaskWorker {
      * @param processorFactory
      * @param queue
      */
-    public TaskWorkerImpl(Task task, TaskProcessorFactory processorFactory, TaskQueue queue) {
+    public TaskWorkerImpl(Task task, TaskProcessorFactory processorFactory, TaskQueue queue, TaskQueue deadLetterQueue) {
         if (task == null)
             throw new IllegalArgumentException("task must be non-null");
         if (queue == null)
             throw new IllegalArgumentException("queue must be non-null");
+        if (deadLetterQueue == null)
+            throw new IllegalArgumentException("deadLetterQueue must be non-null");
+
         if (processorFactory == null)
             throw new IllegalArgumentException("processor must be non-null");
         this.task = task;
         this.processorFactory = processorFactory;
         this.queue = queue;
+        this.deadLetterQueue = deadLetterQueue;
         log.debug("new worker created {}", this);
 
     }
@@ -126,8 +132,16 @@ public class TaskWorkerImpl implements TaskWorker {
             processor.execute();
             this.queue.deleteTask(task);
         }  catch (TaskExecutionFailedException e) {
-            log.error("failed to complete task execution: " + e.getMessage(), e);
-            // TODO re-queue at this point or send to error queue?
+            int attempts = task.getAttempts();
+            log.error("failed to complete " + task + " after " + attempts
+                    + " attempts: " + e.getMessage(), e);
+
+            if(attempts < MAX_ATTEMPTS){
+                this.queue.requeue(task);
+            }else{
+                sendToDeadLetterQueue(task);
+            }
+            
         } catch (Exception e) {
             log.error("unexpected error: " + e.getMessage(), e);
             e.printStackTrace();
@@ -137,5 +151,23 @@ public class TaskWorkerImpl implements TaskWorker {
                 currentTimerTask.cancel();
             }
         }
+    }
+
+    /**
+     * @param task
+     */
+    private void sendToDeadLetterQueue(Task task) {
+        log.debug("putting {} on dead letter queue", task);
+
+        try {
+            log.debug("deleting {} from {}", task, this.queue);
+            this.queue.deleteTask(task);
+        } catch (TaskNotFoundException e) {
+            log.error("Error deleting "+task+". This should never happen: "+ e.getMessage(), e);
+        }
+
+        this.deadLetterQueue.put(task);
+        log.info("sent {} to dead letter queue {}", task, deadLetterQueue);
+        
     }
 }

@@ -15,6 +15,7 @@ import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
+import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 public class NoopProcessorLocalRoundTripTest {
     private static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
     private static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
+    private static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
 
     private ApplicationContext context;
 
@@ -43,13 +45,19 @@ public class NoopProcessorLocalRoundTripTest {
 
         @Bean
         @Override
-        public TaskQueue lowPriorityQueue(ConfigurationManager configurationManager) {
+        public TaskQueue lowPriorityQueue(WorkmanConfigurationManager configurationManager) {
             return LOW_PRIORITY_QUEUE;
         }
 
         @Bean
         @Override
-        public TaskQueue highPriorityQueue(ConfigurationManager configurationManager) {
+        public TaskQueue highPriorityQueue(WorkmanConfigurationManager configurationManager) {
+            return HIGH_PRIORITY_QUEUE;
+        }
+
+        @Bean
+        @Override
+        public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
             return HIGH_PRIORITY_QUEUE;
         }
 

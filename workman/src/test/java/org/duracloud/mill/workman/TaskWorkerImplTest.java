@@ -23,6 +23,7 @@ import org.junit.Test;
 public class TaskWorkerImplTest {
     private Task task;
     private TaskQueue queue;
+    private TaskQueue deadLetterQueue;
     private TaskProcessor processor;
     private TaskProcessorFactory factory;
 
@@ -31,6 +32,8 @@ public class TaskWorkerImplTest {
         task = EasyMock.createMock(Task.class);
         processor = EasyMock.createMock(TaskProcessor.class);
         queue = EasyMock.createMock(TaskQueue.class);
+        deadLetterQueue = EasyMock.createMock(TaskQueue.class);
+
         factory = EasyMock.createMock(TaskProcessorFactory.class);
         EasyMock.expect(task.getVisibilityTimeout()).andReturn(
                 1);
@@ -41,11 +44,11 @@ public class TaskWorkerImplTest {
 
     @After
     public void tearDown() throws Exception {
-        EasyMock.verify(processor, queue, task, factory);
+        EasyMock.verify(processor, queue, deadLetterQueue, task, factory);
     }
 
     private void replay() throws Exception {
-        EasyMock.replay(processor, queue, task, factory);
+        EasyMock.replay(processor, queue, deadLetterQueue, task, factory);
     }
 
     @Test
@@ -65,24 +68,40 @@ public class TaskWorkerImplTest {
         EasyMock.expectLastCall();
 
         replay();
-        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue);
+        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue, deadLetterQueue);
         w.init();
         w.run();
         // sleep to make sure that the internal timer task is being cancelled.
         Thread.sleep(2000);
     }
 
-    @Test
-    public void testRunWithProcessorException() throws Exception {
+    private void runWithProcessorException() throws Exception {
         processor.execute();
         EasyMock.expectLastCall().andThrow(new TaskExecutionFailedException());
-
         replay();
-        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue);
+        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue, deadLetterQueue);
         w.init();
         w.run();
         // sleep to make sure that the internal timer task is being cancelled.
         Thread.sleep(3000);
+    }
+
+    @Test
+    public void testRunWithProcessorExceptionFirstAttempt() throws Exception {
+        EasyMock.expect(task.getAttempts()).andReturn(0);
+        queue.requeue(EasyMock.isA(Task.class));
+        EasyMock.expectLastCall();
+        runWithProcessorException();
+    }
+
+    @Test
+    public void testRunWithProcessorExceptionLastAttempt() throws Exception {
+        EasyMock.expect(task.getAttempts()).andReturn(4);
+        queue.deleteTask(EasyMock.isA(Task.class));
+        EasyMock.expectLastCall();
+        deadLetterQueue.put(EasyMock.isA(Task.class));
+        EasyMock.expectLastCall();
+        runWithProcessorException();
     }
 
 }

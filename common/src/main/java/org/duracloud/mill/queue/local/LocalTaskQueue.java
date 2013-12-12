@@ -112,4 +112,14 @@ public class LocalTaskQueue implements TaskQueue {
     public long getCompletedCount(){
         return completedCount;
     }
+
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.queue.TaskQueue#requeue(org.duracloud.mill.domain.Task)
+     */
+    @Override
+    public void requeue(Task task) {
+        this.inprocess.remove(task);
+        task.incrementAttempts();
+        this.queue.add(task);
+    }
 }

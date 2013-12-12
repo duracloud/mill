@@ -28,6 +28,7 @@ public class AppDriver {
     private static final String MAX_WORKERS_OPTION = "w";
     private static final String LOW_PRIORITY_QUEUE_OPTION = "q";
     private static final String HIGH_PRIORITY_QUEUE_OPTION = "p";
+    private static final String DEAD_LETTER_QUEUE_OPTION = "e";
     
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -93,6 +94,17 @@ public class AppDriver {
         highPriorityQueueName.setArgName("name");
         options.addOption(highPriorityQueueName);        
 
+        Option deadLetterQueue = new Option(
+                DEAD_LETTER_QUEUE_OPTION,
+                "dead-letter-queue-name",
+                true,
+                "The name of the dead letter amazon sqs queue");
+        deadLetterQueue.setArgs(1);
+        deadLetterQueue.setRequired(true);
+        deadLetterQueue.setArgName("name");
+        options.addOption(deadLetterQueue);        
+
+        
         Option workDirPath = new Option("d", "work-dir", true,
                                         "Directory that will be used to " +
                                         "temporarily store files as they " +
@@ -137,7 +149,15 @@ public class AppDriver {
                     ConfigurationManager.HIGH_PRIORITY_DUPLICATION_QUEUE_KEY,
                     highPriorityQueueName);
         }
-        
+
+        String deadLetterQueueName = cmd
+                .getOptionValue(DEAD_LETTER_QUEUE_OPTION);
+        if (deadLetterQueueName != null) {
+            setSystemProperty(
+                    WorkmanConfigurationManager.DEAD_LETTER_QUEUE_KEY,
+                    deadLetterQueueName);
+        }
+
         String workDirPath = cmd.getOptionValue("d");
         if(workDirPath == null || workDirPath.trim() == ""){
             //this should never happen since workDirPath is required,

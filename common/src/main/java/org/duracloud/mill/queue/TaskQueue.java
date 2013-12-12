@@ -67,4 +67,11 @@ public interface TaskQueue {
      * @return the number of elements in this queue.
      */
     public Integer size();
+
+    /**
+     * Requeues the task by deleting the task, incrementing the "attempts" counter, and re-adding back to the queue.
+     * Any subsequent calls on the requeued task via the task queue should fail due to the task not being found.
+     * @param task
+     */
+    public void requeue(Task task);
 }

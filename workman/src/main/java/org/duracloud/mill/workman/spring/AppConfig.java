@@ -7,7 +7,8 @@
  */
 package org.duracloud.mill.workman.spring;
 
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import java.io.File;
+
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
@@ -25,7 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.File;
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
  * 
@@ -65,30 +66,38 @@ public class AppConfig {
     }
 
     @Bean
-    public File workDir(ConfigurationManager configurationManager) {
+    public File workDir(WorkmanConfigurationManager configurationManager) {
         return new File(configurationManager.getWorkDirectoryPath());
     }
 
     @Bean(initMethod="init", destroyMethod="destroy")
-    public TaskWorkerManager taskWorkerManager(
-            RootTaskProcessorFactory factory, TaskQueue lowPriorityQueue,  TaskQueue highPriorityQueue) {
+    public TaskWorkerManager taskWorkerManager(RootTaskProcessorFactory factory,
+                                                TaskQueue lowPriorityQueue,
+                                                TaskQueue highPriorityQueue,
+                                                TaskQueue deadLetterQueue) {
         return new TaskWorkerManager(lowPriorityQueue, 
                                      highPriorityQueue,
-                                     new TaskWorkerFactoryImpl(factory));
+                                     new TaskWorkerFactoryImpl(factory, 
+                                                               deadLetterQueue));
     }
     
     @Bean
-    public TaskQueue lowPriorityQueue(ConfigurationManager configurationManager){
+    public TaskQueue lowPriorityQueue(WorkmanConfigurationManager configurationManager){
         return new SQSTaskQueue(configurationManager.getLowPriorityDuplicationQueue());
     }
 
     @Bean
-    public TaskQueue highPriorityQueue(ConfigurationManager configurationManager){
+    public TaskQueue highPriorityQueue(WorkmanConfigurationManager configurationManager){
         return new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
     }
 
+    @Bean
+    public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager){
+        return new SQSTaskQueue(configurationManager.getDeadLetterQueueName());
+    }
+
     @Bean(initMethod="init")
-    public ConfigurationManager configurationManager(){
+    public WorkmanConfigurationManager configurationManager(){
         return new WorkmanConfigurationManager();
     }
     

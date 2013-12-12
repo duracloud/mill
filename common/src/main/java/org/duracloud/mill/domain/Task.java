@@ -35,8 +35,6 @@ public class Task {
     public Type getType() {
         return type;
     }
-    
-    
 
     public void setType(Type type) {
         this.type = type;
@@ -66,6 +64,28 @@ public class Task {
         this.visibilityTimeout = visibilityTimeout;
     }
     
+    /**
+     * The number of completed attempts to process this task.
+     * @return
+     */
+    public int getAttempts() {
+        String attempts = this.properties.get("attempts");
+        if(attempts == null){
+            attempts = "0";
+        }
+        
+        return Integer.parseInt(attempts);
+    }
+
+    /**
+     * Increments the attempts property. This method should only be called by
+     * TaskQueue implementations.
+     */
+    public void incrementAttempts() {
+        int attempts = getAttempts()+1;
+        this.properties.put("attempts", attempts+"");
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -89,4 +109,7 @@ public class Task {
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+
+
+
 }

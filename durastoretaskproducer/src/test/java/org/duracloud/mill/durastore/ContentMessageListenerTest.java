@@ -158,6 +158,11 @@ public class ContentMessageListenerTest {
                 throws TaskNotFoundException {}
         public void deleteTask(Task task) throws TaskNotFoundException {}
         public Integer size() { return null;}
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.queue.TaskQueue#requeue(org.duracloud.mill.domain.Task)
+         */
+        @Override
+        public void requeue(Task task) {}
         
     }
 }
