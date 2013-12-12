@@ -7,6 +7,17 @@
  */
 package org.duracloud.mill.queue.aws;
 
+
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+
+import org.duracloud.mill.domain.Task;
+import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
@@ -14,14 +25,6 @@ import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueAttributeName;
-import org.duracloud.mill.domain.Task;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Erik Paulsson
@@ -78,8 +81,11 @@ public class SQSTaskQueueTest {
         task.addProperty("key2", "value2");
         task.addProperty("key3", "value3");
         String msgBody = queue.unmarshallTask(task);
-        String expectedBody = Task.KEY_TYPE + "=" + Task.Type.DUP.name() +
-            "\nkey1=value1\nkey2=value2\nkey3=value3";
+        
+        Assert.assertTrue(msgBody.contains("key1=value1"));
+        Assert.assertTrue(msgBody.contains("key2=value2"));
+        Assert.assertTrue(msgBody.contains("key3=value3"));
+        
     }
 
 }
