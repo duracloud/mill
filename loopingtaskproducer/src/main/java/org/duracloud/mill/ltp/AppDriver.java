@@ -7,9 +7,11 @@
  */
 package org.duracloud.mill.ltp;
 
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import java.io.File;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -32,7 +34,7 @@ import org.duracloud.mill.queue.aws.SQSTaskQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -52,6 +54,7 @@ public class AppDriver {
     private static final String MAX_TASK_QUEUE_SIZE_OPTION = "m";
     private static final String STATE_FILE_PATH = "s";
     private static final String POLICY_BUCKET_SUFFIX = "p";
+    private static final String FREQUENCY_OPTION = "f";
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -129,6 +132,15 @@ public class AppDriver {
         policyBucketSuffix.setRequired(false);
         options.addOption(policyBucketSuffix);
 
+        
+        Option frequencyOption =
+                new Option(FREQUENCY_OPTION,
+                           "frequency",
+                           true,
+                           "The frequency for a complete run through all store policies. Specify in hours (e.g. 3h), days (e.g. 3d), or months (e.g. 3m). Default is 1m - i.e. one month");
+            frequencyOption.setRequired(false);
+            options.addOption(frequencyOption);
+
         return options;
     }
     
@@ -196,7 +208,23 @@ public class AppDriver {
                     LoopingTaskProducerConfigurationManager.LOW_PRIORITY_DUPLICATION_QUEUE_KEY,
                     duplicationQueueName);
         }
-        
+
+        String frequencyStr = cmd.getOptionValue(FREQUENCY_OPTION);
+        if(frequencyStr == null){
+            frequencyStr = "1m";
+        }
+
+        Frequency frequency = null;
+        try{
+            frequency = new Frequency(frequencyStr);
+            log.info("frequency = {}{}", frequency.getValue(),
+                    frequency.getTimeUnitAsString());
+        }catch(java.text.ParseException ex){
+            System.out.println("Frequency parameter is invalid: " + frequency
+                    + " Please refer to usage for valid examples.");
+           die();
+        }
+
         try{
             
             TaskProducerConfigurationManager config = new TaskProducerConfigurationManager();
@@ -245,7 +273,8 @@ public class AppDriver {
                                                                    taskQueue, 
                                                                    cache, 
                                                                    stateManager, 
-                                                                   maxTaskQueueSize);
+                                                                   maxTaskQueueSize,
+                                                                   frequency);
             producer.run();
             
         }catch(Exception ex){

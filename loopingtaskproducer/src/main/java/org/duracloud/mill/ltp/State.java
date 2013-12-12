@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.ltp;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +19,8 @@ import java.util.Set;
 public class State {
     
     private Set<Morsel> morsels = new HashSet<>();
+    private Date currentRunStartDate = null;
+    private Date nextRunStartDate = null;
 
     /**
      * @return the morsels
@@ -31,6 +34,34 @@ public class State {
      */
     public void setMorsels(Set<Morsel> morsels) {
         this.morsels = morsels;
+    }
+
+    /**
+     * @return
+     */
+    public Date getCurrentRunStartDate() {
+        return this.currentRunStartDate;
+    }
+
+    /**
+     * @param time
+     */
+    public void setCurrentRunStartDate(Date time) {
+        this.currentRunStartDate = time;
+    }
+
+    /**
+     * @return
+     */
+    public Date getNextRunStartDate() {
+        return this.nextRunStartDate;
+    }
+
+    /**
+     * @param time
+     */
+    public void setNextRunStartDate(Date time) {
+        this.nextRunStartDate = time;
     }
     
    

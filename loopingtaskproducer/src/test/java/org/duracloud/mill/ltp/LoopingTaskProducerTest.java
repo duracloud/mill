@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -58,7 +60,7 @@ public class LoopingTaskProducerTest {
      * @throws CredentialsRepoException 
      */
     @Test
-    public void testRun() throws CredentialsRepoException {
+    public void testRun() throws CredentialsRepoException, ParseException {
         
         int morselCount = 2;
         int sourceCount = 2000;
@@ -147,6 +149,12 @@ public class LoopingTaskProducerTest {
         EasyMock.expect(stateManager.getMorsels()).andReturn(new HashSet<Morsel>());
         stateManager.setMorsels(EasyMock.isA(HashSet.class));
         EasyMock.expectLastCall().times(morselCount*sourceCount/1000);
+
+        EasyMock.expect(stateManager.getNextRunStartDate()).andReturn(null);
+        EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(null);
+        stateManager.setCurrentRunStartDate(EasyMock.isA(Date.class));
+        EasyMock.expectLastCall();
+        
         
         DuplicationPolicy policy = new DuplicationPolicy();
         DuplicationStorePolicy dupStore = new DuplicationStorePolicy();
@@ -182,7 +190,8 @@ public class LoopingTaskProducerTest {
                                                                taskQueue, 
                                                                cache, 
                                                                stateManager, 
-                                                               maxTaskQueueSize);
+                                                               maxTaskQueueSize,
+                                                               new Frequency("1d"));
         producer.run();
         
         

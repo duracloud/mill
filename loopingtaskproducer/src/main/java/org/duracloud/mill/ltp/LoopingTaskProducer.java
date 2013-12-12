@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,7 +62,7 @@ public class LoopingTaskProducer implements Runnable {
     private Set<Task> queuedTasks = new HashSet<>();
     private StorageProviderFactory storageProviderFactory;
     private List<Morsel> morselsToReload = new LinkedList<>();
-    
+    private Frequency frequency;
     private static class RunStats {
         int deletes;
         int dups;
@@ -74,7 +76,8 @@ public class LoopingTaskProducer implements Runnable {
                                TaskQueue taskQueue,
                                Cache cache, 
                                StateManager state,
-                               int maxTaskQueueSize) {
+                               int maxTaskQueueSize, 
+                               Frequency frequency) {
         
         this.credentialsRepo = credentialsRepo;
         this.storageProviderFactory = storageProviderFactory;
@@ -84,9 +87,15 @@ public class LoopingTaskProducer implements Runnable {
         this.stateManager = state;
         this.credentialsRepo = credentialsRepo;
         this.maxTaskQueueSize = maxTaskQueueSize;
+        this.frequency = frequency;
     }
     
     public void run(){
+        
+        if(runLater()){
+            return;
+        }
+        
         log.info("Starting run...");
         MorselQueue morselQueue = loadMorselQueue();
         
@@ -94,6 +103,7 @@ public class LoopingTaskProducer implements Runnable {
             if(morselQueue.isEmpty()){
                 morselQueue = reloadMorselQueue();
                 if(morselQueue.isEmpty()){
+                    scheduleNextRun();
                     break;
                 }
             }
@@ -117,8 +127,54 @@ public class LoopingTaskProducer implements Runnable {
         log.info(
                 "Run ended: {} domains processed, {} dups, {} deletes.",
                 runstats.keySet().size(), totalDups, totalDeletes);
-        
     }
+
+    /**
+     * 
+     */
+    private void scheduleNextRun() {
+        Date currentStartDate = this.stateManager.getCurrentRunStartDate();
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(currentStartDate.getTime());
+        c.add(this.frequency.getTimeUnit(), this.frequency.getValue());
+        Date nextRun = c.getTime();
+        this.stateManager.setNextRunStartDate(nextRun);
+        this.stateManager.setCurrentRunStartDate(null);
+        log.info("The run has completed.  Scheduling the next run for {}", nextRun);
+    }
+
+    /**
+     * @return true if the process should wait until later
+     */
+    private boolean runLater() {
+        boolean runLater = true;
+        Date nextRun = this.stateManager.getNextRunStartDate();
+        if(nextRun != null){
+            Date now = new Date();
+            if(now.after(nextRun)){
+                this.stateManager.setCurrentRunStartDate(now);
+                this.stateManager.setNextRunStartDate(null);
+                runLater = false;
+                log.info("Time to start a new run: the next run was scheduled to run on {}. Let's roll.", nextRun);
+            }else{
+                log.debug("It's not yet time start a new run: the next run is scheduled to run on {}.", nextRun);
+            }
+        }else{
+            Date currentRunStartDate = this.stateManager.getCurrentRunStartDate();
+            if(currentRunStartDate == null){
+                this.stateManager.setCurrentRunStartDate(new Date());
+                log.info("We're starting the first run on this machine");
+            }else{
+                log.debug("We're continuing the current run which was started on {}", currentRunStartDate);
+            }
+            
+            runLater = false;
+        }
+        
+        return runLater;
+    }
+
+
 
     /**
      * @return

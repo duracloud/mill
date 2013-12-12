@@ -8,6 +8,7 @@
 package org.duracloud.mill.ltp;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -69,4 +70,35 @@ public class StateManager {
         
     }
 
+
+
+    /**
+     * @return
+     */
+    public Date getCurrentRunStartDate() {
+        return this.state.getCurrentRunStartDate();
+    }
+
+    /**
+     * @param time
+     */
+    public void setCurrentRunStartDate(Date time) {
+        this.state.setCurrentRunStartDate(time);
+        flush();
+    }
+
+    /**
+     * @return
+     */
+    public Date getNextRunStartDate() {
+        return this.state.getNextRunStartDate();
+    }
+    
+    /**
+     * @param time
+     */
+    public void setNextRunStartDate(Date time) {
+        this.state.setNextRunStartDate(time);
+        flush();
+    }
 }
