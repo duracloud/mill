@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.mill.domain.DuplicationTask;
 import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.util.ExceptionHandler;
 import org.duracloud.mill.util.Retriable;
 import org.duracloud.mill.util.Retrier;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
@@ -275,6 +276,17 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                 public Map<String, String> retry() throws Exception {
                     // The actual method being executed
                     return store.getContentProperties(spaceId, contentId);
+                }
+            }, new ExceptionHandler() {
+                @Override
+                public void handle(Exception ex) {
+                    if(!(ex instanceof NotFoundException)){
+                        log.debug(ex.getMessage(),ex);
+                    }else{
+                        log.debug(
+                                "retry attempt failed but probably not an issue: {}",
+                                ex.getMessage());
+                    }
                 }
             });
         } catch(NotFoundException nfe) {

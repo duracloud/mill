@@ -37,7 +37,7 @@ public class Retrier {
 
     private int maxRetries;
 
-    private final Logger log = LoggerFactory.getLogger(Retrier.class);
+    private static final Logger log = LoggerFactory.getLogger(Retrier.class);
 
     public Retrier() {
         this.maxRetries = DEFAULT_MAX_RETRIES;
@@ -46,6 +46,14 @@ public class Retrier {
     public Retrier(int maxRetries) {
         this.maxRetries = maxRetries;
     }
+    
+    private static final ExceptionHandler DEFAULT_EXCEPTION_HANDLER = 
+        new ExceptionHandler() {
+        @Override
+        public void handle(Exception ex) {
+            log.debug(ex.getMessage(),ex);
+        }
+    };
 
     /**
      * Executes the action of a Retriable, and retries on error. Provides a
@@ -61,17 +69,38 @@ public class Retrier {
      * @throws Exception
      */
     public <T extends Object> T execute(Retriable retriable) throws Exception {
+        return execute(retriable, DEFAULT_EXCEPTION_HANDLER);
+    }
+
+    /**
+     * Executes the action of a Retriable, and retries on error. Provides a way
+     * to execute a variety of methods and allow a retry to occur on method
+     * failure.
+     * 
+     * Returns the necessary object type.
+     * 
+     * @param retriable
+     * @param exceptionHandler
+     *            for customing handling of exceptions - especially with respect
+     *            to customized logging.
+     * @throws Exception
+     */
+    public <T extends Object> T execute(Retriable retriable, ExceptionHandler exceptionHandler) throws Exception {
+        if (exceptionHandler == null) {
+            throw new IllegalArgumentException(
+                    "exceptionHandler must be non-null");
+        }
+        
         Exception lastException = null;
         for(int i=0; i<=maxRetries; i++) {
             try {
                 return (T)retriable.retry();
             } catch (Exception e) {
                 lastException = e;
-                log.debug(e.getMessage(), e);
+                exceptionHandler.handle(e);
                 WaitUtil.wait(i);
             }
         }
         throw lastException;
     }
-
 }
