@@ -99,17 +99,17 @@ public class LoopingTaskProducer implements Runnable {
         log.info("Starting run...");
         MorselQueue morselQueue = loadMorselQueue();
         
-        while(this.taskQueue.size() < maxTaskQueueSize){
-            if(morselQueue.isEmpty()){
-                morselQueue = reloadMorselQueue();
-                if(morselQueue.isEmpty()){
-                    scheduleNextRun();
-                    break;
-                }
-            }
-            
+        while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
             nibble(morselQueue.poll());
             persistMorsels(morselQueue, morselsToReload);
+            
+            if(morselQueue.isEmpty()){
+                morselQueue = reloadMorselQueue();
+            }
+        }
+
+        if(morselQueue.isEmpty()){
+            scheduleNextRun();
         }
         
         int totalDups = 0, totalDeletes = 0;
@@ -188,8 +188,8 @@ public class LoopingTaskProducer implements Runnable {
     }
 
     /**
-     * load the morsels from the persistent state and then add all other morsels based on
-     * on duplication policy manager
+     * Loads the morsels from the persistent state if there are any; otherwise it loads  all other morsels based on
+     * on duplication policy manager.
      * 
      * @return
      */
@@ -201,15 +201,14 @@ public class LoopingTaskProducer implements Runnable {
 
         morselQueue.addAll(morsels);
 
-        //generate set of morsels based on duplication policy
-        for(String account : this.policyManager.getDuplicationAccounts()){
-            DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
-            for(String spaceId : policy.getSpaces()){
-                Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
-                for(DuplicationStorePolicy storePolicy : storePolicies){
-                    Morsel morsel = new Morsel(account, spaceId, null, storePolicy);
-                    if(!morselQueue.contains(morsel)){
-                        morselQueue.add(morsel);
+        if(morselQueue.isEmpty()){
+            //generate set of morsels based on duplication policy
+            for(String account : this.policyManager.getDuplicationAccounts()){
+                DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
+                for(String spaceId : policy.getSpaces()){
+                    Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
+                    for(DuplicationStorePolicy storePolicy : storePolicies){
+                        morselQueue.add(new Morsel(account, spaceId, null, storePolicy));
                     }
                 }
             }
