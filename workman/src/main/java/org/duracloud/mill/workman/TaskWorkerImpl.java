@@ -28,7 +28,7 @@ import java.util.TimerTask;
 public class TaskWorkerImpl implements TaskWorker {
     private static final int MAX_ATTEMPTS = 3;
     private static Logger log = LoggerFactory.getLogger(TaskWorkerImpl.class);
-    private static Timer timer = new Timer();
+    private static final Timer TIMER;
 
     private TaskProcessorFactory processorFactory;
     private TaskQueue queue;
@@ -39,6 +39,9 @@ public class TaskWorkerImpl implements TaskWorker {
     private Task task;
     private boolean initialized = false;
 
+    static {
+        TIMER = new Timer();
+    }
     /**
      * @param task
      * @param processorFactory
@@ -89,7 +92,7 @@ public class TaskWorkerImpl implements TaskWorker {
         };
 
         this.currentTimerTask = timerTask;
-        timer.schedule(currentTimerTask, executionTime);
+        TIMER.schedule(currentTimerTask, executionTime);
     }
     
     /**

@@ -10,6 +10,8 @@ package org.duracloud.mill.workman;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -74,9 +76,11 @@ public class TaskWorkerManager {
                 MAX_WORKER_PROPERTY_KEY, String.valueOf(DEFAULT_MAX_WORKERS)));
 
         //With a bound pool and unbounded queue, rejection should never occur.
-        this.executor = new ThreadPoolExecutor(maxThreadCount, maxThreadCount, 60 * 000,
-                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-
+        this.executor = new ThreadPoolExecutor(maxThreadCount, 
+                                               maxThreadCount,
+                                               0L, TimeUnit.MILLISECONDS,
+                                               new LinkedBlockingQueue<Runnable>());
+                
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -89,7 +93,7 @@ public class TaskWorkerManager {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                log.debug(
+                log.info(
                         "Status: max worker pool size: {}, currently running workers: {}, completed workers {}",
                         new Object[] { getMaxWorkers(),
                                 executor.getActiveCount(),
@@ -113,8 +117,13 @@ public class TaskWorkerManager {
         
         while(!stop){
             int active = this.executor.getActiveCount();
-            int poolSize = this.executor.getMaximumPoolSize();
-            if(active < poolSize && this.executor.getQueue().size() < poolSize){
+            int maxPoolSize = this.executor.getMaximumPoolSize();
+            int queueSize =  this.executor.getQueue().size();
+            log.debug(
+                    "active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
+                    active, queueSize);
+            
+            if(active < maxPoolSize && queueSize < maxPoolSize){
                 //pull up to 10 items off queue
                 //(that is when takeMany() is implemented).
 
