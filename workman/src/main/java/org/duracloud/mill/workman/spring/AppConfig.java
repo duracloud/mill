@@ -67,6 +67,8 @@ public class AppConfig {
 
     @Bean
     public File workDir(WorkmanConfigurationManager configurationManager) {
+        log.info("creating work dir for path: "
+                + configurationManager.getWorkDirectoryPath());
         return new File(configurationManager.getWorkDirectoryPath());
     }
 
@@ -83,21 +85,28 @@ public class AppConfig {
     
     @Bean
     public TaskQueue lowPriorityQueue(WorkmanConfigurationManager configurationManager){
-        return new SQSTaskQueue(configurationManager.getLowPriorityDuplicationQueue());
+        TaskQueue queue =  new SQSTaskQueue(configurationManager.getLowPriorityDuplicationQueue());
+        log.info("created low priority queue {}", queue);
+        return queue;
     }
 
     @Bean
     public TaskQueue highPriorityQueue(WorkmanConfigurationManager configurationManager){
-        return new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
+        TaskQueue queue =  new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
+        log.info("created high priority queue {}", queue);
+        return queue;
     }
 
     @Bean
     public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager){
-        return new SQSTaskQueue(configurationManager.getDeadLetterQueueName());
+        TaskQueue queue =  new SQSTaskQueue(configurationManager.getDeadLetterQueueName());
+        log.info("created dead letter  queue {}", queue);
+        return queue;
     }
 
     @Bean(initMethod="init")
     public WorkmanConfigurationManager configurationManager(){
+        log.info("creating the workman configuration manager...");
         return new WorkmanConfigurationManager();
     }
     

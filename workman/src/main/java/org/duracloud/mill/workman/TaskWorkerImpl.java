@@ -153,6 +153,8 @@ public class TaskWorkerImpl implements TaskWorker {
             if (currentTimerTask != null) {
                 currentTimerTask.cancel();
             }
+            
+            log.debug("task worker finished {}", this.task);
         }
     }
 
