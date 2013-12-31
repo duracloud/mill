@@ -110,7 +110,7 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.framework.version>3.2.4.RELEASE</spring.framework.version>
-    <duracloud.version>2.4.0</duracloud.version>
+    <duracloud.version>3.0.0-SNAPSHOT</duracloud.version>
     <skipITs>true</skipITs>
   </properties>
 
