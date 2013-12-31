@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.durastore;
 
+import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 
 
@@ -17,6 +18,7 @@ import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfigurationManager{
 
     public static final String DUPLICATION_POLICY_BUCKET_SUFFIX = "policyBucketSuffix";
+    public static final String NOTIFICATION_RECIPIENTS = "notificationRecipients";
 
     /**
      * @return
@@ -39,5 +41,17 @@ public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfi
      */
     public String getPolicyBucketSuffix() {
         return System.getProperty(DUPLICATION_POLICY_BUCKET_SUFFIX);
+    }
+
+    /**
+     * @return
+     */
+    public String[] getNotificationRecipients() {
+        String recipients =  System.getProperty(NOTIFICATION_RECIPIENTS);
+        if(StringUtils.isBlank(recipients)){
+            return null;
+        }else{
+            return recipients.split(",");
+        }
     }
 }

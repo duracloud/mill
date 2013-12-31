@@ -13,6 +13,8 @@ import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.duracloud.mill.durastore.DurastoreTaskProducerConfigurationManager;
 import org.duracloud.mill.durastore.MessageListenerContainerManager;
+import org.duracloud.mill.notification.NotificationManager;
+import org.duracloud.mill.notification.SESNotificationManager;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
 import org.slf4j.Logger;
@@ -62,23 +64,33 @@ public class AppConfig {
         return new DuplicationPolicyManager(policyRepo);
 
     }
-    
+
+    @Bean
+    public NotificationManager notificationManager(DurastoreTaskProducerConfigurationManager configurationManager) {
+        String[] recipients = configurationManager.getNotificationRecipients();
+        SESNotificationManager manager = new SESNotificationManager(recipients);
+        return manager;
+    }
+
     @Bean(initMethod="init", destroyMethod="destroy")
     public MessageListenerContainerManager messageListenerContainerManager(
             TaskQueue duplicationTaskQueue,
             DuplicationPolicyManager duplicationPolicyManager, 
-            DurastoreTaskProducerConfigurationManager configurationManager) {
+            DurastoreTaskProducerConfigurationManager configurationManager,
+            NotificationManager notificationManager) {
          
         String template = configurationManager.getJMSConnectionUrlTemplate();
         if(template != null){
             log.info("using jms connection url template {}", template);
             return new MessageListenerContainerManager(duplicationTaskQueue,
                     duplicationPolicyManager, 
-                    template);
+                    template, 
+                    notificationManager);
         }else{
             log.info("Using default jms connection url template...");
             return new MessageListenerContainerManager(duplicationTaskQueue,
-                    duplicationPolicyManager);
+                    duplicationPolicyManager,
+                    notificationManager);
         }
     }
 }

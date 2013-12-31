@@ -21,6 +21,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.duracloud.storage.aop.ContentMessageConverter;
@@ -49,18 +50,22 @@ public class MessageListenerContainerManager {
     private TaskQueue duplicationTaskQueue;
     private String connectionFactoryURLTemplate;
 
+    private NotificationManager notificationManager;
+
     public MessageListenerContainerManager(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager,
-            String connectionFactoryURLTemplate) {
+                                           DuplicationPolicyManager duplicationPolicyManager,
+                                           String connectionFactoryURLTemplate, 
+                                           NotificationManager notificationManager) {
         this.duplicationPolicyManager = duplicationPolicyManager;
         this.duplicationTaskQueue = duplicationTaskQueue;
         this.connectionFactoryURLTemplate = connectionFactoryURLTemplate;
+        this.notificationManager = notificationManager;
     }
 
     public MessageListenerContainerManager(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager) {
+            DuplicationPolicyManager duplicationPolicyManager, NotificationManager notificationManager) {
         this(duplicationTaskQueue, duplicationPolicyManager,
-                DEFAULT_CONNECTION_FACTORY_TEMPLATE);
+                DEFAULT_CONNECTION_FACTORY_TEMPLATE, notificationManager);
     }
 
     public void init() {
@@ -97,35 +102,58 @@ public class MessageListenerContainerManager {
             ConnectionFactory connectionFactory = jmsFactory(subdomain);
 
             ContentMessageListener listener = new ContentMessageListener(
-                    duplicationTaskQueue, duplicationPolicyManager, subdomain);
+                    duplicationTaskQueue, duplicationPolicyManager, subdomain, notificationManager);
 
             // add a container for each topic
             for (ACTION action : actions) {
-                SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-                container.setAutoStartup(false);
-                container.setExceptionListener(errorHandler);
-                container.setErrorHandler(errorHandler);
-                container.setConnectionFactory(connectionFactory);
                 String destination = "org.duracloud.topic.change.content."
-                        + action.name().toLowerCase();
-                container.setDestination(new ActiveMQTopic(destination));
-                MessageListenerAdapter adapter = new MessageListenerAdapter(
-                        listener);
-                adapter.setDefaultListenerMethod("onMessage");
-                adapter.setMessageConverter(converter);
-                log.info(
-                        "created message listener container for subdomain {}: "
-                                + "destination: {}, connectionFactory: {}, converter:{}",
-                        subdomain, destination, connectionFactory, converter);
-                container.setMessageListener(adapter);
-                Map<String, SimpleMessageListenerContainer> map = new HashMap<>();
-                map.put(subdomain, container);
-                containers.add(map);
+                        + action.name().toLowerCase();    
+                addListener(converter, errorHandler, subdomain,
+                        connectionFactory, listener, destination);
             }
+            
+            addListener(converter, errorHandler, subdomain,
+                    connectionFactory, listener, "org.duracloud.topic.change.space.create");
+            
         }
 
         log.info("message containers initialized.");
 
+    }
+
+    /**
+     * @param converter
+     * @param errorHandler
+     * @param subdomain
+     * @param connectionFactory
+     * @param listener
+     * @param destination
+     */
+    private void addListener(ContentMessageConverter converter,
+            MessageListenerErrorHandler errorHandler,
+            String subdomain,
+            ConnectionFactory connectionFactory,
+            ContentMessageListener listener,
+            String destination) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setAutoStartup(false);
+        container.setExceptionListener(errorHandler);
+        container.setErrorHandler(errorHandler);
+        container.setConnectionFactory(connectionFactory);
+        
+        container.setDestination(new ActiveMQTopic(destination));
+        MessageListenerAdapter adapter = new MessageListenerAdapter(
+                listener);
+        adapter.setDefaultListenerMethod("onMessage");
+        adapter.setMessageConverter(converter);
+        log.info(
+                "created message listener container for subdomain {}: "
+                        + "destination: {}, connectionFactory: {}, converter:{}",
+                subdomain, destination, connectionFactory, converter);
+        container.setMessageListener(adapter);
+        Map<String, SimpleMessageListenerContainer> map = new HashMap<>();
+        map.put(subdomain, container);
+        containers.add(map);
     }
 
     private ConnectionFactory jmsFactory(String subdomain) {

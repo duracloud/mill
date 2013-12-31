@@ -14,6 +14,7 @@ import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.queue.TaskNotFoundException;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.TimeoutException;
@@ -36,6 +37,8 @@ public class ContentMessageListenerTest {
     private TaskQueue duplicationTaskQueue;
     private String subdomain = "subdomain";
     private DuplicationPolicy policy;
+    private NotificationManager notificationManager;
+    
     /**
      * @throws java.lang.Exception
      */
@@ -45,18 +48,20 @@ public class ContentMessageListenerTest {
         policyManager = EasyMock.createMock(DuplicationPolicyManager.class);
 
         policy = new DuplicationPolicy();
-
+        notificationManager = EasyMock.createMock(NotificationManager.class);
     }
 
     private void replay(){
-        EasyMock.replay(duplicationTaskQueue, policyManager);
+        EasyMock.replay(duplicationTaskQueue, policyManager,
+                notificationManager);
     }
     /**
      * @throws java.lang.Exception
      */
     @After
     public void tearDown() throws Exception {
-        EasyMock.verify(duplicationTaskQueue, policyManager);
+        EasyMock.verify(duplicationTaskQueue, policyManager,
+                notificationManager);
     }
 
     /**
@@ -68,7 +73,7 @@ public class ContentMessageListenerTest {
         EasyMock.expect(policyManager.getDuplicationPolicy(EasyMock.isA(String.class))).andReturn(policy);
         
         replay();
-        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain);
+        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain, notificationManager);
         listener.onMessage(message);
     }
 
@@ -76,7 +81,9 @@ public class ContentMessageListenerTest {
     public void testOnMessageNonDuplicationAction() {
         ContentMessage message = createMessage("ERROR");
         replay();
-        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain);
+        ContentMessageListener listener = new ContentMessageListener(
+                duplicationTaskQueue, policyManager, subdomain,
+                notificationManager);
         listener.onMessage(message);
     }
 
@@ -96,10 +103,29 @@ public class ContentMessageListenerTest {
     public void testInvalidAction() {
         ContentMessage message = createMessage("INVALIDACTION");
         replay();
-        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain);
+        ContentMessageListener listener = new ContentMessageListener(
+                duplicationTaskQueue, policyManager, subdomain,
+                notificationManager);
         listener.onMessage(message);
     }
-    
+
+    @Test
+    public void testSpaceCreate() {
+        ContentMessage message = new ContentMessage();
+        message.setSpaceId("spaceId");
+        message.setStoreId("storeId");
+        message.setUsername("username");
+        message.setDatetime("date");
+        notificationManager.newSpace(subdomain, "storeId", "spaceId", "date",
+                "username");
+        EasyMock.expectLastCall();
+        replay();
+        ContentMessageListener listener = new ContentMessageListener(
+                duplicationTaskQueue, policyManager, subdomain,
+                notificationManager);
+        listener.onMessage(message);
+    }
+
     @Test
     public void testSuccessfulDuplicationTaskOnDelete(){
         testSuccessfulDuplicationTaskCreation(ACTION.DELETE);
@@ -143,7 +169,9 @@ public class ContentMessageListenerTest {
         });
         
         replay();
-        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain);
+        ContentMessageListener listener = new ContentMessageListener(
+                duplicationTaskQueue, policyManager, subdomain,
+                notificationManager);
         listener.onMessage(message);
         
         

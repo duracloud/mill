@@ -10,11 +10,13 @@ package org.duracloud.mill.durastore;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.domain.DuplicationTask;
 import org.duracloud.mill.domain.Task;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessage;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
@@ -36,6 +38,7 @@ public class ContentMessageListener {
     private DuplicationPolicyManager duplicationPolicyManager;
     private String subdomain;
     private DuplicationPolicy policy;
+    private NotificationManager notificationManager;
 
     /**
      * 
@@ -44,10 +47,12 @@ public class ContentMessageListener {
      * @param subdomain
      */
     public ContentMessageListener(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager, String subdomain) {
+            DuplicationPolicyManager duplicationPolicyManager, String subdomain, 
+            NotificationManager notificationManager) {
         this.duplicationTaskQueue = duplicationTaskQueue;
         this.duplicationPolicyManager = duplicationPolicyManager;
         this.subdomain = subdomain;
+        this.notificationManager = notificationManager;
     }
 
     /**
@@ -68,7 +73,35 @@ public class ContentMessageListener {
                 }
             }
             applyDuplicationPolicy(message);
+        } else {
+            if(isSpaceCreateMessage(message)){
+                sendNewSpaceNotification(message);
+            }
         }
+    }
+
+    /**
+     * @param message
+     */
+    private void sendNewSpaceNotification(ContentMessage message) {
+        this.notificationManager.newSpace(this.subdomain, 
+                                          message.getStoreId(),
+                                          message.getSpaceId(), 
+                                          message.getDatetime(),
+                                          message.getUsername());
+    }
+
+    /**
+     * @param message
+     * @return
+     */
+    private boolean isSpaceCreateMessage(ContentMessage message) {
+        return message != null && 
+                  StringUtils.isNotEmpty(message.getStoreId()) &&
+                  StringUtils.isNotEmpty(message.getSpaceId()) &&
+                  StringUtils.isEmpty(message.getAction()) &&
+                  StringUtils.isEmpty(message.getContentId()) &&
+                  StringUtils.isEmpty(message.getContentMd5());
     }
 
     /**
@@ -120,21 +153,21 @@ public class ContentMessageListener {
      * @return
      */
     private boolean isDuplicatable(ContentMessage contentMessage) {
+        if(contentMessage.getAction() == null){
+            return false;
+        }
+        
         try {
             ACTION action = ACTION.valueOf(contentMessage.getAction());
-            return (
-                action != null && 
-                ( 
-                    action.equals(ACTION.INGEST) || 
+            return (action.equals(ACTION.INGEST) || 
                     action.equals(ACTION.UPDATE) ||
                     action.equals(ACTION.COPY) ||
                     action.equals(ACTION.DELETE) 
-                )
             );
         } catch (IllegalArgumentException e) {
             log.warn(
                     "failed to get enum value of " + contentMessage.getAction()
-                            + ": " + e.getMessage(), e);
+                            + ": " + e.getMessage());
             return false;
         }
     }

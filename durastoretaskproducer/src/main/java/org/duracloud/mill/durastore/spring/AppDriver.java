@@ -38,6 +38,7 @@ public class AppDriver {
     private static final String CONFIG_FILE_OPTION = "c";
     private static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
     private static final String POLICY_BUCKET_SUFFIX = "p";
+    private static final String NOTIFICATION_RECIPIENTS_OPTION = "n";
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -96,7 +97,15 @@ public class AppDriver {
                            "duplication policies can be found.");
             policyBucketSuffix.setRequired(false);
             options.addOption(policyBucketSuffix);
-        
+
+        Option notificationRecipients =
+                new Option(NOTIFICATION_RECIPIENTS_OPTION,
+                           "notification-recipients",
+                           true,
+                           "A comma-separated list of email addresses");
+        notificationRecipients.setRequired(false);
+        options.addOption(notificationRecipients);
+
         return options;
     }
     
@@ -147,6 +156,12 @@ public class AppDriver {
                     duplicationQueueName);
         }
 
+        String notificationRecipients = cmd.getOptionValue(NOTIFICATION_RECIPIENTS_OPTION);
+        if(notificationRecipients != null){
+            System.setProperty(
+                    DurastoreTaskProducerConfigurationManager.NOTIFICATION_RECIPIENTS,
+                    notificationRecipients);
+        }
 
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);
