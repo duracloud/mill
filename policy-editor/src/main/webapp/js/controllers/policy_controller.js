@@ -12,17 +12,6 @@
 
 App.PolicyController = Ember.ObjectController.extend({
  
-	setupController: function(model, controller){
-		this.loadAlSpaces(controller);
-	},
-	
-	loadAllSpaces:function(controller){
-		var that = this;
-		Ember.run(function(){
-			console.log('loading all spaces...');
-			controller.set('allSpaces', that._getAllSpaces());
-		});
-	},
 
 	_getAllSpaces: function(){
 		return App.DuraStoreClient.getSpacesBySubdomain(this.get('model.id'));
@@ -47,7 +36,7 @@ App.PolicyController = Ember.ObjectController.extend({
 	   
 	   return filtered;
 	   
-   }.property('model.availableSpaces').volatile(),
+   }.property('model.spaces'),
    
    actions: {
 	   addSpace: function(spaceId){
@@ -60,8 +49,7 @@ App.PolicyController = Ember.ObjectController.extend({
 		   });
 
 		   var policy = that.get('model');
-		   
-		    this.store.find('space', id).then(function(space){
+		   this.store.find('space', id).then(function(space){
  			    policy.get('spaces').pushObject(space);	
 			    policy.save().then(function() {
 					that.get('target').transitionTo('space', spaceId);

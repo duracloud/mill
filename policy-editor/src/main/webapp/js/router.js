@@ -117,8 +117,10 @@ App.LoaderModal = function(){
 
 App.PolicyRoute = BaseRoute.extend({
 	
-  
-  
+  setupController: function(controller,model){
+	  controller.set('model', model);
+  },
+
   beforeModel: function(){
 	console.log("before model");
   },
