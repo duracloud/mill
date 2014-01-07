@@ -114,6 +114,9 @@ public class MessageListenerContainerManager {
             
             addListener(converter, errorHandler, subdomain,
                     connectionFactory, listener, "org.duracloud.topic.change.space.create");
+
+            addListener(converter, errorHandler, subdomain,
+                    connectionFactory, listener, "org.duracloud.topic.change.space.delete");
             
         }
 
