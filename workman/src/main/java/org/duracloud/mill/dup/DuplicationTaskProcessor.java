@@ -345,6 +345,11 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                  " in space " + spaceId + " in account " + dupTask.getAccount());
     }
 
+    /**
+     * Pull out the system-generated properties, to allow the properties that
+     * are added to the duplicated item to be only the user-defined properties.
+     * @param props
+     */
     private void cleanProperties(Map<String, String> props) {
         if(props != null){
             props.remove(StorageProvider.PROPERTIES_CONTENT_MD5);
@@ -412,6 +417,11 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                                   sourceChecksum,
                                   sourceProperties,
                                   localFile);
+            log.info(
+                "Successfully duplicated id={} dup_size={} space={} account={}",
+                contentId,
+                localFile.length(),
+                spaceId, dupTask.getAccount());
         } else {
             cleanup(localFile);
             String msg = "Unable to retrieve content which matches the" +
@@ -420,9 +430,6 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                 buildFailureMessage(msg));
         }
         cleanup(localFile);
-
-        log.info("Successfully duplicated " + contentId + " in space " +
-                 spaceId + " in account " + dupTask.getAccount());
     }
 
     /*
