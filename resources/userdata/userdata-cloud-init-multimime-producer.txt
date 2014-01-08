@@ -18,8 +18,8 @@ manage_etc_hosts: false
 
 # dynamically set hostname using the instance's instanceid
 bootcmd:
- - cloud-init-per instance my_set_hostname sh -xc "echo prod-loop-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
- - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 prod-loop-$INSTANCE_ID.duracloud.org prod-loop-$INSTANCE_ID >> /etc/hosts"
+ - cloud-init-per instance my_set_hostname sh -xc "echo production-producer-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
+ - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 production-producer-$INSTANCE_ID.duracloud.org production-producer-$INSTANCE_ID >> /etc/hosts"
 
 # Add apt repositories
 apt_sources:
