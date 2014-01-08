@@ -97,26 +97,35 @@ public class MessageListenerContainerManager {
         ContentMessageConverter converter = new ContentMessageConverter();
         MessageListenerErrorHandler errorHandler = new MessageListenerErrorHandler();
         containers = new ArrayList<>();
+
+        
         for (String subdomain : duplicationPolicyManager
                 .getDuplicationAccounts()) {
             ConnectionFactory connectionFactory = jmsFactory(subdomain);
 
-            ContentMessageListener listener = new ContentMessageListener(
-                    duplicationTaskQueue, duplicationPolicyManager, subdomain, notificationManager);
+            ContentMessageListener contentListener = new ContentMessageListener(
+                    duplicationTaskQueue, duplicationPolicyManager, subdomain);
 
+            SpaceDeleteMessageListener spaceDeleteListener = new SpaceDeleteMessageListener(
+                    duplicationTaskQueue, duplicationPolicyManager, subdomain);
+
+            SpaceCreateMessageListener spaceCreateListener = 
+                                                new SpaceCreateMessageListener(subdomain, 
+                                                                               notificationManager);
+            
             // add a container for each topic
             for (ACTION action : actions) {
                 String destination = "org.duracloud.topic.change.content."
                         + action.name().toLowerCase();    
                 addListener(converter, errorHandler, subdomain,
-                        connectionFactory, listener, destination);
+                        connectionFactory, contentListener, destination);
             }
             
             addListener(converter, errorHandler, subdomain,
-                    connectionFactory, listener, "org.duracloud.topic.change.space.create");
+                    connectionFactory, spaceCreateListener, "org.duracloud.topic.change.space.create");
 
             addListener(converter, errorHandler, subdomain,
-                    connectionFactory, listener, "org.duracloud.topic.change.space.delete");
+                    connectionFactory, spaceDeleteListener, "org.duracloud.topic.change.space.delete");
             
         }
 
@@ -136,7 +145,7 @@ public class MessageListenerContainerManager {
             MessageListenerErrorHandler errorHandler,
             String subdomain,
             ConnectionFactory connectionFactory,
-            ContentMessageListener listener,
+            MessageListener listener,
             String destination) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setAutoStartup(false);

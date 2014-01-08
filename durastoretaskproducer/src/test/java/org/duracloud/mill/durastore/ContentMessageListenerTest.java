@@ -73,7 +73,7 @@ public class ContentMessageListenerTest {
         EasyMock.expect(policyManager.getDuplicationPolicy(EasyMock.isA(String.class))).andReturn(policy);
         
         replay();
-        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain, notificationManager);
+        ContentMessageListener listener = new ContentMessageListener(duplicationTaskQueue, policyManager, subdomain);
         listener.onMessage(message);
     }
 
@@ -82,8 +82,7 @@ public class ContentMessageListenerTest {
         ContentMessage message = createMessage("ERROR");
         replay();
         ContentMessageListener listener = new ContentMessageListener(
-                duplicationTaskQueue, policyManager, subdomain,
-                notificationManager);
+                duplicationTaskQueue, policyManager, subdomain);
         listener.onMessage(message);
     }
 
@@ -104,8 +103,7 @@ public class ContentMessageListenerTest {
         ContentMessage message = createMessage("INVALIDACTION");
         replay();
         ContentMessageListener listener = new ContentMessageListener(
-                duplicationTaskQueue, policyManager, subdomain,
-                notificationManager);
+                duplicationTaskQueue, policyManager, subdomain);
         listener.onMessage(message);
     }
 
@@ -120,12 +118,23 @@ public class ContentMessageListenerTest {
                 "username");
         EasyMock.expectLastCall();
         replay();
-        ContentMessageListener listener = new ContentMessageListener(
-                duplicationTaskQueue, policyManager, subdomain,
+        SpaceCreateMessageListener listener = new SpaceCreateMessageListener(subdomain,
                 notificationManager);
         listener.onMessage(message);
     }
 
+    @Test
+    public void testSpaceDelete() {
+        ContentMessage message = new ContentMessage();
+        message.setSpaceId("spaceId");
+        message.setStoreId("storeId");
+        message.setUsername("username");
+        message.setDatetime("date");
+        SpaceDeleteMessageListener listener = new SpaceDeleteMessageListener(duplicationTaskQueue, policyManager, subdomain);
+        testSuccessfulDuplicationTaskCreation(message, listener);
+    }
+
+    
     @Test
     public void testSuccessfulDuplicationTaskOnDelete(){
         testSuccessfulDuplicationTaskCreation(ACTION.DELETE);
@@ -145,7 +154,12 @@ public class ContentMessageListenerTest {
     }
 
     private void testSuccessfulDuplicationTaskCreation(ACTION action){
-        ContentMessage message = createMessage(action.name());
+        ContentMessageListener listener = new ContentMessageListener(
+                duplicationTaskQueue, policyManager, subdomain);
+        testSuccessfulDuplicationTaskCreation(createMessage(action.name()), listener);
+    }
+    private void testSuccessfulDuplicationTaskCreation(ContentMessage message, MessageListener listener){
+        
         final int count = 10;
         for(int i = 0; i < count; i++){
             DuplicationStorePolicy storePolicy = new DuplicationStorePolicy();
@@ -169,9 +183,6 @@ public class ContentMessageListenerTest {
         });
         
         replay();
-        ContentMessageListener listener = new ContentMessageListener(
-                duplicationTaskQueue, policyManager, subdomain,
-                notificationManager);
         listener.onMessage(message);
         
         

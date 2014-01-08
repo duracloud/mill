@@ -31,122 +31,30 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein 
  *         Date: Oct 30, 2013
  */
-public class ContentMessageListener {
+public class ContentMessageListener extends MessageListenerBase {
     private static Logger log = LoggerFactory
             .getLogger(ContentMessageListener.class);
-    private TaskQueue duplicationTaskQueue;
-    private DuplicationPolicyManager duplicationPolicyManager;
-    private String subdomain;
-    private DuplicationPolicy policy;
-    private NotificationManager notificationManager;
 
-    /**
-     * 
-     * @param duplicationTaskQueue
-     * @param duplicationPolicyManager
-     * @param subdomain
-     */
+    
     public ContentMessageListener(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager, String subdomain, 
-            NotificationManager notificationManager) {
-        this.duplicationTaskQueue = duplicationTaskQueue;
-        this.duplicationPolicyManager = duplicationPolicyManager;
-        this.subdomain = subdomain;
-        this.notificationManager = notificationManager;
-    }
-
+            DuplicationPolicyManager duplicationPolicyManager, String subdomain) {
+        super(duplicationTaskQueue, duplicationPolicyManager, subdomain);
+    }    
+    
     /**
      * Receives message from jms listener.
      * @param message
      */
-    public void onMessage(ContentMessage message) {
-        log.debug("listener for {} received {}", subdomain, message);
+    @Override
+    protected void onMessageImpl(ContentMessage message) {
         // if action is ingest
         if (isDuplicatable(message)) {
-
-            if (policy == null) {
-                policy = duplicationPolicyManager
-                        .getDuplicationPolicy(subdomain);
-                if (policy == null) {
-                    throw new RuntimeException("no policy found for subdomain "
-                            + subdomain);
-                }
-            }
             applyDuplicationPolicy(message);
-        } else {
-            if(isSpaceCreateMessage(message)){
-                sendNewSpaceNotification(message);
-            }
-        }
-    }
-
-    /**
-     * @param message
-     */
-    private void sendNewSpaceNotification(ContentMessage message) {
-        this.notificationManager.newSpace(this.subdomain, 
-                                          message.getStoreId(),
-                                          message.getSpaceId(), 
-                                          message.getDatetime(),
-                                          message.getUsername());
-    }
-
-    /**
-     * @param message
-     * @return
-     */
-    private boolean isSpaceCreateMessage(ContentMessage message) {
-        return message != null && 
-                  StringUtils.isNotEmpty(message.getStoreId()) &&
-                  StringUtils.isNotEmpty(message.getSpaceId()) &&
-                  StringUtils.isEmpty(message.getAction()) &&
-                  StringUtils.isEmpty(message.getContentId()) &&
-                  StringUtils.isEmpty(message.getContentMd5());
-    }
-
-    /**
-     * @param contentMessage
-     */
-    private void applyDuplicationPolicy(ContentMessage contentMessage) {
-
-        String storeId = contentMessage.getStoreId();
-        String spaceId = contentMessage.getSpaceId();
-        String contentId = contentMessage.getContentId();
-
-        Set<DuplicationStorePolicy> dupStorePolicies = 
-                policy.getDuplicationStorePolicies(spaceId);
-        
-        if(dupStorePolicies != null) {
-            
-            Set<Task> tasks = null;
-            
-            for (DuplicationStorePolicy dupStorePolicy : dupStorePolicies) {
-                if (dupStorePolicy.getSrcStoreId().equals(storeId)) {
-                    DuplicationTask dupTask = new DuplicationTask();
-                    dupTask.setAccount(subdomain);
-                    dupTask.setDestStoreId(dupStorePolicy.getDestStoreId());
-                    dupTask.setSpaceId(spaceId);
-                    dupTask.setContentId(contentId);
-                    dupTask.setSourceStoreId(storeId);
-                    
-                    log.debug("adding duplication task to the task queue: {}", dupTask);
-                    
-                    if(tasks == null){
-                        tasks = new HashSet<>();
-                    }
-                    
-                    tasks.add(dupTask.writeTask());
-                }
-            }
-            
-            if(tasks != null){
-                duplicationTaskQueue.put(tasks);
-            }
-
         }else{
-            log.debug("no duplication policies for {} on subdomain {}", spaceId, subdomain);
+            log.warn("This message {} is not duplicable: it will be ignored." );
         }
     }
+
 
     /**
      * @param contentMessage

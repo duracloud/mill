@@ -290,10 +290,24 @@ public class LoopingTaskProducer implements Runnable {
         DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
 
         //load in next maxContentIdsToAdd or however many remain 
-        List<String> contentIds = sourceProvider.getSpaceContentsChunked(spaceId, 
-                                                                         null, 
-                                                                         maxContentIdsToAdd, 
-                                                                         marker);
+        List<String> contentIds = null;
+        
+        try {
+            contentIds = sourceProvider.getSpaceContentsChunked(spaceId, 
+                                                     null, 
+                                                     maxContentIdsToAdd, 
+                                                     marker);
+        }catch(NotFoundException ex){
+            log.info("space not found on source provider: " +
+                    "subdomain={}, spaceId={}, storeId={}",
+                    subdomain, spaceId, sourceProvider);
+            
+            addDeleteSpaceTaskToQueue(subdomain, 
+                                      spaceId, 
+                                      storePolicy,
+                                      sourceProvider);
+            return true;
+        }
         //add to queue
         int contentIdCount = contentIds.size();
         
@@ -344,11 +358,18 @@ public class LoopingTaskProducer implements Runnable {
             DuplicationStorePolicy storePolicy, StorageProvider sourceProvider,
             StorageProvider destProvider) {
 
-        //load all source into ehcache
-        Iterator<String> sourceContentIds = sourceProvider.getSpaceContents(spaceId, null);
-        while(sourceContentIds.hasNext()){
-            cache.put(new Element(sourceContentIds.next(), null));
+        try{
+            //load all source into ehcache
+            Iterator<String> sourceContentIds = sourceProvider.getSpaceContents(spaceId, null);
+            while(sourceContentIds.hasNext()){
+                cache.put(new Element(sourceContentIds.next(), null));
+            }
+        }catch(NotFoundException ex){
+            log.info("space not found on source provider: " +
+                    "subdomain={}, spaceId={}, storeId={}",
+                    subdomain, spaceId, sourceProvider);
         }
+
         
         //get all items from dest
         Iterator<String> destContentIds = null;
@@ -379,11 +400,11 @@ public class LoopingTaskProducer implements Runnable {
                 }
             }
         }
-
+        
         //add any remaining deletions
         deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
         getStats(subdomain).deletes += deletionTaskCount;
-
+        
         log.info(
                 "added {} deletion tasks: subdomain={}, spaceId={}, sourceStoreId={}, destStoreId={}",
                 deletionTaskCount, 
@@ -392,6 +413,31 @@ public class LoopingTaskProducer implements Runnable {
                 storePolicy.getSrcStoreId(),
                 storePolicy.getDestStoreId());
         cache.removeAll();
+    }
+
+    /**
+     * @param subdomain
+     * @param spaceId
+     * @param storePolicy
+     * @param sourceProvider
+     */
+    private void addDeleteSpaceTaskToQueue(String subdomain,
+            String spaceId,
+            DuplicationStorePolicy storePolicy,
+            StorageProvider sourceProvider) {
+        // drop a delete space message. (ie a duplication message with
+        // no content - should trigger a destination space deletion);
+        DuplicationTask task = new DuplicationTask();
+        task.setAccount(subdomain);
+        task.setSourceStoreId(storePolicy.getSrcStoreId());
+        task.setContentId(""); 
+        task.setDestStoreId(storePolicy.getDestStoreId());
+        task.setSpaceId(spaceId);
+        this.taskQueue.put(task.writeTask());
+        log.info("destintation space delete task added to queue " +
+                "since source does not exist: " +
+                "subdomain={}, spaceId={}, storeId={}",
+                subdomain, spaceId, sourceProvider);
     }
 
     private int addToTaskQueue(String subdomain, String spaceId,
