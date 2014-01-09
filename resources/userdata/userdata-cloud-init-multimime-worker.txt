@@ -108,7 +108,7 @@ data = {
     "dc_mill_log_level":"DEBUG",
     "dc_mill_run_frequency":"1m",
     "dc_mill_jar":"workman-0.0.1-SNAPSHOT-driver.jar",
-    "dc_workman_threads":5,
+    "dc_workman_threads":50,
     "dc_workman_procs":1,
     "dc_workman_tmpdir":"/mnt/dup-worker-tmp",
     "lumberjack_files":"/home/duracloud/logs/duracloud-mill.log|type:java,source:dc-mill-worker-dup;/var/log/syslog|type:syslog",
