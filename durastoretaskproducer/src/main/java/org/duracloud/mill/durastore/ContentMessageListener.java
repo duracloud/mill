@@ -7,16 +7,7 @@
  */
 package org.duracloud.mill.durastore;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.duracloud.mill.domain.DuplicationTask;
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.DuplicationStorePolicy;
-import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessage;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
