@@ -198,7 +198,7 @@ public class LoopingTaskProducer implements Runnable {
         
         //load morsels from state;
         Set<Morsel> morsels = new HashSet<>(this.stateManager.getMorsels());
-
+        
         morselQueue.addAll(morsels);
 
         if(morselQueue.isEmpty()){
@@ -256,20 +256,23 @@ public class LoopingTaskProducer implements Runnable {
             log.info(
                     "Task queue size ({}) has reached or exceeded max size ({}).",
                     taskQueueSize, maxTaskQueueSize);
+        } else{
+            if(addDuplicationTasksFromSource(morsel, sourceProvider, 1000)){
+                log.info(
+                        "All tasks that could be created were created for subdomain={}, spaceId={}, storePolicy={}. Taskqueue.size = {}",
+                        subdomain, spaceId, storePolicy, taskQueue.size());
+                log.info(
+                        "morsel completely nibbled. No reload necessary in this round.",
+                        morsel);
+            } else {
+                log.info(
+                        "morsel nibbled: adding to set for reloading later: {}",
+                        morsel);
+                morselsToReload.add(morsel);
+            }
+            
         }
         
-        if(addDuplicationTasksFromSource(morsel, 
-                                          sourceProvider,
-                                          1000)){
-            log.info(
-                    "All tasks that could be created were created for subdomain={}, spaceId={}, storePolicy={}. Taskqueue.size = {}",
-                    subdomain, spaceId, storePolicy, taskQueue.size());
-            log.info("morsel completely nibbled. No reload necessary in this round.", morsel);
-
-        }else{
-            log.info("morsel nibbled: adding to set for reloading later: {}", morsel);
-            morselsToReload.add(morsel);
-        }
     }
 
 
@@ -312,15 +315,7 @@ public class LoopingTaskProducer implements Runnable {
         int contentIdCount = contentIds.size();
         
         if(contentIdCount == 0){
-            // if no contentIds, set marker to null
-            // to ensure at least one more round from the beginning of the
-            // space.
-            // if the morsel has already been processed from
-            // the beginning in this run, on the next pass
-            // through this method, no items will be added
-            // to the queue since those tasks will exist already
-            // in the queued task set.
-            morsel.setMarker(null);
+            return true;
         }else {
             int added = addToTaskQueue(subdomain, 
                                        spaceId, 

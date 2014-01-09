@@ -18,7 +18,6 @@ import java.util.Set;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
-import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
@@ -27,7 +26,9 @@ import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.mill.queue.TimeoutException;
 import org.duracloud.mill.queue.local.LocalTaskQueue;
+import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
@@ -111,37 +112,158 @@ public class LoopingTaskProducerTest {
         setupCache();
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount, destCount);
         replay();
+        runLoopingTaskProducer(maxTaskQueueSize);
+        Assert.assertEquals(maxTaskQueueSize, taskQueue.size().intValue());
+    }
+    
+    @Test
+    public void testNonExistentSpace() throws CredentialsRepoException, ParseException {
+        int morselCount = 1;
+        expectNotFoundOnGetSpaceContentsChunked(sourceStore);
+
+        expectNotFoundOnGetSpaceContents(sourceStore);
+
+        expectEmptyListFromGetSpaceContents(destStore,morselCount);
+        
+        setupStorageProviderFactory(morselCount);
+        setupCredentialsRepo(morselCount*2);
+        setupPolicyManager(morselCount);
+        
+        expectGetMorsels(new HashSet<Morsel>(),1);
+
+        stateManager.setMorsels(EasyMock.isA(HashSet.class));
+        EasyMock.expectLastCall().times(morselCount);
+        
+        setupCheckDatesFirstTimeRun();
+        setupDatesOnRunCompletion();
+
+        
+        setupCache();
+        int maxQueueSize = 1;
+        replay();
+
+        runLoopingTaskProducer(maxQueueSize);
+        Assert.assertEquals(maxQueueSize, taskQueue.size().intValue());
+    }
+    
+    /**
+     * 
+     */
+    private void setupDatesOnRunCompletion() {
+        EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(new Date());
+        stateManager.setNextRunStartDate(EasyMock.isA(Date.class));
+        EasyMock.expectLastCall();
+        stateManager.setCurrentRunStartDate(null);
+        EasyMock.expectLastCall();
+    }
+    
+    /**
+     * This test ensures that all items in a space are duplicated only once within a run
+     * when multiple looping task producer "sessions" are required.  A "session" is a single
+     * java process lifecycle. Multiple sessions for a run occur when a max task queue limit is
+     * reached before all the morsels can be consumed. 
+     * @throws Exception
+     */
+    @Test
+    public void testSpaceLargerThanMaxQueueSize() throws Exception{
+        
+        int morselCount = 1;
+        int sourceCount = 1500;
+
+        setupSourceStore(morselCount, sourceCount);
+
+        final HashSet<Morsel> morsels = new HashSet<Morsel>();
+
+        EasyMock.expect(
+                sourceStore.getSpaceContentsChunked(
+                        EasyMock.isA(String.class),
+                        EasyMock.isNull(String.class), 
+                        EasyMock.anyInt(),
+                        EasyMock.isA(String.class)))
+                .andReturn(new LinkedList<String>());
+        
+        expectGetMorsels(new HashSet<Morsel>(), 1);
+        expectGetMorsels(morsels, 1);
+        
+        stateManager.setMorsels(EasyMock.isA(HashSet.class));
+        StateManager stateManagerDelegate = new StateManager("fakepath") {
+            @Override
+            public void setMorsels(Set<Morsel> morsels2) {
+                morsels.clear();
+                morsels.addAll(morsels2);
+            }
+        };
+        EasyMock.expectLastCall().andDelegateTo(stateManagerDelegate).times(3);
+        
+        setupDestStore(1, 0);
+        setupStorageProviderFactory(3);
+        setupCredentialsRepo(6);
+        setupPolicyManager(morselCount);
+        
+        setupCheckDatesFirstTimeRun();
+        setupCheckDatesInProgressRun();
+        setupDatesOnRunCompletion();
+        setupCache();
+        int maxTaskQueueSize = 1000;
+
+        replay();
+        
+        int tasksProcessed = 0;
+        runLoopingTaskProducer(maxTaskQueueSize);
+        tasksProcessed = drainQueue(tasksProcessed);
+        runLoopingTaskProducer(maxTaskQueueSize);
+        tasksProcessed = drainQueue(tasksProcessed);
+
+        Assert.assertEquals(sourceCount,tasksProcessed);
+        Assert.assertEquals(0, morsels.size());
+
+    }
+
+    /**
+     * @param tasksProcessed
+     * @return
+     */
+    private int drainQueue(int tasksProcessed) {
+        while(taskQueue.size() > 0){
+            try {
+                taskQueue.take();
+                tasksProcessed++;
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return tasksProcessed;
+    }
+
+    /**
+     * @throws ParseException
+     */
+    private void runLoopingTaskProducer(int maxQueueSize) throws ParseException {
+
         LoopingTaskProducer producer = new LoopingTaskProducer(credentialsRepo, 
                                                                storageProviderFactory, 
                                                                policyManager,
                                                                taskQueue, 
                                                                cache, 
                                                                stateManager, 
-                                                               maxTaskQueueSize,
+                                                               maxQueueSize,
                                                                new Frequency("1d"));
         producer.run();
-        Assert.assertEquals(maxTaskQueueSize, taskQueue.size().intValue());
     }
-    
-    @Test
-    public void testNonExistentSpace() throws CredentialsRepoException, ParseException {
-        
-        int morselCount = 1;
 
-        
+    /**
+     * @param times 
+     * 
+     */
+    private void expectGetMorsels(HashSet<Morsel> set, int times) {
+        EasyMock.expect(stateManager.getMorsels()).andReturn(set).times(times);
+    }
 
-        EasyMock.expect(sourceStore.getSpaceContentsChunked(EasyMock.isA(String.class),
-                                            EasyMock.isNull(String.class), 
-                                            EasyMock.anyInt(),
-                                            EasyMock.isNull(String.class)))
-                .andThrow(new NotFoundException("test"));
-
-        EasyMock.expect(sourceStore.getSpaceContents(EasyMock.isA(String.class),
-                                            EasyMock.isNull(String.class)
-                                            ))
-                .andThrow(new NotFoundException("test"));
-
-        EasyMock.expect(destStore.getSpaceContents(EasyMock.isA(String.class), EasyMock.isNull(String.class)))
+    /**
+     * @param morselCount
+     */
+    private void expectEmptyListFromGetSpaceContents(StorageProvider store, int morselCount) {
+        EasyMock.expect(store.getSpaceContents(EasyMock.isA(String.class), EasyMock.isNull(String.class)))
         .andAnswer(new IAnswer<Iterator<String>>() {
             /* (non-Javadoc)
              * @see org.easymock.IAnswer#answer()
@@ -152,39 +274,23 @@ public class LoopingTaskProducerTest {
             }
           })
         .times(morselCount);
-        
-        setupStorageProviderFactory(morselCount);
-        setupCredentialsRepo(morselCount*2);
-        setupPolicyManager(morselCount);
-        
-        EasyMock.expect(stateManager.getMorsels()).andReturn(new HashSet<Morsel>());
-        stateManager.setMorsels(EasyMock.isA(HashSet.class));
-        EasyMock.expectLastCall().times(morselCount);
-        EasyMock.expect(stateManager.getNextRunStartDate()).andReturn(null);
-        EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(null);
-        EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(new Date());
-        
-        stateManager.setCurrentRunStartDate(EasyMock.isA(Date.class));
-        EasyMock.expectLastCall();
+    }
 
-        stateManager.setCurrentRunStartDate(null);
-        EasyMock.expectLastCall();
 
-        stateManager.setNextRunStartDate(EasyMock.isA(Date.class));
-        EasyMock.expectLastCall();
-        
-        setupCache();
-        replay();
-        LoopingTaskProducer producer = new LoopingTaskProducer(credentialsRepo, 
-                                                               storageProviderFactory, 
-                                                               policyManager,
-                                                               taskQueue, 
-                                                               cache, 
-                                                               stateManager, 
-                                                               1,
-                                                               new Frequency("1d"));
-        producer.run();
-        Assert.assertEquals(1, taskQueue.size().intValue());
+    private void expectNotFoundOnGetSpaceContents(StorageProvider store) {
+        EasyMock.expect(store.getSpaceContents(EasyMock.isA(String.class),
+                                            EasyMock.isNull(String.class)
+                                            ))
+                .andThrow(new NotFoundException("test"));
+    }
+
+
+    private void expectNotFoundOnGetSpaceContentsChunked(StorageProvider store) {
+        EasyMock.expect(store.getSpaceContentsChunked(EasyMock.isA(String.class),
+                                            EasyMock.isNull(String.class), 
+                                            EasyMock.anyInt(),
+                                            EasyMock.isNull(String.class)))
+                .andThrow(new NotFoundException("test"));
     }
 
 
@@ -213,10 +319,10 @@ public class LoopingTaskProducerTest {
     }
 
     /**
-     * @param morselCount
+     * @param rounds
      */
-    private void setupStorageProviderFactory(int morselCount) {
-        for(int i = 0; i < (morselCount); i++){
+    private void setupStorageProviderFactory(int rounds) {
+        for(int i = 0; i < (rounds); i++){
             EasyMock.expect(storageProviderFactory.create(EasyMock.isA(StorageProviderCredentials.class)))
             .andReturn(sourceStore)
             .andReturn(destStore);
@@ -224,10 +330,10 @@ public class LoopingTaskProducerTest {
     }
 
     /**
-     * @param morselCount
+     * @param times
      * @param destCount
      */
-    private void setupDestStore(int morselCount, int destCount) {
+    private void setupDestStore(int times, int destCount) {
         final List<String> destContentItems = new LinkedList<>();
 
         for(int i = 0; i < destCount; i++){
@@ -235,17 +341,20 @@ public class LoopingTaskProducerTest {
         }
 
 
-        EasyMock.expect(destStore.getSpaceContents(EasyMock.isA(String.class), EasyMock.isNull(String.class)))
+        EasyMock.expect(
+                destStore.getSpaceContents(EasyMock.isA(String.class),
+                        EasyMock.isNull(String.class)))
                 .andAnswer(new IAnswer<Iterator<String>>() {
-                    /* (non-Javadoc)
+                    /*
+                     * (non-Javadoc)
+                     * 
                      * @see org.easymock.IAnswer#answer()
                      */
                     @Override
                     public Iterator<String> answer() throws Throwable {
-                      return destContentItems.iterator();
+                        return destContentItems.iterator();
                     }
-                  })
-                .times(morselCount);
+                }).times(times);
     }
 
     /**
@@ -302,15 +411,26 @@ public class LoopingTaskProducerTest {
      * @param sourceCount
      */
     private void setupStateManager(int morselCount, int sourceCount) {
-        EasyMock.expect(stateManager.getMorsels()).andReturn(new HashSet<Morsel>());
+        expectGetMorsels(new HashSet<Morsel>(),1);
         stateManager.setMorsels(EasyMock.isA(HashSet.class));
         EasyMock.expectLastCall().times(morselCount*sourceCount/1000);
+        setupCheckDatesFirstTimeRun();
+    }
+
+    /**
+     * 
+     */
+    private void setupCheckDatesFirstTimeRun() {
         EasyMock.expect(stateManager.getNextRunStartDate()).andReturn(null);
         EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(null);
         stateManager.setCurrentRunStartDate(EasyMock.isA(Date.class));
         EasyMock.expectLastCall();
     }
 
+    private void setupCheckDatesInProgressRun() {
+        EasyMock.expect(stateManager.getNextRunStartDate()).andReturn(null);
+        EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(new Date());
+    }
     /**
      * 
      */
