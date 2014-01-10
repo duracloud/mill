@@ -21,6 +21,17 @@ bootcmd:
  - cloud-init-per instance my_set_hostname sh -xc "echo production-dup-worker-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
  - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 production-dup-worker-$INSTANCE_ID.duracloud.org production-dup-worker-$INSTANCE_ID >> /etc/hosts"
 
+ # make user-data scripts always run on boot
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - [scripts-user, always]
+ - keys-to-console
+ - phone-home
+ - final-message
+
 # Add apt repositories
 apt_sources:
  # Enable "multiverse" repos
@@ -58,6 +69,21 @@ packages:
  - rubygems   # Used to install librarian-puppet
  - python-pip # Used to install awscli
 
+# run commands
+# runcmd contains a list of either lists or a string
+# each item will be executed in order
+runcmd:
+ # Tell sudo to respect SSH Agent forwarding
+ - [sh, -c, "umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock"]
+ # Install AWS CLI
+ - pip install awscli
+ # Install librarian-puppet for retrieving dependent puppet modules from github
+ - gem install librarian-puppet
+ # Get the github ssh key out of s3 so we can clone from our private github projects
+ - aws --region us-east-1 s3 cp s3://duracloudprodaccount.duplication-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
+ # Add github.com to known_hosts
+ - ssh -T -oStrictHostKeyChecking=no git@github.com
+
 # set the locale
 locale: en_US.UTF-8
 
@@ -77,18 +103,8 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="user-script"
 
 #!/bin/bash
-# Tell 'sudo' to respect SSH Agent Forwarding (by keeping SSH_AUTH_SOCK alive)
-umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock
-# Install librarian-puppet, used to manage our Puppet modules (http://librarian-puppet.com/)
-gem install librarian-puppet
-# Install the AWS python CLI
-pip install awscli
-# Get the github ssh key out of s3 so we can clone from our private github projects
-aws --region us-east-1 s3 cp s3://duracloudprodaccount.duplication-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa
-chmod 600 /root/.ssh/id_rsa
-rm -rf /etc/puppet/*
-# disable ssh StrictHostKeyChecking for github.com
-ssh -T -oStrictHostKeyChecking=no git@github.com
+rm -rf /etc/puppet
+mkdir /etc/puppet
 git clone git@github.com:duraspace/puppet-duracloud-mill.git /etc/puppet/
 # Run librarian-puppet
 cd /etc/puppet && HOME=/root librarian-puppet install
