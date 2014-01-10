@@ -12,6 +12,7 @@ import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.duracloud.mill.durastore.DurastoreTaskProducerConfigurationManager;
+import org.duracloud.mill.durastore.MessageListenerContainerFactory;
 import org.duracloud.mill.durastore.MessageListenerContainerManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
@@ -72,12 +73,18 @@ public class AppConfig {
         return manager;
     }
 
+    @Bean 
+    public MessageListenerContainerFactory messageListenerContainerFactory(){
+        return new MessageListenerContainerFactory();
+    }
+    
     @Bean(initMethod="init", destroyMethod="destroy")
     public MessageListenerContainerManager messageListenerContainerManager(
             TaskQueue duplicationTaskQueue,
             DuplicationPolicyManager duplicationPolicyManager, 
             DurastoreTaskProducerConfigurationManager configurationManager,
-            NotificationManager notificationManager) {
+            NotificationManager notificationManager,
+            MessageListenerContainerFactory messageListenerContainerFactory) {
          
         String template = configurationManager.getJMSConnectionUrlTemplate();
         if(template != null){
@@ -85,12 +92,14 @@ public class AppConfig {
             return new MessageListenerContainerManager(duplicationTaskQueue,
                     duplicationPolicyManager, 
                     template, 
-                    notificationManager);
+                    notificationManager,
+                    messageListenerContainerFactory);
         }else{
             log.info("Using default jms connection url template...");
             return new MessageListenerContainerManager(duplicationTaskQueue,
                     duplicationPolicyManager,
-                    notificationManager);
+                    notificationManager,
+                    messageListenerContainerFactory);
         }
     }
 }

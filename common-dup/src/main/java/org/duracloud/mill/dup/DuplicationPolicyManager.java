@@ -7,16 +7,17 @@
  */
 package org.duracloud.mill.dup;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 
 /**
  * @author Bill Branan
@@ -24,9 +25,18 @@ import java.util.Set;
  */
 public class DuplicationPolicyManager {
 
-    private Map<String, DuplicationPolicy> dupAccounts;
+    private Map<String, DuplicationPolicy> dupAccounts = null;
 
+    private DuplicationPolicyRepo policyRepo;
+    
     public DuplicationPolicyManager(DuplicationPolicyRepo policyRepo) {
+        this.policyRepo = policyRepo;
+    }
+
+    /**
+     * @param policyRepo
+     */
+    private void refreshPolicies() {
         dupAccounts = new HashMap<>();
 
         // Load policies
@@ -71,7 +81,17 @@ public class DuplicationPolicyManager {
      * @return
      */
     public Set<String> getDuplicationAccounts() {
-        return dupAccounts.keySet();
+        ensurePoliciesLoaded();
+        return new HashSet<>(dupAccounts.keySet());
+    }
+
+    /**
+     * 
+     */
+    private synchronized void ensurePoliciesLoaded() {
+        if(dupAccounts == null){
+            refreshPolicies();
+        }
     }
 
     /**
@@ -81,7 +101,15 @@ public class DuplicationPolicyManager {
      * @return
      */
     public DuplicationPolicy getDuplicationPolicy(String account) {
+        ensurePoliciesLoaded();
         return dupAccounts.get(account);
+    }
+    
+    /**
+     * Causes the cached duplication policy set to be cleared.  
+     */
+    public void clearPolicyCache(){
+        dupAccounts = null;
     }
 
 }

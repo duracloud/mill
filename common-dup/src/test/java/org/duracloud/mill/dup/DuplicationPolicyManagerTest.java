@@ -29,21 +29,31 @@ public class DuplicationPolicyManagerTest extends BaseDuplicationPolicyTester {
         DuplicationPolicyRepo policyRepo =
             EasyMock.createMock(DuplicationPolicyRepo.class);
 
-        EasyMock.expect(policyRepo.getDuplicationAccounts())
-                .andReturn(IOUtil.getFileStream(policyAccountsFile));
-
+        for(int i=0; i < 2; i++) {
+            EasyMock.expect(policyRepo.getDuplicationAccounts())
+                    .andReturn(IOUtil.getFileStream(policyAccountsFile));
+        }
         // Expecting dup policy to be read 3 times, requires a fresh
         // InputStream each time.
-        for(int i=0; i<3; i++) {
+        for(int i=0; i < (3 * 2); i++) {
             EasyMock.expect(policyRepo.getDuplicationPolicy(
                 EasyMock.<String>anyObject()))
                     .andReturn(IOUtil.getFileStream(policyFile));
         }
+        
         EasyMock.replay(policyRepo);
-
         DuplicationPolicyManager policyManager =
             new DuplicationPolicyManager(policyRepo);
+        verifyDuplicationAccounts(policyManager);
+        policyManager.clearPolicyCache();
+        verifyDuplicationAccounts(policyManager);
+        EasyMock.verify(policyRepo);
+    }
 
+    /**
+     * @param policyManager
+     */
+    private void verifyDuplicationAccounts(DuplicationPolicyManager policyManager) {
         Set<String> dupAccounts = policyManager.getDuplicationAccounts();
         assertThat(dupAccounts, hasItems("account1", "account2", "account3"));
         for(String dupAccount : dupAccounts) {
@@ -51,8 +61,6 @@ public class DuplicationPolicyManagerTest extends BaseDuplicationPolicyTester {
                 policyManager.getDuplicationPolicy(dupAccount);
             assertThat(policy.getSpaces(), hasItems("testSpace1", "testSpace2"));
         }
-
-        EasyMock.verify(policyRepo);
     }
 
 }
