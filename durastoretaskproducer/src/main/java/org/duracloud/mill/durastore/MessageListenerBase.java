@@ -97,20 +97,13 @@ public abstract class MessageListenerBase implements MessageListener {
      */
     protected void applyDuplicationPolicy(ContentMessage contentMessage) {
 
+        policy = duplicationPolicyManager
+                .getDuplicationPolicy(subdomain);
         if (policy == null) {
-            policy = duplicationPolicyManager
-                    .getDuplicationPolicy(subdomain);
-            if (policy == null) {
-                log.warn(
-                        "no policy found for subdomain \"{}\": this message will be ignored. " +
-                        "The most likely cause is that the subdomain " +
-                        "was removed from the duplication policy account " +
-                        "list after the durastoretaskproducer was started. " +
-                        "To make this message go away, restart the " +
-                        "durastore task producer.",
-                        subdomain);
-                return;
-            }
+            log.warn(
+                    "no policy found for subdomain \"{}\": this message will be ignored. ",
+                    subdomain);
+            return;
         }
         
         String storeId = contentMessage.getStoreId();

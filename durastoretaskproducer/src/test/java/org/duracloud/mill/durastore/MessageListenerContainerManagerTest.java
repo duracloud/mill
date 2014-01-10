@@ -112,6 +112,9 @@ public class MessageListenerContainerManagerTest {
         EasyMock.expect(this.container.isRunning()).andReturn(true).times(times);
         this.container.stop();
         EasyMock.expectLastCall().times(times);
+        this.container.shutdown();
+        EasyMock.expectLastCall().times(times);
+
         EasyMock.expect(container.getDestination()).andReturn(null).times(times);
         EasyMock.expect(container.getConnectionFactory()).andReturn(null).times(times);
         

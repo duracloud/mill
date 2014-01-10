@@ -19,6 +19,7 @@ public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfi
 
     public static final String DUPLICATION_POLICY_BUCKET_SUFFIX = "policyBucketSuffix";
     public static final String NOTIFICATION_RECIPIENTS = "notificationRecipients";
+    public static final String POLICY_MANAGER_REFRESH_FREQUENCY_MS = "policyManagerRefreshFrequencyMs";
 
     /**
      * @return
@@ -43,6 +44,14 @@ public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfi
         return System.getProperty(DUPLICATION_POLICY_BUCKET_SUFFIX);
     }
 
+    public Long getPolicyManagerRefreshFrequencyMs(){
+        String refresh = System.getProperty(POLICY_MANAGER_REFRESH_FREQUENCY_MS);
+        if(refresh != null){
+            return new Long(refresh);
+        }else{
+            return null;
+        }
+    }
     /**
      * @return
      */

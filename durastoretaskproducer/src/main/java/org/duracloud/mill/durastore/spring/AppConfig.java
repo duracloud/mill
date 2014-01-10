@@ -87,19 +87,29 @@ public class AppConfig {
             MessageListenerContainerFactory messageListenerContainerFactory) {
          
         String template = configurationManager.getJMSConnectionUrlTemplate();
+        
+        Long refreshMs = configurationManager.getPolicyManagerRefreshFrequencyMs();
+        
+        if(refreshMs == null){
+            refreshMs = MessageListenerContainerManager.DEFAULT_POLICY_UPDATE_FREQUENCY_MS;
+        }
+        
+        
         if(template != null){
             log.info("using jms connection url template {}", template);
             return new MessageListenerContainerManager(duplicationTaskQueue,
                     duplicationPolicyManager, 
                     template, 
                     notificationManager,
-                    messageListenerContainerFactory);
+                    messageListenerContainerFactory,
+                    refreshMs);
         }else{
             log.info("Using default jms connection url template...");
             return new MessageListenerContainerManager(duplicationTaskQueue,
                     duplicationPolicyManager,
                     notificationManager,
-                    messageListenerContainerFactory);
+                    messageListenerContainerFactory,
+                    refreshMs);
         }
     }
 }

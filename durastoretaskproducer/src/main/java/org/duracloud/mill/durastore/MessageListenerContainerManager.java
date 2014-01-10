@@ -51,7 +51,7 @@ public class MessageListenerContainerManager {
                                                 ACTION.INGEST,
                                                 ACTION.UPDATE };
 
-    private static final long DEFAULT_POLICY_UPDATE_FREQUENCY_MS = 5*60*1000;
+    public static final long DEFAULT_POLICY_UPDATE_FREQUENCY_MS = 5*60*1000;
     
     private Map<String,List<SimpleMessageListenerContainer>> containers;
 
@@ -89,17 +89,6 @@ public class MessageListenerContainerManager {
     }
     
     public MessageListenerContainerManager(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager,
-            String connectionFactoryURLTemplate, 
-            NotificationManager notificationManager,
-            MessageListenerContainerFactory messageListenerContainerFactory) {
-        this(duplicationTaskQueue, duplicationPolicyManager,
-                connectionFactoryURLTemplate, notificationManager,
-                messageListenerContainerFactory,
-                DEFAULT_POLICY_UPDATE_FREQUENCY_MS);
-    }
-
-    public MessageListenerContainerManager(TaskQueue duplicationTaskQueue,
                                            DuplicationPolicyManager duplicationPolicyManager, 
                                            NotificationManager notificationManager,
                                            MessageListenerContainerFactory messageListenerContainerFactory,
@@ -113,17 +102,6 @@ public class MessageListenerContainerManager {
     }
     
     
-    public MessageListenerContainerManager(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager, 
-            NotificationManager notificationManager,
-            MessageListenerContainerFactory messageListenerContainerFactory) {
-        this(duplicationTaskQueue, 
-        duplicationPolicyManager,
-        DEFAULT_CONNECTION_FACTORY_TEMPLATE, 
-        notificationManager,
-        messageListenerContainerFactory,
-        DEFAULT_POLICY_UPDATE_FREQUENCY_MS);
-     }
 
     public void init() {
         initializeMessageContainers();
@@ -292,6 +270,7 @@ public class MessageListenerContainerManager {
         for (SimpleMessageListenerContainer container : containerList) {
                 if(container.isRunning()){
                     container.stop();
+                    container.shutdown();
                     log.info(
                             "stopped container subscribed to {} on connection {} on subdomain: {}",
                             container.getDestination(),
