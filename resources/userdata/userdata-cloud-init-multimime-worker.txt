@@ -21,7 +21,7 @@ bootcmd:
  - cloud-init-per instance my_set_hostname sh -xc "echo production-dup-worker-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
  - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 production-dup-worker-$INSTANCE_ID.duracloud.org production-dup-worker-$INSTANCE_ID >> /etc/hosts"
 
- # make user-data scripts always run on boot
+# make user-data scripts always run on boot
 cloud_final_modules:
  - rightscale_userdata
  - scripts-per-once
