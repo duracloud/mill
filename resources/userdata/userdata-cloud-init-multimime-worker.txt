@@ -121,7 +121,7 @@ data = {
     "dc_dup_queue_high":"prod-dup-high-priority",
     "dc_dup_queue_low":"prod-dup-low-priority",
     "dc_mill_dead_letter_queue":"prod-dup-dead-letter",
-    "dc_mill_log_level":"DEBUG",
+    "dc_mill_log_level":"INFO",
     "dc_mill_run_frequency":"1m",
     "dc_mill_jar":"workman-0.0.1-SNAPSHOT-driver.jar",
     "dc_workman_threads":50,
