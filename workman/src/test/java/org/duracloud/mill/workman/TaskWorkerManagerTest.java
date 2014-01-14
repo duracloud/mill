@@ -26,7 +26,7 @@ import org.junit.Test;
  * 
  */
 public class TaskWorkerManagerTest {
-    private TaskQueue  lowPriorityQueue, highPriorityQueue;
+    private TaskQueue  lowPriorityQueue, highPriorityQueue, deadLetterQueue;
 
     private TaskWorkerFactory factory;
     
@@ -37,6 +37,9 @@ public class TaskWorkerManagerTest {
 
         highPriorityQueue = EasyMock
                 .createMock(TaskQueue.class);
+
+        deadLetterQueue = EasyMock
+            .createMock(TaskQueue.class);
 
         factory = EasyMock
                 .createMock(TaskWorkerFactory.class);
@@ -62,7 +65,8 @@ public class TaskWorkerManagerTest {
         EasyMock.replay(factory,lowPriorityQueue, highPriorityQueue);
         
         TaskWorkerManager manager = new TaskWorkerManager(lowPriorityQueue,
-                                                          highPriorityQueue, 
+                                                          highPriorityQueue,
+                                                          deadLetterQueue,
                                                           factory);
 
         //set max workers

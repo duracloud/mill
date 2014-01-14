@@ -44,9 +44,11 @@ public class TaskWorkerManager {
     private Timer timer = new Timer();
     private TaskQueue lowPriorityQueue = null;
     private TaskQueue highPriorityQueue = null;
+    private TaskQueue deadLetterQueue = null;
 
     public TaskWorkerManager(TaskQueue lowPriorityQueue,
                              TaskQueue highPriorityQueue,
+                             TaskQueue deadLetterQueue,
                              TaskWorkerFactory factory) {
         if (factory == null){
             throw new IllegalArgumentException("factory must be non-null");
@@ -60,10 +62,14 @@ public class TaskWorkerManager {
             throw new IllegalArgumentException("highPriorityQueue must be non-null");
         }
 
+        if (deadLetterQueue == null){
+            throw new IllegalArgumentException("deadLetterQueue must be non-null");
+        }
+
         this.factory = factory;
         this.lowPriorityQueue = lowPriorityQueue;
         this.highPriorityQueue = highPriorityQueue;
-
+        this.deadLetterQueue = deadLetterQueue;
 
     }
 
@@ -94,10 +100,16 @@ public class TaskWorkerManager {
             @Override
             public void run() {
                 log.info(
-                        "Status: max worker pool size: {}, currently running workers: {}, completed workers {}",
+                        "Status: max_workers={} running_workers={}" +
+                            " completed_workers={} dup_lp_qsize={}" +
+                            " dup_hp_qsize={} dup_dl_qsize={}",
                         new Object[] { getMaxWorkers(),
-                                executor.getActiveCount(),
-                                executor.getCompletedTaskCount() });
+                            executor.getActiveCount(),
+                            executor.getCompletedTaskCount(),
+                            lowPriorityQueue.size(),
+                            highPriorityQueue.size(),
+                            deadLetterQueue.size()
+                        });
             }
 
         }, new Date(), 5 * 60 * 1000);

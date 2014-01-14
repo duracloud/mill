@@ -79,6 +79,7 @@ public class AppConfig {
                                                 TaskQueue deadLetterQueue) {
         return new TaskWorkerManager(lowPriorityQueue, 
                                      highPriorityQueue,
+                                     deadLetterQueue,
                                      new TaskWorkerFactoryImpl(factory, 
                                                                deadLetterQueue));
     }
