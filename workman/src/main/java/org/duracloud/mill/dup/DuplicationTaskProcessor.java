@@ -131,6 +131,11 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                             duplicateProperties(spaceId,
                                                 contentId,
                                                 sourceProperties);
+                        } else {
+                            // No updates needed
+                            log.info("Duplication check complete, no updates " +
+                                     "needed. Content id={} space={} account={}",
+                                     contentId, spaceId, dupTask.getAccount());
                         }
                     } else {
                         // Source and destination content is not equal, duplicate
