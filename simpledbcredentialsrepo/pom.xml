@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>simpledbcredentialsrepo</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>DuraCloud Mill SimpleDB CredentialsRepo Implementation</name>
 
   <parent>
     <artifactId>duplication</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 

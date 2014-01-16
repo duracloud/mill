@@ -5,7 +5,7 @@
   <groupId>org.duracloud.mill</groupId>
   <artifactId>duplication</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>DuraCloud Duplication Mill</name>
   <url>http://duracloud.org</url>
 
