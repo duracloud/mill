@@ -20,6 +20,11 @@ App.PolicyController = Ember.ObjectController.extend({
     
 	availableSpaces: function(){
 	   var allSpaces = $.xml2json(this._getAllSpaces().responseText);
+       
+           if(!allSpaces.space.map) { //just one space - not an array
+               //create an array
+               allSpaces.space = [allSpaces.space];
+           }
 	   
 	   allSpaces = allSpaces.space.map(function(element){
 		   return element.id.trim();
