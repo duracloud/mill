@@ -59,7 +59,6 @@ public class LoopingTaskProducer implements Runnable {
     private Cache cache;
     private StateManager stateManager;
     private int maxTaskQueueSize;
-    private Set<Task> queuedTasks = new HashSet<>();
     private StorageProviderFactory storageProviderFactory;
     private List<Morsel> morselsToReload = new LinkedList<>();
     private Frequency frequency;
@@ -450,13 +449,7 @@ public class LoopingTaskProducer implements Runnable {
             dupTask.setDestStoreId(storePolicy.getDestStoreId());
             
             Task task = dupTask.writeTask();
-            if(queuedTasks.contains(task)){
-                continue;
-            }
-            
             tasks.add(task);
-
-            queuedTasks.add(task);
             addedCount++;
 
             if(tasks.size() == 10){
