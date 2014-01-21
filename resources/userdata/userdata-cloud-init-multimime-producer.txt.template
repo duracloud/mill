@@ -1,0 +1,143 @@
+Content-Type: multipart/mixed; boundary="===============2205584129673038508=="
+MIME-Version: 1.0
+
+--===============2205584129673038508==
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config"
+
+#cloud-config
+# Cloud-Init Hints:
+# * Some default settings are in /etc/cloud/cloud.cfg
+# * Some examples at: http://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/files/head:/doc/examples/
+# * CloudInit Module sourcecode at: http://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/files/head:/cloudinit/config/
+
+preserve_hostname: true
+manage_etc_hosts: false
+
+# dynamically set hostname using the instance's instanceid
+bootcmd:
+ - cloud-init-per instance my_set_hostname sh -xc "echo ${instancePrefix}-dup-producer-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
+ - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 ${instancePrefix}-dup-producer-$INSTANCE_ID.duracloud.org ${instancePrefix}-dup-producer-$INSTANCE_ID >> /etc/hosts"
+
+# make user-data scripts always run on boot
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - [scripts-user, always]
+ - keys-to-console
+ - phone-home
+ - final-message
+
+# Add apt repositories
+apt_sources:
+ # Enable "multiverse" repos
+ - source: deb $MIRROR $RELEASE multiverse
+ - source: deb-src $MIRROR $RELEASE multiverse
+ - source: deb $MIRROR $RELEASE-updates multiverse
+ - source: deb-src $MIRROR $RELEASE-updates multiverse
+ - source: deb http://security.ubuntu.com/ubuntu $RELEASE-security multiverse
+ - source: deb-src http://security.ubuntu.com/ubuntu $RELEASE-security multiverse
+ # Enable "partner" repos
+ - source: deb http://archive.canonical.com/ubuntu $RELEASE partner
+ - source: deb-src http://archive.canonical.com/ubuntu $RELEASE partner
+ # Enable PuppetLabs repos (for latest version of puppet)
+ - source: deb http://apt.puppetlabs.com $RELEASE main dependencies
+   keyid: 4BD6EC30    # GPG key ID published on a key server
+   filename: puppetlabs.list
+ - source: deb-src http://apt.puppetlabs.com $RELEASE main dependencies
+   keyid: 4BD6EC30    # GPG key ID published on a key server
+   filename: puppetlabs.list
+
+# Run 'apt-get update' on first boot
+apt_update: true
+
+# Run 'apt-get upgrade' on first boot
+apt_upgrade: true
+
+# Reboot after package install/upgrade if needed (e.g. if kernel update)
+apt_reboot_if_required: True
+
+# Install additional packages on first boot
+packages:
+ - wget
+ - git
+ - puppet
+ - rubygems   # Used to install librarian-puppet
+ - python-pip # Used to install awscli
+
+# run commands
+# runcmd contains a list of either lists or a string
+# each item will be executed in order
+runcmd:
+ # Tell sudo to respect SSH Agent forwarding
+ - [sh, -c, "umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock"]
+ # Install AWS CLI
+ - pip install awscli
+ # Install librarian-puppet for retrieving dependent puppet modules from github
+ - gem install librarian-puppet
+ # Get the github ssh key out of s3 so we can clone from our private github projects
+ - aws --region us-east-1 s3 cp s3://${bootstrapAccount}.duplication-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
+ # Add github.com to known_hosts
+ - ssh -T -oStrictHostKeyChecking=no git@github.com
+
+# set the locale
+locale: en_US.UTF-8
+
+# timezone: set the timezone for this instance
+timezone: UTC
+
+# Log all cloud-init process output (info & errors) to a logfile
+output: {all: ">> /var/log/cloud-init-output.log"}
+
+# final_message written to log when cloud-init processes are finished
+final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
+
+--===============2205584129673038508==
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="user-script"
+
+#!/bin/bash
+rm -rf /etc/puppet
+mkdir /etc/puppet
+git clone -b ${puppetDuracloudMillBranch} git@github.com:duraspace/puppet-duracloud-mill.git /etc/puppet/
+# Run librarian-puppet
+cd /etc/puppet && HOME=/root librarian-puppet install
+# Get hiera data files for puppet
+mkdir -p /etc/puppet/hieradata && aws --region us-east-1 s3 cp s3://${bootstrapAccount}.duplication-bootstrap/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 600 /etc/puppet/hieradata/*
+
+# set up custom Puppet Facter facts
+mkdir -p /etc/facter/facts.d
+cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
+#!/usr/bin/env python
+data = {
+    "dc_mill_node_type":"dup-producer", # 'dup-producer', 'dup-producer-ds', 'dup-producer-looping' OR 'dup-worker'
+    "dc_mill_jar_s3path":"${bootstrapAccount}.duplication-bootstrap", # no trailing slash
+    "dc_dup_queue_high":"${highPriorityQueue}",
+    "dc_dup_queue_low":"${lowPriorityQueue}", 
+    "dc_mill_dead_letter_queue":"${deadLetterQueue}",
+    "dc_mill_log_level":"INFO",
+    "dc_mill_run_frequency":"1m",
+    "dc_dup_producer_looping_jar":"loopingtaskproducer-${jarVersion}-driver.jar",
+    "dc_dup_producer_ds_jar":"durastoretaskproducer-${jarVersion}-driver.jar",
+    "dc_mill_policy_repo_bucket_suffix":"${bucketSuffix}",
+    "dc_mill_max_qsize":${maxQueueSize},
+    "dc_mill_notification_email":"admin@duracloud.org",
+    "lumberjack_files":"/home/duracloud/logs/duracloud-mill-loopingtaskproducer.log|type:java,source:dc-mill-dup-prod-loop;/home/duracloud/logs/duracloud-mill-durastoretaskproducer.log|type:java,source:dc-mill-dup-prod-ds;/var/log/syslog|type:syslog",
+    "lumberjack_deb":"lumberjack_0.1.2_amd64.deb",
+    "lumberjack_ensure":"present"
+}
+for k in data:
+    print "%s=%s" % (k,data[k])
+EOF
+chmod +x /etc/facter/facts.d/duracloud-mill
+
+# Run puppet
+puppet apply /etc/puppet/manifests/site.pp
+
+--===============2205584129673038508==--
