@@ -13,6 +13,8 @@ import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for serializing the state to and from disk.
@@ -20,6 +22,7 @@ import org.codehaus.jackson.type.TypeReference;
  *	       Date: Nov 5, 2013
  */
 public class StateManager {
+    private static Logger log = LoggerFactory.getLogger(StateManager.class);
     private File stateFile;
     private State state;
     /**
@@ -48,6 +51,7 @@ public class StateManager {
         ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.writeValue(this.stateFile, this.state);
+            log.debug("saved {} to {}", this.state, this.stateFile.getAbsolutePath());
         } catch (Exception e) {
             throw new RuntimeException("failed to save " + this.state + " to "
                     + this.stateFile.getAbsolutePath(), e);
@@ -67,7 +71,6 @@ public class StateManager {
     public void setMorsels(Set<Morsel> morsels) {
         this.state.setMorsels(morsels);
         flush();
-        
     }
 
 

@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * Represents the persistent state of the <code>LoopingTaskProducer</code>.
  * @author Daniel Bernstein
@@ -64,6 +66,13 @@ public class State {
         this.nextRunStartDate = time;
     }
     
-   
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
+    
 
 }
