@@ -177,7 +177,7 @@ public class SQSTaskQueue implements TaskQueue {
             .withQueueUrl(queueUrl)
             .withEntries(msgEntries);
         sqsClient.sendMessageBatch(sendMessageBatchRequest);
-        log.info("{} SQS messages successfully placed on queue - queue: {}",
+        log.debug("{} SQS messages successfully placed on queue: {}",
                  msgEntries.size(), queueName);
     }
 
