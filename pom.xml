@@ -55,6 +55,7 @@
     <module>loopingtaskproducer</module>
     <module>workman</module>
     <module>taskproducertool</module>
+    <module>taskreadertool</module>
     <module>policy-editor</module>
   </modules>
 
