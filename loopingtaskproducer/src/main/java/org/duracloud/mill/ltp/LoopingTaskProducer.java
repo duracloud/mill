@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
@@ -62,6 +64,7 @@ public class LoopingTaskProducer implements Runnable {
     private StorageProviderFactory storageProviderFactory;
     private List<Morsel> morselsToReload = new LinkedList<>();
     private Frequency frequency;
+    
     private static class RunStats {
         int deletes;
         int dups;
@@ -90,43 +93,65 @@ public class LoopingTaskProducer implements Runnable {
     }
     
     public void run(){
-        
-        if(runLater()){
-            return;
-        }
-        
-        log.info("Starting run...");
-        MorselQueue morselQueue = loadMorselQueue();
-        
-        while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
-            nibble(morselQueue.poll());
-            persistMorsels(morselQueue, morselsToReload);
+        Timer timer = new Timer();
+        try {
             
-            if(morselQueue.isEmpty()){
-                morselQueue = reloadMorselQueue();
-            }
-        }
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    logSessionStats();
+                }
 
-        if(morselQueue.isEmpty()){
-            scheduleNextRun();
+            }, new Date(), 5 * 60 * 1000);  
+            
+            if(runLater()){
+                return;
+            }
+            
+            log.info("Starting run...");
+            MorselQueue morselQueue = loadMorselQueue();
+            
+            while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
+                nibble(morselQueue.poll());
+                persistMorsels(morselQueue, morselsToReload);
+                
+                if(morselQueue.isEmpty()){
+                    morselQueue = reloadMorselQueue();
+                }
+            }
+    
+            if(morselQueue.isEmpty()){
+                scheduleNextRun();
+            }
+            
+            logSessionStats();
+            log.info("Session ended.");
+        }finally {
+            timer.cancel();
         }
-        
-        int totalDups = 0, totalDeletes = 0;
-        
-        for(String subdomain : runstats.keySet()){
-            RunStats stats = runstats.get(subdomain);
-            log.info("Totals for subdomain \"{}\": dups = {}, deletes = {}",
-                    subdomain, 
-                    stats.dups, 
-                    stats.deletes);
-            totalDeletes += stats.deletes;
-            totalDups    += stats.dups;
-        }
-        
-        log.info(
-                "Run ended: {} domains processed, {} dups, {} deletes.",
-                runstats.keySet().size(), totalDups, totalDeletes);
     }
+
+    /**
+     * 
+     */
+    private void logSessionStats() {
+        int totalDups = 0, totalDeletes = 0;
+        synchronized (runstats){
+            for(String subdomain : runstats.keySet()){
+                RunStats stats = runstats.get(subdomain);
+                log.info("Totals for subdomain \"{}\": dups = {}, deletes = {}",
+                        subdomain, 
+                        stats.dups, 
+                        stats.deletes);
+                totalDeletes += stats.deletes;
+                totalDups    += stats.dups;
+            }
+            
+            log.info("Session stats: {} domains processed, {} dups, {} deletes.",
+                     runstats.keySet().size(), totalDups, totalDeletes);
+        }
+    }
+
 
     /**
      * 
@@ -156,7 +181,7 @@ public class LoopingTaskProducer implements Runnable {
                 runLater = false;
                 log.info("Time to start a new run: the next run was scheduled to run on {}. Let's roll.", nextRun);
             }else{
-                log.debug("It's not yet time start a new run: the next run is scheduled to run on {}.", nextRun);
+                log.info("It's not yet time start a new run: the next run is scheduled to run on {}.", nextRun);
             }
         }else{
             Date currentRunStartDate = this.stateManager.getCurrentRunStartDate();
@@ -164,7 +189,7 @@ public class LoopingTaskProducer implements Runnable {
                 this.stateManager.setCurrentRunStartDate(new Date());
                 log.info("We're starting the first run on this machine");
             }else{
-                log.debug("We're continuing the current run which was started on {}", currentRunStartDate);
+                log.info("We're continuing the current run which was started on {}", currentRunStartDate);
             }
             
             runLater = false;
@@ -255,6 +280,7 @@ public class LoopingTaskProducer implements Runnable {
             log.info(
                     "Task queue size ({}) has reached or exceeded max size ({}).",
                     taskQueueSize, maxTaskQueueSize);
+            addToReloadList(morsel);
         } else{
             if(addDuplicationTasksFromSource(morsel, sourceProvider, 1000)){
                 log.info(
@@ -265,13 +291,23 @@ public class LoopingTaskProducer implements Runnable {
                         morsel);
             } else {
                 log.info(
-                        "morsel nibbled: adding to set for reloading later: {}",
+                        "morsel nibbled a bit: {}",
                         morsel);
-                morselsToReload.add(morsel);
+                addToReloadList(morsel);
             }
             
         }
         
+    }
+
+    /**
+     * @param morsel
+     */
+    private void addToReloadList(Morsel morsel) {
+        log.info(
+                "adding morsel to reload list: {}",
+                morsel);
+        morselsToReload.add(morsel);
     }
 
 
@@ -339,12 +375,13 @@ public class LoopingTaskProducer implements Runnable {
      * @return
      */
     private RunStats getStats(String subdomain) {
-        RunStats stats = this.runstats.get(subdomain);
-        if(stats == null){
-            this.runstats.put(subdomain, stats = new RunStats());
+        synchronized(runstats){
+            RunStats stats = this.runstats.get(subdomain);
+            if(stats == null){
+                this.runstats.put(subdomain, stats = new RunStats());
+            }
+            return stats;
         }
-        
-        return stats;
     }
 
     private void addDuplicationTasksForContentNotInSource(
@@ -451,16 +488,9 @@ public class LoopingTaskProducer implements Runnable {
             Task task = dupTask.writeTask();
             tasks.add(task);
             addedCount++;
-
-            if(tasks.size() == 10){
-                taskQueue.put(tasks);
-                tasks = new HashSet<>();
-            }
         }
 
-        if(tasks.size() > 0){
-            taskQueue.put(tasks);
-        }
+        taskQueue.put(tasks);
         
         return addedCount;
     }

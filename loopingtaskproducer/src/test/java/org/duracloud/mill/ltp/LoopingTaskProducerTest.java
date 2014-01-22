@@ -157,6 +157,26 @@ public class LoopingTaskProducerTest {
         EasyMock.expectLastCall();
     }
     
+
+    
+    /**
+     * Tests pathway with no deletes.
+     * @throws Exception
+     */
+    @Test
+    public void testSpaceLargerThanMaxQueueSizeNoDeletes() throws Exception{
+        testSpaceLargerThanMaxQueueSize(1500, 0);
+    }
+
+    /**
+     * Tests pathway with deletes.
+     * @throws Exception
+     */
+    @Test
+    public void testSpaceLargerThanMaxQueueSizeWithDeletes() throws Exception{
+        testSpaceLargerThanMaxQueueSize(500,1000);
+    }
+
     /**
      * This test ensures that all items in a space are duplicated only once within a run
      * when multiple looping task producer "sessions" are required.  A "session" is a single
@@ -164,23 +184,14 @@ public class LoopingTaskProducerTest {
      * reached before all the morsels can be consumed. 
      * @throws Exception
      */
-    @Test
-    public void testSpaceLargerThanMaxQueueSize() throws Exception{
-        
+    private void testSpaceLargerThanMaxQueueSize(int sourceCount, int destCount) throws Exception{
         int morselCount = 1;
-        int sourceCount = 1500;
 
         setupSourceStore(morselCount, sourceCount);
 
         final HashSet<Morsel> morsels = new HashSet<Morsel>();
-
-        EasyMock.expect(
-                sourceStore.getSpaceContentsChunked(
-                        EasyMock.isA(String.class),
-                        EasyMock.isNull(String.class), 
-                        EasyMock.anyInt(),
-                        EasyMock.isA(String.class)))
-                .andReturn(new LinkedList<String>());
+        
+        setupEmptySourceSpacesGetChunked();
         
         expectGetMorsels(new HashSet<Morsel>(), 1);
         expectGetMorsels(morsels, 1);
@@ -195,11 +206,10 @@ public class LoopingTaskProducerTest {
         };
         EasyMock.expectLastCall().andDelegateTo(stateManagerDelegate).times(3);
         
-        setupDestStore(1, 0);
+        setupDestStore(1, destCount);
         setupStorageProviderFactory(3);
         setupCredentialsRepo(6);
         setupPolicyManager(morselCount);
-        
         setupCheckDatesFirstTimeRun();
         setupCheckDatesInProgressRun();
         setupDatesOnRunCompletion();
@@ -214,9 +224,22 @@ public class LoopingTaskProducerTest {
         runLoopingTaskProducer(maxTaskQueueSize);
         tasksProcessed = drainQueue(tasksProcessed);
 
-        Assert.assertEquals(sourceCount,tasksProcessed);
+        Assert.assertEquals(sourceCount+destCount,tasksProcessed);
         Assert.assertEquals(0, morsels.size());
 
+    }
+
+    /**
+     * 
+     */
+    private void setupEmptySourceSpacesGetChunked() {
+        EasyMock.expect(
+                sourceStore.getSpaceContentsChunked(
+                        EasyMock.isA(String.class),
+                        EasyMock.isNull(String.class), 
+                        EasyMock.anyInt(),
+                        EasyMock.isA(String.class)))
+                .andReturn(new LinkedList<String>());
     }
 
     /**
@@ -368,12 +391,14 @@ public class LoopingTaskProducerTest {
             sourceContentItems.add("item"+i);
         }
 
+        
         EasyMock.expect(sourceStore.getSpaceContentsChunked(EasyMock.isA(String.class),
                                             EasyMock.isNull(String.class), 
                                             EasyMock.anyInt(),
                                             EasyMock.isNull(String.class)))
-                .andReturn(sourceContentItems.subList(0, 1000)).times(morselCount);
+                .andReturn(sourceContentItems.subList(0, Math.min(1000,sourceCount))).times(morselCount);
 
+        if(sourceCount > 1000){
         EasyMock.expect(
                 sourceStore.getSpaceContentsChunked(
                         EasyMock.isA(String.class),
@@ -381,7 +406,8 @@ public class LoopingTaskProducerTest {
                         EasyMock.anyInt(),
                         EasyMock.isA(String.class)))
                 .andReturn(sourceContentItems.subList(1000, sourceCount)).times(morselCount);
-
+        }
+        
         EasyMock.expect(sourceStore.getSpaceContents(EasyMock.isA(String.class), 
                                                      EasyMock.isNull(String.class)))
                 .andAnswer(new IAnswer<Iterator<String>>() {
