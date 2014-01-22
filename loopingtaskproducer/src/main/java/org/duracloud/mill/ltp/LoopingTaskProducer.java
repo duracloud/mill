@@ -420,7 +420,7 @@ public class LoopingTaskProducer implements Runnable {
         while(destContentIds.hasNext()){
             String destContentId = destContentIds.next();
             //if not in cache
-            if(null == cache.get(destContentId)){
+            if(!cache.isKeyInCache(destContentId)){
                 deletions.add(destContentId);
                 //periodically add deletions to prevent OOM
                 //in case that there are millions of content ids to delete
