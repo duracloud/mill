@@ -67,10 +67,11 @@ public class LoopingTaskProducer implements Runnable {
     private StorageProviderFactory storageProviderFactory;
     private List<Morsel> morselsToReload = new LinkedList<>();
     private Frequency frequency;
+    private RunStats cumulativeTotals = new RunStats();
     
     private static class RunStats {
-        int deletes;
-        int dups;
+        int deletes = 0;
+        int dups = 0;
     }
     
     private Map<String,RunStats> runstats = new HashMap<>();
@@ -99,7 +100,7 @@ public class LoopingTaskProducer implements Runnable {
         Timer timer = new Timer();
         try {
             
-            timer.schedule(new TimerTask() {
+            timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     logSessionStats();
@@ -137,21 +138,54 @@ public class LoopingTaskProducer implements Runnable {
     /**
      * 
      */
-    private void logSessionStats() {
-        int totalDups = 0, totalDeletes = 0;
+    private void logCumulativeSessionStats() {
+        log.info("session stats (global cumulative): domains={} dups={}  deletes={}",
+                runstats.keySet().size(), this.cumulativeTotals.dups, this.cumulativeTotals.deletes);
+    }
+    
+    private void resetIncrementalSessionStats() {
         synchronized (runstats){
             for(String subdomain : runstats.keySet()){
                 RunStats stats = runstats.get(subdomain);
-                log.info("Totals by subdomain: subdomain={} dups={} deletes={}",
+                stats.deletes = 0;
+                stats.dups = 0;
+            }
+        }
+    }
+    
+    private RunStats calculateStatTotals(RunStats currentTotals){
+        RunStats totals = new RunStats();
+        totals.deletes = currentTotals.deletes;
+        totals.dups = currentTotals.dups;
+
+        synchronized (runstats){
+            for(String subdomain : runstats.keySet()){
+                RunStats stats = runstats.get(subdomain);
+                totals.deletes += stats.deletes;
+                totals.dups    += stats.dups;
+            }
+            return totals;
+        }
+    }
+
+    private void logSessionStats() {
+        synchronized (runstats){
+            for(String subdomain : runstats.keySet()){
+                RunStats stats = runstats.get(subdomain);
+                log.info("Session stats by subdomain (incremental): subdomain={} dups={} deletes={}",
                         subdomain, 
                         stats.dups, 
                         stats.deletes);
-                totalDeletes += stats.deletes;
-                totalDups    += stats.dups;
             }
+
+            RunStats incrementalTotals = calculateStatTotals(new RunStats());
+            log.info("Session stats (global incremental): dups={} deletes={}",
+                    incrementalTotals.dups, 
+                    incrementalTotals.deletes);
             
-            log.info("Session stats: domains={} dups={}  deletes={}",
-                     runstats.keySet().size(), totalDups, totalDeletes);
+            this.cumulativeTotals = calculateStatTotals(cumulativeTotals);
+            logCumulativeSessionStats();
+            resetIncrementalSessionStats();
         }
     }
 
