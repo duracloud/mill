@@ -46,12 +46,15 @@ import org.slf4j.LoggerFactory;
  * it attempts to respect a designated maximum task queue size. Once the limit
  * has been reached, the producer will stop. On subsequent runs, the producer
  * will pick up where it left off, starting with the next account,space,set of
- * content items, and duplication store policy. If all content items are visited 
- * within a single run before the task queue limit has been reached, the producer
- * will exit.
+ * content items, and duplication store policy. If all content items are visited
+ * within a single run before the task queue limit has been reached, the
+ * producer will exit.
  * 
- * @author Daniel Bernstein 
- *         Date: Nov 5, 2013
+ * For more information about how this process fits into the whole system of
+ * collaborating components, see
+ * https://wiki.duraspace.org/display/DSPINT/DuraCloud+Duplication+-+System+Overview
+ * 
+ * @author Daniel Bernstein Date: Nov 5, 2013
  */
 public class LoopingTaskProducer implements Runnable {
     private static Logger log = LoggerFactory.getLogger(LoopingTaskProducer.class);
