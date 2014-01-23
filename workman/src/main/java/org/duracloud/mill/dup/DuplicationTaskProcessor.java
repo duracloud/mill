@@ -557,8 +557,9 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                 buildFailureMessage(msg), e);
         }
 
-        log.info("Successfully deleted " + contentId + " in dest space " +
-                 spaceId + " in account " + dupTask.getAccount());
+        log.info("Successfully deleted content item " + contentId +
+                 " in dest space " + spaceId + " in account " +
+                 dupTask.getAccount());
     }
 
     private String buildFailureMessage(String message) {
