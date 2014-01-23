@@ -102,7 +102,7 @@ public class LoopingTaskProducer implements Runnable {
                     logSessionStats();
                 }
 
-            }, new Date(), 5 * 60 * 1000);  
+            }, 5 * 60 * 1000, 5 * 60 * 1000);  
             
             if(runLater()){
                 return;
@@ -139,7 +139,7 @@ public class LoopingTaskProducer implements Runnable {
         synchronized (runstats){
             for(String subdomain : runstats.keySet()){
                 RunStats stats = runstats.get(subdomain);
-                log.info("Totals for subdomain \"{}\": dups = {}, deletes = {}",
+                log.info("Totals by subdomain: subdomain={} dups={} deletes={}",
                         subdomain, 
                         stats.dups, 
                         stats.deletes);
@@ -147,7 +147,7 @@ public class LoopingTaskProducer implements Runnable {
                 totalDups    += stats.dups;
             }
             
-            log.info("Session stats: {} domains processed, {} dups, {} deletes.",
+            log.info("Session stats: domains={} dups={}  deletes={}",
                      runstats.keySet().size(), totalDups, totalDeletes);
         }
     }
