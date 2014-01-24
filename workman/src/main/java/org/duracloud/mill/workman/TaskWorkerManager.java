@@ -10,8 +10,6 @@ package org.duracloud.mill.workman;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +85,9 @@ public class TaskWorkerManager {
                                                0L, TimeUnit.MILLISECONDS,
                                                new LinkedBlockingQueue<Runnable>());
                 
+        this.executor
+                .setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+       
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -128,60 +129,67 @@ public class TaskWorkerManager {
         Date nextHighPriorityAttempt = null;
         
         while(!stop){
-            int active = this.executor.getActiveCount();
-            int maxPoolSize = this.executor.getMaximumPoolSize();
-            int queueSize =  this.executor.getQueue().size();
-            log.debug(
-                    "active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
-                    active, queueSize);
-            
-            if(active < maxPoolSize && queueSize < maxPoolSize){
-                //pull up to 10 items off queue
-                //(that is when takeMany() is implemented).
-
-                //always try high priority queue first: if nothing in it set time for next 
-                //attempt using exponential back-off to ensure high priority queue is not
-                //called on every round
-                if(nextHighPriorityAttempt == null || 
-                          nextHighPriorityAttempt.getTime() < System.currentTimeMillis()){
-                    try{
-                        executeTask(highPriorityQueue.take(), highPriorityQueue);
-                        //reset exponential backoff
-                        nextHighPriorityAttempt = null;
-                        currentWaitBeforeHighPriortyTaskMs = minWaitTime;
-                        //skip low priority take
-                        continue;
-                    }catch(TimeoutException e){
-                        log.debug("high priority queue is empty - trying low priority queue");
-                        nextHighPriorityAttempt = new Date(
-                                System.currentTimeMillis()
-                                        + currentWaitBeforeHighPriortyTaskMs);
-                        currentWaitBeforeHighPriortyTaskMs = 
-                                Math.min(currentWaitBeforeHighPriortyTaskMs*2,maxHighPriorityWaitTime);
-                    }
-                }
-
-                try {
-                    executeTask(lowPriorityQueue.take(), lowPriorityQueue);
-                    currentWaitBeforeTaskMs = minWaitTime;
-                } catch (TimeoutException e) {
-                    currentWaitBeforeTaskMs = 
-                            Math.min(currentWaitBeforeTaskMs, maxWaitTime);
-                    log.warn(
-                            "timeout while taking tasks: no tasks currently available " +
-                            "for the take on {}, waiting {} ms...",
-                            lowPriorityQueue, currentWaitBeforeTaskMs);
-                    sleep(currentWaitBeforeTaskMs);
-                    currentWaitBeforeTaskMs = 
-                            Math.min(currentWaitBeforeTaskMs*2, maxWaitTime);
-
-                }
+            try {
+                int active = this.executor.getActiveCount();
+                int maxPoolSize = this.executor.getMaximumPoolSize();
+                int queueSize =  this.executor.getQueue().size();
+                log.debug(
+                        "active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
+                        active, queueSize);
                 
-            }else{
-                //wait only a moment before trying again since 
-                //the worker pool is expected to move relatively quickly.
-                sleep(1000);
+                if(active + queueSize < maxPoolSize){
+                    //pull up to 10 items off queue
+                    //(that is when takeMany() is implemented).
+    
+                    //always try high priority queue first: if nothing in it set time for next 
+                    //attempt using exponential back-off to ensure high priority queue is not
+                    //called on every round
+                    if(nextHighPriorityAttempt == null || 
+                              nextHighPriorityAttempt.getTime() < System.currentTimeMillis()){
+                        try{
+                            executeTask(highPriorityQueue.take(), highPriorityQueue);
+                            //reset exponential backoff
+                            nextHighPriorityAttempt = null;
+                            currentWaitBeforeHighPriortyTaskMs = minWaitTime;
+                            //skip low priority take
+                            continue;
+                        }catch(TimeoutException e){
+                            log.debug("high priority queue is empty - trying low priority queue");
+                            nextHighPriorityAttempt = new Date(
+                                    System.currentTimeMillis()
+                                            + currentWaitBeforeHighPriortyTaskMs);
+                            currentWaitBeforeHighPriortyTaskMs = 
+                                    Math.min(currentWaitBeforeHighPriortyTaskMs*2,maxHighPriorityWaitTime);
+                        }
+                    }
+    
+                    try {
+                        executeTask(lowPriorityQueue.take(), lowPriorityQueue);
+                        currentWaitBeforeTaskMs = minWaitTime;
+                    } catch (TimeoutException e) {
+                        currentWaitBeforeTaskMs = 
+                                Math.min(currentWaitBeforeTaskMs, maxWaitTime);
+                        log.warn(
+                                "timeout while taking tasks: no tasks currently available " +
+                                "for the take on {}, waiting {} ms...",
+                                lowPriorityQueue, currentWaitBeforeTaskMs);
+                        sleep(currentWaitBeforeTaskMs);
+                        currentWaitBeforeTaskMs = 
+                                Math.min(currentWaitBeforeTaskMs*2, maxWaitTime);
+    
+                    }
+                    
+                }else{
+                    //wait only a moment before trying again since 
+                    //the worker pool is expected to move relatively quickly.
+                    sleep(1000);
+                }
+            }catch(Exception ex){
+                log.error(
+                        "unexpected failure in outer run manager while loop: " 
+                        + ex.getMessage() + ". Ignoring...", ex);
             }
+
         }
     }
 
@@ -198,7 +206,6 @@ public class TaskWorkerManager {
     public int getMaxWorkers() {
         return executor.getMaximumPoolSize();
     }
-
 
     private void sleep(long ms) {
         try {
