@@ -42,7 +42,7 @@ public class SpaceCreateMessageListener  implements MessageListener{
      * @param message
      */
     public void onMessage(ContentMessage message) {
-        log.debug("listener for {} received {}", subdomain, message);
+        log.info("listener for {} received {}", subdomain, message);
         this.notificationManager.newSpace(this.subdomain, 
                 message.getStoreId(),
                 message.getSpaceId(), 

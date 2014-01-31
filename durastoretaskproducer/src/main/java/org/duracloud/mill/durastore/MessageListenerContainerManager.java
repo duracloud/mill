@@ -18,6 +18,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.pool.PooledConnectionFactory;
@@ -241,6 +242,7 @@ public class MessageListenerContainerManager {
         log.info("creating connection factory for {}", url);
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
         factory.setBrokerURL("failover:"+ url);
+        
         PooledConnectionFactory pooledFactory = new PooledConnectionFactory(factory);
         return pooledFactory;
     }
@@ -248,12 +250,29 @@ public class MessageListenerContainerManager {
     private void startContainers(String subdomain, 
                                  List<SimpleMessageListenerContainer> containerList) {
         for (SimpleMessageListenerContainer container : containerList){
+            Destination destination = container.getDestination();
+            ConnectionFactory connectionFactory = container.getConnectionFactory();
+            log.debug(
+                    "preparing to start container subscribed to {} on connection {} on subdomain: {}",
+                    destination,
+                    connectionFactory, subdomain);
+
             if(!container.isRunning()) {
+                log.debug(
+                        "container subscribed to {} on connection {} on subdomain: {} is not running...about to invoke start method on container",
+                        destination,
+                        connectionFactory, subdomain);
                 container.start();
                 log.info(
                         "started container subscribed to {} on connection {} on subdomain: {}",
-                        container.getDestination(),
-                        container.getConnectionFactory(), subdomain);
+                        destination,
+                        connectionFactory, subdomain);
+            }else{
+                log.debug(
+                        "container subscribed to {} on connection {} on subdomain: {} is already running. start unnecessary.",
+                        destination,
+                        connectionFactory, subdomain);
+
             }
         }
     }

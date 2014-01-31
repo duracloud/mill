@@ -101,9 +101,12 @@ public abstract class MessageListenerBase implements MessageListener {
                 .getDuplicationPolicy(subdomain);
         if (policy == null) {
             log.warn(
-                    "no policy found for subdomain \"{}\": this message will be ignored. ",
-                    subdomain);
+                    "no policy found for subdomain \"{}\": {} will be ignored. ",
+                    subdomain, contentMessage);
             return;
+        } else{
+            log.debug(
+                    "applying duplication policies to {} for {}", contentMessage, subdomain);
         }
         
         String storeId = contentMessage.getStoreId();
@@ -115,12 +118,16 @@ public abstract class MessageListenerBase implements MessageListener {
         Set<DuplicationStorePolicy> dupStorePolicies = 
                 policy.getDuplicationStorePolicies(spaceId);
         
-        if(dupStorePolicies != null) {
+        if(dupStorePolicies != null && !dupStorePolicies.isEmpty()) {
             
             Set<Task> tasks = null;
             
             for (DuplicationStorePolicy dupStorePolicy : dupStorePolicies) {
                 if (dupStorePolicy.getSrcStoreId().equals(storeId)) {
+                    log.debug(
+                            "policy's sourceStoreId matches " +
+                            "messageStoreId: policy={}; messageStoreId={}",
+                            dupStorePolicy, storeId);
                     DuplicationTask dupTask = new DuplicationTask();
                     dupTask.setAccount(subdomain);
                     dupTask.setDestStoreId(dupStorePolicy.getDestStoreId());
@@ -128,13 +135,18 @@ public abstract class MessageListenerBase implements MessageListener {
                     dupTask.setContentId(contentId);
                     dupTask.setSourceStoreId(storeId);
                     
-                    log.debug("adding duplication task to the task queue: {}", dupTask);
+                    log.info("adding duplication task to the task queue: {}", dupTask);
                     
                     if(tasks == null){
                         tasks = new HashSet<>();
                     }
                     
                     tasks.add(dupTask.writeTask());
+                }else{
+                    log.debug(
+                            "policy's sourceStoreId does not match " +
+                            "messageStoreId: policy={}; messageStoreId={}",
+                            dupStorePolicy, storeId);
                 }
             }
             
@@ -143,7 +155,7 @@ public abstract class MessageListenerBase implements MessageListener {
             }
 
         }else{
-            log.debug("no duplication policies for {} on subdomain {}", spaceId, subdomain);
+            log.info("no duplication policies for {} on subdomain {}", spaceId, subdomain);
         }
     }
 }
