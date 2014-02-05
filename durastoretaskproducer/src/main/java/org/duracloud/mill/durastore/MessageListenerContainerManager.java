@@ -7,19 +7,6 @@
  */
 package org.duracloud.mill.durastore;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.commons.lang3.ArrayUtils;
@@ -31,6 +18,20 @@ import org.duracloud.storage.aop.ContentMessageConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.listener.SimpleMessageListenerContainer;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -44,8 +45,8 @@ public class MessageListenerContainerManager {
     private static Logger log = LoggerFactory
             .getLogger(MessageListenerContainerManager.class);
 
-    public static final String DEFAULT_CONNECTION_FACTORY_TEMPLATE = 
-                                            "tcp://{0}.duracloud.org:61617";
+    public static final String DEFAULT_CONNECTION_FACTORY_TEMPLATE =
+        "tcp://{0}:61617";
 
     private static final ACTION[] ACTIONS = {   ACTION.DELETE, 
                                                 ACTION.COPY, 
@@ -141,7 +142,12 @@ public class MessageListenerContainerManager {
         }
         
         for (String subdomain : newSubdomains) {
-            attachListenersToSubdomain(subdomain);
+            try {
+                attachListenersToSubdomain(subdomain);
+            } catch(IOException e) {
+                log.error("Unable to attach listeners to host with subdomain " +
+                          subdomain + " due to " + e.getMessage());
+            }
         }
 
         Set<String> removedSubdomains = new HashSet<>(this.containers.keySet());
@@ -161,7 +167,8 @@ public class MessageListenerContainerManager {
     /**
      * @param subdomain
      */
-    private void attachListenersToSubdomain(String subdomain) {
+    private void attachListenersToSubdomain(String subdomain)
+        throws IOException {
         
         ConnectionFactory connectionFactory = jmsFactory(subdomain);
 
@@ -234,17 +241,32 @@ public class MessageListenerContainerManager {
         containerList.add(container);
     }
 
-   
-
-    private ConnectionFactory jmsFactory(String subdomain) {
-        String url = MessageFormat.format(connectionFactoryURLTemplate,
-                subdomain);
+    private ConnectionFactory jmsFactory(String subdomain) throws IOException {
+        String host = getHost(subdomain);
+        String url = MessageFormat.format(connectionFactoryURLTemplate, host);
         log.info("creating connection factory for {}", url);
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
         factory.setBrokerURL("failover:"+ url);
-        
-        PooledConnectionFactory pooledFactory = new PooledConnectionFactory(factory);
-        return pooledFactory;
+        return new PooledConnectionFactory(factory);
+    }
+
+    /**
+     * Retrieves the host to which the listener should connect.
+     * 
+     * EC2 security groups for DuraCloud instances are configured to allow
+     * a connection on port 61617 from production duplication instances (using
+     * a specific security group on the production account.)
+     * For this to work, the host used to connect must be the Public DNS name
+     * which is automatically assigned by EC2.
+     * This method performs the conversion between the duracloud host name and
+     * the EC2 Public DNS name.
+     */
+    protected String getHost(String subdomain) throws IOException {
+        InetAddress address =
+            InetAddress.getByName(subdomain + ".duracloud.org");
+        String ipAddress = address.getHostAddress();
+        String ipAddressDashes = ipAddress.replaceAll("\\.", "-");
+        return "ec2-" + ipAddressDashes + ".compute-1.amazonaws.com";
     }
 
     private void startContainers(String subdomain, 
@@ -252,27 +274,23 @@ public class MessageListenerContainerManager {
         for (SimpleMessageListenerContainer container : containerList){
             Destination destination = container.getDestination();
             ConnectionFactory connectionFactory = container.getConnectionFactory();
-            log.debug(
-                    "preparing to start container subscribed to {} on connection {} on subdomain: {}",
-                    destination,
-                    connectionFactory, subdomain);
+            log.debug("preparing to start container subscribed to {} on " +
+                      "connection {} on subdomain: {}",
+                      destination, connectionFactory, subdomain);
 
             if(!container.isRunning()) {
-                log.debug(
-                        "container subscribed to {} on connection {} on subdomain: {} is not running...about to invoke start method on container",
-                        destination,
-                        connectionFactory, subdomain);
+                log.debug("container subscribed to {} on connection {} on " +
+                          "subdomain: {} is not running...about to invoke " +
+                          "start method on container",
+                          destination, connectionFactory, subdomain);
                 container.start();
-                log.info(
-                        "started container subscribed to {} on connection {} on subdomain: {}",
-                        destination,
-                        connectionFactory, subdomain);
+                log.info("started container subscribed to {} on " +
+                         "connection {} on subdomain: {}",
+                         destination, connectionFactory, subdomain);
             }else{
-                log.debug(
-                        "container subscribed to {} on connection {} on subdomain: {} is already running. start unnecessary.",
-                        destination,
-                        connectionFactory, subdomain);
-
+                log.debug("container subscribed to {} on connection {} on " +
+                          "subdomain: {} is already running. start unnecessary.",
+                          destination, connectionFactory, subdomain);
             }
         }
     }
@@ -290,10 +308,10 @@ public class MessageListenerContainerManager {
                 if(container.isRunning()){
                     container.stop();
                     container.shutdown();
-                    log.info(
-                            "stopped container subscribed to {} on connection {} on subdomain: {}",
-                            container.getDestination(),
-                            container.getConnectionFactory(), subdomain);
+                    log.info("stopped container subscribed to {} on " +
+                             "connection {} on subdomain: {}",
+                             container.getDestination(),
+                             container.getConnectionFactory(), subdomain);
                 }
         }
         containerList.clear();

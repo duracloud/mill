@@ -7,11 +7,6 @@
  */
 package org.duracloud.mill.durastore;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.jms.ConnectionFactory;
-
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
@@ -20,6 +15,7 @@ import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessageConverter;
 import org.easymock.EasyMock;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +24,10 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.jms.listener.SimpleMessageListenerContainer;
+
+import javax.jms.ConnectionFactory;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Daniel Bernstein
@@ -81,7 +81,7 @@ public class MessageListenerContainerManagerTest {
         int containersPerSubdomain = 6;
         
         Set<String> accounts = new HashSet<>();
-        accounts.add("subdomainA");
+        accounts.add("test");
         EasyMock.expect(policyManager.getDuplicationAccounts())
                 .andReturn(accounts).times(rounds);
         policyManager.clearPolicyCache();
@@ -130,10 +130,9 @@ public class MessageListenerContainerManagerTest {
         sleep(1000);
         
         accounts.clear();
-        accounts.add("subdomainB");
+        accounts.add("demo");
         sleep(period + 1000);
-        
-        
+
         manager.destroy();
     }
 
@@ -159,4 +158,15 @@ public class MessageListenerContainerManagerTest {
                         messageListenerContainerFactory,
                         container);
     }
+
+    @Test
+    public void testGetHost() throws Exception {
+        replay();
+
+        MessageListenerContainerManager manager =
+            new MessageListenerContainerManager(null, null, null, null, 0);
+        String host = manager.getHost("demo");
+        Assert.assertEquals("ec2-174-129-224-25.compute-1.amazonaws.com", host);
+    }
+
 }
