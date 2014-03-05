@@ -31,7 +31,7 @@ public class ConfigFileCredentialsRepoTest {
     public void setUp() throws Exception {
         File testCredFile = new File("src/test/resources/test.credentials.json");
         Assert.assertTrue(testCredFile.exists());
-        System.setProperty("credentials.file.path", testCredFile.getAbsolutePath());
+        System.setProperty("credentialsFilePath", testCredFile.getAbsolutePath());
         repo = new ConfigFileCredentialRepo();
     }
 
