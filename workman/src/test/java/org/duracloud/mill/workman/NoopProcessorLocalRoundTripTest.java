@@ -97,7 +97,7 @@ public class NoopProcessorLocalRoundTripTest {
         }
 
         
-        sleep(4000);
+        sleep(10000);
         
         Assert.assertEquals(0, this.LOW_PRIORITY_QUEUE.getInprocessCount());
         Assert.assertEquals(count, this.LOW_PRIORITY_QUEUE.getCompletedCount());
