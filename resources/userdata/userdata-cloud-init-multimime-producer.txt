@@ -128,7 +128,7 @@ data = {
     "dc_mill_policy_repo_bucket_suffix":"duplication-policy-repo",
     "dc_mill_max_qsize":1000000,
     "dc_mill_notification_email":"admin@duracloud.org",
-    "lumberjack_files":"/home/duracloud/logs/duracloud-mill-loopingtaskproducer.log|type:java,source:dc-mill-dup-prod-loop;/home/duracloud/logs/duracloud-mill-durastoretaskproducer.log|type:java,source:dc-mill-dup-prod-ds;/var/log/syslog|type:syslog",
+    "lumberjack_files":'{ "prod-looping": { "paths": ["/home/duracloud/logs/duracloud-mill-loopingtaskproducer.log"], "fields": { "type":"java", "source":"dc-mill-dup-prod-loop"} }, "prod-durastore": { "paths": ["/home/duracloud/logs/duracloud-mill-durastoretaskproducer.log"], "fields": { "type":"java", "source":"dc-mill-dup-prod-ds" } }, "syslog": { "paths": ["/var/log/syslog"], "fields": { "type":"syslog" } } }',
     "lumberjack_deb":"lumberjack_0.1.2_amd64.deb",
     "lumberjack_ensure":"present"
 }
