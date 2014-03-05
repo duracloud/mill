@@ -127,7 +127,7 @@ data = {
     "dc_workman_threads":50,
     "dc_workman_procs":1,
     "dc_workman_tmpdir":"/mnt/dup-worker-tmp",
-    "lumberjack_files":'{ "dup-worker": { "paths": ["/home/duracloud/logs/duracloud-mill.log"], "fields": { "type":"java", "source":"dc-mill-worker-dup"} }, "syslog": { "paths": ["/var/log/syslog"], "fields": { "type":"syslog" } } }',
+    "lumberjack_files":"/home/duracloud/logs/duracloud-mill.log|type:java,source:dc-mill-worker-dup;/var/log/syslog|type:syslog",
     "lumberjack_deb":"lumberjack_0.1.2_amd64.deb",
     "lumberjack_ensure":"present"
 }
