@@ -14,13 +14,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.duracloud.mill.domain.DuplicationTask;
-import org.duracloud.mill.domain.NoopTask;
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.domain.TypedTask;
-import org.duracloud.mill.domain.Task.Type;
-import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.aws.SQSTaskQueue;
+import org.duracloud.mill.task.DuplicationTask;
+import org.duracloud.common.queue.task.NoopTask;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.task.TypedTask;
+import org.duracloud.common.queue.task.Task.Type;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.aws.SQSTaskQueue;
 
 /**
  * A simple client for placing various kinds of messages (NOOP, DUP, and BIT) on a task queue.

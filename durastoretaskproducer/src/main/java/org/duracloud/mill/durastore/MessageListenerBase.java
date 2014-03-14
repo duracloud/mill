@@ -10,12 +10,12 @@ package org.duracloud.mill.durastore;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.duracloud.mill.domain.DuplicationTask;
-import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.task.DuplicationTask;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
-import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

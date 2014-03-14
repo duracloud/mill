@@ -9,7 +9,7 @@ package org.duracloud.mill.noop;
 
 import java.util.Map;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.slf4j.Logger;

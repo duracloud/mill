@@ -9,12 +9,12 @@ package org.duracloud.mill.dup;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.duracloud.common.retry.ExceptionHandler;
+import org.duracloud.common.retry.Retriable;
+import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
-import org.duracloud.mill.domain.DuplicationTask;
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.util.ExceptionHandler;
-import org.duracloud.mill.util.Retriable;
-import org.duracloud.mill.util.Retrier;
+import org.duracloud.mill.task.DuplicationTask;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.s3storage.S3StorageProvider;

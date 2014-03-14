@@ -7,8 +7,8 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.TaskQueue;
 
 /**
  * A <code>TaskWorker</code> factory.

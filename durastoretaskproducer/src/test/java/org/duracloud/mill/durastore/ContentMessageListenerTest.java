@@ -10,14 +10,14 @@ package org.duracloud.mill.durastore;
 
 import java.util.Set;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.notification.NotificationManager;
-import org.duracloud.mill.queue.TaskNotFoundException;
-import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.TimeoutException;
+import org.duracloud.common.queue.TaskNotFoundException;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.storage.aop.ContentMessage;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.easymock.EasyMock;
@@ -198,7 +198,7 @@ public class ContentMessageListenerTest {
         public void deleteTask(Task task) throws TaskNotFoundException {}
         public Integer size() { return null;}
         /* (non-Javadoc)
-         * @see org.duracloud.mill.queue.TaskQueue#requeue(org.duracloud.mill.domain.Task)
+         * @see org.duracloud.common.queue.TaskQueue#requeue(org.duracloud.common.queue.task.Task)
          */
         @Override
         public void requeue(Task task) {}

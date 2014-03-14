@@ -8,7 +8,7 @@
 package org.duracloud.mill.noop;
 
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 

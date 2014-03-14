@@ -111,7 +111,7 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.framework.version>3.2.4.RELEASE</spring.framework.version>
-    <duracloud.version>2.4.1</duracloud.version>
+    <duracloud.version>3.0.0-SNAPSHOT</duracloud.version>
     <skipITs>true</skipITs>
     <powermock.version>1.5.2</powermock.version>
   </properties>
@@ -504,6 +504,11 @@
             <artifactId>spring-core</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>common-queue</artifactId>
+        <version>${duracloud.version}</version>
       </dependency>
       <dependency>
         <groupId>org.duracloud</groupId>

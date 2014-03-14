@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class RootTaskProcessorFactoryTest {
 
 
     /**
-     * Test method for {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.mill.domain.Task)}.
+     * Test method for {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.common.queue.task.Task)}.
      * @throws TaskProcessorCreationFailedException 
      */
     @Test

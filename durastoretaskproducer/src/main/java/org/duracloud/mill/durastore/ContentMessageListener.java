@@ -8,7 +8,7 @@
 package org.duracloud.mill.durastore;
 
 import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.storage.aop.ContentMessage;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.slf4j.Logger;

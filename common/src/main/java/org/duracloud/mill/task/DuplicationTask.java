@@ -5,7 +5,10 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.domain;
+package org.duracloud.mill.task;
+
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.task.TypedTask;
 
 import java.util.Map;
 

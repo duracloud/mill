@@ -7,9 +7,9 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.queue.TaskNotFoundException;
-import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.TaskNotFoundException;
+import org.duracloud.common.queue.TaskQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

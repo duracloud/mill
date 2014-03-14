@@ -14,9 +14,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.TimeoutException;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

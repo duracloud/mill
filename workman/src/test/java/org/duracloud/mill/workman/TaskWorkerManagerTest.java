@@ -10,9 +10,9 @@ package org.duracloud.mill.workman;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.TimeoutException;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.TimeoutException;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.junit.After;

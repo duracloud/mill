@@ -10,10 +10,10 @@ package org.duracloud.mill.workman;
 import java.io.File;
 
 import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.mill.domain.NoopTask;
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.queue.TaskQueue;
-import org.duracloud.mill.queue.local.LocalTaskQueue;
+import org.duracloud.common.queue.task.NoopTask;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;

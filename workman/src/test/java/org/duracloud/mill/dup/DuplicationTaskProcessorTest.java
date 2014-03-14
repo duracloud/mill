@@ -9,7 +9,7 @@ package org.duracloud.mill.dup;
 
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.common.util.IOUtil;
-import org.duracloud.mill.domain.DuplicationTask;
+import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMock;

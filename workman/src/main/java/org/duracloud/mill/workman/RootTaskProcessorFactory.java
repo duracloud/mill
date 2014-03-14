@@ -10,7 +10,7 @@ package org.duracloud.mill.workman;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
