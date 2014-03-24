@@ -113,7 +113,7 @@
     <spring.framework.version>3.2.4.RELEASE</spring.framework.version>
     <duracloud.version>3.0.0-SNAPSHOT</duracloud.version>
     <skipITs>true</skipITs>
-    <powermock.version>1.5.2</powermock.version>
+    <powermock.version>1.5.4</powermock.version>
   </properties>
 
   <distributionManagement>
@@ -372,6 +372,7 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.11</version>
+        <scope>test</scope>
         <exclusions>
           <exclusion>
             <groupId>log4j</groupId>
@@ -383,7 +384,8 @@
       <dependency>
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
-        <version>3.1</version>
+        <version>3.2</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.powermock</groupId>
@@ -443,7 +445,7 @@
       <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk</artifactId>
-        <version>1.6.2</version>
+        <version>1.7.3</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -508,6 +510,21 @@
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>common-queue</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>common-json</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>content-index-client</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>auditor</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
       <dependency>

@@ -7,14 +7,17 @@
  */
 package org.duracloud.mill.workman;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.duracloud.common.queue.task.Task;
+import org.apache.commons.lang.StringUtils;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
 import org.slf4j.Logger;
@@ -33,31 +36,24 @@ public class TaskWorkerManager {
     public static final String MIN_WAIT_BEFORE_TAKE_KEY = "duracloud.minWaitBeforeTake";
     public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 60*1000;
     private static final long DEFAULT_MAX_WAIT_BEFORE_TAKE = 8*60*1000;
-    private long minWaitTime = DEFAULT_MIN_WAIT_BEFORE_TAKE;
-    private long maxWaitTime = DEFAULT_MAX_WAIT_BEFORE_TAKE;
-
+    private Long defaultMinWaitTime = DEFAULT_MIN_WAIT_BEFORE_TAKE;
     private TaskWorkerFactory factory;
     private ThreadPoolExecutor executor;
     private boolean stop = false;
     private Timer timer = new Timer();
-    private TaskQueue lowPriorityQueue = null;
-    private TaskQueue highPriorityQueue = null;
+    private List<TaskQueueExecutor> taskQueueExecutors;
     private TaskQueue deadLetterQueue = null;
+    private List<TaskQueue> taskQueues;
 
-    public TaskWorkerManager(TaskQueue lowPriorityQueue,
-                             TaskQueue highPriorityQueue,
+    public TaskWorkerManager(List<TaskQueue> taskQueues,
                              TaskQueue deadLetterQueue,
                              TaskWorkerFactory factory) {
         if (factory == null){
             throw new IllegalArgumentException("factory must be non-null");
         }
  
-        if (lowPriorityQueue == null){
-            throw new IllegalArgumentException("lowPriorityQueue must be non-null");
-        }
-
-        if (highPriorityQueue == null){
-            throw new IllegalArgumentException("highPriorityQueue must be non-null");
+        if (taskQueues == null || taskQueues.isEmpty()){
+            throw new IllegalArgumentException("at least one taskQueue must be specified in the taskQueues list.");
         }
 
         if (deadLetterQueue == null){
@@ -65,15 +61,29 @@ public class TaskWorkerManager {
         }
 
         this.factory = factory;
-        this.lowPriorityQueue = lowPriorityQueue;
-        this.highPriorityQueue = highPriorityQueue;
+        this.taskQueues = taskQueues;
+        this.taskQueueExecutors = new ArrayList<TaskQueueExecutor>(taskQueues.size());
+        int size = taskQueues.size();
+        for(int i = 0; i < size; i++){
+            boolean lowestPriority =  i == size - 1; //last task queue in the list is lowest priority
+            long minWait = this.defaultMinWaitTime, 
+                 maxWait = DEFAULT_MAX_WAIT_BEFORE_TAKE;
+            
+            if(!lowestPriority){
+                minWait = 1000;
+                maxWait = 30*1000;
+            }
+            
+            this.taskQueueExecutors.add(new TaskQueueExecutor(
+                    taskQueues.get(i), minWait, maxWait));
+       }
         this.deadLetterQueue = deadLetterQueue;
 
     }
 
     public void init() {
         
-        this.minWaitTime = new Long(System.getProperty(MIN_WAIT_BEFORE_TAKE_KEY,
+        this.defaultMinWaitTime = new Long(System.getProperty(MIN_WAIT_BEFORE_TAKE_KEY,
                 DEFAULT_MIN_WAIT_BEFORE_TAKE+""));
         
         Integer maxThreadCount = new Integer(System.getProperty(
@@ -100,17 +110,30 @@ public class TaskWorkerManager {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+                
+                List<String> queueStats = new LinkedList<String>();
+                    
+                for(TaskQueue queue: taskQueues){
+                    queueStats.add(formatQueueStat(queue));
+                }
+                
+                queueStats.add(formatQueueStat(deadLetterQueue));
+                
+                
+                
                 log.info(
                         "Status: max_workers={} running_workers={}" +
-                            " completed_workers={} dup_lp_qsize={}" +
-                            " dup_hp_qsize={} dup_dl_qsize={}",
+                            " completed_workers={}" +
+                            queueStats,
                         new Object[] { getMaxWorkers(),
                             executor.getActiveCount(),
                             executor.getCompletedTaskCount(),
-                            lowPriorityQueue.size(),
-                            highPriorityQueue.size(),
-                            deadLetterQueue.size()
+                            StringUtils.join(queueStats, " ")
                         });
+            }
+
+            private String formatQueueStat(TaskQueue queue) {
+                 return queue.getName() + "_q_size=" + queue.size();
             }
 
         }, new Date(), 5 * 60 * 1000);
@@ -118,71 +141,20 @@ public class TaskWorkerManager {
     
     private void runManager() {
         
-        long currentWaitBeforeTaskMs = minWaitTime;
-        //high priority tasks should wait only a short time
-        //and should not wait more than say a minute at the most
-        //to prevent perceived delays for the duradmin and durastore
-        //api users.
-        long currentWaitBeforeHighPriortyTaskMs = 1000;
-        long maxHighPriorityWaitTime = 30*1000;
-        
-        Date nextHighPriorityAttempt = null;
-        
         while(!stop){
             try {
-                int active = this.executor.getActiveCount();
-                int maxPoolSize = this.executor.getMaximumPoolSize();
-                int queueSize =  this.executor.getQueue().size();
-                log.debug(
-                        "active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
-                        active, queueSize);
-                
-                if(active + queueSize < maxPoolSize){
-                    //pull up to 10 items off queue
-                    //(that is when takeMany() is implemented).
-    
-                    //always try high priority queue first: if nothing in it set time for next 
-                    //attempt using exponential back-off to ensure high priority queue is not
-                    //called on every round
-                    if(nextHighPriorityAttempt == null || 
-                              nextHighPriorityAttempt.getTime() < System.currentTimeMillis()){
-                        try{
-                            executeTask(highPriorityQueue.take(), highPriorityQueue);
-                            //reset exponential backoff
-                            nextHighPriorityAttempt = null;
-                            currentWaitBeforeHighPriortyTaskMs = minWaitTime;
-                            //skip low priority take
-                            continue;
-                        }catch(TimeoutException e){
-                            log.debug("high priority queue is empty - trying low priority queue");
-                            nextHighPriorityAttempt = new Date(
-                                    System.currentTimeMillis()
-                                            + currentWaitBeforeHighPriortyTaskMs);
-                            currentWaitBeforeHighPriortyTaskMs = 
-                                    Math.min(currentWaitBeforeHighPriortyTaskMs*2,maxHighPriorityWaitTime);
-                        }
-                    }
-    
-                    try {
-                        executeTask(lowPriorityQueue.take(), lowPriorityQueue);
-                        currentWaitBeforeTaskMs = minWaitTime;
-                    } catch (TimeoutException e) {
-                        currentWaitBeforeTaskMs = 
-                                Math.min(currentWaitBeforeTaskMs, maxWaitTime);
-                        log.warn(
-                                "timeout while taking tasks: no tasks currently available " +
-                                "for the take on {}, waiting {} ms...",
-                                lowPriorityQueue, currentWaitBeforeTaskMs);
-                        sleep(currentWaitBeforeTaskMs);
-                        currentWaitBeforeTaskMs = 
-                                Math.min(currentWaitBeforeTaskMs*2, maxWaitTime);
-    
-                    }
-                    
-                }else{
+                if(isManagerTooBusy()){
                     //wait only a moment before trying again since 
                     //the worker pool is expected to move relatively quickly.
                     sleep(1000);
+                }else{
+                    //loop through queues attempting to 
+                    //execute a task off the highest priority queue
+                    for(TaskQueueExecutor taskQueueExecutor : this.taskQueueExecutors){
+                        if(taskQueueExecutor.execute()){
+                           break; 
+                        }
+                    }
                 }
             }catch(Exception ex){
                 log.error(
@@ -193,15 +165,62 @@ public class TaskWorkerManager {
         }
     }
 
+    private  class TaskQueueExecutor {
+        private TaskQueue taskQueue;
+        private long currentWaitBeforeTaskMs;
+        private Date nextAttempt = null;
+        private long minWaitTime;
+        private long maxWaitTime;
+        
+        public TaskQueueExecutor(TaskQueue taskQueue, long minWaitTime, long maxWaitTime){
+            this.taskQueue = taskQueue;
+            this.minWaitTime = minWaitTime;
+            this.maxWaitTime = maxWaitTime;
+        }
+
+        /**
+         * @param taskQueue
+         * @return true if a task was executed.
+         */
+        public boolean execute() {
+            if(nextAttempt != null && 
+                    nextAttempt.getTime() > System.currentTimeMillis()){
+                return false;
+            }
+            
+            try{
+                TaskWorker worker = factory.create(taskQueue.take(), taskQueue);
+                executor.execute(worker);
+                nextAttempt = null;
+                currentWaitBeforeTaskMs = minWaitTime;
+                return true;
+            }catch(TimeoutException e){
+                log.debug("Timeout: {} queue is empty:  message={}", taskQueue.getName(), e.getMessage());
+                nextAttempt = new Date(
+                        System.currentTimeMillis()
+                                + currentWaitBeforeTaskMs);
+                currentWaitBeforeTaskMs = 
+                        Math.min(currentWaitBeforeTaskMs*2,maxWaitTime);
+                return false;
+            }
+        }
+    
+    }
 
     /**
-     * @param take
-     * @param queue
+     * @return
      */
-    private void executeTask(Task task, TaskQueue queue) {
-        TaskWorker worker = factory.create(task, queue);
-        this.executor.execute(worker);
+    private boolean isManagerTooBusy() {
+        int active = this.executor.getActiveCount();
+        int maxPoolSize = this.executor.getMaximumPoolSize();
+        int queueSize =  this.executor.getQueue().size();
+        log.debug(
+                "active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
+                active, queueSize);
+
+        return active + queueSize >= maxPoolSize;
     }
+
 
     public int getMaxWorkers() {
         return executor.getMaximumPoolSize();

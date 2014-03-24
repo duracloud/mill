@@ -8,6 +8,7 @@
 package org.duracloud.mill.workman.spring;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -77,8 +78,8 @@ public class AppConfig {
                                                 TaskQueue lowPriorityQueue,
                                                 TaskQueue highPriorityQueue,
                                                 TaskQueue deadLetterQueue) {
-        return new TaskWorkerManager(lowPriorityQueue, 
-                                     highPriorityQueue,
+        return new TaskWorkerManager(Arrays.asList(lowPriorityQueue, 
+                                     highPriorityQueue),
                                      deadLetterQueue,
                                      new TaskWorkerFactoryImpl(factory, 
                                                                deadLetterQueue));

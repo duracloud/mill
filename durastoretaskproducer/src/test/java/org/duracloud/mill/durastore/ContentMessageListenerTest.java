@@ -189,6 +189,13 @@ public class ContentMessageListenerTest {
     }
     
     private static class TaskQueueAdapter implements TaskQueue{
+        /* (non-Javadoc)
+         * @see org.duracloud.common.queue.TaskQueue#getName()
+         */
+        @Override
+        public String getName() {
+           return "test";
+        }
         public void put(Task task) {}
         public void put(Task... tasks) {}
         public void put(Set<Task> tasks) {}

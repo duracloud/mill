@@ -7,49 +7,53 @@
  */
 package org.duracloud.mill.workman;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
+import org.duracloud.common.queue.task.Task;
 import org.easymock.EasyMock;
+import org.easymock.EasyMockRunner;
+import org.easymock.EasyMockSupport;
 import org.easymock.IAnswer;
+import org.easymock.Mock;
+import org.easymock.TestSubject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * 
  * @author Daniel Bernstein
  * 
  */
-public class TaskWorkerManagerTest {
-    private TaskQueue  lowPriorityQueue, highPriorityQueue, deadLetterQueue;
+@RunWith(EasyMockRunner.class)
+public class TaskWorkerManagerTest extends EasyMockSupport{
+    @Mock
+    private TaskQueue  lowPriorityQueue;
+    
+    @Mock
+    private TaskQueue highPriorityQueue;
+    
+    @Mock 
+    private TaskQueue deadLetterQueue;
 
+    @Mock
     private TaskWorkerFactory factory;
+    
     
     @Before
     public void setup(){
-        lowPriorityQueue = EasyMock
-                .createMock(TaskQueue.class);
-
-        highPriorityQueue = EasyMock
-                .createMock(TaskQueue.class);
-
-        deadLetterQueue = EasyMock
-            .createMock(TaskQueue.class);
-
-        factory = EasyMock
-                .createMock(TaskWorkerFactory.class);
         
     }
     
     @After
     public void tearDown(){
-        EasyMock.verify(lowPriorityQueue,highPriorityQueue,factory);
-
+        verifyAll();
     }
     
     @Test
@@ -62,10 +66,12 @@ public class TaskWorkerManagerTest {
         configureQueue(times, latch, task, highPriorityQueue);
 
 
-        EasyMock.replay(factory,lowPriorityQueue, highPriorityQueue);
-        
-        TaskWorkerManager manager = new TaskWorkerManager(lowPriorityQueue,
-                                                          highPriorityQueue,
+        replayAll();
+
+        TaskWorkerManager manager;
+
+        manager = new TaskWorkerManager(Arrays.asList(highPriorityQueue,
+                                                                        lowPriorityQueue),
                                                           deadLetterQueue,
                                                           factory);
 
@@ -79,8 +85,6 @@ public class TaskWorkerManagerTest {
         Assert.assertTrue(latch.await(6000, TimeUnit.MILLISECONDS));
         
         manager.destroy();
-        
-        
     }
 
 
@@ -89,6 +93,7 @@ public class TaskWorkerManagerTest {
             Task task,
             TaskQueue queue)            throws TimeoutException {
         EasyMock.expect(queue.take()).andReturn(task).times(times);
+        EasyMock.expect(queue.getName()).andReturn("test").anyTimes();
 
         EasyMock.expect(factory.create(task, queue)).andReturn(new TaskWorker() {
             @Override
