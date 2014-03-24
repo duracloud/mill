@@ -67,8 +67,10 @@ public class AuditTaskProcessor implements TaskProcessor {
                     task.getContentSize(), task.getUserId(), action,
                     props != null ? props.toString() : null, acls, timestamp);
 
-            ContentIndexItem indexItem = new ContentIndexItem(account,
-                    Integer.parseInt(storeId), spaceId, contentId);
+            ContentIndexItem indexItem = new ContentIndexItem(account, 
+                                                              storeId,
+                                                              spaceId, 
+                                                              contentId);
 
             Map<String, String> contentProps = null;
             if (props != null) {
