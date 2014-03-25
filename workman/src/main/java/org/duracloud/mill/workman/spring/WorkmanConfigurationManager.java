@@ -7,6 +7,9 @@
  */
 package org.duracloud.mill.workman.spring;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.duracloud.mill.config.ConfigurationManager;
 
 /**
@@ -16,6 +19,7 @@ import org.duracloud.mill.config.ConfigurationManager;
 public class WorkmanConfigurationManager extends ConfigurationManager {
 
     public static final String DEAD_LETTER_QUEUE_KEY = "deadLetterQueue";
+    public static final String TASK_QUEUES_KEY = "taskQueues";
 
     public String getDeadLetterQueueName() {
         return System.getProperty(DEAD_LETTER_QUEUE_KEY);
@@ -28,7 +32,16 @@ public class WorkmanConfigurationManager extends ConfigurationManager {
     @Override
     protected void addRequiredProperties() {
         super.addRequiredProperties();
-        addRequiredProperty(LOW_PRIORITY_DUPLICATION_QUEUE_KEY);
-        addRequiredProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
+        addRequiredProperty(TASK_QUEUES_KEY);
+        addRequiredProperty(DEAD_LETTER_QUEUE_KEY);
+
+    }
+
+
+    /**
+     * @return
+     */
+    public List<String> getTaskQueueNames() {
+        return Arrays.asList(System.getProperty(TASK_QUEUES_KEY).split(","));
     }
 }

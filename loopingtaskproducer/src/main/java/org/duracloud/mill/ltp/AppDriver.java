@@ -227,7 +227,7 @@ public class AppDriver {
 
         try{
             
-            TaskProducerConfigurationManager config = new TaskProducerConfigurationManager();
+            LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
             config.init();
             
             CredentialsRepo credentialsRepo;

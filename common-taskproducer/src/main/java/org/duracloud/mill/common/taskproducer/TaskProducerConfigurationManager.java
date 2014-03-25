@@ -19,6 +19,4 @@ public class TaskProducerConfigurationManager extends ConfigurationManager {
     public String getDuplicationPolicyDir() {
         return System.getProperty(DUPLICATION_POLICY_DIR_KEY);
     }
-
-    
 }

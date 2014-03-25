@@ -25,9 +25,6 @@ public class ConfigurationManager {
     private static Logger log = LoggerFactory
             .getLogger(ConfigurationManager.class);
 
-    public static final String LOW_PRIORITY_DUPLICATION_QUEUE_KEY = "lowPriorityDuplicationQueue";
-    public static final String HIGH_PRIORITY_DUPLICATION_QUEUE_KEY = "highPriorityDuplicationQueue";
-
     public static final String CREDENTIALS_FILE_PATH_KEY = "credentialsFilePath";
     public static final String WORK_DIRECTORY_PATH_KEY = "workDirectoryPath";
     public static final String DURACLOUD_MILL_CONFIG_FILE_KEY = "duracloud.mill.configFile";
@@ -37,13 +34,6 @@ public class ConfigurationManager {
         return System.getProperty(CREDENTIALS_FILE_PATH_KEY);
     }
 
-    public String getLowPriorityDuplicationQueue() {
-        return System.getProperty(LOW_PRIORITY_DUPLICATION_QUEUE_KEY);
-    }
-
-    public String getHighPriorityDuplicationQueueName() {
-        return System.getProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
-    }
     
     public String getWorkDirectoryPath() {
         return System.getProperty(WORK_DIRECTORY_PATH_KEY);

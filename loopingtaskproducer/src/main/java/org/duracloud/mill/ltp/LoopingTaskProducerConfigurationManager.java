@@ -14,6 +14,8 @@ import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
  *	       Date: Dec 6, 2013
  */
 public class LoopingTaskProducerConfigurationManager extends TaskProducerConfigurationManager {
+    public static final String LOW_PRIORITY_DUPLICATION_QUEUE_KEY = "lowPriorityDuplicationQueue";
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.config.ConfigurationManager#addRequiredProperties()
      */
@@ -21,5 +23,12 @@ public class LoopingTaskProducerConfigurationManager extends TaskProducerConfigu
     protected void addRequiredProperties() {
         super.addRequiredProperties();
         addRequiredProperty(LOW_PRIORITY_DUPLICATION_QUEUE_KEY);
+    }
+
+    /**
+     * @return
+     */
+    public String getLowPriorityDuplicationQueue() {
+        return System.getProperty(LOW_PRIORITY_DUPLICATION_QUEUE_KEY);
     }
 }

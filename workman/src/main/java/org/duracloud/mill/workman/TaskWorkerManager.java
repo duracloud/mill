@@ -62,8 +62,8 @@ public class TaskWorkerManager {
 
         this.factory = factory;
         this.taskQueues = taskQueues;
-        this.taskQueueExecutors = new ArrayList<TaskQueueExecutor>(taskQueues.size());
         int size = taskQueues.size();
+        this.taskQueueExecutors = new ArrayList<TaskQueueExecutor>(size);
         for(int i = 0; i < size; i++){
             boolean lowestPriority =  i == size - 1; //last task queue in the list is lowest priority
             long minWait = this.defaultMinWaitTime, 
@@ -144,6 +144,7 @@ public class TaskWorkerManager {
         while(!stop){
             try {
                 if(isManagerTooBusy()){
+                    log.info("manager is too busy, sleeping for 1 sec");
                     //wait only a moment before trying again since 
                     //the worker pool is expected to move relatively quickly.
                     sleep(1000);
@@ -214,11 +215,16 @@ public class TaskWorkerManager {
         int active = this.executor.getActiveCount();
         int maxPoolSize = this.executor.getMaximumPoolSize();
         int queueSize =  this.executor.getQueue().size();
-        log.debug(
-                "active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
-                active, queueSize);
 
-        return active + queueSize >= maxPoolSize;
+        boolean tooBusy =  active + queueSize >= maxPoolSize;
+        
+        if(tooBusy){
+            log.info(
+                    "manager is too busy: active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
+                    active, queueSize);
+
+        }
+        return tooBusy;
     }
 
 

@@ -8,16 +8,17 @@
 package org.duracloud.mill.workman.spring;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
-import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
@@ -74,29 +75,24 @@ public class AppConfig {
     }
 
     @Bean(initMethod="init", destroyMethod="destroy")
-    public TaskWorkerManager taskWorkerManager(RootTaskProcessorFactory factory,
-                                                TaskQueue lowPriorityQueue,
-                                                TaskQueue highPriorityQueue,
+    public TaskWorkerManager taskWorkerManager(WorkmanConfigurationManager config, RootTaskProcessorFactory factory,
                                                 TaskQueue deadLetterQueue) {
-        return new TaskWorkerManager(Arrays.asList(lowPriorityQueue, 
-                                     highPriorityQueue),
+        return new TaskWorkerManager(createTaskQueues(config),
                                      deadLetterQueue,
                                      new TaskWorkerFactoryImpl(factory, 
                                                                deadLetterQueue));
     }
     
-    @Bean
-    public TaskQueue lowPriorityQueue(WorkmanConfigurationManager configurationManager){
-        TaskQueue queue =  new SQSTaskQueue(configurationManager.getLowPriorityDuplicationQueue());
-        log.info("created low priority queue {}", queue);
-        return queue;
-    }
-
-    @Bean
-    public TaskQueue highPriorityQueue(WorkmanConfigurationManager configurationManager){
-        TaskQueue queue =  new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
-        log.info("created high priority queue {}", queue);
-        return queue;
+    protected List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager){
+        List<String> taskQueuesNames = configurationManager.getTaskQueueNames();
+        List<TaskQueue> taskQueues = new LinkedList<>();
+        for(String taskQueueName : taskQueuesNames){
+            TaskQueue taskQueue = new SQSTaskQueue(taskQueueName.trim());
+            taskQueues.add(taskQueue);
+            log.info("created queue {}: priority = {}",
+                    taskQueue.getName(),taskQueues.size());
+        }
+        return taskQueues;
     }
 
     @Bean

@@ -31,7 +31,6 @@ public class ConfigurationManagerTest {
                 "src/test/resources/mill-config-test.properties");
         config.init();
         Assert.assertNotNull(config.getCredentialsFilePath());
-        Assert.assertNotNull(config.getLowPriorityDuplicationQueue());
         Assert.assertNotNull(config.getWorkDirectoryPath());
     }
 

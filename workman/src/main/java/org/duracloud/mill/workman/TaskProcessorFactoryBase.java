@@ -34,7 +34,7 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
     public final TaskProcessor create(Task task)
             throws TaskProcessorCreationFailedException {
         if (!isSupported(task)) {
-            throw new TaskProcessorCreationFailedException(task + " is not supported");
+            throw new TaskProcessorCreationFailedException(task + " is not supported by this factory:" + getClass().getSimpleName());
         }
 
         return createImpl(task);

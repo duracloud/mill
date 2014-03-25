@@ -26,8 +26,7 @@ public class AppDriver {
 
     private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
     private static final String MAX_WORKERS_OPTION = "w";
-    private static final String LOW_PRIORITY_QUEUE_OPTION = "q";
-    private static final String HIGH_PRIORITY_QUEUE_OPTION = "p";
+    private static final String TASK_QUEUES_OPTION = "q";
     private static final String DEAD_LETTER_QUEUE_OPTION = "e";
     
     private static void usage() {
@@ -74,25 +73,16 @@ public class AppDriver {
         maxWorkers.setArgName("count");
         options.addOption(maxWorkers);
 
-        Option lowPriorityQueueName = new Option(
-                LOW_PRIORITY_QUEUE_OPTION,
-                "low-priority-queue-name",
+        Option taskQueues = new Option(
+                TASK_QUEUES_OPTION,
+                "task-queue-names",
                 true,
-                "The name of the low priority amazon sqs queue");
-        lowPriorityQueueName.setArgs(1);
-        lowPriorityQueueName.setRequired(true);
-        lowPriorityQueueName.setArgName("name");
-        options.addOption(lowPriorityQueueName);
+                "A comma-separated prioritized list of amazon sqs queues where the first is highest.");
+        taskQueues.setArgs(1);
+        taskQueues.setRequired(true);
+        taskQueues.setArgName("name");
+        options.addOption(taskQueues);
         
-        Option highPriorityQueueName = new Option(
-                HIGH_PRIORITY_QUEUE_OPTION,
-                "high-priority-queue-name",
-                true,
-                "The name of the high priority amazon sqs queue");
-        highPriorityQueueName.setArgs(1);
-        highPriorityQueueName.setRequired(true);
-        highPriorityQueueName.setArgName("name");
-        options.addOption(highPriorityQueueName);        
 
         Option deadLetterQueue = new Option(
                 DEAD_LETTER_QUEUE_OPTION,
@@ -134,20 +124,13 @@ public class AppDriver {
                     workerCount);
         }
 
-        String lowPriorityQueueName = cmd
-                .getOptionValue(LOW_PRIORITY_QUEUE_OPTION);
-        if (lowPriorityQueueName != null) {
-            setSystemProperty(
-                    ConfigurationManager.LOW_PRIORITY_DUPLICATION_QUEUE_KEY,
-                    lowPriorityQueueName);
-        }
 
-        String highPriorityQueueName = cmd
-                .getOptionValue(HIGH_PRIORITY_QUEUE_OPTION);
-        if (highPriorityQueueName != null) {
+        String taskQueueNames = cmd
+                .getOptionValue(TASK_QUEUES_OPTION);
+        if (taskQueueNames != null) {
             setSystemProperty(
-                    ConfigurationManager.HIGH_PRIORITY_DUPLICATION_QUEUE_KEY,
-                    highPriorityQueueName);
+                    WorkmanConfigurationManager.TASK_QUEUES_KEY,
+                    taskQueueNames);
         }
 
         String deadLetterQueueName = cmd

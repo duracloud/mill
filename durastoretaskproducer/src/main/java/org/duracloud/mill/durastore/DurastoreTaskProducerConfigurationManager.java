@@ -20,6 +20,7 @@ public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfi
     public static final String DUPLICATION_POLICY_BUCKET_SUFFIX = "policyBucketSuffix";
     public static final String NOTIFICATION_RECIPIENTS = "notificationRecipients";
     public static final String POLICY_MANAGER_REFRESH_FREQUENCY_MS = "policyManagerRefreshFrequencyMs";
+    public static final String HIGH_PRIORITY_DUPLICATION_QUEUE_KEY = "highPriorityDuplicationQueue";
 
     /**
      * @return
@@ -62,5 +63,12 @@ public class DurastoreTaskProducerConfigurationManager extends TaskProducerConfi
         }else{
             return recipients.split(",");
         }
+    }
+
+    /**
+     * @return
+     */
+    public String getHighPriorityDuplicationQueueName() {
+        return System.getProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
     }
 }

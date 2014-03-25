@@ -8,12 +8,14 @@
 package org.duracloud.mill.workman;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
-import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.common.queue.task.NoopTask;
-import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.local.LocalTaskQueue;
+import org.duracloud.common.queue.task.NoopTask;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;
@@ -22,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,9 +34,9 @@ import org.springframework.context.annotation.Configuration;
  * @author Daniel Bernstein Date: Oct 24, 2013
  */
 public class NoopProcessorLocalRoundTripTest {
-    private static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
-    private static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
-    private static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
 
     private ApplicationContext context;
 
@@ -43,24 +44,22 @@ public class NoopProcessorLocalRoundTripTest {
     @ComponentScan(basePackages={"org.duracloud.mill"})
     public static class TestAppConfig extends AppConfig {
 
-        @Bean
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.workman.spring.AppConfig#taskQueues(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
+         */
         @Override
-        public TaskQueue lowPriorityQueue(WorkmanConfigurationManager configurationManager) {
-            return LOW_PRIORITY_QUEUE;
+        public List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager) {
+            return Arrays.asList(new TaskQueue[] { HIGH_PRIORITY_QUEUE,
+                                                   LOW_PRIORITY_QUEUE });
         }
-
-        @Bean
-        @Override
-        public TaskQueue highPriorityQueue(WorkmanConfigurationManager configurationManager) {
-            return HIGH_PRIORITY_QUEUE;
-        }
-
-        @Bean
+        
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.workman.spring.AppConfig#deadLetterQueue(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
+         */
         @Override
         public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
-            return HIGH_PRIORITY_QUEUE;
+            return DEAD_LETTER_QUEUE;
         }
-
     }
     /**
      * @throws java.lang.Exception
@@ -99,10 +98,10 @@ public class NoopProcessorLocalRoundTripTest {
         
         sleep(10000);
         
-        Assert.assertEquals(0, this.LOW_PRIORITY_QUEUE.getInprocessCount());
-        Assert.assertEquals(count, this.LOW_PRIORITY_QUEUE.getCompletedCount());
-        Assert.assertEquals(0, this.HIGH_PRIORITY_QUEUE.getInprocessCount());
-        Assert.assertEquals(count, this.HIGH_PRIORITY_QUEUE.getCompletedCount());
+        Assert.assertEquals(0, LOW_PRIORITY_QUEUE.getInprocessCount());
+        Assert.assertEquals(count, LOW_PRIORITY_QUEUE.getCompletedCount());
+        Assert.assertEquals(0, HIGH_PRIORITY_QUEUE.getInprocessCount());
+        Assert.assertEquals(count, HIGH_PRIORITY_QUEUE.getCompletedCount());
     }
 
     private void sleep(long ms) {
