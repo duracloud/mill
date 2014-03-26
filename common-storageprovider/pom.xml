@@ -52,6 +52,11 @@
       <groupId>org.duracloud</groupId>
       <artifactId>rackspacestorageprovider</artifactId>
     </dependency>
-    
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>auditor</artifactId>
+    </dependency>
+
   </dependencies>
 </project>

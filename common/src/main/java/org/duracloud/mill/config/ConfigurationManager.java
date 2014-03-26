@@ -8,6 +8,7 @@
 package org.duracloud.mill.config;
 
 import org.duracloud.mill.util.SystemPropertyLoader;
+import org.duracloud.storage.util.StorageProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +23,10 @@ import java.util.Set;
  */
 public class ConfigurationManager {
     
-    private static Logger log = LoggerFactory
-            .getLogger(ConfigurationManager.class);
+    private static Logger log =
+        LoggerFactory.getLogger(ConfigurationManager.class);
 
+    public static final String AUDIT_QUEUE_KEY = "auditQueue";
     public static final String CREDENTIALS_FILE_PATH_KEY = "credentialsFilePath";
     public static final String WORK_DIRECTORY_PATH_KEY = "workDirectoryPath";
     public static final String DURACLOUD_MILL_CONFIG_FILE_KEY = "duracloud.mill.configFile";
@@ -34,7 +36,10 @@ public class ConfigurationManager {
         return System.getProperty(CREDENTIALS_FILE_PATH_KEY);
     }
 
-    
+    public String getAuditQueueName() {
+        return System.getProperty(AUDIT_QUEUE_KEY);
+    }
+
     public String getWorkDirectoryPath() {
         return System.getProperty(WORK_DIRECTORY_PATH_KEY);
     }
@@ -43,7 +48,7 @@ public class ConfigurationManager {
     }
 
     /**
-     * @param duplicationQueueKey
+     * @param property
      */
     protected void addRequiredProperty(String property) {
         this.requiredProperties.add(property);

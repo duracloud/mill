@@ -8,16 +8,14 @@
 
 package org.duracloud.mill.durastore;
 
-import java.util.Set;
-
+import org.duracloud.common.queue.TaskNotFoundException;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.notification.NotificationManager;
-import org.duracloud.common.queue.TaskNotFoundException;
-import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.storage.aop.ContentMessage;
 import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.easymock.EasyMock;
@@ -25,6 +23,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Set;
 
 
 /**
@@ -209,6 +209,11 @@ public class ContentMessageListenerTest {
          */
         @Override
         public void requeue(Task task) {}
-        
+
+        @Override
+        public String getName() {
+            // Default method body
+            return null;
+        }
     }
 }

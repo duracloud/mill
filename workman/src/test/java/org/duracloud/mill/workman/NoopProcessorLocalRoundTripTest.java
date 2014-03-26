@@ -7,10 +7,6 @@
  */
 package org.duracloud.mill.workman;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
@@ -27,6 +23,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This class tests a round trip for processing Noop Tasks, from task creation
  * to task processing.
@@ -34,8 +34,10 @@ import org.springframework.context.annotation.Configuration;
  * @author Daniel Bernstein Date: Oct 24, 2013
  */
 public class NoopProcessorLocalRoundTripTest {
+
     private final static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue AUDIT_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
 
     private ApplicationContext context;
@@ -59,6 +61,11 @@ public class NoopProcessorLocalRoundTripTest {
         @Override
         public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
             return DEAD_LETTER_QUEUE;
+        }
+
+        @Override
+        public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager) {
+            return AUDIT_QUEUE;
         }
     }
     /**
@@ -95,7 +102,6 @@ public class NoopProcessorLocalRoundTripTest {
             
         }
 
-        
         sleep(10000);
         
         Assert.assertEquals(0, LOW_PRIORITY_QUEUE.getInprocessCount());

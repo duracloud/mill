@@ -534,6 +534,11 @@
       </dependency>
       <dependency>
         <groupId>org.duracloud</groupId>
+        <artifactId>auditor</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
         <artifactId>s3storageprovider</artifactId>
         <version>${duracloud.version}</version>
       </dependency>

@@ -7,10 +7,7 @@
  */
 package org.duracloud.mill.workman.spring;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.config.ConfigurationManager;
@@ -28,7 +25,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 
@@ -46,7 +45,9 @@ public class AppConfig {
                                                              File workDir) {
         RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(
-            new DuplicationTaskProcessorFactory(repo, workDir));
+            new DuplicationTaskProcessorFactory(repo,
+                                                workDir,
+                                                auditQueue(configurationManager())));
         factory.addTaskProcessorFactory(
             new NoopTaskProcessorFactory(repo, workDir));
         log.info("RootTaskProcessorFactory created.");
@@ -93,6 +94,13 @@ public class AppConfig {
                     taskQueue.getName(),taskQueues.size());
         }
         return taskQueues;
+    }
+
+    @Bean
+    public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager){
+        TaskQueue queue =  new SQSTaskQueue(configurationManager.getAuditQueueName());
+        log.info("created audit queue {}", queue);
+        return queue;
     }
 
     @Bean

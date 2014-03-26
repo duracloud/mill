@@ -7,10 +7,11 @@
  */
 package org.duracloud.mill.workman.spring;
 
+import org.duracloud.mill.config.ConfigurationManager;
+
+import javax.ws.rs.HEAD;
 import java.util.Arrays;
 import java.util.List;
-
-import org.duracloud.mill.config.ConfigurationManager;
 
 /**
  * @author Daniel Bernstein
@@ -34,7 +35,7 @@ public class WorkmanConfigurationManager extends ConfigurationManager {
         super.addRequiredProperties();
         addRequiredProperty(TASK_QUEUES_KEY);
         addRequiredProperty(DEAD_LETTER_QUEUE_KEY);
-
+        addRequiredProperty(AUDIT_QUEUE_KEY);
     }
 
 

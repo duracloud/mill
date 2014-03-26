@@ -7,8 +7,12 @@
  */
 package org.duracloud.mill.common.storageprovider;
 
+import org.duracloud.audit.provider.AuditStorageProvider;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.util.UserUtil;
 import org.duracloud.glacierstorage.GlacierStorageProvider;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.util.SimpleUserUtil;
 import org.duracloud.rackspacestorage.RackspaceStorageProvider;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.sdscstorage.SDSCStorageProvider;
@@ -21,9 +25,35 @@ import org.duracloud.storage.provider.StorageProvider;
  *	       Date: Nov 6, 2013
  */
 public class StorageProviderFactory {
+
     /**
+     * Creates a StorageProvider which captures events and passes them to the
+     * audit queue.
+     *
+     * @param credentials needed to connect to storage provider
+     * @param accountSubdomain subdomain of the storage provider account
+     * @param auditQueue used to capture changes to stored content
+     * @return
+     */
+    public StorageProvider createWithAudit(StorageProviderCredentials credentials,
+                                           String accountSubdomain,
+                                           TaskQueue auditQueue) {
+        UserUtil userUtil = new SimpleUserUtil();
+        StorageProvider storageprovider = create(credentials);
+        StorageProvider auditProvider =
+            new AuditStorageProvider(storageprovider,
+                                     accountSubdomain,
+                                     credentials.getProviderId(),
+                                     credentials.getProviderType().getName(),
+                                     userUtil,
+                                     auditQueue);
+        return auditProvider;
+    }
+
+    /**
+     * Creates a StorageProvider
+     *
      * @param credentials
-     * @param storageProviderType
      * @return
      */
     public StorageProvider create(StorageProviderCredentials credentials) {
@@ -31,7 +61,8 @@ public class StorageProviderFactory {
         StorageProviderType storageProviderType = credentials.getProviderType();
         
         if (storageProviderType.equals(StorageProviderType.AMAZON_S3)) {
-            return new S3StorageProvider(credentials.getAccessKey(), credentials.getSecretKey());
+            return new S3StorageProvider(credentials.getAccessKey(),
+                                         credentials.getSecretKey());
         } else if (storageProviderType.equals(StorageProviderType.SDSC)) {
             return new SDSCStorageProvider(credentials.getAccessKey(),
                     credentials.getSecretKey());
