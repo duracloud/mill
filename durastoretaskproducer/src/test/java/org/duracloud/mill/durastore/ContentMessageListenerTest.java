@@ -209,11 +209,5 @@ public class ContentMessageListenerTest {
          */
         @Override
         public void requeue(Task task) {}
-
-        @Override
-        public String getName() {
-            // Default method body
-            return null;
-        }
     }
 }
