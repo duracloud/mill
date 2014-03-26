@@ -1,7 +1,5 @@
 package org.duracloud.mill.workman.spring;
 
-import java.io.File;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -16,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.io.File;
+
 /**
  * 
  * @author Daniel Bernstein
@@ -28,6 +28,7 @@ public class AppDriver {
     private static final String MAX_WORKERS_OPTION = "w";
     private static final String TASK_QUEUES_OPTION = "q";
     private static final String DEAD_LETTER_QUEUE_OPTION = "e";
+    private static final String AUDIT_QUEUE_OPTION = "a";
     
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -92,8 +93,17 @@ public class AppDriver {
         deadLetterQueue.setArgs(1);
         deadLetterQueue.setRequired(true);
         deadLetterQueue.setArgName("name");
-        options.addOption(deadLetterQueue);        
+        options.addOption(deadLetterQueue);
 
+        Option auditQueue = new Option(
+                AUDIT_QUEUE_OPTION,
+                "audit-queue-name",
+                true,
+                "The name of the audit amazon sqs queue");
+        auditQueue.setArgs(1);
+        auditQueue.setRequired(true);
+        auditQueue.setArgName("name");
+        options.addOption(auditQueue);
         
         Option workDirPath = new Option("d", "work-dir", true,
                                         "Directory that will be used to " +
@@ -139,6 +149,12 @@ public class AppDriver {
             setSystemProperty(
                     WorkmanConfigurationManager.DEAD_LETTER_QUEUE_KEY,
                     deadLetterQueueName);
+        }
+
+        String auditQueueName = cmd.getOptionValue(AUDIT_QUEUE_OPTION);
+        if (auditQueueName != null) {
+            setSystemProperty(WorkmanConfigurationManager.AUDIT_QUEUE_KEY,
+                              auditQueueName);
         }
 
         String workDirPath = cmd.getOptionValue("d");
