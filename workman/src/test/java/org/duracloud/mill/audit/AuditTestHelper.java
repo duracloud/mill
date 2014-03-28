@@ -31,7 +31,7 @@ public class AuditTestHelper {
         task.setContentId("contentId");
         task.setAction(AuditTask.ActionType.DELETE_CONTENT.name());
         task.setContentSize("1000");
-        task.setDateTime(DateUtil.convertToString(System.currentTimeMillis()));
+        task.setDateTime(System.currentTimeMillis()+"");
         task.setContentChecksum("12341243214234");
         task.setUserId("user");
         task.setContentMimetype("application/text");

@@ -14,10 +14,10 @@ import java.util.Map;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.client.contentindex.ContentIndexClient;
-import org.duracloud.client.contentindex.ContentIndexItem;
 import org.duracloud.common.util.DateUtil;
 import org.duracloud.common.util.TagUtil;
+import org.duracloud.contentindex.client.ContentIndexClient;
+import org.duracloud.contentindex.client.ContentIndexItem;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.slf4j.Logger;
@@ -61,7 +61,7 @@ public class AuditTaskProcessor implements TaskProcessor {
             String storeType = task.getStoreType();
             Map<String, String> props = task.getContentProperties();
             String acls = task.getSpaceACLs();
-            Date timestamp = DateUtil.convertToDate(task.getDateTime());
+            Date timestamp = new Date(Long.valueOf(task.getDateTime()));
             auditLogStore.write(account, storeId, spaceId, contentId,
                     task.getContentChecksum(), task.getContentMimetype(),
                     task.getContentSize(), task.getUserId(), action,
