@@ -16,7 +16,7 @@ import org.duracloud.audit.dynamodb.DynamoDBAuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.contentindex.client.ContentIndexClient;
-import org.duracloud.contentindex.client.ESContentIndexClient;
+import org.duracloud.contentindex.client.ESContentIndexClientUtil;
 import org.duracloud.mill.audit.AuditTaskProcessorFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -27,16 +27,11 @@ import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -92,11 +87,7 @@ public class AppConfig {
     
     @Bean 
     public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config){
-        Client client = new TransportClient()
-                .addTransportAddress(new InetSocketTransportAddress(
-                        config.getContentIndexHost(), config.getContentIndexPort()));
-        ElasticsearchOperations ops = new ElasticsearchTemplate(client);
-        return new ESContentIndexClient(ops,client);
+        return ESContentIndexClientUtil.createContentIndexClient();
     }
 
     @Bean
