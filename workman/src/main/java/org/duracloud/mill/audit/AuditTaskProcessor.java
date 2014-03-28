@@ -62,10 +62,20 @@ public class AuditTaskProcessor implements TaskProcessor {
             Map<String, String> props = task.getContentProperties();
             String acls = task.getSpaceACLs();
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
-            auditLogStore.write(account, storeId, spaceId, contentId,
-                    task.getContentChecksum(), task.getContentMimetype(),
-                    task.getContentSize(), task.getUserId(), action,
-                    props != null ? props.toString() : null, acls, timestamp);
+            auditLogStore.write(account, 
+                                storeId, 
+                                spaceId, 
+                                contentId,
+                                task.getContentChecksum(), 
+                                task.getContentMimetype(),
+                                task.getContentSize(), 
+                                task.getUserId(), 
+                                action,
+                                props != null ? props.toString() : null, 
+                                acls,
+                                task.getSourceSpaceId(), 
+                                task.getSourceContentId(),
+                                timestamp);
 
             ContentIndexItem indexItem = new ContentIndexItem(account, 
                                                               storeId,

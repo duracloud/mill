@@ -39,6 +39,8 @@ public class AuditTestHelper {
         map.put("key", "value");
         task.setContentProperties(map);
         task.setSpaceACLs("acls");
+        task.setSourceSpaceId("sourceSpace");
+        task.setSourceContentId("sourceContentId");
         return task;
     }
 }
