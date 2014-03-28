@@ -7,9 +7,17 @@
  */
 package org.duracloud.mill.workman.spring;
 
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.duracloud.audit.AuditLogStore;
+import org.duracloud.audit.dynamodb.DynamoDBAuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.contentindex.client.ContentIndexClient;
+import org.duracloud.contentindex.client.ESContentIndexClient;
+import org.duracloud.mill.audit.AuditTaskProcessorFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
@@ -19,15 +27,21 @@ import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
  * 
@@ -41,15 +55,23 @@ public class AppConfig {
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
     
     @Bean
-    public RootTaskProcessorFactory rootTaskProcessorFactory(CredentialsRepo repo,
-                                                             File workDir) {
-        RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
+    public RootTaskProcessorFactory 
+                rootTaskProcessorFactory(CredentialsRepo repo,
+                                         File workDir,
+                                         ContentIndexClient contentIndexClient,
+                                         AuditLogStore auditLogStore) {
+
+        RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(
             new DuplicationTaskProcessorFactory(repo,
                                                 workDir,
                                                 auditQueue(configurationManager())));
-        factory.addTaskProcessorFactory(
-            new NoopTaskProcessorFactory(repo, workDir));
+        factory.addTaskProcessorFactory(new AuditTaskProcessorFactory(
+                contentIndexClient, auditLogStore));
+        
+        factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
+                workDir));
+
         log.info("RootTaskProcessorFactory created.");
         return factory;
     }
@@ -67,7 +89,24 @@ public class AppConfig {
             return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
         }
     }
+    
+    @Bean 
+    public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config){
+        Client client = new TransportClient()
+                .addTransportAddress(new InetSocketTransportAddress(
+                        config.getContentIndexHost(), config.getContentIndexPort()));
+        ElasticsearchOperations ops = new ElasticsearchTemplate(client);
+        return new ESContentIndexClient(ops,client);
+    }
 
+    @Bean
+    public AuditLogStore auditLogStore(){
+        DynamoDBAuditLogStore store =  new DynamoDBAuditLogStore();
+        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
+        client.setRegion(Region.getRegion(Regions.US_EAST_1));
+        store.initialize(client);
+        return store;
+    }
     @Bean
     public File workDir(WorkmanConfigurationManager configurationManager) {
         log.info("creating work dir for path: "

@@ -34,7 +34,7 @@ public class TaskWorkerManager {
     public static final int DEFAULT_MAX_WORKERS = 5;
     public static final String MAX_WORKER_PROPERTY_KEY = "duracloud.maxWorkers";
     public static final String MIN_WAIT_BEFORE_TAKE_KEY = "duracloud.minWaitBeforeTake";
-    public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 60*1000;
+    public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 15*1000;
     private static final long DEFAULT_MAX_WAIT_BEFORE_TAKE = 8*60*1000;
     private Long defaultMinWaitTime = DEFAULT_MIN_WAIT_BEFORE_TAKE;
     private TaskWorkerFactory factory;
@@ -151,10 +151,16 @@ public class TaskWorkerManager {
                 }else{
                     //loop through queues attempting to 
                     //execute a task off the highest priority queue
+                    boolean executedOne = false;
                     for(TaskQueueExecutor taskQueueExecutor : this.taskQueueExecutors){
                         if(taskQueueExecutor.execute()){
+                            executedOne = true;
                            break; 
                         }
+                    }
+                    
+                    if(!executedOne){
+                        sleep(defaultMinWaitTime);
                     }
                 }
             }catch(Exception ex){
@@ -177,6 +183,7 @@ public class TaskWorkerManager {
             this.taskQueue = taskQueue;
             this.minWaitTime = minWaitTime;
             this.maxWaitTime = maxWaitTime;
+            this.currentWaitBeforeTaskMs = minWaitTime;
         }
 
         /**

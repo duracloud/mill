@@ -9,8 +9,7 @@ package org.duracloud.mill.audit;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.client.contentindex.ContentIndexClient;
-import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;

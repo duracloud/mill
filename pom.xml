@@ -474,6 +474,17 @@
 
       <dependency>
         <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
         <artifactId>spring-context</artifactId>
         <version>${spring.framework.version}</version>
         <exclusions>
@@ -525,6 +536,11 @@
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>auditor</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>dynamodb-auditor</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
       <dependency>

@@ -8,6 +8,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.util.SystemPropertyLoader;
 import org.duracloud.mill.workman.TaskWorkerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * 
@@ -122,6 +124,13 @@ public class AppDriver {
         String configPath = cmd.getOptionValue("c");
 
         if(configPath != null){
+            if(new File(configPath).exists()){
+                try {
+                    SystemPropertyLoader.load(configPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             setSystemProperty(
                     ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                     configPath);

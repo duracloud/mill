@@ -19,7 +19,6 @@ import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.IAnswer;
 import org.easymock.Mock;
-import org.easymock.TestSubject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -64,7 +63,8 @@ public class TaskWorkerManagerTest extends EasyMockSupport{
         
         configureQueue(times, latch, task, lowPriorityQueue);
         configureQueue(times, latch, task, highPriorityQueue);
-
+        EasyMock.expect(deadLetterQueue.getName()).andReturn("dead").anyTimes();
+        EasyMock.expect(deadLetterQueue.size()).andReturn(0).anyTimes();
 
         replayAll();
 
@@ -92,6 +92,8 @@ public class TaskWorkerManagerTest extends EasyMockSupport{
             final CountDownLatch latch,
             Task task,
             TaskQueue queue)            throws TimeoutException {
+        EasyMock.expect(queue.size()).andReturn(0).anyTimes();
+
         EasyMock.expect(queue.take()).andReturn(task).times(times);
         EasyMock.expect(queue.getName()).andReturn("test").anyTimes();
 

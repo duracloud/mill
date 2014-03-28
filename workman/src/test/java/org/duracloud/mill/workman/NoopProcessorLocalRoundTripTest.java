@@ -11,6 +11,7 @@ import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.Task;
+import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
@@ -53,6 +54,14 @@ public class NoopProcessorLocalRoundTripTest {
         public List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager) {
             return Arrays.asList(new TaskQueue[] { HIGH_PRIORITY_QUEUE,
                                                    LOW_PRIORITY_QUEUE });
+        }
+        
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.workman.spring.AppConfig#contentIndexClient(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
+         */
+        @Override
+        public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config) {
+            return null;
         }
         
         /* (non-Javadoc)
@@ -99,15 +108,14 @@ public class NoopProcessorLocalRoundTripTest {
             task.setVisibilityTimeout(600);
             LOW_PRIORITY_QUEUE.put(task);
             HIGH_PRIORITY_QUEUE.put(task);
-            
         }
-
-        sleep(10000);
         
-        Assert.assertEquals(0, LOW_PRIORITY_QUEUE.getInprocessCount());
-        Assert.assertEquals(count, LOW_PRIORITY_QUEUE.getCompletedCount());
+        sleep(20*1000);
+
         Assert.assertEquals(0, HIGH_PRIORITY_QUEUE.getInprocessCount());
         Assert.assertEquals(count, HIGH_PRIORITY_QUEUE.getCompletedCount());
+        Assert.assertEquals(0, LOW_PRIORITY_QUEUE.getInprocessCount());
+        Assert.assertEquals(count, LOW_PRIORITY_QUEUE.getCompletedCount());
     }
 
     private void sleep(long ms) {

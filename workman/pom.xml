@@ -60,6 +60,10 @@
 
     <dependency>
       <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
     </dependency>
 
@@ -91,6 +95,11 @@
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>auditor</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>dynamodb-auditor</artifactId>
     </dependency>
 
     <dependency>
