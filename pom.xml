@@ -109,7 +109,7 @@
     <innerClasses>**/*$*</innerClasses>
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.framework.version>3.2.4.RELEASE</spring.framework.version>
+    <spring.framework.version>4.0.2.RELEASE</spring.framework.version>
     <duracloud.version>3.0.0-SNAPSHOT</duracloud.version>
     <skipITs>true</skipITs>
     <powermock.version>1.5.4</powermock.version>
