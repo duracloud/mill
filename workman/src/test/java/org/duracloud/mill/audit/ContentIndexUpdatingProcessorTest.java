@@ -7,17 +7,21 @@
  */
 package org.duracloud.mill.audit;
 
+import java.util.Date;
+
 import org.duracloud.audit.AuditLogStore;
+import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.contentindex.client.ContentIndexClient;
-import org.duracloud.common.queue.task.NoopTask;
-import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
+import org.duracloud.contentindex.client.ContentIndexItem;
+import org.duracloud.mill.audit.ContentIndexUpdatingProcessor;
+import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.easymock.Capture;
+import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.Mock;
-import org.easymock.TestSubject;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,13 +31,10 @@ import org.junit.runner.RunWith;
  *	       Date: Mar 20, 2014
  */
 @RunWith(EasyMockRunner.class)
-public class AuditTaskProcessorFactoryTest extends EasyMockSupport{
-   
-    @TestSubject
-    private AuditTaskProcessorFactory factory;
-    
-    @Mock
-    private AuditLogStore logStore;
+public class ContentIndexUpdatingProcessorTest extends EasyMockSupport {
+
+    private ContentIndexUpdatingProcessor processor;
+        
     
     @Mock
     private ContentIndexClient contentIndex;
@@ -43,7 +44,6 @@ public class AuditTaskProcessorFactoryTest extends EasyMockSupport{
      */
     @Before
     public void setUp() throws Exception {
-        factory = new AuditTaskProcessorFactory(contentIndex,logStore);
     }
 
     /**
@@ -55,25 +55,20 @@ public class AuditTaskProcessorFactoryTest extends EasyMockSupport{
     }
 
     @Test
-    public void testCreate() throws TaskProcessorCreationFailedException {
+    public void test() throws TaskExecutionFailedException, AuditLogWriteFailedException {
+        Capture<ContentIndexItem> contentIndexItemCapture = new Capture<ContentIndexItem>();
+        
+        EasyMock.expect(
+                contentIndex.save(EasyMock.capture(contentIndexItemCapture)))
+                .andReturn("test");
+        
+        
         AuditTask task = AuditTestHelper.createTestAuditTask();
         replayAll();
-        factory.create(task.writeTask());
-    }
-
-
-
-    @Test
-    public void testCreateFail()  {
-        NoopTask task = new NoopTask();
+        processor = new ContentIndexUpdatingProcessor(task, contentIndex);
         
-        replayAll();
-        try {
-            factory.create(task.writeTask());
-            Assert.fail();
-        } catch (TaskProcessorCreationFailedException e) {
-            //expected do nothing
-        }
+        processor.execute();
     }
+
 
 }

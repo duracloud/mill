@@ -1,5 +1,8 @@
 package org.duracloud.mill.workman.spring;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -15,9 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * 
  * @author Daniel Bernstein
@@ -26,12 +26,28 @@ import java.io.IOException;
 
 public class AppDriver {
 
+    /**
+     * 
+     */
+    private static final String CONFIG_FILE_OPTION = "c";
+    /**
+     * 
+     */
+    private static final String WORK_DIR_PATH_OPTION = "d";
     private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
     private static final String MAX_WORKERS_OPTION = "w";
     private static final String TASK_QUEUES_OPTION = "q";
     private static final String DEAD_LETTER_QUEUE_OPTION = "e";
     private static final String AUDIT_QUEUE_OPTION = "a";
+    private static final String DUPLICATION_QUEUE_OPTION = "D";
+    private static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
+    private static final String POLICY_BUCKET_SUFFIX = "p";
+    private static final String NOTIFICATION_RECIPIENTS_OPTION = "n";
+    private static final String REFRESH_OPTION = "r";
     
+    public static final long DEFAULT_POLICY_UPDATE_FREQUENCY_MS = 5*60*1000;
+
+
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
         help.setWidth(80);
@@ -57,7 +73,7 @@ public class AppDriver {
     
     private static Options getOptions() {
         Options options = new Options();
-        Option configFile = new Option("c", "config-file", true,
+        Option configFile = new Option(CONFIG_FILE_OPTION, "config-file", true,
                 "A properties file containing configuration info");
         configFile.setArgs(1);
         configFile.setArgName("file");
@@ -106,8 +122,10 @@ public class AppDriver {
         auditQueue.setRequired(true);
         auditQueue.setArgName("name");
         options.addOption(auditQueue);
+
         
-        Option workDirPath = new Option("d", "work-dir", true,
+        
+        Option workDirPath = new Option(WORK_DIR_PATH_OPTION, "work-dir", true,
                                         "Directory that will be used to " +
                                         "temporarily store files as they " +
                                         "are being processed.");
@@ -115,13 +133,53 @@ public class AppDriver {
         workDirPath.setRequired(true);
         options.addOption(workDirPath);
 
+        Option duplicationQueue = new Option(DUPLICATION_QUEUE_OPTION, "high-priority-queue-name", true,
+                "The name of the sqs high priority duplication queue");
+        duplicationQueue.setArgs(1);
+        duplicationQueue.setRequired(true);
+        options.addOption(duplicationQueue);
+        
+        Option localDuplicationDir =
+            new Option(LOCAL_DUPLICATION_DIR_OPTION, "local-duplication-dir",
+                       true, "Indicates that a local duplication policy " +
+                             "directory should be used.");
+        localDuplicationDir.setArgs(1);
+        localDuplicationDir.setArgName("file");
+        options.addOption(localDuplicationDir);
+
+        Option policyBucketSuffix =
+                new Option(POLICY_BUCKET_SUFFIX,
+                           "policy-bucket-suffix",
+                           true,
+                           "The last portion of the name of the S3 bucket where " +
+                           "duplication policies can be found.");
+            policyBucketSuffix.setRequired(false);
+            options.addOption(policyBucketSuffix);
+
+        Option notificationRecipients =
+                new Option(NOTIFICATION_RECIPIENTS_OPTION,
+                           "notification-recipients",
+                           true,
+                           "A comma-separated list of email addresses");
+        notificationRecipients.setRequired(false);
+        options.addOption(notificationRecipients);
+
+        Option refreshFrequency =
+                new Option(REFRESH_OPTION,
+                           "policy-refresh-frequency-ms",
+                           true,
+                           "The frequency in milliseconds between refreshes of duplication policies.");
+        refreshFrequency.setRequired(false);
+        options.addOption(refreshFrequency);
+
+
         return options;
     }
     
     public static void main(String[] args) {
         CommandLine cmd = parseArgs(args);
 
-        String configPath = cmd.getOptionValue("c");
+        String configPath = cmd.getOptionValue(CONFIG_FILE_OPTION);
 
         if(configPath != null){
             if(new File(configPath).exists()){
@@ -166,7 +224,7 @@ public class AppDriver {
                               auditQueueName);
         }
 
-        String workDirPath = cmd.getOptionValue("d");
+        String workDirPath = cmd.getOptionValue(WORK_DIR_PATH_OPTION);
         if(workDirPath == null || workDirPath.trim() == ""){
             //this should never happen since workDirPath is required,
             //but I'll leave this in here as a sanity check.
@@ -176,6 +234,47 @@ public class AppDriver {
 
         setSystemProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY, workDirPath);
         initializeWorkDir(workDirPath);
+        
+        
+        String localDuplicationPolicyDirPath =
+                cmd.getOptionValue(LOCAL_DUPLICATION_DIR_OPTION);
+            if(localDuplicationPolicyDirPath != null){
+                if(!new File(localDuplicationPolicyDirPath).exists()){
+                    System.err.print("The local duplication policy directory " +
+                                     "path you specified, " +
+                                     localDuplicationPolicyDirPath +
+                                     " does not exist: ");
+                    die();
+                } else {
+                    setSystemProperty(
+                            WorkmanConfigurationManager.DUPLICATION_POLICY_DIR_KEY,
+                        localDuplicationPolicyDirPath);
+                }
+            }
+            
+            String policyBucketSuffix =
+                    cmd.getOptionValue(POLICY_BUCKET_SUFFIX);
+            setSystemProperty(
+                    WorkmanConfigurationManager.DUPLICATION_POLICY_BUCKET_SUFFIX,
+                    policyBucketSuffix);
+                
+            String duplicationQueueName = cmd.getOptionValue(DUPLICATION_QUEUE_OPTION);
+            setSystemProperty(
+                    WorkmanConfigurationManager.HIGH_PRIORITY_DUPLICATION_QUEUE_KEY,
+                    duplicationQueueName);
+
+            String notificationRecipients = cmd.getOptionValue(NOTIFICATION_RECIPIENTS_OPTION);
+            setSystemProperty(
+                    WorkmanConfigurationManager.NOTIFICATION_RECIPIENTS,
+                    notificationRecipients);
+
+            String refreshMs = cmd.getOptionValue(REFRESH_OPTION);
+            if(refreshMs == null){
+                refreshMs = DEFAULT_POLICY_UPDATE_FREQUENCY_MS +"";
+            }
+            setSystemProperty(
+                    WorkmanConfigurationManager.POLICY_MANAGER_REFRESH_FREQUENCY_MS,
+                    refreshMs);
 
         ApplicationContext context = 
                 new AnnotationConfigApplicationContext(AppConfig.class);

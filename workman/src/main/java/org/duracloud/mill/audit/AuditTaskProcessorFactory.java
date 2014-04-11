@@ -7,9 +7,7 @@
  */
 package org.duracloud.mill.audit;
 
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
@@ -19,37 +17,38 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Mar 20, 2014
+ *         Date: Apr 11, 2014
  */
-public class AuditTaskProcessorFactory implements TaskProcessorFactory{
+public abstract class AuditTaskProcessorFactory implements TaskProcessorFactory {
 
     private final Logger log =
             LoggerFactory.getLogger(AuditTaskProcessorFactory.class);
 
-    private AuditLogStore      auditLogStore;
-    private ContentIndexClient contentIndexClient;
- 
-    public AuditTaskProcessorFactory(ContentIndexClient contentIndexClient,
-                                     AuditLogStore auditLogStore) {
-        this.contentIndexClient = contentIndexClient;
-        this.auditLogStore = auditLogStore;
-    }
-
-    /* (non-Javadoc)
-     * @see org.duracloud.mill.workman.TaskProcessorFactory#create(org.duracloud.common.queue.task.Task)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.duracloud.mill.workman.TaskProcessorFactory#create(org.duracloud.
+     * common.queue.task.Task)
      */
     @Override
-    public TaskProcessor create(Task task)
+    public final TaskProcessor create(Task task)
             throws TaskProcessorCreationFailedException {
         if(task.getType().equals(Task.Type.AUDIT)){
-            log.debug("creating audit task processor for " + task);
+            log.debug("creating task processor for " + task);
             AuditTask auditTask = new AuditTask();
             auditTask.readTask(task);
-            return new AuditTaskProcessor(  auditTask, 
-                                            contentIndexClient,
-                                            auditLogStore);
+            return createImpl(auditTask);
         }
-        
+
         throw new TaskProcessorCreationFailedException("Task is not an Audit task");
+
     }
+
+    /**
+     * @param auditTask
+     * @return
+     */
+    protected abstract TaskProcessor createImpl(AuditTask auditTask);
+
 }

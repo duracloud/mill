@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.common.util.DateUtil;
 import org.duracloud.common.util.TagUtil;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.contentindex.client.ContentIndexItem;
@@ -24,24 +23,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * As a processor of audit tasks as the name suggests, this class creates an
- * audit log entry and subsequently updates the content index.
+ * As a processor of audit tasks as the name suggests, this class updates the
+ * content index.
  * 
  * @author Daniel Bernstein Date: Mar 20, 2014
  */
-public class AuditTaskProcessor implements TaskProcessor {
+public class ContentIndexUpdatingProcessor implements TaskProcessor {
     private final Logger       log = LoggerFactory
-                                           .getLogger(AuditTaskProcessor.class);
+                                           .getLogger(ContentIndexUpdatingProcessor.class);
 
     private AuditLogStore      auditLogStore;
     private ContentIndexClient contentIndexClient;
     private AuditTask          task;
 
-    public AuditTaskProcessor(AuditTask task,
-            ContentIndexClient contentIndexClient,
-            AuditLogStore auditLogStore) {
+    public ContentIndexUpdatingProcessor(AuditTask task,
+            ContentIndexClient contentIndexClient){
         this.contentIndexClient = contentIndexClient;
-        this.auditLogStore = auditLogStore;
         this.task = task;
     }
 
@@ -62,20 +59,6 @@ public class AuditTaskProcessor implements TaskProcessor {
             Map<String, String> props = task.getContentProperties();
             String acls = task.getSpaceACLs();
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
-            auditLogStore.write(account, 
-                                storeId, 
-                                spaceId, 
-                                contentId,
-                                task.getContentChecksum(), 
-                                task.getContentMimetype(),
-                                task.getContentSize(), 
-                                task.getUserId(), 
-                                action,
-                                props != null ? props.toString() : null, 
-                                acls,
-                                task.getSourceSpaceId(), 
-                                task.getSourceContentId(),
-                                timestamp);
 
             ContentIndexItem indexItem = new ContentIndexItem(account, 
                                                               storeId,
@@ -97,9 +80,10 @@ public class AuditTaskProcessor implements TaskProcessor {
             }
 
             indexItem.setStoreType(storeType);
+            
             contentIndexClient.save(indexItem);
             log.debug("content index item saved: {}", indexItem);
-            log.debug("audit task successfully processed: {}", task);
+            log.debug("task successfully processed: {}", task);
         } catch (Exception e) {
             String message = "Failed to execute " + task + ": "
                     + e.getMessage();

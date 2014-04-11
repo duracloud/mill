@@ -13,6 +13,8 @@ import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.dup.DuplicationPolicyManager;
+import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;
@@ -25,6 +27,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,6 +42,7 @@ public class NoopProcessorLocalRoundTripTest {
     private final static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue AUDIT_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue DUPLICATION_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
 
     private ApplicationContext context;
@@ -75,6 +79,22 @@ public class NoopProcessorLocalRoundTripTest {
         @Override
         public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager) {
             return AUDIT_QUEUE;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.workman.spring.AppConfig#duplicationTaskQueue(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
+         */
+        @Override
+        public TaskQueue duplicationQueue(WorkmanConfigurationManager configurationManager) {
+            return DUPLICATION_QUEUE;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.workman.spring.AppConfig#duplicationPolicyManager(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
+         */
+        @Override
+        public DuplicationPolicyManager duplicationPolicyManager(WorkmanConfigurationManager configurationManager) {
+            return new DuplicationPolicyManager(new LocalDuplicationPolicyRepo(System.getProperty("java.io.tmpdir")));
         }
     }
     /**

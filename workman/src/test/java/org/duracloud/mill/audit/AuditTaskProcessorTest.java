@@ -14,6 +14,7 @@ import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.contentindex.client.ContentIndexItem;
+import org.duracloud.mill.audit.AuditLogWritingProcessor;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
@@ -32,13 +33,10 @@ import org.junit.runner.RunWith;
 @RunWith(EasyMockRunner.class)
 public class AuditTaskProcessorTest extends EasyMockSupport {
 
-    private AuditTaskProcessor processor;
+    private AuditLogWritingProcessor processor;
         
     @Mock
     private AuditLogStore logStore;
-    
-    @Mock
-    private ContentIndexClient contentIndex;
     
     /**
      * @throws java.lang.Exception
@@ -57,11 +55,7 @@ public class AuditTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void test() throws TaskExecutionFailedException, AuditLogWriteFailedException {
-        Capture<ContentIndexItem> contentIndexItemCapture = new Capture<ContentIndexItem>();
         
-        EasyMock.expect(
-                contentIndex.save(EasyMock.capture(contentIndexItemCapture)))
-                .andReturn("test");
         
         logStore.write(
                 EasyMock.isA(String.class),
@@ -83,7 +77,7 @@ public class AuditTaskProcessorTest extends EasyMockSupport {
         
         AuditTask task = AuditTestHelper.createTestAuditTask();
         replayAll();
-        processor = new AuditTaskProcessor(task, contentIndex, logStore);
+        processor = new AuditLogWritingProcessor(task, logStore);
         
         processor.execute();
     }

@@ -7,23 +7,28 @@
  */
 package org.duracloud.mill.workman.spring;
 
-import org.duracloud.mill.config.ConfigurationManager;
-
-import javax.ws.rs.HEAD;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 
 /**
  * @author Daniel Bernstein
  *	       Date: Dec 6, 2013
  */
-public class WorkmanConfigurationManager extends ConfigurationManager {
+public class WorkmanConfigurationManager 
+                extends TaskProducerConfigurationManager {
 
     public static final String DEAD_LETTER_QUEUE_KEY = "deadLetterQueue";
     public static final String TASK_QUEUES_KEY = "taskQueues";
-    private static final String CONTENT_INDEX_PORT = "contentIndexPort";
-    private static final String CONTENT_INDEX_HOST = "contentIndexHost";
-
+    public static final String CONTENT_INDEX_PORT = "contentIndexPort";
+    public static final String CONTENT_INDEX_HOST = "contentIndexHost";
+    public static final String DUPLICATION_POLICY_BUCKET_SUFFIX = "policyBucketSuffix";
+    public static final String NOTIFICATION_RECIPIENTS = "notificationRecipients";
+    public static final String POLICY_MANAGER_REFRESH_FREQUENCY_MS = "policyManagerRefreshFrequencyMs";
+    public static final String HIGH_PRIORITY_DUPLICATION_QUEUE_KEY = "highPriorityDuplicationQueue";
+    
     public String getDeadLetterQueueName() {
         return System.getProperty(DEAD_LETTER_QUEUE_KEY);
     }
@@ -63,4 +68,39 @@ public class WorkmanConfigurationManager extends ConfigurationManager {
     public int getContentIndexPort() {
          return Integer.valueOf(System.getProperty(CONTENT_INDEX_PORT, "9200"));
     }
+    
+    /**
+     * @return
+     */
+    public String getPolicyBucketSuffix() {
+        return System.getProperty(DUPLICATION_POLICY_BUCKET_SUFFIX);
+    }
+
+    public Long getPolicyManagerRefreshFrequencyMs(){
+        String refresh = System.getProperty(POLICY_MANAGER_REFRESH_FREQUENCY_MS);
+        if(refresh != null){
+            return new Long(refresh);
+        }else{
+            return 5*60*1000l;
+        }
+    }
+    /**
+     * @return
+     */
+    public String[] getNotificationRecipients() {
+        String recipients =  System.getProperty(NOTIFICATION_RECIPIENTS);
+        if(StringUtils.isBlank(recipients)){
+            return null;
+        }else{
+            return recipients.split(",");
+        }
+    }
+
+    /**
+     * @return
+     */
+    public String getHighPriorityDuplicationQueueName() {
+        return System.getProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
+    }
+
 }
