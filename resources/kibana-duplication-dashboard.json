@@ -242,7 +242,7 @@
       "panels": [
         {
           "error": false,
-          "span": 6,
+          "span": 4,
           "editable": true,
           "type": "stats",
           "loadingEditor": false,
@@ -270,7 +270,40 @@
         },
         {
           "error": false,
-          "span": 3,
+          "span": 4,
+          "editable": true,
+          "type": "terms",
+          "loadingEditor": false,
+          "field": "account",
+          "exclude": [],
+          "missing": true,
+          "other": false,
+          "size": 10,
+          "order": "count",
+          "style": {
+            "font-size": "10pt"
+          },
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "arrangement": "horizontal",
+          "chart": "pie",
+          "counter_pos": "above",
+          "spyable": true,
+          "queries": {
+            "mode": "selected",
+            "ids": [
+              0
+            ]
+          },
+          "tmode": "terms",
+          "tstat": "total",
+          "valuefield": "",
+          "title": "Account Activity"
+        },
+        {
+          "error": false,
+          "span": 2,
           "editable": true,
           "type": "column",
           "loadingEditor": false,
@@ -325,7 +358,7 @@
         },
         {
           "error": false,
-          "span": 3,
+          "span": 2,
           "editable": true,
           "type": "column",
           "loadingEditor": false,
