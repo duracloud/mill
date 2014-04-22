@@ -48,6 +48,7 @@
   <modules>
     <module>common</module>
     <module>common-dup</module>
+    <module>common-bi</module>
     <module>common-taskproducer</module>
     <module>common-storageprovider</module>
     <module>simpledbcredentialsrepo</module>
