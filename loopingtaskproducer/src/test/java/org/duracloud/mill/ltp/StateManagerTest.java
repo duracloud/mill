@@ -23,7 +23,7 @@ import org.junit.Test;
  *	       Date: Nov 6, 2013
  */
 public class StateManagerTest {
-    private StateManager stateManager;
+    private StateManager<Morsel> stateManager;
     private File file;
     private String testdomain = "testdomain";
     private String testspace = "testspace";
@@ -38,7 +38,7 @@ public class StateManagerTest {
         testpolicy  = new DuplicationStorePolicy();
         testpolicy.setDestStoreId("0");
         testpolicy.setSrcStoreId("1");
-        stateManager = new StateManager(file.getAbsolutePath());
+        stateManager = new StateManager<Morsel>(file.getAbsolutePath());
 
     }
 
@@ -63,12 +63,12 @@ public class StateManagerTest {
         morsels = stateManager.getMorsels();
         Assert.assertEquals(1, morsels.size());
 
-        stateManager = new StateManager(file.getAbsolutePath());
+        stateManager = new StateManager<Morsel>(file.getAbsolutePath());
         morsels = stateManager.getMorsels();
         Assert.assertEquals(1, morsels.size());
         
         stateManager.setMorsels(new HashSet<Morsel>());
-        stateManager = new StateManager(file.getAbsolutePath());
+        stateManager = new StateManager<Morsel>(file.getAbsolutePath());
         morsels = stateManager.getMorsels();
         Assert.assertEquals(0, morsels.size());
         

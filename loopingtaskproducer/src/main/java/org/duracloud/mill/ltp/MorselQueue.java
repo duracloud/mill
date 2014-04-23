@@ -14,7 +14,7 @@ import java.util.PriorityQueue;
  * @author Daniel Bernstein
  *	       Date: Nov 7, 2013
  */
-public class MorselQueue extends PriorityQueue<Morsel> {
+public class MorselQueue<T extends Morsel> extends PriorityQueue<T> {
        public MorselQueue(){
         super(100000, new MorselComparator()); // there should never be anywhere
                                                // near this number of morsels in

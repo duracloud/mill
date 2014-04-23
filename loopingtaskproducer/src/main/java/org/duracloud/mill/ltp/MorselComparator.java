@@ -12,7 +12,7 @@ import java.util.Comparator;
 /**
  * The prioritization strategy for the <code>MorselQueue</code>. The intention
  * is to ensure that spaces that have been started get worked before spaces that
- * haven't. Also, ideally morsels from different accounts are evenly disperses
+ * haven't. Also, ideally morsels from different accounts are evenly dispersed
  * throughout the queue. So, given those motivations, here's an initial stab at
  * the logic.
  * 

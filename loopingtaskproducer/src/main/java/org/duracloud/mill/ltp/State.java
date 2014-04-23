@@ -18,23 +18,23 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * @author Daniel Bernstein
  *	       Date: Nov 6, 2013
  */
-public class State {
+public class State<T> {
     
-    private Set<Morsel> morsels = new HashSet<>();
+    private Set<T> morsels = new HashSet<>();
     private Date currentRunStartDate = null;
     private Date nextRunStartDate = null;
 
     /**
      * @return the morsels
      */
-    public Set<Morsel> getMorsels() {
+    public Set<T> getMorsels() {
         return morsels;
     }
     
     /**
      * @param morsels the morsels to set
      */
-    public void setMorsels(Set<Morsel> morsels) {
+    public void setMorsels(Set<T> morsels) {
         this.morsels = morsels;
     }
 

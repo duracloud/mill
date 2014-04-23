@@ -39,7 +39,7 @@ public class StateTest {
     @Test
     public void testToString() {
         Morsel morsel = new Morsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
-        State state = new State();
+        State<Morsel> state = new State<>();
         Assert.notNull(state.toString());
         Set<Morsel> morsels = new HashSet<>();
         morsels.add(morsel);

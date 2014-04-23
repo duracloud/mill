@@ -264,10 +264,10 @@ public class AppDriver {
             Cache cache = new Cache("contentIdCache", 100*1000, true, true, 60*5,60*5);
             cacheManager.addCache(cache);
             
-            StateManager stateManager = new StateManager(stateFilePath);
+            StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath);
             
             
-            LoopingTaskProducer producer = new LoopingTaskProducer(credentialsRepo, 
+            LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(credentialsRepo, 
                                                                    storageProviderFactory, 
                                                                    policyManager,
                                                                    taskQueue, 

@@ -20,7 +20,7 @@ import org.duracloud.mill.dup.DuplicationStorePolicy;
  *         Date: Nov 7, 2013
  */
 public class Morsel {
-    private static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
+    protected static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
     private String subdomain;
     private String spaceId;
     private String marker;
@@ -60,7 +60,14 @@ public class Morsel {
      */
     @Override
     public boolean equals(Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj, EXCLUSIONS);
+        return EqualsBuilder.reflectionEquals(this, obj, getExclusions());
+    }
+
+    /**
+     * @return
+     */
+    private String[] getExclusions() {
+        return EXCLUSIONS;
     }
     
     /* (non-Javadoc)
@@ -68,7 +75,7 @@ public class Morsel {
      */
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this, EXCLUSIONS);
+        return HashCodeBuilder.reflectionHashCode(this, getExclusions());
     }
 
     /* (non-Javadoc)
