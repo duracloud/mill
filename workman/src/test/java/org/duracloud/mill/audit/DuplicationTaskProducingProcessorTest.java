@@ -10,8 +10,6 @@ package org.duracloud.mill.audit;
 
 import java.util.Set;
 
-import javax.jms.MessageListener;
-
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.common.queue.TaskNotFoundException;
 import org.duracloud.common.queue.TaskQueue;
@@ -22,13 +20,10 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
-import org.duracloud.storage.aop.ContentMessage;
-import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.Mock;
-import org.easymock.TestSubject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

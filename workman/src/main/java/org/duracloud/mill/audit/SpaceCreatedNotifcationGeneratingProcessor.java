@@ -7,21 +7,10 @@
  */
 package org.duracloud.mill.audit;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.duracloud.audit.task.AuditTask;
-import static org.duracloud.audit.task.AuditTask.ActionType.*;
-import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.common.queue.task.Task;
-import org.duracloud.mill.dup.DuplicationPolicy;
-import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.notification.NotificationManager;
-import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
-import org.duracloud.storage.aop.ContentMessage.ACTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
