@@ -10,18 +10,15 @@ package org.duracloud.audit.dynamodb;
 import java.util.Date;
 import java.util.Iterator;
 
-import junit.framework.Assert;
-
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.error.NotFoundException;
+import org.duracloud.mill.test.DynamoDBTestUtil;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 
 /**
@@ -44,14 +41,9 @@ public class DynamoDBAuditLogStoreImplIT {
 
     @Before
     public void setUp() throws Exception {
-        String username = "test";
-        String password = "password";
 
-        client =
-            new AmazonDynamoDBClient(new BasicAWSCredentials(username, password));
-        client.setRegion(Region.getRegion(Regions.DEFAULT_REGION));
-        client.setEndpoint("http://localhost:"
-            + System.getProperty("dynamodblocal.port", "8000"));
+
+        client = DynamoDBTestUtil.createDynamoDBLocalClient();
         DatabaseUtil.create(client);
 
         logStore = new DynamoDBAuditLogStore();

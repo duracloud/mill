@@ -1,4 +1,4 @@
-package org.duracloud.audit.dynamodb;
+package org.duracloud.mill.util.dynamodb;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -8,7 +8,7 @@ import com.amazonaws.util.Md5Utils;
 import com.amazonaws.util.StringUtils;
 
 public class KeyUtil {
-    public static String calculateAuditLogHashKey(String account,String storeId, String spaceId, String contentId) {
+    public static String calculateContentIdPathBasedHashKey(String account,String storeId, String spaceId, String contentId) {
         return computeMd5(StringUtils.join("/",
                                            account,
                                            storeId, 

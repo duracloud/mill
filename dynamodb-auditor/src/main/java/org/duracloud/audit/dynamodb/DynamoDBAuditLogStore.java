@@ -19,6 +19,8 @@ import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.common.collection.StreamingIterator;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.error.NotFoundException;
+import org.duracloud.mill.util.dynamodb.DynamoDBIteratorSource;
+import org.duracloud.mill.util.dynamodb.KeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +75,7 @@ public class DynamoDBAuditLogStore implements AuditLogStore {
         
         try {
             item =
-                new DynamoDBAuditLogItem(KeyUtil.calculateAuditLogHashKey(account,
+                new DynamoDBAuditLogItem(KeyUtil.calculateContentIdPathBasedHashKey(account,
                                                                           storeId,
                                                                           spaceId,
                                                                           contentId),
@@ -142,7 +144,7 @@ public class DynamoDBAuditLogStore implements AuditLogStore {
         Map<String, Condition> keyConditions = new HashMap<>();
         keyConditions.put(DynamoDBAuditLogItem.ID_ATTRIBUTE,
                        new Condition().withComparisonOperator(ComparisonOperator.EQ)
-                                      .withAttributeValueList(new AttributeValue(KeyUtil.calculateAuditLogHashKey(account, storeId, spaceId,  contentId))));
+                                      .withAttributeValueList(new AttributeValue(KeyUtil.calculateContentIdPathBasedHashKey(account, storeId, spaceId,  contentId))));
 
         QueryRequest request =
             new QueryRequest(DynamoDBAuditLogItem.TABLE_NAME)

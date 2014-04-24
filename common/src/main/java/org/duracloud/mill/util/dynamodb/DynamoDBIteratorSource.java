@@ -1,4 +1,4 @@
-package org.duracloud.audit.dynamodb;
+package org.duracloud.mill.util.dynamodb;
 
 import java.util.Collection;
 import java.util.List;

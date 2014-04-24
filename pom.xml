@@ -49,6 +49,10 @@
     <module>common</module>
     <module>common-dup</module>
     <module>common-bi</module>
+    <module>common-test</module>
+    <module>bitlog</module>
+    <module>dynamodb-bitlog</module>
+    <module>bitlogtool</module>
     <module>common-taskproducer</module>
     <module>common-storageprovider</module>
     <module>dynamodb-auditor</module>
@@ -113,7 +117,7 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.framework.version>4.0.2.RELEASE</spring.framework.version>
-    <duracloud.version>3.0.0-SNAPSHOT</duracloud.version>
+    <duracloud.version>3.1.0-SNAPSHOT</duracloud.version>
     <skipITs>true</skipITs>
     <powermock.version>1.5.4</powermock.version>
   </properties>
