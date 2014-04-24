@@ -36,18 +36,18 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
  * 
  * @author Daniel Bernstein Date: Nov 4, 2013
  */
-public class AppDriver extends LoopingTaskProducerDriverSupport {
-    private static Logger log = LoggerFactory.getLogger(AppDriver.class);
+public class LoopingTaskProducerDriverSupport extends DriverSupport {
+    private static Logger log = LoggerFactory.getLogger(LoopingTaskProducerDriverSupport.class);
 
+    protected int maxTaskQueueSize;
+    protected String stateFilePath;
+    protected Frequency frequency;
+    
     /**
      * 
      */
-    public AppDriver() {
-        super(new DuplicationOptions());
-    }
-
-    public static void main(String[] args) {
-        new AppDriver().execute(args);
+    public LoopingTaskProducerDriverSupport(CommandLineOptions options) {
+        super(options);
     }
 
     /*
@@ -59,27 +59,10 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      */
     @Override
     protected void executeImpl(CommandLine cmd) {
-        super.executeImpl(cmd);
-
-        processLocalDuplicationDirOption(cmd);
-        processTaskQueueNameOption(cmd);
-
-        try {
-
-            LoopingDuplicationTaskProducer producer = buildTaskProducer(cmd,
-                                                                        maxTaskQueueSize, 
-                                                                        stateFilePath, 
-                                                                        frequency);
-            producer.run();
-
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
-            System.exit(1);
-        }
-
-        log.info("looping task producer completed successfully.");
-        System.exit(0);
-
+        processConfigFileOption(cmd);
+        maxTaskQueueSize = processMaxQueueSizeOption(cmd);
+        stateFilePath = processStateFilePathOption(cmd);
+        frequency = processFrequencyOption(cmd);
     }
 
     /**

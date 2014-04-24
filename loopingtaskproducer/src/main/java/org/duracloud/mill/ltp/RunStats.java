@@ -43,9 +43,8 @@ public class RunStats {
      * @param stats
      */
     public void add(RunStats stats) {
-        this.deletes += stats.deletes;
+        addToDeletes(stats.deletes);
         addToDups(stats.dups);
-        
     }
 
     /**
