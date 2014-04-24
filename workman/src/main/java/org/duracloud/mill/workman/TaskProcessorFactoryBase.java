@@ -24,6 +24,10 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
     private CredentialsRepo credentialRepo;
     private File workDir;
 
+    public TaskProcessorFactoryBase(CredentialsRepo credentialRepo) {
+        this(credentialRepo, null);
+    }
+
     public TaskProcessorFactoryBase(CredentialsRepo credentialRepo,
                                     File workDir) {
         this.credentialRepo = credentialRepo;

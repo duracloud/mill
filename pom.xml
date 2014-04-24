@@ -48,7 +48,7 @@
   <modules>
     <module>common</module>
     <module>common-dup</module>
-    <module>common-bi</module>
+    <module>common-bit</module>
     <module>common-test</module>
     <module>bitlog</module>
     <module>dynamodb-bitlog</module>

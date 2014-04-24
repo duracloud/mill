@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.bi;
+package org.duracloud.mill.bit;
 
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.TypedTask;

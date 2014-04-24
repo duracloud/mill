@@ -21,6 +21,9 @@ import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.ContentIndexUpdatingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
+import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessor;
+import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
@@ -63,22 +66,38 @@ public class AppConfig {
     @Bean
     public RootTaskProcessorFactory 
                 rootTaskProcessorFactory(CredentialsRepo repo,
+                                         StorageProviderFactory storageProviderFactory,
                                          File workDir,
+                                         BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory,
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
                                          WorkmanConfigurationManager configurationManager) {
 
         RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(
             new DuplicationTaskProcessorFactory(repo,
+                                                storageProviderFactory,
                                                 workDir,
                                                 auditQueue(configurationManager)));
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
-        
+        factory.addTaskProcessorFactory(bitIntegrityCheckTaskProcessorFactory);
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
                 workDir));
 
         log.info("RootTaskProcessorFactory created.");
         return factory;
+    }
+
+    @Bean
+    public BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory(
+        CredentialsRepo credentialRepo,
+        StorageProviderFactory storageProviderFactory,
+        ContentIndexClient contentIndexClient,
+        AuditLogStore auditLogStore) {
+
+        return new BitIntegrityCheckTaskProcessorFactory(credentialRepo,
+                                                         storageProviderFactory,
+                                                         contentIndexClient,
+                                                         auditLogStore);
     }
     
     @Bean 
@@ -112,7 +131,12 @@ public class AppConfig {
             return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
         }
     }
-    
+
+    @Bean
+    StorageProviderFactory storageProviderFactory() {
+        return new StorageProviderFactory();
+    }
+
     @Bean 
     public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config){
         return ESContentIndexClientUtil.createContentIndexClient();
