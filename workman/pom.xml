@@ -109,8 +109,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.duracloud</groupId>
+      <groupId>org.duracloud.mill</groupId>
       <artifactId>dynamodb-auditor</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
