@@ -18,25 +18,29 @@
 
   <build>
     <plugins>
+
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <!--
-          <archive>
-            <manifest>
-              <mainClass>org.duracloud.bit.tools.Driver</mainClass>
-            </manifest>
-          </archive>
-          -->
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.2</version>
+          <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+          </configuration>
+          <executions>
+              <execution>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>shade</goal>
+                  </goals>
+                  <configuration>
+                      <transformers>
+                          <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                              <mainClass>org.duracloud.mill.dynamodb.bitlog.tools.Driver</mainClass>
+                          </transformer>
+                      </transformers>
+                  </configuration>
+              </execution>
+          </executions>
       </plugin>
     </plugins>
   </build>
