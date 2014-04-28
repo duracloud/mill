@@ -1,4 +1,4 @@
-package org.duracloud.auditor.tools;
+package org.duracloud.mill.dynamodb.auditor.tools;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
