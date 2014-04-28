@@ -31,6 +31,7 @@ public class DynamoDBBitLogItem implements BitLogItem{
     public static final String STORAGE_PROVIDER_CHECKSUM_ATTRIBUTE = "StorageProviderChecksum";
     public static final String AUDIT_LOG_CHECKSUM_ATTRIBUTE = "AuditLogChecksum";
     public static final String CONTENT_INDEX_CHECKSUM_ATTRIBUTE = "ContentIndexChecksum";
+    public static final String STORE_TYPE_ATTRIBUTE = "StoreType";
     public static final String RESULT_ATTRIBUTE = "Result";
     public static final String DETAILS_ATTRIBUTE = "Details";
 
@@ -44,6 +45,7 @@ public class DynamoDBBitLogItem implements BitLogItem{
     private String spaceId;
     private String contentId;
     private long timestamp;
+    private String storeType;
     private String result;
     private String details;
     private String contentChecksum;
@@ -65,6 +67,7 @@ public class DynamoDBBitLogItem implements BitLogItem{
      * @param spaceId
      * @param contentId
      * @param timestamp
+     * @param storeType
      * @param result
      * @param contentChecksum
      * @param storageProviderChecksum
@@ -78,6 +81,7 @@ public class DynamoDBBitLogItem implements BitLogItem{
             String spaceId,
             String contentId,
             long timestamp,
+            String storeType,
             String result,
             String contentChecksum,
             String storageProviderChecksum,
@@ -91,6 +95,7 @@ public class DynamoDBBitLogItem implements BitLogItem{
         this.spaceId = spaceId;
         this.contentId = contentId;
         this.timestamp = timestamp;
+        this.storeType = storeType;
         this.result = result;
         this.contentChecksum = contentChecksum;
         this.storageProviderChecksum = storageProviderChecksum;
@@ -225,6 +230,23 @@ public class DynamoDBBitLogItem implements BitLogItem{
         this.contentIndexChecksum = contentIndexChecksum;
     }
 
+
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.bitlog.BitLogItem#getStoreType()
+     */
+    @DynamoDBAttribute(attributeName = STORE_TYPE_ATTRIBUTE)
+    @Override
+    public String getStoreType() {
+        return this.storeType;
+    }
+    
+    /**
+     * @param storeType the storeType to set
+     */
+    public void setStoreType(String storeType) {
+        this.storeType = storeType;
+    }
+    
     /**
      * @param id the id to set
      */

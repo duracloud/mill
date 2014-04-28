@@ -14,6 +14,7 @@ import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.test.DynamoDBTestUtil;
 import org.duracloud.mill.util.dynamodb.ItemNotFoundException;
+import org.duracloud.storage.domain.StorageProviderType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,6 +77,8 @@ public class DynamoDBBitLogStoreIT {
             Assert.assertEquals("contentIndexChecksum", item.getContentIndexChecksum());
             Assert.assertEquals("auditLogChecksum", item.getAuditLogChecksum());
             Assert.assertEquals("details", item.getDetails());
+            Assert.assertEquals(StorageProviderType.AMAZON_S3.name(), item.getStoreType());
+
             count++;
         }
 
@@ -117,6 +120,7 @@ public class DynamoDBBitLogStoreIT {
                             String contentId = "content" + l;
                             store.write(account, storeId, spaceId, contentId,
                                     timestamp.getTime(),
+                                    StorageProviderType.AMAZON_S3,
                                     BitIntegrityResult.SUCCESS,
                                     "contentChecksum",
                                     "storageProviderChecksum",

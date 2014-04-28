@@ -19,6 +19,7 @@ public interface BitLogItem {
     public String getSpaceId();
     public String getContentId();
     public long getTimestamp();
+    public String getStoreType();
     public String getResult();
     public String getContentChecksum();
     public String getStorageProviderChecksum();

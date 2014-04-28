@@ -21,6 +21,7 @@ import org.duracloud.mill.util.dynamodb.DynamoDBIteratorSource;
 import org.duracloud.mill.util.dynamodb.ItemNotFoundException;
 import org.duracloud.mill.util.dynamodb.ItemWriteFailedException;
 import org.duracloud.mill.util.dynamodb.KeyUtil;
+import org.duracloud.storage.domain.StorageProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,7 @@ public class DynamoDBBitLogStore implements BitLogStore {
             String spaceId,
             String contentId,
             long timestamp,
+            StorageProviderType storeType,
             BitIntegrityResult result,
             String contentChecksum,
             String storageProviderChecksum,
@@ -79,6 +81,7 @@ public class DynamoDBBitLogStore implements BitLogStore {
                                          spaceId,
                                          contentId,
                                          timestamp,
+                                         storeType.name(),
                                          result.name(),
                                          contentChecksum, 
                                          storageProviderChecksum,

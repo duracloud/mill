@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 import org.duracloud.mill.util.dynamodb.ItemNotFoundException;
 import org.duracloud.mill.util.dynamodb.ItemWriteFailedException;
+import org.duracloud.storage.domain.StorageProviderType;
 
 /**
  * @author Daniel Bernstein Date: Apr 25, 2014
@@ -23,6 +24,7 @@ public interface BitLogStore {
      * @param spaceId
      * @param contentId
      * @param timestamp
+     * @param storeType 
      * @param result
      * @param contentCheckSum
      * @param storageProviderChecksum
@@ -36,6 +38,7 @@ public interface BitLogStore {
             String spaceId,
             String contentId,
             long timestamp,
+            StorageProviderType storeType,
             BitIntegrityResult result,
             String contentCheckSum,
             String storageProviderChecksum,
