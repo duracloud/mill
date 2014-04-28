@@ -50,9 +50,9 @@ public class DynamoDBAuditLogStore implements AuditLogStore {
 
     }
 
-    public void initialize(AmazonDynamoDBClient client) {
+    public void initialize(AmazonDynamoDBClient client, DynamoDBMapper mapper) {
         this.client = client;
-        this.mapper = new DynamoDBMapper(client);
+        this.mapper = mapper;
     }
 
     @Override

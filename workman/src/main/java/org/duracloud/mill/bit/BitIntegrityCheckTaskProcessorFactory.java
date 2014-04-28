@@ -10,6 +10,7 @@ package org.duracloud.mill.bit;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.contentindex.client.ContentIndexClient;
+import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.workman.TaskProcessor;
@@ -34,15 +35,18 @@ public class BitIntegrityCheckTaskProcessorFactory
     private StorageProviderFactory storageProviderFactory;
     private ContentIndexClient contentIndexClient;
     private AuditLogStore auditLogStore;
+    private BitLogStore bitLogStore;
 
     public BitIntegrityCheckTaskProcessorFactory(CredentialsRepo repo,
                                                  StorageProviderFactory storageProviderFactory,
                                                  ContentIndexClient contentIndexClient,
-                                                 AuditLogStore auditLogStore) {
+                                                 AuditLogStore auditLogStore,
+                                                 BitLogStore bitLogStore) {
         super(repo);
         this.contentIndexClient = contentIndexClient;
         this.auditLogStore = auditLogStore;
         this.storageProviderFactory = storageProviderFactory;
+        this.bitLogStore = bitLogStore;
     }
 
     @Override
@@ -67,6 +71,7 @@ public class BitIntegrityCheckTaskProcessorFactory
                                                       store,
                                                       storageProviderType,
                                                       auditLogStore,
+                                                      bitLogStore,
                                                       contentIndexClient);
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: unable to locate" +

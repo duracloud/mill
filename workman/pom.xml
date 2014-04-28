@@ -53,6 +53,12 @@
 
     <dependency>
       <groupId>org.duracloud.mill</groupId>
+      <artifactId>dynamodb-bitlog</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud.mill</groupId>
       <artifactId>common-dup</artifactId>
       <version>${project.version}</version>
     </dependency>

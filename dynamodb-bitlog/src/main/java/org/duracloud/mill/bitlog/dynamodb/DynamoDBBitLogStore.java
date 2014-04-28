@@ -173,10 +173,11 @@ public class DynamoDBBitLogStore implements BitLogStore {
 
     /**
      * @param client
+     * @param mapper
      */
-    public void initialize(AmazonDynamoDBClient client) {
+    public void initialize(AmazonDynamoDBClient client, DynamoDBMapper mapper) {
         this.client = client;
-        this.mapper = new DynamoDBMapper(client);
+        this.mapper = mapper;
     }
 
     private void checkInitialized() {
