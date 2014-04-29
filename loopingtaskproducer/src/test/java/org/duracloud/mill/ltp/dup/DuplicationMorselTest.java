@@ -5,10 +5,11 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.dup.DuplicationMorsel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *	       Date: Nov 9, 2013
  */
-public class MorselTest {
+public class DuplicationMorselTest {
 
     @Test
     public void testEquals() {
@@ -28,10 +29,10 @@ public class MorselTest {
         policyB.setDestStoreId("1");
         policyB.setSrcStoreId("0");
         
-        Morsel a = new Morsel("a", "b", null, policyA);
-        Morsel b = new Morsel("a", "b", null, policyB);
-        Morsel c = new Morsel("a", "b", "c", policyB);
-        Morsel d = new Morsel("a", "b", "c", policyB);
+        DuplicationMorsel a = new DuplicationMorsel("a", "b", null, policyA);
+        DuplicationMorsel b = new DuplicationMorsel("a", "b", null, policyB);
+        DuplicationMorsel c = new DuplicationMorsel("a", "b", "c", policyB);
+        DuplicationMorsel d = new DuplicationMorsel("a", "b", "c", policyB);
         d.setDeletePerformed(true);
         
         Assert.assertEquals(a, b);

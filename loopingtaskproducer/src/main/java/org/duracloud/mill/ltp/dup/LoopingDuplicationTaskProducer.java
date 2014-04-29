@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,6 +24,11 @@ import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducer;
+import org.duracloud.mill.ltp.MorselQueue;
+import org.duracloud.mill.ltp.RunStats;
+import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -162,7 +167,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
                                        spaceId, 
                                        storePolicy,
                                        contentIds);
-            getStats(subdomain).addToDups(added);
+            ((DuplicationRunStats)getStats(subdomain)).addToDups(added);
             //if no tasks were added, it means that all contentIds in this morsel
             //have been touched in this run.
             if(added == 0){
@@ -227,7 +232,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         
         //add any remaining deletions
         deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
-        getStats(subdomain).addToDeletes(deletionTaskCount);
+        ((DuplicationRunStats)getStats(subdomain)).addToDeletes(deletionTaskCount);
         
         log.info(
                 "added {} deletion tasks: subdomain={}, spaceId={}, sourceStoreId={}, destStoreId={}",
@@ -294,10 +299,11 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     @Override
     protected void logIncrementalStatsBySubdomain(String subdomain,
             RunStats stats) {
+    DuplicationRunStats dstats = (DuplicationRunStats)stats;
             log.info("Session stats by subdomain (incremental): subdomain={} dups={} deletes={}",
                     subdomain, 
-                    stats.getDups(), 
-                    stats.getDeletes());
+                    dstats.getDups(), 
+                    dstats.getDeletes());
    
     }
     
@@ -306,8 +312,9 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
      */
     @Override
     protected void logCumulativeSessionStats(Map<String,RunStats> runstats, RunStats cumulativeTotals) {
+        DuplicationRunStats dCumulativeTotals = (DuplicationRunStats)cumulativeTotals;
         log.info("session stats (global cumulative): domains={} dups={}  deletes={}",
-                runstats.keySet().size(), cumulativeTotals.getDups(), cumulativeTotals.getDeletes());
+                runstats.keySet().size(), dCumulativeTotals.getDups(), dCumulativeTotals.getDeletes());
    
     }
     
@@ -316,9 +323,11 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
      */
     @Override
     protected void logGlobalncrementalStats(RunStats incrementalTotals) {
+        DuplicationRunStats dIncrementalTotals = (DuplicationRunStats) incrementalTotals;
+
         log.info("Session stats (global incremental): dups={} deletes={}",
-                incrementalTotals.getDups(), 
-                incrementalTotals.getDeletes());
+                dIncrementalTotals.getDups(), 
+                dIncrementalTotals.getDeletes());
    
     }
     
@@ -327,7 +336,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
      */
     @Override
     protected RunStats createRunStats() {
-            return new RunStats();
+            return new DuplicationRunStats();
     }
       
 }

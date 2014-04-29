@@ -5,9 +5,10 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import org.apache.commons.cli.Option;
+import org.duracloud.mill.ltp.CommandLineOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

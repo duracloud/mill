@@ -15,23 +15,27 @@ import java.util.List;
  *
  */
 public class AccountCredentials {
-    private String subDomain;
+    private String account;
     private List<StorageProviderCredentials> providerCredentials;
 
-    public void setSubDomain(String subDomain) {
-        this.subDomain = subDomain;
+    /**
+     * @param account
+     * @param creds 
+     */
+    public AccountCredentials(String account, List<StorageProviderCredentials> creds) {
+      this.account = account;
+      this.providerCredentials = creds;
+    }
+
+    /**
+     * @return the account
+     */
+    public String getAccount() {
+        return account;
     }
     
-    public String getSubdomain() {
-        return subDomain;
-    }
-
     public List<StorageProviderCredentials> getProviderCredentials() {
         return providerCredentials;
-    }
-
-    public void setSProviderCredentials(List<StorageProviderCredentials> storageProviderCredentials) {
-        this.providerCredentials = storageProviderCredentials;
     }
 
 }

@@ -25,6 +25,9 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.ltp.dup.DuplicationMorsel;
+import org.duracloud.mill.ltp.dup.DuplicationOptions;
+import org.duracloud.mill.ltp.dup.LoopingDuplicationTaskProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

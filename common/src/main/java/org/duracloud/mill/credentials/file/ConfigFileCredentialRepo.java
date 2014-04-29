@@ -8,6 +8,7 @@
 package org.duracloud.mill.credentials.file;
 
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -16,6 +17,7 @@ import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepoBase;
+import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 
@@ -64,12 +66,12 @@ public class ConfigFileCredentialRepo extends CredentialsRepoBase {
      */
     @Override
     public StorageProviderCredentials getStorageProviderCredentials(
-            String subdomain, String storeId)
+            String account, String storeId)
             throws AccountCredentialsNotFoundException,
             StorageProviderCredentialsNotFoundException {
 
         for(AccountCredentials accountCreds : accountList){
-            if(accountCreds.getSubdomain().equals(subdomain)){
+            if(accountCreds.getAccount().equals(account)){
                 for(StorageProviderCredentials storeCred : accountCreds.getProviderCredentials()){
                     if(storeCred.getProviderId().equals(storeId)){
                         return storeCred;
@@ -77,12 +79,48 @@ public class ConfigFileCredentialRepo extends CredentialsRepoBase {
                 }
                 
                 throw new StorageProviderCredentialsNotFoundException(
-                        "storeId=" + storeId + " not found for subdomain "
-                                + subdomain);
+                        "storeId=" + storeId + " not found for account "
+                                + account);
             }
 
         }
         
-        throw new AccountCredentialsNotFoundException("No account found with subdomain \""+ subdomain + "\".");
+        throw buildAccountCredentialsNotFoundException(account);
+    }
+
+    /**
+     * @param account
+     * @throws AccountCredentialsNotFoundException
+     */
+    private AccountCredentialsNotFoundException buildAccountCredentialsNotFoundException(String account) {
+            return new AccountCredentialsNotFoundException("No account found with account \""+ account + "\".");
+    }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.credentials.CredentialsRepo#getAccountCredentials(java.lang.String)
+     */
+    @Override
+    public AccountCredentials getAccountCredentials(String account)
+            throws AccountCredentialsNotFoundException {
+     
+        for(AccountCredentials cred : accountList){
+            if(cred.getAccount().equals(account)){
+                return cred;
+            }
+        }
+        
+        throw buildAccountCredentialsNotFoundException(account);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.credentials.CredentialsRepo#getAccounts()
+     */
+    @Override
+    public List<String> getAccounts() throws CredentialsRepoException {
+        List<String> accounts = new LinkedList<String>();
+        for(AccountCredentials ac : accountList){
+            accounts.add(ac.getAccount());
+        }
+        return accounts;
     }
 }

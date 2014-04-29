@@ -7,8 +7,12 @@
  */
 package org.duracloud.mill.credentials.simpledb;
 
+import java.util.List;
+
 import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
+import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.junit.Assert;
@@ -71,8 +75,6 @@ public class TestSimpleDBCredentialsRepo {
         }
         
         Assert.assertTrue(System.currentTimeMillis()-time < 2000);
-        
-        
     }
 
     
@@ -89,6 +91,27 @@ public class TestSimpleDBCredentialsRepo {
         } catch (StorageProviderCredentialsNotFoundException e) {
             Assert.assertTrue(false);
         }
+    }
+    
+    @Test
+    public void testGetAccounts() throws CredentialsRepoException{
+        List<String> accounts = repo.getAccounts();
+        
+        Assert.assertNotNull(accounts);
+
+        Assert.assertTrue(accounts.size() > 0);
+        
+    }
+    
+    
+    @Test
+    public void testGetAccount() throws AccountCredentialsNotFoundException {
+        AccountCredentials accountCreds = repo.getAccountCredentials(testSubdomain);
+
+        Assert.assertNotNull(accountCreds);
+        Assert.assertNotNull(accountCreds.getProviderCredentials());
+        Assert.assertTrue(accountCreds.getProviderCredentials().size() > 0);
+        
 
     }
 

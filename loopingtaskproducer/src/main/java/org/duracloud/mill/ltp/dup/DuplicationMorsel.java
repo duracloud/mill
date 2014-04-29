@@ -5,9 +5,10 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.Morsel;
 
 /**
  * A definition of a bite-sized swath of content ids that can be nibbled by the
@@ -18,6 +19,8 @@ import org.duracloud.mill.dup.DuplicationStorePolicy;
  */
 public class DuplicationMorsel extends Morsel{
     
+    private DuplicationStorePolicy storePolicy;
+
     public DuplicationMorsel() {
         
     }
@@ -31,7 +34,15 @@ public class DuplicationMorsel extends Morsel{
      */
     public DuplicationMorsel(String subdomain, String spaceId, String marker,
             DuplicationStorePolicy storePolicy) {
-        super(subdomain,spaceId, marker, storePolicy);
+        super(subdomain,spaceId, marker);
+        this.storePolicy = storePolicy;
+    }
+
+    /**
+     * @return the storePolicy
+     */
+    public DuplicationStorePolicy getStorePolicy() {
+        return storePolicy;
     }
 
 }

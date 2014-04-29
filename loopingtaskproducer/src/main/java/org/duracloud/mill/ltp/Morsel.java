@@ -24,7 +24,6 @@ public class Morsel {
     private String subdomain;
     private String spaceId;
     private String marker;
-    private DuplicationStorePolicy storePolicy;
     private boolean deletePerformed = false;
     
     public Morsel() {
@@ -38,13 +37,11 @@ public class Morsel {
      * @param storePolicy
      * @param inprocess
      */
-    public Morsel(String subdomain, String spaceId, String marker,
-            DuplicationStorePolicy storePolicy) {
+    public Morsel(String subdomain, String spaceId, String marker) {
         super();
         this.subdomain = subdomain;
         this.spaceId = spaceId;
         this.marker = marker;
-        this.storePolicy = storePolicy;
     }
 
 
@@ -106,13 +103,6 @@ public class Morsel {
      */
     public void setMarker(String marker) {
         this.marker = marker;
-    }
-
-    /**
-     * @return the storePolicy
-     */
-    public DuplicationStorePolicy getStorePolicy() {
-        return storePolicy;
     }
 
     /**

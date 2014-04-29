@@ -7,58 +7,12 @@
  */
 package org.duracloud.mill.ltp;
 
-public class RunStats {
-    private int deletes = 0;
-    private int dups = 0;
+public abstract class RunStats {
+
+    public abstract void reset();
     
-    public void reset(){
-        deletes = 0;
-        dups = 0;
-    }
+    public abstract void copyValuesFrom(RunStats runstats);
     
-    /**
-     * @return the dups
-     */
-    public int getDups() {
-        return dups;
-    }
-    
-    /**
-     * @return the deletes
-     */
-    public int getDeletes() {
-        return deletes;
-    }
+    public abstract void add(RunStats stats);
 
-    /**
-     * @param currentTotals
-     */
-    public void copyValuesFrom(RunStats runstats) {
-        this.deletes = runstats.deletes;
-        this.dups = runstats.dups;
-        
-    }
-
-    /**
-     * @param stats
-     */
-    public void add(RunStats stats) {
-        addToDeletes(stats.deletes);
-        addToDups(stats.dups);
-    }
-
-    /**
-     * @param dupsToAdd
-     */
-    public void addToDups(int dupsToAdd) {
-        this.dups += dupsToAdd;        
-    }
-
-    /**
-     * @param deletesToAdd
-     */
-    public void addToDeletes(int deletesToAdd) {
-      this.deletes += deletesToAdd;
-        
-    }
 }

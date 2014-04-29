@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -28,6 +28,11 @@ import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducer;
+import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.ltp.dup.DuplicationMorsel;
+import org.duracloud.mill.ltp.dup.LoopingDuplicationTaskProducer;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMock;

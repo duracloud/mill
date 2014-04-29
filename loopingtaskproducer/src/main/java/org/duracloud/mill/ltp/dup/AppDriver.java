@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import java.io.File;
 
@@ -25,6 +25,11 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.ltp.CommandLineOptions;
+import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
+import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
+import org.duracloud.mill.ltp.StateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -5,12 +5,15 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.Morsel;
+import org.duracloud.mill.ltp.State;
+import org.duracloud.mill.ltp.dup.DuplicationMorsel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +41,7 @@ public class StateTest {
 
     @Test
     public void testToString() {
-        Morsel morsel = new Morsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
+        DuplicationMorsel morsel = new DuplicationMorsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
         State<Morsel> state = new State<>();
         Assert.notNull(state.toString());
         Set<Morsel> morsels = new HashSet<>();
