@@ -8,6 +8,8 @@
 package org.duracloud.mill.bit;
 
 import org.duracloud.audit.AuditLogStore;
+import org.duracloud.common.retry.Retriable;
+import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.error.NotFoundException;
@@ -69,8 +71,8 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
                 storeChecksum.equals(auditLogChecksum)) {
 
                 result = BitIntegrityResult.SUCCESS;
-                if(storageProviderType.equals(StorageProviderType.AMAZON_S3) ||
-                    storageProviderType.equals(StorageProviderType.SDSC)) {
+                if(storageProviderType == StorageProviderType.AMAZON_S3 ||
+                    storageProviderType == StorageProviderType.SDSC) {
                     try {
                         contentChecksum = getContentChecksum();
                         if(! storeChecksum.equals(contentChecksum)) {
@@ -95,51 +97,95 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
                     storeChecksum, contentChecksum);
     }
 
-    private void writeResult(BitIntegrityResult result, String auditLogChecksum,
-                             String contentIndexChecksum, String storeChecksum,
-                             String contentChecksum) throws ItemWriteFailedException {
+    private void writeResult(final BitIntegrityResult result, final String auditLogChecksum,
+                             final String contentIndexChecksum, final String storeChecksum,
+                             final String contentChecksum) throws TaskExecutionFailedException {
         if (result == BitIntegrityResult.SUCCESS) {
-            // Since the checksums match only log one of the checksum values
-            log.info(
-                "Checksum result={} account={} storeId={} storeType={} space={}" +
-                    " contentId={} contentChecksum={}", result, bitTask.getAccount(),
-                bitTask.getStoreId(), storageProviderType, bitTask.getSpaceId(),
-                bitTask.getContentId(), storeChecksum);
-
-            bitLogStore.write(bitTask.getAccount(), bitTask.getStoreId(),
-                              bitTask.getSpaceId(), bitTask.getContentId(),
-                              System.currentTimeMillis(), result, storeChecksum,
-                              null, null, null, null);
+            writeSuccessResult(result, storeChecksum);
         } else {
-            log.error(
-                "Checksum result={} account={} storeId={} storeType={} space={}" +
-                    " contentId={} auditLogChecksum={} contentIndexChecksum={} storeChecksum={}" +
-                    " contentChecksum={}", result, bitTask.getAccount(),
-                bitTask.getStoreId(), storageProviderType, bitTask.getSpaceId(),
-                bitTask.getContentId(), auditLogChecksum, contentIndexChecksum,
-                storeChecksum, contentChecksum);
-
-            bitLogStore.write(bitTask.getAccount(), bitTask.getStoreId(),
-                              bitTask.getSpaceId(), bitTask.getContentId(),
-                              System.currentTimeMillis(), result, contentChecksum,
-                              storeChecksum, auditLogChecksum, contentIndexChecksum, null);
+            writeNonSuccessResult(result, auditLogChecksum, contentIndexChecksum,
+                                  storeChecksum, contentChecksum);
         }
     }
 
-    private String getAuditLogChecksum() {
-        String auditLogChecksum = null;
+    private void writeSuccessResult(final BitIntegrityResult result,
+                                    final String checksum)
+        throws TaskExecutionFailedException {
         try {
-            auditLogChecksum = auditLogStore.getLatestLogItem(
-                bitTask.getAccount(), bitTask.getStoreId(),
-                bitTask.getSpaceId(), bitTask.getContentId()).getContentMd5();
-        } catch(NotFoundException nfe) {
-            log.error("Could not find latest log item for" +
-                          " account=" + bitTask.getAccount() +
-                          " storeId="+ bitTask.getStoreId() +
-                          " space=" + bitTask.getSpaceId() +
-                          " contentId=" + bitTask.getContentId(), nfe);
+            new Retrier().execute(new Retriable() {
+                @Override
+                public String retry() throws Exception {
+                    // Since the checksums match only log one of the checksum values
+                    bitLogStore
+                        .write(bitTask.getAccount(), bitTask.getStoreId(),
+                               bitTask.getSpaceId(), bitTask.getContentId(),
+                               System.currentTimeMillis(), storageProviderType,
+                               result, checksum, null, null, null, null);
+                    return "success";
+                }
+            });
+        } catch (Exception e) {
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage(
+                    "Could not write successful result to BitLogStore"), e);
         }
-        return auditLogChecksum;
+        log.info(
+            "Checksum result={} account={} storeId={} storeType={} space={}" +
+                " contentId={} checksum={}", result, bitTask.getAccount(),
+            bitTask.getStoreId(), storageProviderType, bitTask.getSpaceId(),
+            bitTask.getContentId(), checksum);
+    }
+
+    private void writeNonSuccessResult(final BitIntegrityResult result,
+                                       final String auditLogChecksum,
+                                       final String contentIndexChecksum,
+                                       final String storeChecksum,
+                                       final String contentChecksum)
+        throws TaskExecutionFailedException {
+        try {
+            new Retrier().execute(new Retriable() {
+                @Override
+                public String retry() throws Exception {
+                    // Since the checksums match only log one of the checksum values
+                    bitLogStore
+                        .write(bitTask.getAccount(), bitTask.getStoreId(),
+                               bitTask.getSpaceId(), bitTask.getContentId(),
+                               System.currentTimeMillis(), storageProviderType,
+                               result, contentChecksum, storeChecksum,
+                               auditLogChecksum, contentIndexChecksum, null);
+                    return "success";
+                }
+            });
+        } catch (Exception e) {
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage(
+                    "Could not write non-successful result to BitLogStore"), e);
+        }
+        log.error(
+            "Checksum result={} account={} storeId={} storeType={} space={}" +
+                " contentId={} auditLogChecksum={} contentIndexChecksum={} storeChecksum={}" +
+                " contentChecksum={}", result, bitTask.getAccount(),
+            bitTask.getStoreId(), storageProviderType, bitTask.getSpaceId(),
+            bitTask.getContentId(), auditLogChecksum, contentIndexChecksum,
+            storeChecksum, contentChecksum);
+    }
+
+    private String getAuditLogChecksum() throws TaskExecutionFailedException {
+        try {
+            return new Retrier().execute(new Retriable() {
+                @Override
+                public String retry() throws Exception {
+                    return auditLogStore.getLatestLogItem(
+                        bitTask.getAccount(),
+                        bitTask.getStoreId(),
+                        bitTask.getSpaceId(),
+                        bitTask.getContentId()).getContentMd5();
+                }
+            });
+        } catch (Exception e) {
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage("Could not find latest audit log item"), e);
+        }
     }
 
     private String getContentIndexChecksum() {
@@ -153,6 +199,23 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
         return store.getContentProperties(bitTask.getSpaceId(),
                                           bitTask.getContentId())
                     .get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+    }
+
+    private String buildFailureMessage(String message) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Failure to bit-integrity check content item due to: ");
+        builder.append(message);
+        builder.append(" Account: ");
+        builder.append(bitTask.getAccount());
+        builder.append(" Source StoreID: ");
+        builder.append(bitTask.getStoreId());
+        builder.append(" Store Type: ");
+        builder.append(storageProviderType);
+        builder.append(" SpaceID: ");
+        builder.append(bitTask.getSpaceId());
+        builder.append(" ContentID: ");
+        builder.append(bitTask.getContentId());
+        return builder.toString();
     }
 
     private String getContentChecksum() throws IOException {
