@@ -303,6 +303,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             throw new RuntimeException(e);
         }
         
+        return getStorageProvider(creds);
+    }
+
+    /**
+     * @param creds
+     * @return
+     */
+    protected StorageProvider getStorageProvider(StorageProviderCredentials creds) {
         return storageProviderFactory.create(creds);
     }
 

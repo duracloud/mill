@@ -15,13 +15,13 @@ import org.duracloud.mill.ltp.RunStats;
  */
 public class BitIntegrityRunStats extends RunStats {
 
+    private int added = 0;
     /* (non-Javadoc)
      * @see org.duracloud.mill.ltp.RunStats#reset()
      */
     @Override
     public void reset() {
-        // TODO Auto-generated method stub
-
+        added = 0;
     }
 
     /* (non-Javadoc)
@@ -29,17 +29,22 @@ public class BitIntegrityRunStats extends RunStats {
      */
     @Override
     public void copyValuesFrom(RunStats runstats) {
-        // TODO Auto-generated method stub
-
+        added = ((BitIntegrityRunStats)runstats).added;
     }
 
     /* (non-Javadoc)
      * @see org.duracloud.mill.ltp.RunStats#add(org.duracloud.mill.ltp.RunStats)
      */
     @Override
-    public void add(RunStats stats) {
-        // TODO Auto-generated method stub
+    public void add(RunStats runstats) {
+        add(((BitIntegrityRunStats)runstats).added);
+    }
 
+    /**
+     * @param added
+     */
+    public void add(int added) {
+        this.added += added;
     }
 
 }

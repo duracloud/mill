@@ -7,22 +7,30 @@
  */
 package org.duracloud.mill.ltp.bit;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.ehcache.Cache;
 
-import org.duracloud.client.ContentStore;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.error.ContentStoreException;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.mill.bi.BitIntegrityCheckTask;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.CredentialsRepoException;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.MorselQueue;
 import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.storage.error.NotFoundException;
+import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,35 +59,33 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         //generate set of morsels based on duplication policy
         try {
             for(String account :  getAccountsList()){
-                List<ContentStore> contentStores = getContentStores(account);
-                for(ContentStore contentStore : contentStores){
-                    for(String spaceId : contentStore.getSpaces()){
+                AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
+                for(StorageProviderCredentials cred : accountCreds.getProviderCredentials()){
+                    StorageProvider store = getStorageProvider(cred);
+                    
+                    Iterator<String> spaces = store.getSpaces();
+                    while(spaces.hasNext()){
+                        String spaceId = spaces.next();
                         morselQueue.add(
                                 new BitIntegrityMorsel(account,
-                                                       contentStore.getStoreId(), 
-                                                       contentStore.getStorageProviderType(), 
+                                                       cred.getProviderId(), 
+                                                       cred.getProviderType().name(), 
                                                        spaceId));
-                   }
+                    }
                 }
             }
-        } catch (ContentStoreException e) {
+        } catch (Exception e) { 
+            log.error(e.getMessage(), e);
             throw new DuraCloudRuntimeException(e);
         }
     }
     
     /**
-     * @param account
      * @return
+     * @throws CredentialsRepoException 
      */
-    private List<ContentStore> getContentStores(String account) {
-        return null;
-    }
-
-    /**
-     * @return
-     */
-    private List<String> getAccountsList() {
-        return null;
+    private List<String> getAccountsList() throws CredentialsRepoException {
+        return getCredentialsRepo().getAccounts();
     }
 
     /* (non-Javadoc)
@@ -87,10 +93,130 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
      */
     @Override
     protected void nibble(BitIntegrityMorsel morsel) {
+        String account = morsel.getAccount();
+        String storeId = morsel.getStoreId();
+        String spaceId = morsel.getSpaceId();
+        
+        StorageProvider store = 
+                getStorageProvider(morsel.getAccount(),storeId);
+
+        
+        int maxTaskQueueSize = getMaxTaskQueueSize();
+        int taskQueueSize = getTaskQueue().size();
+        if(taskQueueSize >= maxTaskQueueSize){
+            log.info(
+                    "Task queue size ({}) has reached or exceeded max size ({}).",
+                    taskQueueSize, maxTaskQueueSize);
+            addToReloadList(morsel);
+        } else{
+            
+            if(addTasks(morsel, store, 1000)){
+                log.info(
+                        "All bit integritytasks that could be created were created for account={}, storeId={}, spaceId={}. getTaskQueue().size = {}",
+                        account, storeId, spaceId, getTaskQueue().size());
+                log.info(
+                        "{} completely nibbled. No reload necessary in this round.",
+                        morsel);
+            } else {
+                log.info(
+                        "morsel nibbled down: {}",
+                        morsel);
+                addToReloadList(morsel);
+            }
+            
+        }   
         
     }
     
     
+    /**
+     * @param morsel
+     * @param store
+     * @param bitSize
+     * @return
+     */
+    private boolean addTasks(BitIntegrityMorsel morsel,
+            StorageProvider store,
+            int biteSize) {
+        String account = morsel.getAccount();
+        String storeId = morsel.getStoreId();
+        String spaceId = morsel.getSpaceId();
+        String marker = morsel.getMarker();
+        
+        //load in next maxContentIdsToAdd or however many remain 
+        List<String> contentIds = null;
+        
+        try {
+            contentIds = store.getSpaceContentsChunked(spaceId, 
+                                                     null, 
+                                                     biteSize, 
+                                                     marker);
+
+            //add to queue
+            int contentIdCount = contentIds.size();
+            
+            if(contentIdCount == 0){
+                return true;
+            }else {
+                int added = addToTaskQueue(account, 
+                                           storeId, 
+                                           spaceId,
+                                           contentIds);
+
+                ((BitIntegrityRunStats)getStats(account)).add(added);
+                //if no tasks were added, it means that all contentIds in this morsel
+                //have been touched in this run.
+                if(added == 0){
+                    return true;
+                }else{
+                    marker = contentIds.get(contentIds.size()-1);
+                    morsel.setMarker(marker);
+                }
+                
+                return false;
+            } 
+            
+
+        }catch(NotFoundException ex){
+            log.info("space not found on storage provider: " +
+                    "subdomain={}, spaceId={}, storeId={}",
+                    account, spaceId, storeId);
+            
+           return true;
+        }
+    }
+
+    /**
+     * @param account
+     * @param storeId
+     * @param contentIds
+     * @return
+     */
+    private int addToTaskQueue(
+            String account,
+            String storeId,
+            String spaceId,
+            List<String> contentIds) {
+        Set<Task> tasks = new HashSet<>();
+        int addedCount = 0;
+        
+        for(String contentId : contentIds){
+            BitIntegrityCheckTask bitIntegrityTask = new BitIntegrityCheckTask();
+            bitIntegrityTask.setAccount(account);
+            bitIntegrityTask.setContentId(contentId);
+            bitIntegrityTask.setSpaceId(spaceId);
+            bitIntegrityTask.setStoreId(storeId);
+            
+            Task task = bitIntegrityTask.writeTask();
+            tasks.add(task);
+            addedCount++;
+        }
+
+        getTaskQueue().put(tasks);
+        
+        return addedCount;
+    }
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.ltp.LoopingTaskProducer#logIncrementalStatsBySubdomain(java.lang.String, org.duracloud.mill.ltp.RunStats)
      */

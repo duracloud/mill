@@ -10,7 +10,6 @@ package org.duracloud.mill.ltp;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.duracloud.mill.dup.DuplicationStorePolicy;
 
 /**
  * A definition of a bite-sized swath of content ids that can be nibbled by the
@@ -21,7 +20,7 @@ import org.duracloud.mill.dup.DuplicationStorePolicy;
  */
 public class Morsel {
     protected static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
-    private String subdomain;
+    private String account;
     private String spaceId;
     private String marker;
     private boolean deletePerformed = false;
@@ -31,15 +30,15 @@ public class Morsel {
     }
     
     /**
-     * @param subdomain
+     * @param account
      * @param spaceId
      * @param marker
      * @param storePolicy
      * @param inprocess
      */
-    public Morsel(String subdomain, String spaceId, String marker) {
+    public Morsel(String account, String spaceId, String marker) {
         super();
-        this.subdomain = subdomain;
+        this.account = account;
         this.spaceId = spaceId;
         this.marker = marker;
     }
@@ -48,8 +47,8 @@ public class Morsel {
     /**
      * @return the subdomain
      */
-    public String getSubdomain() {
-        return subdomain;
+    public String getAccount() {
+        return account;
     }
     
     /* (non-Javadoc)

@@ -78,7 +78,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
      */
     @Override
     protected void nibble(DuplicationMorsel morsel) {
-        String subdomain = morsel.getSubdomain();
+        String subdomain = morsel.getAccount();
         String spaceId = morsel.getSpaceId();
         DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
         
@@ -133,7 +133,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
      */
     private boolean addDuplicationTasksFromSource(DuplicationMorsel morsel, StorageProvider sourceProvider, int maxContentIdsToAdd) {
 
-        String subdomain = morsel.getSubdomain();
+        String subdomain = morsel.getAccount();
         String spaceId = morsel.getSpaceId();
         String marker = morsel.getMarker();
         DuplicationStorePolicy storePolicy = morsel.getStorePolicy();

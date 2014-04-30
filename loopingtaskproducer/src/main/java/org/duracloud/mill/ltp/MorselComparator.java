@@ -39,7 +39,7 @@ public class MorselComparator implements Comparator<Morsel> {
         
         int spaceCompare = o1.getSpaceId().compareTo(o2.getSpaceId());
         if(spaceCompare == 0){
-            return o1.getSubdomain().compareTo(o2.getSubdomain());
+            return o1.getAccount().compareTo(o2.getAccount());
         }else{
             return spaceCompare;
         }
