@@ -256,17 +256,15 @@ public class MessageListenerContainerManager {
      * EC2 security groups for DuraCloud instances are configured to allow
      * a connection on port 61617 from production duplication instances (using
      * a specific security group on the production account.)
-     * For this to work, the host used to connect must be the Public DNS name
-     * which is automatically assigned by EC2.
-     * This method performs the conversion between the duracloud host name and
-     * the EC2 Public DNS name.
+     * When a call is made to get the IP address for a duracloud instance, based
+     * on its subdomain, from within EC2, the address returned is the internal
+     * IP. Using this internal IP allows connections to be made based on the
+     * security group settings.
      */
     protected String getHost(String subdomain) throws IOException {
         InetAddress address =
             InetAddress.getByName(subdomain + ".duracloud.org");
-        String ipAddress = address.getHostAddress();
-        String ipAddressDashes = ipAddress.replaceAll("\\.", "-");
-        return "ec2-" + ipAddressDashes + ".compute-1.amazonaws.com";
+        return address.getHostAddress();
     }
 
     private void startContainers(String subdomain, 

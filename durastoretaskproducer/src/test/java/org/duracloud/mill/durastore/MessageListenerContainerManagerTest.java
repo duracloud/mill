@@ -166,7 +166,7 @@ public class MessageListenerContainerManagerTest {
         MessageListenerContainerManager manager =
             new MessageListenerContainerManager(null, null, null, null, 0);
         String host = manager.getHost("demo");
-        Assert.assertEquals("ec2-174-129-224-25.compute-1.amazonaws.com", host);
+        Assert.assertEquals("54.225.232.106", host);
     }
 
 }
