@@ -46,5 +46,12 @@ public class BitIntegrityRunStats extends RunStats {
     public void add(int added) {
         this.added += added;
     }
+    
+    /**
+     * @return the added
+     */
+    public int getAdded() {
+        return added;
+    }
 
 }

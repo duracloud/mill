@@ -30,7 +30,7 @@ public class StateManager<T extends Morsel> {
      */
     public StateManager(String path) {
         stateFile = new File(path);
-        if(stateFile.exists()){
+        if(stateFile.exists() && stateFile.length() > 0){
             ObjectMapper m = new ObjectMapper();
             try {
                 this.state = m.readValue(stateFile,

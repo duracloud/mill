@@ -9,6 +9,7 @@ package org.duracloud.mill.ltp;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -20,7 +21,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  */
 public class State<T> {
     
-    private Set<T> morsels = new HashSet<>();
+    private Set<T> morsels = new LinkedHashSet<>();
     private Date currentRunStartDate = null;
     private Date nextRunStartDate = null;
 

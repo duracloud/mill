@@ -10,15 +10,15 @@ package org.duracloud.mill.ltp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import net.sf.ehcache.Cache;
 
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -52,7 +52,6 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private static Logger log = LoggerFactory.getLogger(LoopingTaskProducer.class);
     private TaskQueue taskQueue;
     private CredentialsRepo credentialsRepo;
-    private Cache cache;
     private StateManager<T> stateManager;
     private int maxTaskQueueSize;
     private StorageProviderFactory storageProviderFactory;
@@ -65,7 +64,6 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     public LoopingTaskProducer(CredentialsRepo credentialsRepo,
                                StorageProviderFactory storageProviderFactory,
                                TaskQueue taskQueue,
-                               Cache cache, 
                                StateManager<T> state,
                                int maxTaskQueueSize, 
                                Frequency frequency) {
@@ -73,7 +71,6 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         this.credentialsRepo = credentialsRepo;
         this.storageProviderFactory = storageProviderFactory;
         this.taskQueue = taskQueue;
-        this.cache = cache;
         this.stateManager = state;
         this.credentialsRepo = credentialsRepo;
         this.maxTaskQueueSize = maxTaskQueueSize;
@@ -85,13 +82,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         return this.frequency;
     }
     
-    /**
-     * @return the cache
-     */
-    protected Cache getCache() {
-        return cache;
-    }
-    
+
 
     protected CredentialsRepo getCredentialsRepo() {
         return credentialsRepo;
@@ -123,15 +114,26 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             }
             
             log.info("Starting run...");
-            MorselQueue<T> morselQueue = loadMorselQueue();
+            Queue<T> morselQueue = loadMorselQueue();
             
             while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
-                nibble(morselQueue.poll());
+                T morsel = morselQueue.peek();
+                nibble(morselQueue);
                 persistMorsels(morselQueue, morselsToReload);
-                
+               
                 if(morselQueue.isEmpty()){
                     morselQueue = reloadMorselQueue();
+                }else{
+                    //break if nothing was removed from the queue
+                    //if nothing was removed from the queue we can assume
+                    //that the for whatever reason the morsel could not be processed
+                    //at this time, so the process should wait for the next run.
+                    if(morsel.equals(morselQueue.peek())){
+                        break;
+                    }
                 }
+                
+               
             }
     
             if(morselQueue.isEmpty()){
@@ -147,8 +149,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
 
     private void resetIncrementalSessionStats() {
         synchronized (runstats){
-            for(String subdomain : runstats.keySet()){
-                RunStats stats = runstats.get(subdomain);
+            for(String account : runstats.keySet()){
+                RunStats stats = runstats.get(account);
                 stats.reset();
             }
         }
@@ -159,8 +161,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         totals.copyValuesFrom(currentTotals);
 
         synchronized (runstats){
-            for(String subdomain : runstats.keySet()){
-                RunStats stats = runstats.get(subdomain);
+            for(String account : runstats.keySet()){
+                RunStats stats = runstats.get(account);
                 totals.add(stats);
             }
             return totals;
@@ -169,9 +171,9 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
 
     private void logSessionStats() {
         synchronized (runstats){
-            for(String subdomain : runstats.keySet()){
-                RunStats stats = runstats.get(subdomain);
-                logIncrementalStatsBySubdomain(subdomain, stats);
+            for(String account : runstats.keySet()){
+                RunStats stats = runstats.get(account);
+                logIncrementalStatsByAccount(account, stats);
             }
 
             RunStats incrementalTotals = calculateStatTotals(createRunStats());
@@ -247,11 +249,11 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * 
      * @return
      */
-    private MorselQueue<T> loadMorselQueue() {
-        MorselQueue<T> morselQueue = new MorselQueue<>();
+    private Queue<T> loadMorselQueue() {
+        Queue<T> morselQueue = createQueue();
         
         //load morsels from state;
-        Set<T> morsels = new HashSet<>(this.stateManager.getMorsels());
+        Set<T> morsels = new LinkedHashSet<>(this.stateManager.getMorsels());
         
         morselQueue.addAll(morsels);
 
@@ -261,9 +263,18 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         
         return morselQueue;
     }
+    
+   
 
-    private void persistMorsels(MorselQueue<T> queue, List<T> morselsToReload){
-        Set<T> morsels = new HashSet<>();
+    /**
+     * @return
+     */
+    protected Queue<T> createQueue() {
+        return new LinkedList<T>();
+    }
+
+    private void persistMorsels(Queue<T> queue, List<T> morselsToReload){
+        Set<T> morsels = new LinkedHashSet<>();
         morsels.addAll(queue);
         morsels.addAll(morselsToReload);
         stateManager.setMorsels(morsels);
@@ -280,24 +291,24 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
 
     /**
-     * @param subdomain
+     * @param account
      * @return
      */
-    protected RunStats getStats(String subdomain) {
+    protected RunStats getStats(String account) {
         synchronized(runstats){
-            RunStats stats = this.runstats.get(subdomain);
+            RunStats stats = this.runstats.get(account);
             if(stats == null){
-                this.runstats.put(subdomain, stats = createRunStats());
+                this.runstats.put(account, stats = createRunStats());
             }
             return stats;
         }
     }
 
-    protected StorageProvider getStorageProvider(String subdomain,
+    protected StorageProvider getStorageProvider(String account,
             String storeId)  {
         StorageProviderCredentials creds;
         try {
-            creds = credentialsRepo.getStorageProviderCredentials(subdomain, 
+            creds = credentialsRepo.getStorageProviderCredentials(account, 
                                                           storeId);
         } catch (CredentialsRepoException e) {
             throw new RuntimeException(e);
@@ -317,12 +328,12 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     /**
      * @param morselQueue
      */
-    protected abstract void loadMorselQueueFromSource(MorselQueue<T> morselQueue);
+    protected abstract void loadMorselQueueFromSource(Queue<T> morselQueue);
 
     /**
      * @param morsel
      */
-    protected abstract void nibble(T morsel);
+    protected abstract void nibble(Queue<T> queue);
     
 
     /**
@@ -336,10 +347,10 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     protected abstract void logGlobalncrementalStats(RunStats incrementalTotals);
 
     /**
-     * @param subdomain
+     * @param account
      * @param stats
      */
-    protected abstract void logIncrementalStatsBySubdomain(String subdomain, RunStats stats);
+    protected abstract void logIncrementalStatsByAccount(String account, RunStats stats);
 
     /**
      * 

@@ -12,7 +12,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
@@ -26,7 +28,7 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
-import org.duracloud.mill.ltp.MorselQueue;
+import org.duracloud.mill.ltp.MorselComparator;
 import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.task.DuplicationTask;
@@ -44,6 +46,8 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
 
     private DuplicationPolicyManager policyManager;
 
+    private Cache cache;
+
     public LoopingDuplicationTaskProducer(CredentialsRepo credentialsRepo,
             StorageProviderFactory storageProviderFactory,
             DuplicationPolicyManager policyManager, 
@@ -52,15 +56,24 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             StateManager<DuplicationMorsel> state,
             int maxTaskQueueSize, 
             Frequency frequency) {
-        super(credentialsRepo, storageProviderFactory, taskQueue, cache, state,maxTaskQueueSize,frequency);
+        super(credentialsRepo, storageProviderFactory, taskQueue, state,maxTaskQueueSize,frequency);
+        this.cache = cache;
         this.policyManager = policyManager;
     }
     
+    /**
+     * @return the cache
+     */
+    private Cache getCache() {
+        return cache;
+    }
+    
+
     /* (non-Javadoc)
-     * @see org.duracloud.mill.ltp.LoopingTaskProducer#loadMorselQueueFromSource(org.duracloud.mill.ltp.MorselQueue)
+     * @see org.duracloud.mill.ltp.LoopingTaskProducer#loadMorselQueueFromSource(java.util.Queue)
      */
     @Override
-    protected void loadMorselQueueFromSource(MorselQueue<DuplicationMorsel> morselQueue) {
+    protected void loadMorselQueueFromSource(Queue<DuplicationMorsel> morselQueue) {
         //generate set of morsels based on duplication policy
         for(String account : this.policyManager.getDuplicationAccounts()){
             DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
@@ -74,24 +87,25 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     }
     
     /* (non-Javadoc)
-     * @see org.duracloud.mill.ltp.LoopingTaskProducer#nibble(org.duracloud.mill.ltp.Morsel)
+     * @see org.duracloud.mill.ltp.LoopingTaskProducer#nibble(org.duracloud.mill.ltp.Queue<T>)
      */
     @Override
-    protected void nibble(DuplicationMorsel morsel) {
-        String subdomain = morsel.getAccount();
+    protected void nibble(Queue<DuplicationMorsel> queue) {
+        DuplicationMorsel morsel = queue.poll();
+        String account = morsel.getAccount();
         String spaceId = morsel.getSpaceId();
         DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
         
         //get all items from source
         StorageProvider sourceProvider = 
-                getStorageProvider(subdomain, 
+                getStorageProvider(account, 
                                    storePolicy.getSrcStoreId());
         StorageProvider destProvider = 
-                getStorageProvider(subdomain, 
+                getStorageProvider(account, 
                                    storePolicy.getDestStoreId());
 
         if(!morsel.isDeletePerformed()){
-            addDuplicationTasksForContentNotInSource(subdomain,
+            addDuplicationTasksForContentNotInSource(account,
                                                         spaceId, 
                                                         storePolicy, 
                                                         sourceProvider, 
@@ -109,8 +123,8 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         } else{
             if(addDuplicationTasksFromSource(morsel, sourceProvider, 1000)){
                 log.info(
-                        "All tasks that could be created were created for subdomain={}, spaceId={}, storePolicy={}. getTaskQueue().size = {}",
-                        subdomain, spaceId, storePolicy, getTaskQueue().size());
+                        "All tasks that could be created were created for account={}, spaceId={}, storePolicy={}. getTaskQueue().size = {}",
+                        account, spaceId, storePolicy, getTaskQueue().size());
                 log.info(
                         "morsel completely nibbled. No reload necessary in this round.",
                         morsel);
@@ -133,7 +147,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
      */
     private boolean addDuplicationTasksFromSource(DuplicationMorsel morsel, StorageProvider sourceProvider, int maxContentIdsToAdd) {
 
-        String subdomain = morsel.getAccount();
+        String account = morsel.getAccount();
         String spaceId = morsel.getSpaceId();
         String marker = morsel.getMarker();
         DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
@@ -148,10 +162,10 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
                                                      marker);
         }catch(NotFoundException ex){
             log.info("space not found on source provider: " +
-                    "subdomain={}, spaceId={}, storeId={}",
-                    subdomain, spaceId, sourceProvider);
+                    "account={}, spaceId={}, storeId={}",
+                    account, spaceId, sourceProvider);
             
-            addDeleteSpaceTaskToQueue(subdomain, 
+            addDeleteSpaceTaskToQueue(account, 
                                       spaceId, 
                                       storePolicy,
                                       sourceProvider);
@@ -163,11 +177,11 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         if(contentIdCount == 0){
             return true;
         }else {
-            int added = addToTaskQueue(subdomain, 
+            int added = addToTaskQueue(account, 
                                        spaceId, 
                                        storePolicy,
                                        contentIds);
-            ((DuplicationRunStats)getStats(subdomain)).addToDups(added);
+            ((DuplicationRunStats)getStats(account)).addToDups(added);
             //if no tasks were added, it means that all contentIds in this morsel
             //have been touched in this run.
             if(added == 0){
@@ -182,7 +196,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     }
 
     private void addDuplicationTasksForContentNotInSource(
-            String subdomain, String spaceId,
+            String account, String spaceId,
             DuplicationStorePolicy storePolicy, StorageProvider sourceProvider,
             StorageProvider destProvider) {
 
@@ -195,8 +209,8 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             }
         }catch(NotFoundException ex){
             log.info("space not found on source provider: " +
-                    "subdomain={}, spaceId={}, storeId={}",
-                    subdomain, spaceId, sourceProvider);
+                    "account={}, spaceId={}, storeId={}",
+                    account, spaceId, sourceProvider);
         }
 
         
@@ -207,8 +221,8 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             destContentIds = destProvider.getSpaceContents(spaceId, null);
         }catch(NotFoundException ex){
             log.info("space not found on destination provider: " +
-                     "subdomain={}, spaceId={}, storeId={}",
-                     subdomain, spaceId, destProvider);
+                     "account={}, spaceId={}, storeId={}",
+                     account, spaceId, destProvider);
             return;
         }
         
@@ -224,20 +238,20 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
                 //in case that there are millions of content ids to delete
                 if(deletions.size() == 10000){
                     //create dup task
-                    deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
+                    deletionTaskCount += addToTaskQueue(account, spaceId, storePolicy, deletions);
                     deletions.clear();
                 }
             }
         }
         
         //add any remaining deletions
-        deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
-        ((DuplicationRunStats)getStats(subdomain)).addToDeletes(deletionTaskCount);
+        deletionTaskCount += addToTaskQueue(account, spaceId, storePolicy, deletions);
+        ((DuplicationRunStats)getStats(account)).addToDeletes(deletionTaskCount);
         
         log.info(
-                "added {} deletion tasks: subdomain={}, spaceId={}, sourceStoreId={}, destStoreId={}",
+                "added {} deletion tasks: account={}, spaceId={}, sourceStoreId={}, destStoreId={}",
                 deletionTaskCount, 
-                subdomain, 
+                account, 
                 spaceId, 
                 storePolicy.getSrcStoreId(),
                 storePolicy.getDestStoreId());
@@ -245,19 +259,19 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     }
 
     /**
-     * @param subdomain
+     * @param account
      * @param spaceId
      * @param storePolicy
      * @param sourceProvider
      */
-    private void addDeleteSpaceTaskToQueue(String subdomain,
+    private void addDeleteSpaceTaskToQueue(String account,
             String spaceId,
             DuplicationStorePolicy storePolicy,
             StorageProvider sourceProvider) {
         // drop a delete space message. (ie a duplication message with
         // no content - should trigger a destination space deletion);
         DuplicationTask task = new DuplicationTask();
-        task.setAccount(subdomain);
+        task.setAccount(account);
         task.setSourceStoreId(storePolicy.getSrcStoreId());
         task.setContentId(""); 
         task.setDestStoreId(storePolicy.getDestStoreId());
@@ -265,18 +279,18 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         this.getTaskQueue().put(task.writeTask());
         log.info("destintation space delete task added to queue " +
                 "since source does not exist: " +
-                "subdomain={}, spaceId={}, storeId={}",
-                subdomain, spaceId, sourceProvider);
+                "account={}, spaceId={}, storeId={}",
+                account, spaceId, sourceProvider);
     }
 
-    private int addToTaskQueue(String subdomain, String spaceId,
+    private int addToTaskQueue(String account, String spaceId,
             DuplicationStorePolicy storePolicy, List<String> contentIds) {
         Set<Task> tasks = new HashSet<>();
         int addedCount = 0;
         
         for(String contentId : contentIds){
             DuplicationTask dupTask = new DuplicationTask();
-            dupTask.setAccount(subdomain);
+            dupTask.setAccount(account);
             dupTask.setContentId(contentId);
             dupTask.setSpaceId(spaceId);
             dupTask.setStoreId(storePolicy.getSrcStoreId());
@@ -294,14 +308,14 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     }
     
     /* (non-Javadoc)
-     * @see org.duracloud.mill.ltp.LoopingTaskProducer#logIncrementalStatsBySubdomain(java.lang.String, org.duracloud.mill.ltp.RunStats)
+     * @see org.duracloud.mill.ltp.LoopingTaskProducer#logIncrementalStatsByAccount(java.lang.String, org.duracloud.mill.ltp.RunStats)
      */
     @Override
-    protected void logIncrementalStatsBySubdomain(String subdomain,
+    protected void logIncrementalStatsByAccount(String account,
             RunStats stats) {
     DuplicationRunStats dstats = (DuplicationRunStats)stats;
-            log.info("Session stats by subdomain (incremental): subdomain={} dups={} deletes={}",
-                    subdomain, 
+            log.info("Session stats by account (incremental): account={} dups={} deletes={}",
+                    account, 
                     dstats.getDups(), 
                     dstats.getDeletes());
    
@@ -339,4 +353,9 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             return new DuplicationRunStats();
     }
       
+    /**/
+    @Override
+    protected Queue<DuplicationMorsel> createQueue() {
+        return new PriorityBlockingQueue<>(1000, new MorselComparator());
+    }
 }
