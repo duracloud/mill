@@ -3,13 +3,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>common-taskproducer</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <name>DuraCloud Mill Common Task Producer</name>
 
   <parent>
     <artifactId>duplication</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
