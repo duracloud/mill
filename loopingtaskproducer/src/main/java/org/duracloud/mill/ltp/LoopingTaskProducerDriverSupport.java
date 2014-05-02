@@ -25,9 +25,6 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
-import org.duracloud.mill.ltp.dup.DuplicationMorsel;
-import org.duracloud.mill.ltp.dup.DuplicationOptions;
-import org.duracloud.mill.ltp.dup.LoopingDuplicationTaskProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,66 +64,6 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
         stateFilePath = processStateFilePathOption(cmd);
         frequency = processFrequencyOption(cmd);
     }
-
-    /**
-     * @param cmd
-     * @param maxTaskQueueSize
-     * @param stateFilePath
-     * @param frequency
-     * @return
-     */
-    private LoopingDuplicationTaskProducer buildTaskProducer(CommandLine cmd,
-            int maxTaskQueueSize,
-            String stateFilePath,
-            Frequency frequency) {
-        LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
-        config.init();
-
-        CredentialsRepo credentialsRepo;
-
-        if (config.getCredentialsFilePath() != null) {
-            credentialsRepo = new ConfigFileCredentialRepo(
-                    config.getCredentialsFilePath());
-        } else {
-            credentialsRepo = new SimpleDBCredentialsRepo(
-                    new AmazonSimpleDBClient());
-        }
-
-        StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
-
-        DuplicationPolicyManager policyManager;
-        if (config.getDuplicationPolicyDir() != null) {
-            policyManager = new DuplicationPolicyManager(
-                    new LocalDuplicationPolicyRepo(
-                            config.getDuplicationPolicyDir()));
-        } else {
-            DuplicationPolicyRepo policyRepo;
-            if (cmd.hasOption(DuplicationOptions.POLICY_BUCKET_SUFFIX)) {
-                policyRepo = new S3DuplicationPolicyRepo(
-                        cmd.getOptionValue(DuplicationOptions.POLICY_BUCKET_SUFFIX));
-            } else {
-                policyRepo = new S3DuplicationPolicyRepo();
-            }
-            policyManager = new DuplicationPolicyManager(policyRepo);
-        }
-
-        TaskQueue taskQueue = new SQSTaskQueue(
-                config.getOutputQueue());
-
-        CacheManager cacheManager = CacheManager.create();
-        Cache cache = new Cache("contentIdCache", 100 * 1000, true, true,
-                60 * 5, 60 * 5);
-        cacheManager.addCache(cache);
-
-        StateManager<DuplicationMorsel> stateManager = new StateManager<>(
-                stateFilePath);
-
-        LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(
-                credentialsRepo, storageProviderFactory, policyManager,
-                taskQueue, cache, stateManager, maxTaskQueueSize, frequency);
-        return producer;
-    }
-
 
     /**
      * @param cmd

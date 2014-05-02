@@ -13,7 +13,6 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.duracloud.mill.ltp.dup.AppDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ public abstract class DriverSupport {
     public void usage() {
         HelpFormatter help = new HelpFormatter();
         help.setWidth(80);
-        help.printHelp(AppDriver.class.getCanonicalName(), options);
+        help.printHelp(getClass().getCanonicalName(), options);
     }
     
     public  CommandLine parseArgs(String[] args) {
