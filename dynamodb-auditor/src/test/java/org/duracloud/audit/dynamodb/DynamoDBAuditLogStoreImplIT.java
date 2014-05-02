@@ -10,6 +10,7 @@ package org.duracloud.audit.dynamodb;
 import java.util.Date;
 import java.util.Iterator;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.error.NotFoundException;
@@ -44,10 +45,11 @@ public class DynamoDBAuditLogStoreImplIT {
 
 
         client = DynamoDBTestUtil.createDynamoDBLocalClient();
+        DynamoDBMapper mapper = new DynamoDBMapper(client);
         DatabaseUtil.create(client);
 
         logStore = new DynamoDBAuditLogStore();
-        logStore.initialize(client);
+        logStore.initialize(client, mapper);
 
     }
 

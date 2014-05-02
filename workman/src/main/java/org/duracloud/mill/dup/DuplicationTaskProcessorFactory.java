@@ -38,11 +38,12 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     private StorageProviderFactory storageProviderFactory;
 
     public DuplicationTaskProcessorFactory(CredentialsRepo repo,
+                                           StorageProviderFactory storageProviderFactory,
                                            File workDir,
                                            TaskQueue auditTaskQueue){
         super(repo, workDir);
         this.auditTaskQueue = auditTaskQueue;
-        this.storageProviderFactory = new StorageProviderFactory();
+        this.storageProviderFactory = storageProviderFactory;
     }
     
     @Override
@@ -83,7 +84,7 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
      * @param subdomain
      * @return
      */
-    public StorageProvider createStorageProvider(String storeId,
+    private StorageProvider createStorageProvider(String storeId,
                                                  String subdomain,
                                                  TaskQueue auditTaskQueue) {
         try {

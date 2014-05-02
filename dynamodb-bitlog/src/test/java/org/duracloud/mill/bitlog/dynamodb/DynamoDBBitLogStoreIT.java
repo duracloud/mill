@@ -10,6 +10,7 @@ package org.duracloud.mill.bitlog.dynamodb;
 import java.util.Date;
 import java.util.Iterator;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.test.DynamoDBTestUtil;
@@ -36,10 +37,11 @@ public class DynamoDBBitLogStoreIT {
     @Before
     public void setUp() throws Exception {
         client = DynamoDBTestUtil.createDynamoDBLocalClient();
+        DynamoDBMapper mapper = new DynamoDBMapper(client);
         DatabaseUtil.create(client);
 
         store = new DynamoDBBitLogStore();
-        store.initialize(client);
+        store.initialize(client, mapper);
     }
 
     /**

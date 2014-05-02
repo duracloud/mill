@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.dynamodb.DynamoDBAuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
@@ -21,6 +22,11 @@ import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.ContentIndexUpdatingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
+import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessor;
+import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
+import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.bitlog.dynamodb.DynamoDBBitLogStore;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
@@ -63,22 +69,40 @@ public class AppConfig {
     @Bean
     public RootTaskProcessorFactory 
                 rootTaskProcessorFactory(CredentialsRepo repo,
+                                         StorageProviderFactory storageProviderFactory,
                                          File workDir,
+                                         BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory,
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
                                          WorkmanConfigurationManager configurationManager) {
 
         RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(
             new DuplicationTaskProcessorFactory(repo,
+                                                storageProviderFactory,
                                                 workDir,
                                                 auditQueue(configurationManager)));
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
-        
+        factory.addTaskProcessorFactory(bitIntegrityCheckTaskProcessorFactory);
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
                 workDir));
 
         log.info("RootTaskProcessorFactory created.");
         return factory;
+    }
+
+    @Bean
+    public BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory(
+        CredentialsRepo credentialRepo,
+        StorageProviderFactory storageProviderFactory,
+        ContentIndexClient contentIndexClient,
+        AuditLogStore auditLogStore,
+        BitLogStore bitLogStore) {
+
+        return new BitIntegrityCheckTaskProcessorFactory(credentialRepo,
+                                                         storageProviderFactory,
+                                                         contentIndexClient,
+                                                         auditLogStore,
+                                                         bitLogStore);
     }
     
     @Bean 
@@ -112,20 +136,45 @@ public class AppConfig {
             return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
         }
     }
-    
+
+    @Bean
+    StorageProviderFactory storageProviderFactory() {
+        return new StorageProviderFactory();
+    }
+
     @Bean 
     public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config){
         return ESContentIndexClientUtil.createContentIndexClient();
     }
 
     @Bean
-    public AuditLogStore auditLogStore(){
-        DynamoDBAuditLogStore store =  new DynamoDBAuditLogStore();
+    public AmazonDynamoDBClient dynamoDBClient() {
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         client.setRegion(Region.getRegion(Regions.US_EAST_1));
-        store.initialize(client);
+        return client;
+    }
+
+    @Bean
+    public DynamoDBMapper dynamoDBMapper(AmazonDynamoDBClient dynamoDBClient) {
+        return new DynamoDBMapper(dynamoDBClient);
+    }
+
+    @Bean
+    public AuditLogStore auditLogStore(AmazonDynamoDBClient dynamoDBClient,
+                                       DynamoDBMapper dynamoDBMapper){
+        DynamoDBAuditLogStore store =  new DynamoDBAuditLogStore();
+        store.initialize(dynamoDBClient, dynamoDBMapper);
         return store;
     }
+
+    @Bean
+    public BitLogStore bitLogStore(AmazonDynamoDBClient dynamoDBClient,
+                                   DynamoDBMapper dynamoDBMapper) {
+        DynamoDBBitLogStore store = new DynamoDBBitLogStore();
+        store.initialize(dynamoDBClient, dynamoDBMapper);
+        return store;
+    }
+
     @Bean
     public File workDir(WorkmanConfigurationManager configurationManager) {
         log.info("creating work dir for path: "
