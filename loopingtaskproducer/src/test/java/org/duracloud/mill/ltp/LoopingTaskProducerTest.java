@@ -43,6 +43,8 @@ import org.junit.Test;
  */
 public class LoopingTaskProducerTest {
 
+    private static final String CACHE_NAME = "test";
+
     private CredentialsRepo credentialsRepo;
     private StorageProviderFactory storageProviderFactory;
     private StorageProvider sourceStore;
@@ -78,6 +80,8 @@ public class LoopingTaskProducerTest {
                 stateManager,
                 sourceStore,
                 destStore);
+
+        cache.removeAll();
     }
     
     /**
@@ -426,9 +430,9 @@ public class LoopingTaskProducerTest {
      */
     private void setupCache() {
         if(cache == null){
-            cache = new Cache("test", 100000, true, true, 1000, 1000);
-            CacheManager manager = CacheManager.getInstance();
-            manager.addCache(cache);
+            CacheManager cacheManager = CacheManager.getInstance();
+            cacheManager.addCache(CACHE_NAME);
+            cache = cacheManager.getCache(CACHE_NAME);
         }
     }
 
