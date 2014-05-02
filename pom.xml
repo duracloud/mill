@@ -59,6 +59,8 @@
     <module>auditlogtool</module>
     <module>simpledbcredentialsrepo</module>
     <module>loopingtaskproducer</module>
+    <module>loopingduptaskproducer</module>
+    <module>loopingbittaskproducer</module>
     <module>workman</module>
     <module>taskproducertool</module>
     <module>taskreadertool</module>
@@ -231,18 +233,19 @@
         <filtering>true</filtering>
       </testResource>
     </testResources>
+    <pluginManagement>
+      <plugins>
+      <plugin> 
+          <groupId>org.apache.maven.plugins</groupId> 
+          <artifactId>maven-shade-plugin</artifactId> 
+          <version>2.2</version> 
+          <configuration> 
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+          </configuration> 
+      </plugin> 
+    </plugins> 
+    </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-4</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/dep.xml</descriptor>
-          </descriptors>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

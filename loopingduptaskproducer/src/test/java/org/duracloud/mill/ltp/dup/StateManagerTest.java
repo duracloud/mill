@@ -5,14 +5,15 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.ltp.dup.DuplicationMorsel;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +24,7 @@ import org.junit.Test;
  *	       Date: Nov 6, 2013
  */
 public class StateManagerTest {
-    private StateManager stateManager;
+    private StateManager<DuplicationMorsel> stateManager;
     private File file;
     private String testdomain = "testdomain";
     private String testspace = "testspace";
@@ -38,7 +39,7 @@ public class StateManagerTest {
         testpolicy  = new DuplicationStorePolicy();
         testpolicy.setDestStoreId("0");
         testpolicy.setSrcStoreId("1");
-        stateManager = new StateManager(file.getAbsolutePath());
+        stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath());
 
     }
 
@@ -55,20 +56,20 @@ public class StateManagerTest {
      */
     @Test
     public void testGetMorsels() {
-        Set<Morsel> morsels = stateManager.getMorsels();
+        Set<DuplicationMorsel> morsels = stateManager.getMorsels();
         Assert.assertEquals(0, morsels.size());
-        morsels.add(new Morsel(testdomain, testspace, testmarker, testpolicy));
+        morsels.add(new DuplicationMorsel(testdomain, testspace, testmarker, testpolicy));
         stateManager.setMorsels(morsels);
 
         morsels = stateManager.getMorsels();
         Assert.assertEquals(1, morsels.size());
 
-        stateManager = new StateManager(file.getAbsolutePath());
+        stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath());
         morsels = stateManager.getMorsels();
         Assert.assertEquals(1, morsels.size());
         
-        stateManager.setMorsels(new HashSet<Morsel>());
-        stateManager = new StateManager(file.getAbsolutePath());
+        stateManager.setMorsels(new HashSet<DuplicationMorsel>());
+        stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath());
         morsels = stateManager.getMorsels();
         Assert.assertEquals(0, morsels.size());
         

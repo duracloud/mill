@@ -5,7 +5,7 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -18,6 +18,9 @@ import java.util.Set;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.TimeoutException;
+import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
@@ -25,9 +28,8 @@ import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
-import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.common.queue.TimeoutException;
-import org.duracloud.common.queue.local.LocalTaskQueue;
+import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMock;
@@ -41,7 +43,7 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *	       Date: Nov 6, 2013
  */
-public class LoopingTaskProducerTest {
+public class LoopingDuplicationTaskProducerTest {
 
     private static final String CACHE_NAME = "test";
 
@@ -51,12 +53,13 @@ public class LoopingTaskProducerTest {
     private StorageProvider destStore;
     private static Cache cache;
     private DuplicationPolicyManager policyManager;
-    private StateManager stateManager;
+    private StateManager<DuplicationMorsel> stateManager;
     private TaskQueue taskQueue;
 
     /**
      * @throws java.lang.Exception
      */
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
         credentialsRepo = EasyMock.createMock(CredentialsRepo.class);
@@ -120,6 +123,7 @@ public class LoopingTaskProducerTest {
         Assert.assertEquals(maxTaskQueueSize, taskQueue.size().intValue());
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testNonExistentSpace() throws CredentialsRepoException, ParseException {
         int morselCount = 1;
@@ -133,7 +137,7 @@ public class LoopingTaskProducerTest {
         setupCredentialsRepo(morselCount*2);
         setupPolicyManager(morselCount);
         
-        expectGetMorsels(new HashSet<Morsel>(),1);
+        expectGetMorsels(new HashSet<DuplicationMorsel>(),1);
 
         stateManager.setMorsels(EasyMock.isA(HashSet.class));
         EasyMock.expectLastCall().times(morselCount);
@@ -188,22 +192,23 @@ public class LoopingTaskProducerTest {
      * reached before all the morsels can be consumed. 
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     private void testSpaceLargerThanMaxQueueSize(int sourceCount, int destCount) throws Exception{
         int morselCount = 1;
 
         setupSourceStore(morselCount, sourceCount);
 
-        final HashSet<Morsel> morsels = new HashSet<Morsel>();
+        final HashSet<DuplicationMorsel> morsels = new HashSet<>();
         
         setupEmptySourceSpacesGetChunked();
         
-        expectGetMorsels(new HashSet<Morsel>(), 1);
+        expectGetMorsels(new HashSet<DuplicationMorsel>(), 1);
         expectGetMorsels(morsels, 1);
         
         stateManager.setMorsels(EasyMock.isA(HashSet.class));
-        StateManager stateManagerDelegate = new StateManager("fakepath") {
+        StateManager<DuplicationMorsel> stateManagerDelegate = new StateManager<DuplicationMorsel>("fakepath") {
             @Override
-            public void setMorsels(Set<Morsel> morsels2) {
+            public void setMorsels(Set<DuplicationMorsel> morsels2) {
                 morsels.clear();
                 morsels.addAll(morsels2);
             }
@@ -267,7 +272,7 @@ public class LoopingTaskProducerTest {
      */
     private void runLoopingTaskProducer(int maxQueueSize) throws ParseException {
 
-        LoopingTaskProducer producer = new LoopingTaskProducer(credentialsRepo, 
+        LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(credentialsRepo, 
                                                                storageProviderFactory, 
                                                                policyManager,
                                                                taskQueue, 
@@ -282,7 +287,7 @@ public class LoopingTaskProducerTest {
      * @param times 
      * 
      */
-    private void expectGetMorsels(HashSet<Morsel> set, int times) {
+    private void expectGetMorsels(HashSet<DuplicationMorsel> set, int times) {
         EasyMock.expect(stateManager.getMorsels()).andReturn(set).times(times);
     }
 
@@ -441,7 +446,7 @@ public class LoopingTaskProducerTest {
      * @param sourceCount
      */
     private void setupStateManager(int morselCount, int sourceCount) {
-        expectGetMorsels(new HashSet<Morsel>(),1);
+        expectGetMorsels(new HashSet<DuplicationMorsel>(),1);
         stateManager.setMorsels(EasyMock.isA(HashSet.class));
         EasyMock.expectLastCall().times(morselCount*sourceCount/1000);
         setupCheckDatesFirstTimeRun();

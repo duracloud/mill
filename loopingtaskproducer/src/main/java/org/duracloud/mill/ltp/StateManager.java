@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein
  *	       Date: Nov 5, 2013
  */
-public class StateManager {
+public class StateManager<T extends Morsel> {
     private static Logger log = LoggerFactory.getLogger(StateManager.class);
     private File stateFile;
     private State state;
@@ -30,11 +30,11 @@ public class StateManager {
      */
     public StateManager(String path) {
         stateFile = new File(path);
-        if(stateFile.exists()){
+        if(stateFile.exists() && stateFile.length() > 0){
             ObjectMapper m = new ObjectMapper();
             try {
                 this.state = m.readValue(stateFile,
-                        new TypeReference<State>() {
+                        new TypeReference<State<T>>() {
                         });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -61,14 +61,14 @@ public class StateManager {
     /**
      * @return
      */
-    public Set<Morsel> getMorsels() {
+    public Set<T> getMorsels() {
         return state.getMorsels();
     }
 
     /**
      * @param morsels
      */
-    public void setMorsels(Set<Morsel> morsels) {
+    public void setMorsels(Set<T> morsels) {
         this.state.setMorsels(morsels);
         flush();
     }

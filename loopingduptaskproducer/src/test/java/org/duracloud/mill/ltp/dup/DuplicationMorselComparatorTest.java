@@ -5,9 +5,12 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.ltp.dup;
 
 import org.duracloud.mill.dup.DuplicationStorePolicy;
+import org.duracloud.mill.ltp.Morsel;
+import org.duracloud.mill.ltp.MorselComparator;
+import org.duracloud.mill.ltp.dup.DuplicationMorsel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +18,7 @@ import org.junit.Test;
  * @author Daniel Bernstein
  *	       Date: Nov 7, 2013
  */
-public class MorselComparatorTest {
+public class DuplicationMorselComparatorTest {
 
     /**
      * Test method for {@link org.duracloud.mill.ltp.MorselComparator#compare(org.duracloud.mill.ltp.Morsel, org.duracloud.mill.ltp.Morsel)}.
@@ -26,13 +29,13 @@ public class MorselComparatorTest {
         policy.setDestStoreId("1");
         policy.setSrcStoreId("0");
         
-        Morsel a = new Morsel("subdomain-a", "space-a", "marker", policy);
-        Morsel b = new Morsel("subdomain-b", "space-a", "marker", policy);
+        Morsel a = new DuplicationMorsel("subdomain-a", "space-a", "marker", policy);
+        Morsel b = new DuplicationMorsel("subdomain-b", "space-a", "marker", policy);
 
-        Morsel c = new Morsel("subdomain-z", "space-a", null, policy);
+        Morsel c = new DuplicationMorsel("subdomain-z", "space-a", null, policy);
 
-        Morsel d = new Morsel("subdomain-a", "space-b", null, policy);
-        Morsel e = new Morsel("subdomain-b", "space-c", "marker", policy);
+        Morsel d = new DuplicationMorsel("subdomain-a", "space-b", null, policy);
+        Morsel e = new DuplicationMorsel("subdomain-b", "space-c", "marker", policy);
 
         MorselComparator com = new MorselComparator();
         Assert.assertTrue(com.compare(c, d) < 0);

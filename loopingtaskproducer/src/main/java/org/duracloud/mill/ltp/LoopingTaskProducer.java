@@ -10,29 +10,21 @@ package org.duracloud.mill.ltp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
-
+import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
-import org.duracloud.mill.task.DuplicationTask;
-import org.duracloud.common.queue.task.Task;
-import org.duracloud.mill.dup.DuplicationPolicy;
-import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.DuplicationStorePolicy;
-import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,44 +48,53 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Daniel Bernstein Date: Nov 5, 2013
  */
-public class LoopingTaskProducer implements Runnable {
+public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable {
     private static Logger log = LoggerFactory.getLogger(LoopingTaskProducer.class);
-    private DuplicationPolicyManager policyManager;
     private TaskQueue taskQueue;
     private CredentialsRepo credentialsRepo;
-    private Cache cache;
-    private StateManager stateManager;
+    private StateManager<T> stateManager;
     private int maxTaskQueueSize;
     private StorageProviderFactory storageProviderFactory;
-    private List<Morsel> morselsToReload = new LinkedList<>();
+    private List<T> morselsToReload = new LinkedList<>();
     private Frequency frequency;
-    private RunStats cumulativeTotals = new RunStats();
-    
-    private static class RunStats {
-        int deletes = 0;
-        int dups = 0;
-    }
+    private RunStats cumulativeTotals;
     
     private Map<String,RunStats> runstats = new HashMap<>();
 
     public LoopingTaskProducer(CredentialsRepo credentialsRepo,
                                StorageProviderFactory storageProviderFactory,
-                               DuplicationPolicyManager policyManager, 
                                TaskQueue taskQueue,
-                               Cache cache, 
-                               StateManager state,
+                               StateManager<T> state,
                                int maxTaskQueueSize, 
                                Frequency frequency) {
         
         this.credentialsRepo = credentialsRepo;
         this.storageProviderFactory = storageProviderFactory;
-        this.policyManager = policyManager;
         this.taskQueue = taskQueue;
-        this.cache = cache;
         this.stateManager = state;
         this.credentialsRepo = credentialsRepo;
         this.maxTaskQueueSize = maxTaskQueueSize;
         this.frequency = frequency;
+        this.cumulativeTotals = createRunStats();
+    }
+    
+    protected Frequency getFrequency(){
+        return this.frequency;
+    }
+    
+
+
+    protected CredentialsRepo getCredentialsRepo() {
+        return credentialsRepo;
+    }
+
+
+    protected TaskQueue getTaskQueue() {
+        return taskQueue;
+    }
+
+    protected int getMaxTaskQueueSize() {
+        return maxTaskQueueSize;
     }
     
     public void run(){
@@ -113,15 +114,26 @@ public class LoopingTaskProducer implements Runnable {
             }
             
             log.info("Starting run...");
-            MorselQueue morselQueue = loadMorselQueue();
+            Queue<T> morselQueue = loadMorselQueue();
             
             while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
-                nibble(morselQueue.poll());
+                T morsel = morselQueue.peek();
+                nibble(morselQueue);
                 persistMorsels(morselQueue, morselsToReload);
-                
+               
                 if(morselQueue.isEmpty()){
                     morselQueue = reloadMorselQueue();
+                }else{
+                    //break if nothing was removed from the queue
+                    //if nothing was removed from the queue we can assume
+                    //that the for whatever reason the morsel could not be processed
+                    //at this time, so the process should wait for the next run.
+                    if(morsel.equals(morselQueue.peek())){
+                        break;
+                    }
                 }
+                
+               
             }
     
             if(morselQueue.isEmpty()){
@@ -135,34 +147,23 @@ public class LoopingTaskProducer implements Runnable {
         }
     }
 
-    /**
-     * 
-     */
-    private void logCumulativeSessionStats() {
-        log.info("session stats (global cumulative): domains={} dups={}  deletes={}",
-                runstats.keySet().size(), this.cumulativeTotals.dups, this.cumulativeTotals.deletes);
-    }
-    
     private void resetIncrementalSessionStats() {
         synchronized (runstats){
-            for(String subdomain : runstats.keySet()){
-                RunStats stats = runstats.get(subdomain);
-                stats.deletes = 0;
-                stats.dups = 0;
+            for(String account : runstats.keySet()){
+                RunStats stats = runstats.get(account);
+                stats.reset();
             }
         }
     }
     
-    private RunStats calculateStatTotals(RunStats currentTotals){
-        RunStats totals = new RunStats();
-        totals.deletes = currentTotals.deletes;
-        totals.dups = currentTotals.dups;
+    protected RunStats calculateStatTotals(RunStats currentTotals){
+        RunStats totals = createRunStats();
+        totals.copyValuesFrom(currentTotals);
 
         synchronized (runstats){
-            for(String subdomain : runstats.keySet()){
-                RunStats stats = runstats.get(subdomain);
-                totals.deletes += stats.deletes;
-                totals.dups    += stats.dups;
+            for(String account : runstats.keySet()){
+                RunStats stats = runstats.get(account);
+                totals.add(stats);
             }
             return totals;
         }
@@ -170,25 +171,19 @@ public class LoopingTaskProducer implements Runnable {
 
     private void logSessionStats() {
         synchronized (runstats){
-            for(String subdomain : runstats.keySet()){
-                RunStats stats = runstats.get(subdomain);
-                log.info("Session stats by subdomain (incremental): subdomain={} dups={} deletes={}",
-                        subdomain, 
-                        stats.dups, 
-                        stats.deletes);
+            for(String account : runstats.keySet()){
+                RunStats stats = runstats.get(account);
+                logIncrementalStatsByAccount(account, stats);
             }
 
-            RunStats incrementalTotals = calculateStatTotals(new RunStats());
-            log.info("Session stats (global incremental): dups={} deletes={}",
-                    incrementalTotals.dups, 
-                    incrementalTotals.deletes);
+            RunStats incrementalTotals = calculateStatTotals(createRunStats());
+            logGlobalncrementalStats(incrementalTotals);
             
             this.cumulativeTotals = calculateStatTotals(cumulativeTotals);
-            logCumulativeSessionStats();
+            logCumulativeSessionStats(runstats, this.cumulativeTotals);
             resetIncrementalSessionStats();
         }
     }
-
 
     /**
      * 
@@ -240,10 +235,10 @@ public class LoopingTaskProducer implements Runnable {
     /**
      * @return
      */
-    private MorselQueue reloadMorselQueue() {
-        List<Morsel> morsels = morselsToReload;
+    private MorselQueue<T> reloadMorselQueue() {
+        List<T> morsels = morselsToReload;
         morselsToReload = new LinkedList<>();
-        MorselQueue queue = new MorselQueue();
+        MorselQueue<T> queue = new MorselQueue<>();
         queue.addAll(morsels);
         return queue;
     }
@@ -254,33 +249,32 @@ public class LoopingTaskProducer implements Runnable {
      * 
      * @return
      */
-    private MorselQueue loadMorselQueue() {
-        MorselQueue morselQueue = new MorselQueue();
+    private Queue<T> loadMorselQueue() {
+        Queue<T> morselQueue = createQueue();
         
         //load morsels from state;
-        Set<Morsel> morsels = new HashSet<>(this.stateManager.getMorsels());
+        Set<T> morsels = new LinkedHashSet<>(this.stateManager.getMorsels());
         
         morselQueue.addAll(morsels);
 
         if(morselQueue.isEmpty()){
-            //generate set of morsels based on duplication policy
-            for(String account : this.policyManager.getDuplicationAccounts()){
-                DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
-                for(String spaceId : policy.getSpaces()){
-                    Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
-                    for(DuplicationStorePolicy storePolicy : storePolicies){
-                        morselQueue.add(new Morsel(account, spaceId, null, storePolicy));
-                    }
-                }
-            }
+            loadMorselQueueFromSource(morselQueue);
         }
         
         return morselQueue;
     }
     
-    
-    private void persistMorsels(MorselQueue queue, List<Morsel> morselsToReload){
-        Set<Morsel> morsels = new HashSet<>();
+   
+
+    /**
+     * @return
+     */
+    protected Queue<T> createQueue() {
+        return new LinkedList<T>();
+    }
+
+    private void persistMorsels(Queue<T> queue, List<T> morselsToReload){
+        Set<T> morsels = new LinkedHashSet<>();
         morsels.addAll(queue);
         morsels.addAll(morselsToReload);
         stateManager.setMorsels(morsels);
@@ -289,259 +283,80 @@ public class LoopingTaskProducer implements Runnable {
     /**
      * @param morsel
      */
-    private void nibble(Morsel morsel) {
-        
-        String subdomain = morsel.getSubdomain();
-        String spaceId = morsel.getSpaceId();
-        DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
-        
-        //get all items from source
-        StorageProvider sourceProvider = 
-                getStorageProvider(subdomain, 
-                                   storePolicy.getSrcStoreId());
-        StorageProvider destProvider = 
-                getStorageProvider(subdomain, 
-                                   storePolicy.getDestStoreId());
-
-        if(!morsel.isDeletePerformed()){
-            addDuplicationTasksForContentNotInSource(subdomain,
-                                                        spaceId, 
-                                                        storePolicy, 
-                                                        sourceProvider, 
-                                                        destProvider);
-            morsel.setDeletePerformed(true);
-        }
-        
-        int taskQueueSize = taskQueue.size();
-        if(taskQueueSize >= maxTaskQueueSize){
-            log.info(
-                    "Task queue size ({}) has reached or exceeded max size ({}).",
-                    taskQueueSize, maxTaskQueueSize);
-            addToReloadList(morsel);
-        } else{
-            if(addDuplicationTasksFromSource(morsel, sourceProvider, 1000)){
-                log.info(
-                        "All tasks that could be created were created for subdomain={}, spaceId={}, storePolicy={}. Taskqueue.size = {}",
-                        subdomain, spaceId, storePolicy, taskQueue.size());
-                log.info(
-                        "morsel completely nibbled. No reload necessary in this round.",
-                        morsel);
-            } else {
-                log.info(
-                        "morsel nibbled a bit: {}",
-                        morsel);
-                addToReloadList(morsel);
-            }
-            
-        }
-        
-    }
-
-    /**
-     * @param morsel
-     */
-    private void addToReloadList(Morsel morsel) {
+    protected void addToReloadList(T morsel) {
         log.info(
                 "adding morsel to reload list: {}",
                 morsel);
         morselsToReload.add(morsel);
     }
 
-
-
-
     /**
-     * 
-     * @param morsel
-     * @param sourceProvider
-     * @param maxContentIdsToAdd
-     * @return true if morsel exhausted, false if morsel needs to be requeued.
-     */
-    private boolean addDuplicationTasksFromSource(Morsel morsel, StorageProvider sourceProvider, int maxContentIdsToAdd) {
-
-        String subdomain = morsel.getSubdomain();
-        String spaceId = morsel.getSpaceId();
-        String marker = morsel.getMarker();
-        DuplicationStorePolicy storePolicy = morsel.getStorePolicy();
-
-        //load in next maxContentIdsToAdd or however many remain 
-        List<String> contentIds = null;
-        
-        try {
-            contentIds = sourceProvider.getSpaceContentsChunked(spaceId, 
-                                                     null, 
-                                                     maxContentIdsToAdd, 
-                                                     marker);
-        }catch(NotFoundException ex){
-            log.info("space not found on source provider: " +
-                    "subdomain={}, spaceId={}, storeId={}",
-                    subdomain, spaceId, sourceProvider);
-            
-            addDeleteSpaceTaskToQueue(subdomain, 
-                                      spaceId, 
-                                      storePolicy,
-                                      sourceProvider);
-            return true;
-        }
-        //add to queue
-        int contentIdCount = contentIds.size();
-        
-        if(contentIdCount == 0){
-            return true;
-        }else {
-            int added = addToTaskQueue(subdomain, 
-                                       spaceId, 
-                                       storePolicy,
-                                       contentIds);
-            getStats(subdomain).dups += added;
-            //if no tasks were added, it means that all contentIds in this morsel
-            //have been touched in this run.
-            if(added == 0){
-                return true;
-            }else{
-                marker = contentIds.get(contentIds.size()-1);
-                morsel.setMarker(marker);
-            }
-        } 
-        
-        return false;
-    }
-
-    /**
-     * @param subdomain
+     * @param account
      * @return
      */
-    private RunStats getStats(String subdomain) {
+    protected RunStats getStats(String account) {
         synchronized(runstats){
-            RunStats stats = this.runstats.get(subdomain);
+            RunStats stats = this.runstats.get(account);
             if(stats == null){
-                this.runstats.put(subdomain, stats = new RunStats());
+                this.runstats.put(account, stats = createRunStats());
             }
             return stats;
         }
     }
 
-    private void addDuplicationTasksForContentNotInSource(
-            String subdomain, String spaceId,
-            DuplicationStorePolicy storePolicy, StorageProvider sourceProvider,
-            StorageProvider destProvider) {
-
-        try{
-            //load all source into ehcache
-            Iterator<String> sourceContentIds = sourceProvider.getSpaceContents(spaceId, null);
-            while(sourceContentIds.hasNext()){
-                cache.put(new Element(sourceContentIds.next(), null));
-            }
-        }catch(NotFoundException ex){
-            log.info("space not found on source provider: " +
-                    "subdomain={}, spaceId={}, storeId={}",
-                    subdomain, spaceId, sourceProvider);
-        }
-
-        
-        //get all items from dest
-        Iterator<String> destContentIds = null;
-        
-        try{
-            destContentIds = destProvider.getSpaceContents(spaceId, null);
-        }catch(NotFoundException ex){
-            log.info("space not found on destination provider: " +
-                     "subdomain={}, spaceId={}, storeId={}",
-                     subdomain, spaceId, destProvider);
-            return;
-        }
-        
-        int deletionTaskCount = 0;
-        //for each one 
-        List<String> deletions = new LinkedList<String>();
-        while(destContentIds.hasNext()){
-            String destContentId = destContentIds.next();
-            //if not in cache
-            if(!cache.isKeyInCache(destContentId)){
-                deletions.add(destContentId);
-                //periodically add deletions to prevent OOM
-                //in case that there are millions of content ids to delete
-                if(deletions.size() == 10000){
-                    //create dup task
-                    deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
-                    deletions.clear();
-                }
-            }
-        }
-        
-        //add any remaining deletions
-        deletionTaskCount += addToTaskQueue(subdomain, spaceId, storePolicy, deletions);
-        getStats(subdomain).deletes += deletionTaskCount;
-        
-        log.info(
-                "added {} deletion tasks: subdomain={}, spaceId={}, sourceStoreId={}, destStoreId={}",
-                deletionTaskCount, 
-                subdomain, 
-                spaceId, 
-                storePolicy.getSrcStoreId(),
-                storePolicy.getDestStoreId());
-        cache.removeAll();
-    }
-
-    /**
-     * @param subdomain
-     * @param spaceId
-     * @param storePolicy
-     * @param sourceProvider
-     */
-    private void addDeleteSpaceTaskToQueue(String subdomain,
-            String spaceId,
-            DuplicationStorePolicy storePolicy,
-            StorageProvider sourceProvider) {
-        // drop a delete space message. (ie a duplication message with
-        // no content - should trigger a destination space deletion);
-        DuplicationTask task = new DuplicationTask();
-        task.setAccount(subdomain);
-        task.setSourceStoreId(storePolicy.getSrcStoreId());
-        task.setContentId(""); 
-        task.setDestStoreId(storePolicy.getDestStoreId());
-        task.setSpaceId(spaceId);
-        this.taskQueue.put(task.writeTask());
-        log.info("destintation space delete task added to queue " +
-                "since source does not exist: " +
-                "subdomain={}, spaceId={}, storeId={}",
-                subdomain, spaceId, sourceProvider);
-    }
-
-    private int addToTaskQueue(String subdomain, String spaceId,
-            DuplicationStorePolicy storePolicy, List<String> contentIds) {
-        Set<Task> tasks = new HashSet<>();
-        int addedCount = 0;
-        
-        for(String contentId : contentIds){
-            DuplicationTask dupTask = new DuplicationTask();
-            dupTask.setAccount(subdomain);
-            dupTask.setContentId(contentId);
-            dupTask.setSpaceId(spaceId);
-            dupTask.setStoreId(storePolicy.getSrcStoreId());
-            dupTask.setSourceStoreId(storePolicy.getSrcStoreId());
-            dupTask.setDestStoreId(storePolicy.getDestStoreId());
-            
-            Task task = dupTask.writeTask();
-            tasks.add(task);
-            addedCount++;
-        }
-
-        taskQueue.put(tasks);
-        
-        return addedCount;
-    }
-
-    private StorageProvider getStorageProvider(String subdomain,
+    protected StorageProvider getStorageProvider(String account,
             String storeId)  {
         StorageProviderCredentials creds;
         try {
-            creds = credentialsRepo.getStorageProviderCredentials(subdomain, 
+            creds = credentialsRepo.getStorageProviderCredentials(account, 
                                                           storeId);
         } catch (CredentialsRepoException e) {
             throw new RuntimeException(e);
         }
         
+        return getStorageProvider(creds);
+    }
+
+    /**
+     * @param creds
+     * @return
+     */
+    protected StorageProvider getStorageProvider(StorageProviderCredentials creds) {
         return storageProviderFactory.create(creds);
     }
+
+    /**
+     * @param morselQueue
+     */
+    protected abstract void loadMorselQueueFromSource(Queue<T> morselQueue);
+
+    /**
+     * @param morsel
+     */
+    protected abstract void nibble(Queue<T> queue);
+    
+
+    /**
+     * @return
+     */
+    protected abstract RunStats createRunStats();
+
+    /**
+     * @param incrementalTotals
+     */
+    protected abstract void logGlobalncrementalStats(RunStats incrementalTotals);
+
+    /**
+     * @param account
+     * @param stats
+     */
+    protected abstract void logIncrementalStatsByAccount(String account, RunStats stats);
+
+    /**
+     * 
+     * @param runstats
+     * @param cumulativeTotals
+     */
+    protected abstract void logCumulativeSessionStats(Map<String,RunStats> runstats, RunStats cumulativeTotals);
+
 }

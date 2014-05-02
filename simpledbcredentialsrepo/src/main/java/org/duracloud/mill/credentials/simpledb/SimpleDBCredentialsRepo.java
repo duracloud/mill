@@ -15,6 +15,7 @@ import java.util.Map;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.duracloud.storage.domain.StorageProviderType;
@@ -64,19 +65,36 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
      */
     @Override
     public StorageProviderCredentials getStorageProviderCredentials(
-            String subdomain, String storeId)
+            String account, String storeId)
             throws AccountCredentialsNotFoundException,
             StorageProviderCredentialsNotFoundException {
         
-        AccountCredentials accountCredentials = cache.get(subdomain);
+        AccountCredentials accountCredentials = getAccountCredentials(account);
 
-        if (accountCredentials != null) {
-            StorageProviderCredentials storeCred = getStorageProvider(storeId, accountCredentials); 
-            if(storeCred != null){
-                return storeCred;
-            }
+        StorageProviderCredentials storeCred = getStorageProvider(storeId, accountCredentials); 
+        if(storeCred != null){
+            return storeCred;
+        }else{
+            throw new StorageProviderCredentialsNotFoundException(
+                    "no provider where id = " + storeId + " on account "
+                            + account);
         }
+    }
 
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.credentials.CredentialsRepo#getAccountCredentials(java.lang.String)
+     */
+    @Override
+    
+    public AccountCredentials getAccountCredentials(String subdomain)
+            throws AccountCredentialsNotFoundException {
+        
+        AccountCredentials accountCredentials = cache.get(subdomain);
+        
+        if(null != accountCredentials){
+            return accountCredentials;
+        }
+        
         // get server details id
         SelectResult result = this.client.select(new SelectRequest(
                 "select SERVER_DETAILS_ID from " + tablePrefix + "DURACLOUD_ACCOUNTS where SUBDOMAIN = '"
@@ -112,19 +130,9 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
         }
 
         // build account credentials object.
-        accountCredentials = new AccountCredentials();
-        accountCredentials.setSProviderCredentials(creds);
-        accountCredentials.setSubDomain(subdomain);
+        accountCredentials = new AccountCredentials(subdomain, creds);
         this.cache.put(subdomain, accountCredentials);
-        
-        StorageProviderCredentials storeCred = getStorageProvider(storeId, accountCredentials);
-        if(storeCred != null){
-            return storeCred;
-        }else{
-            throw new StorageProviderCredentialsNotFoundException(
-                    "no provider where id = " + storeId + " on subdomain "
-                            + subdomain);
-        }
+        return accountCredentials;
     }
 
     private StorageProviderCredentials getStorageProvider(String storeId,
@@ -166,5 +174,24 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
         throw new RuntimeException("Not attribute named " + attributeName
                 + " exists in result: domain=" + domain);
     }
+    
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.credentials.CredentialsRepo#getAccounts()
+     */
+    @Override
+    public List<String> getAccounts() throws CredentialsRepoException {
+        List<String> accounts = new LinkedList<String>();
+        // get server details id
+        SelectResult result = this.client.select(new SelectRequest(
+                "select SUBDOMAIN from " + tablePrefix + "DURACLOUD_ACCOUNTS limit 2500"));
+        List<Item> items = result.getItems();
 
+        for(Item item : items ){
+            String accountId = item.getAttributes().get(0).getValue();
+            accounts.add(accountId);
+        }
+
+        return accounts;
+    }
 }
