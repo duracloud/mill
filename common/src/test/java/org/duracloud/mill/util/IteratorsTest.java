@@ -9,6 +9,7 @@ package org.duracloud.mill.util;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 public class IteratorsTest {
 
     @Test
-    public void differenceTest() {
+    public void differenceTest() throws IOException {
         List<String> listA = new ArrayList<>();
         populate(listA, 1, 1000);
         List<String> listB = new ArrayList<>();
