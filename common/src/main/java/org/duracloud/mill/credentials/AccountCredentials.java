@@ -18,6 +18,9 @@ public class AccountCredentials {
     private String account;
     private List<StorageProviderCredentials> providerCredentials;
 
+    public AccountCredentials(){
+        
+    }
     /**
      * @param account
      * @param creds 
