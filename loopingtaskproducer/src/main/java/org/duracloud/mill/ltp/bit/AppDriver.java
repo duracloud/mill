@@ -5,33 +5,30 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp.dup;
+package org.duracloud.mill.ltp.bit;
 
 import java.io.File;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 
 import org.apache.commons.cli.CommandLine;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
-import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
-import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
-import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.ltp.dup.DuplicationOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import com.rackspacecloud.client.cloudfiles.sample.FilesCli.CommandLineOptions;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -40,13 +37,13 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
  * @author Daniel Bernstein Date: Nov 4, 2013
  */
 public class AppDriver extends LoopingTaskProducerDriverSupport {
-    public static Logger log = LoggerFactory.getLogger(AppDriver.class);
+    private static Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     /**
      * 
      */
     public AppDriver() {
-        super(new DuplicationOptions());
+        super(new LoopingTaskProducerCommandLineOptions());
     }
 
     public static void main(String[] args) {
@@ -69,7 +66,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         try {
 
-            LoopingDuplicationTaskProducer producer = buildTaskProducer(cmd,
+            LoopingBitIntegrityTaskProducer producer = buildTaskProducer(cmd,
                                                                         maxTaskQueueSize, 
                                                                         stateFilePath, 
                                                                         frequency);
@@ -92,7 +89,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      * @param frequency
      * @return
      */
-    private LoopingDuplicationTaskProducer buildTaskProducer(CommandLine cmd,
+    private LoopingBitIntegrityTaskProducer buildTaskProducer(CommandLine cmd,
             int maxTaskQueueSize,
             String stateFilePath,
             Frequency frequency) {
@@ -111,39 +108,20 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
-        DuplicationPolicyManager policyManager;
-        if (config.getDuplicationPolicyDir() != null) {
-            policyManager = new DuplicationPolicyManager(
-                    new LocalDuplicationPolicyRepo(
-                            config.getDuplicationPolicyDir()));
-        } else {
-            DuplicationPolicyRepo policyRepo;
-            if (cmd.hasOption(DuplicationOptions.POLICY_BUCKET_SUFFIX)) {
-                policyRepo = new S3DuplicationPolicyRepo(
-                        cmd.getOptionValue(DuplicationOptions.POLICY_BUCKET_SUFFIX));
-            } else {
-                policyRepo = new S3DuplicationPolicyRepo();
-            }
-            policyManager = new DuplicationPolicyManager(policyRepo);
-        }
 
         TaskQueue taskQueue = new SQSTaskQueue(
                 config.getOutputQueue());
 
-        CacheManager cacheManager = CacheManager.create();
-        Cache cache = new Cache("contentIdCache", 100 * 1000, true, true,
-                60 * 5, 60 * 5);
-        cacheManager.addCache(cache);
 
-        StateManager<DuplicationMorsel> stateManager = new StateManager<>(
+        StateManager<BitIntegrityMorsel> stateManager = new StateManager<>(
                 stateFilePath);
 
-        LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(
-                credentialsRepo, storageProviderFactory, policyManager,
-                taskQueue, cache, stateManager, maxTaskQueueSize, frequency);
+        LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(
+                credentialsRepo, storageProviderFactory,
+                taskQueue, stateManager, maxTaskQueueSize, frequency);
         return producer;
     }
-
+    
     /**
      * @param cmd
      */
@@ -166,4 +144,5 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                     localDuplicationPolicyDirPath);
         }
     }
+
 }

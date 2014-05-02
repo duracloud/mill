@@ -8,7 +8,7 @@
 package org.duracloud.mill.ltp.dup;
 
 import org.apache.commons.cli.Option;
-import org.duracloud.mill.ltp.CommandLineOptions;
+import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,19 +16,13 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein
  *	       Date: Apr 23, 2014
  */
-public class DuplicationOptions extends CommandLineOptions {
-    public static final String DUPLICATION_QUEUE_OPTION     = "d";
+public class DuplicationOptions extends LoopingTaskProducerCommandLineOptions {
     public static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
     public static final String POLICY_BUCKET_SUFFIX         = "p";
 
 
     public DuplicationOptions(){
         super();
-        Option duplicationQueueName = new Option(DUPLICATION_QUEUE_OPTION,
-                "duplication-queue", true, "Name of the duplication queue.");
-        duplicationQueueName.setArgs(1);
-        duplicationQueueName.setArgName("name");
-        addOption(duplicationQueueName);
 
         Option localDuplicationDir = new Option(LOCAL_DUPLICATION_DIR_OPTION,
                 "local-duplication-dir", true,

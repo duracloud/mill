@@ -14,14 +14,15 @@ import org.apache.commons.cli.Options;
  * @author Daniel Bernstein
  *	       Date: Apr 23, 2014
  */
-public class CommandLineOptions extends Options{
+public class LoopingTaskProducerCommandLineOptions extends Options{
     
     public static final String CONFIG_FILE_OPTION           = "c";
     public static final String MAX_TASK_QUEUE_SIZE_OPTION   = "m";
     public static final String STATE_FILE_PATH              = "s";
     public static final String FREQUENCY_OPTION             = "f";
+    public static final String OUTPUT_QUEUE_OPTION     = "d";
 
-    public CommandLineOptions(){
+    public LoopingTaskProducerCommandLineOptions(){
         super();
         
         Option configFile = new Option(CONFIG_FILE_OPTION, "config-file", true,
@@ -57,6 +58,14 @@ public class CommandLineOptions extends Options{
         maxTaskQueueSize.setArgs(1);
         maxTaskQueueSize.setArgName("integer");
         addOption(maxTaskQueueSize);
+        
+        Option outputQueueName = new Option(LoopingTaskProducerCommandLineOptions.OUTPUT_QUEUE_OPTION,
+                "output-queue", true, "Name of the output queue - ie the target queue for produced tasks.");
+        outputQueueName.setArgs(1);
+        outputQueueName.setArgName("name");
+        outputQueueName.setRequired(true);
+        addOption(outputQueueName);
+
 
     }
 }

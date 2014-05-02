@@ -49,7 +49,7 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
     /**
      * 
      */
-    public LoopingTaskProducerDriverSupport(CommandLineOptions options) {
+    public LoopingTaskProducerDriverSupport(LoopingTaskProducerCommandLineOptions options) {
         super(options);
     }
 
@@ -111,7 +111,7 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
         }
 
         TaskQueue taskQueue = new SQSTaskQueue(
-                config.getLowPriorityDuplicationQueue());
+                config.getOutputQueue());
 
         CacheManager cacheManager = CacheManager.create();
         Cache cache = new Cache("contentIdCache", 100 * 1000, true, true,
@@ -127,42 +127,6 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
         return producer;
     }
 
-    /**
-     * @param cmd
-     */
-    private void processTaskQueueNameOption(CommandLine cmd) {
-        String duplicationQueueName = cmd
-                .getOptionValue(DuplicationOptions.DUPLICATION_QUEUE_OPTION);
-        if (duplicationQueueName != null) {
-            setSystemProperty(
-                    LoopingTaskProducerConfigurationManager.LOW_PRIORITY_DUPLICATION_QUEUE_KEY,
-                    duplicationQueueName);
-        }
-    }
-
-    /**
-     * @param cmd
-     * @return
-     */
-    private Frequency processFrequencyOption(CommandLine cmd) {
-        String frequencyStr = cmd
-                .getOptionValue(CommandLineOptions.FREQUENCY_OPTION);
-        if (frequencyStr == null) {
-            frequencyStr = "1m";
-        }
-
-        Frequency frequency = null;
-        try {
-            frequency = new Frequency(frequencyStr);
-            log.info("frequency = {}{}", frequency.getValue(),
-                    frequency.getTimeUnitAsString());
-        } catch (java.text.ParseException ex) {
-            System.out.println("Frequency parameter is invalid: " + frequency
-                    + " Please refer to usage for valid examples.");
-            die();
-        }
-        return frequency;
-    }
 
     /**
      * @param cmd
@@ -170,7 +134,7 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
      */
     private String processStateFilePathOption(CommandLine cmd) {
         String stateFilePath = cmd
-                .getOptionValue(CommandLineOptions.STATE_FILE_PATH);
+                .getOptionValue(LoopingTaskProducerCommandLineOptions.STATE_FILE_PATH);
         if (stateFilePath != null) {
             File stateFile = new File(stateFilePath);
             if (!stateFile.exists()) {
@@ -194,7 +158,7 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
      */
     private int processMaxQueueSizeOption(CommandLine cmd) {
         String maxTaskQueueSizeOption = cmd
-                .getOptionValue(CommandLineOptions.MAX_TASK_QUEUE_SIZE_OPTION);
+                .getOptionValue(LoopingTaskProducerCommandLineOptions.MAX_TASK_QUEUE_SIZE_OPTION);
         int maxTaskQueueSize = 10 * 1000;
 
         if (maxTaskQueueSizeOption != null) {
@@ -206,35 +170,13 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
         return maxTaskQueueSize;
     }
 
+  
     /**
      * @param cmd
      */
-    private void processLocalDuplicationDirOption(CommandLine cmd) {
-        String localDuplicationPolicyDirPath = cmd
-                .getOptionValue(DuplicationOptions.LOCAL_DUPLICATION_DIR_OPTION);
-        if (localDuplicationPolicyDirPath != null) {
-            if (!new File(localDuplicationPolicyDirPath).exists()) {
-                System.err.print("The local duplication policy directory "
-                        + "path you specified, "
-                        + localDuplicationPolicyDirPath + " does not exist: ");
-                die();
-            } else {
-                setSystemProperty(
-                        TaskProducerConfigurationManager.DUPLICATION_POLICY_DIR_KEY,
-                        localDuplicationPolicyDirPath);
-            }
-
-            log.info("local duplication policy directory: {}",
-                    localDuplicationPolicyDirPath);
-        }
-    }
-
-    /**
-     * @param cmd
-     */
-    private void processConfigFileOption(CommandLine cmd) {
+    protected void processConfigFileOption(CommandLine cmd) {
         String configPath = cmd
-                .getOptionValue(CommandLineOptions.CONFIG_FILE_OPTION);
+                .getOptionValue(LoopingTaskProducerCommandLineOptions.CONFIG_FILE_OPTION);
 
         if (configPath != null) {
             setSystemProperty(
@@ -242,4 +184,46 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
                     configPath);
         }
     }
+
+    /**
+     * @param cmd
+     */
+    protected void processTaskQueueNameOption(CommandLine cmd) {
+        String outputQueueName = cmd
+                .getOptionValue(LoopingTaskProducerCommandLineOptions.OUTPUT_QUEUE_OPTION);
+        if (outputQueueName != null) {
+            setSystemProperty(
+                    LoopingTaskProducerConfigurationManager.OUTPUT_QUEUE_KEY,
+                    outputQueueName);
+        }
+    }
+
+    /**
+     * @param cmd
+     * @return
+     */
+    protected Frequency processFrequencyOption(CommandLine cmd) {
+        String frequencyStr = cmd
+                .getOptionValue(LoopingTaskProducerCommandLineOptions.FREQUENCY_OPTION);
+        if (frequencyStr == null) {
+            frequencyStr = "1m";
+        }
+    
+        Frequency frequency = null;
+        try {
+            frequency = new Frequency(frequencyStr);
+            log.info("frequency = {}{}", frequency.getValue(),
+                    frequency.getTimeUnitAsString());
+        } catch (java.text.ParseException ex) {
+            System.out.println("Frequency parameter is invalid: " + frequency
+                    + " Please refer to usage for valid examples.");
+            die();
+        }
+        return frequency;
+    }
+
+
+
+
+
 }

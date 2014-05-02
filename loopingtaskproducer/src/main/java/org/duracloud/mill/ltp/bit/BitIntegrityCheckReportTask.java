@@ -7,14 +7,14 @@
  */
 package org.duracloud.mill.ltp.bit;
 
+import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
-import org.duracloud.common.queue.task.TypedTask;
 
 /**
  * @author Daniel Bernstein
  *	       Date: May 1, 2014
  */
-public class BitIntegrityCheckReportTask extends TypedTask {
+public class BitIntegrityCheckReportTask extends SpaceCentricTypedTask {
 
     @Override
     public Task writeTask() {

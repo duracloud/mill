@@ -136,7 +136,7 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
         Assert.assertEquals(tasksProcessed, maxTaskQueueSize+morselCount);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")  
     @Test
     public void testNonExistentSpace() throws CredentialsRepoException, ParseException {
         int morselCount = 1;
