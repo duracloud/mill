@@ -23,7 +23,6 @@ import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
-import org.duracloud.mill.ltp.dup.DuplicationOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +60,6 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
     protected void executeImpl(CommandLine cmd) {
         super.executeImpl(cmd);
 
-        processLocalDuplicationDirOption(cmd);
         processTaskQueueNameOption(cmd);
 
         try {
@@ -122,27 +120,6 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         return producer;
     }
     
-    /**
-     * @param cmd
-     */
-    private void processLocalDuplicationDirOption(CommandLine cmd) {
-        String localDuplicationPolicyDirPath = cmd
-                .getOptionValue(DuplicationOptions.LOCAL_DUPLICATION_DIR_OPTION);
-        if (localDuplicationPolicyDirPath != null) {
-            if (!new File(localDuplicationPolicyDirPath).exists()) {
-                System.err.print("The local duplication policy directory "
-                        + "path you specified, "
-                        + localDuplicationPolicyDirPath + " does not exist: ");
-                die();
-            } else {
-                setSystemProperty(
-                        TaskProducerConfigurationManager.DUPLICATION_POLICY_DIR_KEY,
-                        localDuplicationPolicyDirPath);
-            }
-
-            log.info("local duplication policy directory: {}",
-                    localDuplicationPolicyDirPath);
-        }
-    }
+ 
 
 }
