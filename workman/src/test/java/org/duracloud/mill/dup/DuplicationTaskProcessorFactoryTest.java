@@ -8,6 +8,7 @@
 package org.duracloud.mill.dup;
 
 import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
@@ -85,8 +86,10 @@ public class DuplicationTaskProcessorFactoryTest {
 
         EasyMock.replay(repo, auditQueue);
 
+        StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
         DuplicationTaskProcessorFactory f =
             new DuplicationTaskProcessorFactory(repo,
+                                                storageProviderFactory,
                                                 new File("workdir"),
                                                 auditQueue);
 

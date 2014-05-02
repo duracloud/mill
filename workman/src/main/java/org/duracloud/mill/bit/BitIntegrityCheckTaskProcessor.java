@@ -73,14 +73,9 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
                 result = BitIntegrityResult.SUCCESS;
                 if(storageProviderType == StorageProviderType.AMAZON_S3 ||
                     storageProviderType == StorageProviderType.SDSC) {
-                    try {
-                        contentChecksum = getContentChecksum();
-                        if(! storeChecksum.equals(contentChecksum)) {
-                            result = BitIntegrityResult.FAILURE;
-                        }
-                    } catch(IOException ioe) {
-                        result = BitIntegrityResult.ERROR;
-                        log.error("Error reading inputStream to generate checksum", ioe);
+                    contentChecksum = getContentChecksum();
+                    if(! storeChecksum.equals(contentChecksum)) {
+                        result = BitIntegrityResult.FAILURE;
                     }
                 }
             }
@@ -195,10 +190,41 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
                 getProps().get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
     }
 
-    private String getStoreChecksum() {
-        return store.getContentProperties(bitTask.getSpaceId(),
-                                          bitTask.getContentId())
-                    .get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+    private String getStoreChecksum() throws TaskExecutionFailedException {
+        try {
+            return new Retrier().execute(new Retriable() {
+                @Override
+                public String retry() throws Exception {
+                    return store.getContentProperties(bitTask.getSpaceId(),
+                                                      bitTask.getContentId())
+                                .get(
+                                    StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+                }
+            });
+        } catch (Exception e) {
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage(
+                    "Could not retrieve checksum from storage provider"), e);
+        }
+    }
+
+    private String getContentChecksum() throws TaskExecutionFailedException {
+        final ChecksumUtil checksumUtil = new ChecksumUtil(MD5);
+        try {
+            return new Retrier().execute(new Retriable() {
+                @Override
+                public String retry() throws Exception {
+                    try(InputStream inputStream = store.getContent(bitTask.getSpaceId(),
+                                                                   bitTask.getContentId())) {
+                        return checksumUtil.generateChecksum(inputStream);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage(
+                    "Could not compute checksum from content stream"), e);
+        }
     }
 
     private String buildFailureMessage(String message) {
@@ -216,15 +242,5 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
         builder.append(" ContentID: ");
         builder.append(bitTask.getContentId());
         return builder.toString();
-    }
-
-    private String getContentChecksum() throws IOException {
-        String contentChecksum = null;
-        ChecksumUtil checksumUtil = new ChecksumUtil(MD5);
-        try(InputStream inputStream = store.getContent(bitTask.getSpaceId(),
-                                                       bitTask.getContentId())) {
-            contentChecksum = checksumUtil.generateChecksum(inputStream);
-        }
-        return contentChecksum;
     }
 }
