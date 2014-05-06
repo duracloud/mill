@@ -9,6 +9,7 @@ package org.duracloud.mill.bit;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -72,7 +73,9 @@ public class BitIntegrityCheckTaskProcessorFactory
                                                       storageProviderType,
                                                       auditLogStore,
                                                       bitLogStore,
-                                                      contentIndexClient);
+                                                      contentIndexClient,
+                                                      new ChecksumUtil(
+                                                          ChecksumUtil.Algorithm.MD5));
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: unable to locate" +
                           " credentials for subdomain: " + e.getMessage(), e);

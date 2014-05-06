@@ -43,19 +43,22 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
     private BitLogStore bitLogStore;
     private ContentIndexClient contentIndexClient;
     private StorageProviderType storageProviderType;
+    private ChecksumUtil checksumUtil;
 
     public BitIntegrityCheckTaskProcessor(BitIntegrityCheckTask bitTask,
                                           StorageProvider store,
                                           StorageProviderType storageProviderType,
                                           AuditLogStore auditLogStore,
                                           BitLogStore bitLogStore,
-                                          ContentIndexClient contentIndexClient) {
+                                          ContentIndexClient contentIndexClient,
+                                          ChecksumUtil checksumUtil) {
         this.bitTask = bitTask;
         this.store = store;
         this.storageProviderType = storageProviderType;
         this.auditLogStore = auditLogStore;
         this.bitLogStore = bitLogStore;
         this.contentIndexClient = contentIndexClient;
+        this.checksumUtil = checksumUtil;
     }
 
     @Override
@@ -209,7 +212,6 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
     }
 
     private String getContentChecksum() throws TaskExecutionFailedException {
-        final ChecksumUtil checksumUtil = new ChecksumUtil(MD5);
         try {
             return new Retrier().execute(new Retriable() {
                 @Override
