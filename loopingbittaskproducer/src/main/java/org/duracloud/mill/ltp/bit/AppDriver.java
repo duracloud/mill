@@ -10,24 +10,20 @@ package org.duracloud.mill.ltp.bit;
 import java.io.File;
 
 import org.apache.commons.cli.CommandLine;
+import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
-import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
-import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
 import org.duracloud.mill.ltp.Frequency;
-import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
-import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
-import com.rackspacecloud.client.cloudfiles.sample.FilesCli.CommandLineOptions;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -42,7 +38,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      * 
      */
     public AppDriver() {
-        super(new LoopingTaskProducerCommandLineOptions());
+        super(new LoopingBitIntegrityTaskProducerCommandLineOptions());
     }
 
     public static void main(String[] args) {
@@ -61,6 +57,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         super.executeImpl(cmd);
 
         processTaskQueueNameOption(cmd);
+        processExclusionListOption(cmd);
 
         try {
 
@@ -79,6 +76,26 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         System.exit(0);
 
     }
+    
+    /**
+     * @param cmd
+     */
+    private void processExclusionListOption(CommandLine cmd) {
+        String exclusionList = cmd
+                .getOptionValue(LoopingBitIntegrityTaskProducerCommandLineOptions.SPACE_EXCLUSION_LIST_OPTION);
+        if (exclusionList != null) {
+            File list = new File(exclusionList);
+            if(!list.exists()){
+                throw new DuraCloudRuntimeException("space exclusion list not found: " + list);
+            }
+            
+            
+            setSystemProperty(
+                    LoopingBitTaskProducerConfigurationManager.SPACE_EXCLUSION_LIST,
+                    exclusionList);
+        }
+    }
+
 
     /**
      * @param cmd
@@ -91,7 +108,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             int maxTaskQueueSize,
             String stateFilePath,
             Frequency frequency) {
-        LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
+
+        LoopingBitTaskProducerConfigurationManager config = new LoopingBitTaskProducerConfigurationManager();
         config.init();
 
         CredentialsRepo credentialsRepo;
@@ -116,7 +134,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(
                 credentialsRepo, storageProviderFactory,
-                taskQueue, stateManager, maxTaskQueueSize, frequency);
+                taskQueue, stateManager, maxTaskQueueSize, frequency, config.getExclusionManager());
         return producer;
     }
     

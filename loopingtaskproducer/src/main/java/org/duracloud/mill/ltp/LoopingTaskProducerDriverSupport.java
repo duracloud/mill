@@ -137,6 +137,19 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
 
     /**
      * @param cmd
+     */
+    private void processExclusionListOption(CommandLine cmd) {
+        String outputQueueName = cmd
+                .getOptionValue(LoopingTaskProducerCommandLineOptions.OUTPUT_QUEUE_OPTION);
+        if (outputQueueName != null) {
+            setSystemProperty(
+                    LoopingTaskProducerConfigurationManager.OUTPUT_QUEUE_KEY,
+                    outputQueueName);
+        }
+    }
+
+    /**
+     * @param cmd
      * @return
      */
     protected Frequency processFrequencyOption(CommandLine cmd) {

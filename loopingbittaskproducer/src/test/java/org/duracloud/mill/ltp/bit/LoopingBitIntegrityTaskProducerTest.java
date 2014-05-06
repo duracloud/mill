@@ -25,6 +25,7 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.ltp.ExclusionManager;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.storage.domain.StorageProviderType;
@@ -207,7 +208,8 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
                                                                taskQueue, 
                                                                stateManager, 
                                                                maxQueueSize,
-                                                               new Frequency("1s"));
+                                                               new Frequency("1s"),
+                                                               new ExclusionManager());
         return producer;
     }
 

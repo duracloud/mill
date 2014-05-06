@@ -13,11 +13,15 @@ import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
  * @author Daniel Bernstein
  *	       Date: Dec 6, 2013
  */
-public class LoopingTaskProducerConfigurationManager extends TaskProducerConfigurationManager {
+public class LoopingTaskProducerConfigurationManager extends
+        TaskProducerConfigurationManager {
     public static final String OUTPUT_QUEUE_KEY = "outputQueue";
 
-    /* (non-Javadoc)
-     * @see org.duracloud.mill.config.ConfigurationManager#addRequiredProperties()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.duracloud.mill.config.ConfigurationManager#addRequiredProperties()
      */
     @Override
     protected void addRequiredProperties() {

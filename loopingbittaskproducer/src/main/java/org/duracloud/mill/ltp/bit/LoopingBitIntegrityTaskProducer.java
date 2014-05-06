@@ -24,6 +24,7 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.ltp.ExclusionManager;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.RunStats;
@@ -39,14 +40,16 @@ import org.slf4j.LoggerFactory;
  */
 public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitIntegrityMorsel> {
     private static Logger log = LoggerFactory.getLogger(LoopingBitIntegrityTaskProducer.class);
-
+    private ExclusionManager exclusionManager;
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
             StorageProviderFactory storageProviderFactory,
             TaskQueue taskQueue,
             StateManager<BitIntegrityMorsel> state,
             int maxTaskQueueSize, 
-            Frequency frequency) {
+            Frequency frequency,
+            ExclusionManager exclusionManager) {
         super(credentialsRepo, storageProviderFactory, taskQueue, state,maxTaskQueueSize,frequency);
+        this.exclusionManager = exclusionManager;
     }
     
 
@@ -58,18 +61,30 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         //generate set of morsels based on duplication policy
         try {
             for(String account :  getAccountsList()){
+                String accountPath = "/"+account;
+                if(exclusionManager.isExcluded(accountPath)){
+                    continue;
+                }
+                
                 AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
                 for(StorageProviderCredentials cred : accountCreds.getProviderCredentials()){
+                    String storePath = accountPath + "/"+cred.getProviderId();
+                    if(exclusionManager.isExcluded(storePath)){
+                        continue;
+                    }
                     StorageProvider store = getStorageProvider(cred);
                     
                     Iterator<String> spaces = store.getSpaces();
                     while(spaces.hasNext()){
                         String spaceId = spaces.next();
-                        morselQueue.add(
-                                new BitIntegrityMorsel(account,
-                                                       cred.getProviderId(), 
-                                                       cred.getProviderType().name(), 
-                                                       spaceId));
+                        String spacePath = storePath + "/" + spaceId;
+                        if(!exclusionManager.isExcluded(spacePath)){
+                            morselQueue.add(
+                                    new BitIntegrityMorsel(account,
+                                                           cred.getProviderId(), 
+                                                           cred.getProviderType().name(), 
+                                                           spaceId));
+                        }
                     }
                 }
             }
@@ -97,7 +112,6 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         
         StorageProvider store = 
                 getStorageProvider(morsel.getAccount(),storeId);
-
         
         int maxTaskQueueSize = getMaxTaskQueueSize();
         int taskQueueSize = getTaskQueue().size();
@@ -138,7 +152,6 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             }   
 
             taskQueueSize = getTaskQueue().size();
-
         }
     }
     
@@ -151,7 +164,6 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         task.setAccount(morsel.getAccount());
         task.setStoreId(morsel.getStoreId());
         task.setSpaceId(morsel.getSpaceId());
-        
         getTaskQueue().put(task.writeTask());
     }
 
