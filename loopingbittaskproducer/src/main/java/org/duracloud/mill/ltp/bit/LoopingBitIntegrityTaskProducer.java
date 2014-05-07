@@ -164,7 +164,9 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         task.setAccount(morsel.getAccount());
         task.setStoreId(morsel.getStoreId());
         task.setSpaceId(morsel.getSpaceId());
-        getTaskQueue().put(task.writeTask());
+        Task t = task.writeTask();
+        getTaskQueue().put(t);
+        log.info("added report task: {}", t);
     }
 
     /**

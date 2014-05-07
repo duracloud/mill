@@ -71,7 +71,7 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
         store = EasyMock.createMock("store", StorageProvider.class);
         File stateFile = File.createTempFile("state", "json");
         stateFile.deleteOnExit();
-        stateManager = new StateManager<>(stateFile.getAbsolutePath());
+        stateManager = new StateManager<>(stateFile.getAbsolutePath(), BitIntegrityMorsel.class);
         taskQueue = new LocalTaskQueue();
     }
 

@@ -136,7 +136,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         cacheManager.addCache(cache);
 
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(
-                stateFilePath);
+                stateFilePath, DuplicationMorsel.class);
 
         LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(
                 credentialsRepo, storageProviderFactory, policyManager,

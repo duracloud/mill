@@ -9,10 +9,10 @@ package org.duracloud.mill.ltp;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.codehaus.jackson.type.JavaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,24 +24,25 @@ import org.slf4j.LoggerFactory;
 public class StateManager<T extends Morsel> {
     private static Logger log = LoggerFactory.getLogger(StateManager.class);
     private File stateFile;
-    private State state;
+    private State<T> state = new State<>();
+    private Class<T> klazz;
     /**
      * @param absoluteFile
      */
-    public StateManager(String path) {
+    public StateManager(String path, Class<T> klazz) {
         stateFile = new File(path);
         if(stateFile.exists() && stateFile.length() > 0){
             ObjectMapper m = new ObjectMapper();
+            JavaType type = m.getTypeFactory().constructParametricType(State.class, klazz);
+
             try {
-                this.state = m.readValue(stateFile,
-                        new TypeReference<State<T>>() {
-                        });
+                this.state = m.readValue(stateFile,type);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }            
         }else{
-            state = new State();
+            state = new State<>();
         }
     }
 
@@ -61,14 +62,14 @@ public class StateManager<T extends Morsel> {
     /**
      * @return
      */
-    public Set<T> getMorsels() {
+    public LinkedHashSet<T> getMorsels() {
         return state.getMorsels();
     }
 
     /**
      * @param morsels
      */
-    public void setMorsels(Set<T> morsels) {
+    public void setMorsels(LinkedHashSet<T> morsels) {
         this.state.setMorsels(morsels);
         flush();
     }

@@ -274,7 +274,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
 
     private void persistMorsels(Queue<T> queue, List<T> morselsToReload){
-        Set<T> morsels = new LinkedHashSet<>();
+        LinkedHashSet<T> morsels = new LinkedHashSet<>();
         morsels.addAll(queue);
         morsels.addAll(morselsToReload);
         stateManager.setMorsels(morsels);

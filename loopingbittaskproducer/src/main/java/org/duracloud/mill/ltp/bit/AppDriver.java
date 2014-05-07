@@ -68,6 +68,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             producer.run();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             log.error(ex.getMessage(), ex);
             System.exit(1);
         }
@@ -129,8 +130,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 config.getOutputQueue());
 
 
-        StateManager<BitIntegrityMorsel> stateManager = new StateManager<>(
-                stateFilePath);
+        StateManager<BitIntegrityMorsel> stateManager = new StateManager<BitIntegrityMorsel>(
+                stateFilePath, BitIntegrityMorsel.class);
 
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(
                 credentialsRepo, storageProviderFactory,

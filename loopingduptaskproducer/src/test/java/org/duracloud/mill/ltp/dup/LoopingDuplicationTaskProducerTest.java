@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -137,9 +138,9 @@ public class LoopingDuplicationTaskProducerTest {
         setupCredentialsRepo(morselCount*2);
         setupPolicyManager(morselCount);
         
-        expectGetMorsels(new HashSet<DuplicationMorsel>(),1);
+        expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(),1);
 
-        stateManager.setMorsels(EasyMock.isA(HashSet.class));
+        stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
         EasyMock.expectLastCall().times(morselCount);
         
         setupCheckDatesFirstTimeRun();
@@ -198,17 +199,17 @@ public class LoopingDuplicationTaskProducerTest {
 
         setupSourceStore(morselCount, sourceCount);
 
-        final HashSet<DuplicationMorsel> morsels = new HashSet<>();
+        final LinkedHashSet<DuplicationMorsel> morsels = new LinkedHashSet<>();
         
         setupEmptySourceSpacesGetChunked();
         
-        expectGetMorsels(new HashSet<DuplicationMorsel>(), 1);
+        expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(), 1);
         expectGetMorsels(morsels, 1);
         
-        stateManager.setMorsels(EasyMock.isA(HashSet.class));
-        StateManager<DuplicationMorsel> stateManagerDelegate = new StateManager<DuplicationMorsel>("fakepath") {
+        stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
+        StateManager<DuplicationMorsel> stateManagerDelegate = new StateManager<DuplicationMorsel>("fakepath", DuplicationMorsel.class) {
             @Override
-            public void setMorsels(Set<DuplicationMorsel> morsels2) {
+            public void setMorsels(LinkedHashSet<DuplicationMorsel> morsels2) {
                 morsels.clear();
                 morsels.addAll(morsels2);
             }
@@ -287,7 +288,7 @@ public class LoopingDuplicationTaskProducerTest {
      * @param times 
      * 
      */
-    private void expectGetMorsels(HashSet<DuplicationMorsel> set, int times) {
+    private void expectGetMorsels(LinkedHashSet<DuplicationMorsel> set, int times) {
         EasyMock.expect(stateManager.getMorsels()).andReturn(set).times(times);
     }
 
@@ -446,8 +447,8 @@ public class LoopingDuplicationTaskProducerTest {
      * @param sourceCount
      */
     private void setupStateManager(int morselCount, int sourceCount) {
-        expectGetMorsels(new HashSet<DuplicationMorsel>(),1);
-        stateManager.setMorsels(EasyMock.isA(HashSet.class));
+        expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(),1);
+        stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
         EasyMock.expectLastCall().times(morselCount*sourceCount/1000);
         setupCheckDatesFirstTimeRun();
     }
