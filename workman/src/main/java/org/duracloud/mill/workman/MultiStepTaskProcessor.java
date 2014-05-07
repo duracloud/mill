@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
 public class MultiStepTaskProcessor implements TaskProcessor{
     
     
-    private List<TaskProcessor> processors;
+    private List<TaskProcessor> processors = new ArrayList<>();
 
     /**
      * @param processor
