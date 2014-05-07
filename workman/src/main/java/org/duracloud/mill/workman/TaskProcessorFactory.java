@@ -17,5 +17,5 @@ import org.duracloud.common.queue.task.Task;
  */
 public interface TaskProcessorFactory {
     TaskProcessor create(Task task) throws TaskProcessorCreationFailedException;
-
+    boolean isSupported(Task task);
 }

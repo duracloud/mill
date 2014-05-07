@@ -52,7 +52,7 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
         return workDir;
     }
 
-    protected abstract boolean isSupported(Task task);
+    public abstract boolean isSupported(Task task);
 
     protected abstract TaskProcessor createImpl(Task task) throws TaskProcessorCreationFailedException;
 }

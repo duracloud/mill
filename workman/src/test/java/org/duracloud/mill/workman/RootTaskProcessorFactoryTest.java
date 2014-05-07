@@ -27,8 +27,9 @@ public class RootTaskProcessorFactoryTest {
     public void test() throws TaskProcessorCreationFailedException {
         TaskProcessor taskProcessor = EasyMock.createMock(TaskProcessor.class);
         TaskProcessorFactory bad = EasyMock.createMock(TaskProcessorFactory.class);
-        EasyMock.expect(bad.create(EasyMock.isA(Task.class))).andThrow(new TaskProcessorCreationFailedException("test"));
+        EasyMock.expect(bad.isSupported(EasyMock.isA(Task.class))).andReturn(false);
         TaskProcessorFactory good = EasyMock.createMock(TaskProcessorFactory.class);
+        EasyMock.expect(good.isSupported(EasyMock.isA(Task.class))).andReturn(true);
         EasyMock.expect(good.create(EasyMock.isA(Task.class))).andReturn(taskProcessor);
         EasyMock.replay(taskProcessor, bad, good);
         RootTaskProcessorFactory taskProcessorFactory = new RootTaskProcessorFactory();

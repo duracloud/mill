@@ -144,7 +144,7 @@ public class TaskWorkerManager {
         while(!stop){
             try {
                 if(isManagerTooBusy()){
-                    log.info("manager is too busy, sleeping for 1 sec");
+                    log.debug("manager is too busy, sleeping for 1 sec");
                     //wait only a moment before trying again since 
                     //the worker pool is expected to move relatively quickly.
                     sleep(1000);

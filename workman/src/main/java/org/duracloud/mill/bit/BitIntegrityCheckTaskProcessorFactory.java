@@ -51,7 +51,7 @@ public class BitIntegrityCheckTaskProcessorFactory
     }
 
     @Override
-    protected boolean isSupported(Task task) {
+    public boolean isSupported(Task task) {
         return task.getType().equals(Task.Type.BIT);
     }
 

@@ -34,7 +34,7 @@ public abstract class AuditTaskProcessorFactory implements TaskProcessorFactory 
     @Override
     public final TaskProcessor create(Task task)
             throws TaskProcessorCreationFailedException {
-        if(task.getType().equals(Task.Type.AUDIT)){
+        if(isSupported(task)){
             log.debug("creating task processor for " + task);
             AuditTask auditTask = new AuditTask();
             auditTask.readTask(task);
@@ -51,4 +51,11 @@ public abstract class AuditTaskProcessorFactory implements TaskProcessorFactory 
      */
     protected abstract TaskProcessor createImpl(AuditTask auditTask);
 
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.workman.TaskProcessorFactory#isSupported(org.duracloud.common.queue.task.Task)
+     */
+    @Override
+    public boolean isSupported(Task task) {
+        return task.getType().equals(Task.Type.AUDIT);
+    }
 }

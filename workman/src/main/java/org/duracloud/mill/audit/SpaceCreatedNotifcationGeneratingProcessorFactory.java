@@ -27,7 +27,7 @@ public class SpaceCreatedNotifcationGeneratingProcessorFactory extends AuditTask
      * @see org.duracloud.mill.audit.AuditTaskProcessorFactory#createImpl(org.duracloud.audit.task.AuditTask)
      */
     @Override
-    protected TaskProcessor createImpl(AuditTask auditTask) {
+    public TaskProcessor createImpl(AuditTask auditTask) {
         return new SpaceCreatedNotifcationGeneratingProcessor(auditTask,
                 notificationManager);
  

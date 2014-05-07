@@ -49,5 +49,18 @@ public class MultiStepTaskProcessorFactory implements TaskProcessorFactory {
         
         return processor;
     }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.workman.TaskProcessorFactory#isSupported(org.duracloud.common.queue.task.Task)
+     */
+    @Override
+    public boolean isSupported(Task task) {
+        for (TaskProcessorFactory factory : factories) {
+            if(factory.isSupported(task)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
