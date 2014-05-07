@@ -11,7 +11,6 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.dynamodb.DynamoDBAuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
@@ -22,8 +21,8 @@ import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.ContentIndexUpdatingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
-import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessor;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
+import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.bitlog.dynamodb.DynamoDBBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -53,6 +52,7 @@ import org.springframework.context.annotation.Configuration;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
@@ -72,6 +72,7 @@ public class AppConfig {
                                          StorageProviderFactory storageProviderFactory,
                                          File workDir,
                                          BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory,
+                                         BitIntegrityReportTaskProcessorFactory bitIntegrityReportTaskProcessorFactory,
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
                                          WorkmanConfigurationManager configurationManager) {
 
@@ -83,6 +84,7 @@ public class AppConfig {
                                                 auditQueue(configurationManager)));
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
         factory.addTaskProcessorFactory(bitIntegrityCheckTaskProcessorFactory);
+        factory.addTaskProcessorFactory(bitIntegrityReportTaskProcessorFactory);
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
                 workDir));
 
@@ -104,7 +106,16 @@ public class AppConfig {
                                                          auditLogStore,
                                                          bitLogStore);
     }
-    
+
+    @Bean
+    public BitIntegrityReportTaskProcessorFactory bitIntegrityReportProcessorFactory(
+        CredentialsRepo credentialRepo,
+        BitLogStore bitLogStore) {
+
+        return new BitIntegrityReportTaskProcessorFactory(credentialRepo,
+                                                         bitLogStore);
+    }
+
     @Bean 
     public MultiStepTaskProcessorFactory auditTaskProcessorFactory(ContentIndexClient contentIndexClient,
                                                                     AuditLogStore auditLogStore,
