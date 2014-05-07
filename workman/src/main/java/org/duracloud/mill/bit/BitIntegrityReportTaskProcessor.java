@@ -40,7 +40,7 @@ public class BitIntegrityReportTaskProcessor implements TaskProcessor {
      */
     @Override
     public void execute() throws TaskExecutionFailedException {
-        log.info(MessageFormat.format("Not currently implemented: {} not actually processed.",this.task));
+        log.info(MessageFormat.format("Not currently implemented: {0} not actually processed.",this.task));
     }
 
 }
