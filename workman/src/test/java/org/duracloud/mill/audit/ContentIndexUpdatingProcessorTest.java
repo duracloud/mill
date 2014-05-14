@@ -14,6 +14,7 @@ import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.contentindex.client.ContentIndexItem;
+import org.duracloud.contentindex.client.ContentIndexClientValidationException;
 import org.duracloud.mill.audit.ContentIndexUpdatingProcessor;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.easymock.Capture;
@@ -55,7 +56,7 @@ public class ContentIndexUpdatingProcessorTest extends EasyMockSupport {
     }
 
     @Test
-    public void test() throws TaskExecutionFailedException, AuditLogWriteFailedException {
+    public void test() throws TaskExecutionFailedException, AuditLogWriteFailedException, ContentIndexClientValidationException {
         Capture<ContentIndexItem> contentIndexItemCapture = new Capture<ContentIndexItem>();
         
         EasyMock.expect(
