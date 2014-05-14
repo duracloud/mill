@@ -44,6 +44,7 @@ public class AppDriver {
     private static final String POLICY_BUCKET_SUFFIX = "p";
     private static final String NOTIFICATION_RECIPIENTS_OPTION = "n";
     private static final String REFRESH_OPTION = "r";
+    private static final String BIT_ERROR_QUEUE_OPTION = "b";
     
     public static final long DEFAULT_POLICY_UPDATE_FREQUENCY_MS = 5*60*1000;
 
@@ -123,6 +124,15 @@ public class AppDriver {
         auditQueue.setArgName("name");
         options.addOption(auditQueue);
 
+        Option bitErrorQueue = new Option(
+                BIT_ERROR_QUEUE_OPTION,
+                "bit-error-queue-name",
+                true,
+                "The name of the bit error amazon sqs queue");
+        bitErrorQueue.setArgs(1);
+        bitErrorQueue.setRequired(true);
+        bitErrorQueue.setArgName("name");
+        options.addOption(bitErrorQueue);
         
         
         Option workDirPath = new Option(WORK_DIR_PATH_OPTION, "work-dir", true,
