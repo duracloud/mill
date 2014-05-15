@@ -120,8 +120,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.framework.version>4.0.2.RELEASE</spring.framework.version>
     <duracloud.version>3.1.0-SNAPSHOT</duracloud.version>
-    <skipITs>true</skipITs>
     <powermock.version>1.5.4</powermock.version>
+    <dynamodb.port>8023</dynamodb.port>
+    <dynamodb.dist.dir>${project.build.directory}/dynamodb-dist</dynamodb.dist.dir>
+    <skipUTs>false</skipUTs>
+    <skipITs>true</skipITs>
+
   </properties>
 
   <distributionManagement>
@@ -217,7 +221,10 @@
       <url>http://download.java.net/maven/2/</url>
       <layout>default</layout>
     </pluginRepository>
-
+    <pluginRepository>
+      <id>oss.sonatype.org</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </pluginRepository>
   </pluginRepositories>
 
   <build>
@@ -243,6 +250,16 @@
             <createDependencyReducedPom>false</createDependencyReducedPom>
           </configuration> 
       </plugin> 
+      
+      <plugin>
+        <groupId>com.jcabi</groupId>
+        <artifactId>jcabi-dynamodb-maven-plugin</artifactId>
+        <version>0.5</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.8</version>
+      </plugin>      
     </plugins> 
     </pluginManagement>
     <plugins>
@@ -284,17 +301,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <skipTests>${skipTests}</skipTests>
+          <skipTests>${skipUTs}</skipTests>
           <trimStackTrace>false</trimStackTrace>
           <systemProperties>
-            <property>
-              <name>unit.database.home</name>
-              <value>${unit.database.home.default}</value>
-            </property>
-            <property>
-              <name>unit.database.password</name>
-              <value>${unit.database.password.default}</value>
-            </property>
             <property>
               <name>PROJECT_VERSION</name>
               <value>${project.version}</value>
@@ -309,39 +318,27 @@
             <include>${unitTests}</include>
           </includes>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.16</version>
+        <configuration>
+          <skipTests>${skipITs}</skipTests>
+          <systemPropertyVariables>
+            <dynamodb.port>${dynamodb.port}</dynamodb.port>
+          </systemPropertyVariables>
+          <includes>
+            <!-- include>%regex[Test.*.class]</include-->
+            <include>${integrationTests}</include>
+          </includes>
+        </configuration>
         <executions>
           <execution>
-            <id>integrationtest</id>
-            <phase>integration-test</phase>
             <goals>
-              <goal>test</goal>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
-            <configuration>
-              <skipTests>${skipITs}</skipTests>
-              <trimStackTrace>false</trimStackTrace>
-              <systemProperties>
-                <property>
-                  <name>unit.database.home</name>
-                  <value>${unit.database.home.default}</value>
-                </property>
-                <property>
-                  <name>unit.database.password</name>
-                  <value>${unit.database.password.default}</value>
-                </property>
-                <property>
-                  <name>PROJECT_VERSION</name>
-                  <value>${project.version}</value>
-                </property>
-              </systemProperties>
-              <excludes>
-                <exclude>${unitTests}</exclude>
-                <exclude>${instrumentedTests}</exclude>
-                <exclude>${innerClasses}</exclude>
-              </excludes>
-              <includes>
-                <include>${integrationTests}</include>
-              </includes>
-            </configuration>
           </execution>
         </executions>
       </plugin>

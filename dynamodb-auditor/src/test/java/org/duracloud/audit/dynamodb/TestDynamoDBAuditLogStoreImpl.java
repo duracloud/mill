@@ -34,7 +34,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
  * @author Daniel Bernstein 
  *         Date: 3/11/2014
  */
-public class DynamoDBAuditLogStoreImplIT {
+public class TestDynamoDBAuditLogStoreImpl {
 
     private DynamoDBAuditLogStore logStore;
 

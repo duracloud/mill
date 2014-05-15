@@ -21,7 +21,7 @@ public class DynamoDBTestUtil {
                 new BasicAWSCredentials("username", "password"));
         client.setRegion(Region.getRegion(Regions.DEFAULT_REGION));
         client.setEndpoint("http://localhost:"
-                + System.getProperty("dynamodblocal.port", "8000"));
+                + System.getProperty("dynamodb.port", "8000"));
 
         return client;
     }

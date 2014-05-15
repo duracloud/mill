@@ -26,7 +26,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 /**
  * @author Daniel Bernstein Date: Apr 25, 2014
  */
-public class DynamoDBBitLogStoreIT {
+public class TestDynamoDBBitLogStore {
 
     private AmazonDynamoDBClient client;
     private DynamoDBBitLogStore  store;

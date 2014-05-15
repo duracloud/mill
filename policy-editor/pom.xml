@@ -14,10 +14,6 @@
   </parent>
 
   <properties>
-    <unitTests>**/*Test.class</unitTests>
-    <seleniumTests>**/Test*.class</seleniumTests>
-    <skipITs>true</skipITs>
-    <skipUTs>false</skipUTs>
     <jetty.port>8888</jetty.port>
     <jetty.version>8.1.4.v20120524</jetty.version>
     <policyeditor.username>admin</policyeditor.username>
@@ -40,47 +36,6 @@
     </testResources>
 
     <plugins>
-     <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-        </configuration>
-        <executions>
-          <execution>
-            <!-- This execution 'default-test' overrides the built-in default execution for the test phase. 
-                 Thus unit tests aren't run when you running integration tests. 
-                 It comes in handy when trying to debug a single integration test as you only need to attach 
-                 your debugger once. -->
-            <id>default-test</id>
-            <configuration>
-              <skipTests>${skipTests}</skipTests>
-              <excludes>
-                <exclude>${seleniumTests}</exclude>
-              </excludes>
-              <includes>
-                <include>${unitTests}</include>
-              </includes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>integrationtest</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <skipTests>${skipITs}</skipTests>
-              <excludes>
-                <exclude>${unitTests}</exclude>
-              </excludes>
-              <includes>
-                <include>${seleniumTests}</include>
-              </includes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
@@ -109,7 +64,7 @@
               <goal>start</goal>
             </goals>
             <configuration>
-              <skip>${skipITs}</skip>
+              <skip>${skipTests}</skip>
               <scanIntervalSeconds>0</scanIntervalSeconds>
               <daemon>true</daemon>
               <systemProperties>
@@ -142,7 +97,7 @@
               <goal>xvfb</goal>
             </goals>
             <configuration>
-               <skip>${skipITs}</skip>
+               <skip>${skipTests}</skip>
             </configuration>
           </execution>
           <execution>
@@ -152,7 +107,7 @@
             </goals>
             <configuration>
               <background>true</background>
-              <skip>${skipITs}</skip>
+              <skip>${skipTests}</skip>
             </configuration>
           </execution>
         </executions>
