@@ -8,6 +8,7 @@
 package org.duracloud.mill.bit;
 
 import org.duracloud.audit.AuditLogStore;
+import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.contentindex.client.ContentIndexClient;
@@ -37,17 +38,23 @@ public class BitIntegrityCheckTaskProcessorFactory
     private ContentIndexClient contentIndexClient;
     private AuditLogStore auditLogStore;
     private BitLogStore bitLogStore;
+    private TaskQueue bitErrorQueue;
+    private TaskQueue auditTaskQueue;
 
     public BitIntegrityCheckTaskProcessorFactory(CredentialsRepo repo,
                                                  StorageProviderFactory storageProviderFactory,
                                                  ContentIndexClient contentIndexClient,
                                                  AuditLogStore auditLogStore,
-                                                 BitLogStore bitLogStore) {
+                                                 BitLogStore bitLogStore,
+                                                 TaskQueue bitErrorQueue,
+                                                 TaskQueue auditTaskQueue) {
         super(repo);
         this.contentIndexClient = contentIndexClient;
         this.auditLogStore = auditLogStore;
         this.storageProviderFactory = storageProviderFactory;
         this.bitLogStore = bitLogStore;
+        this.bitErrorQueue = bitErrorQueue;
+        this.auditTaskQueue = auditTaskQueue;
     }
 
     @Override
@@ -75,7 +82,9 @@ public class BitIntegrityCheckTaskProcessorFactory
                                                       bitLogStore,
                                                       contentIndexClient,
                                                       new ChecksumUtil(
-                                                          ChecksumUtil.Algorithm.MD5));
+                                                          ChecksumUtil.Algorithm.MD5),
+                                                      bitErrorQueue,
+                                                      auditTaskQueue);
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: unable to locate" +
                           " credentials for subdomain: " + e.getMessage(), e);

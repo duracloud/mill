@@ -98,13 +98,17 @@ public class AppConfig {
         StorageProviderFactory storageProviderFactory,
         ContentIndexClient contentIndexClient,
         AuditLogStore auditLogStore,
-        BitLogStore bitLogStore) {
+        BitLogStore bitLogStore,
+        TaskQueue bitErrorQueue,
+        TaskQueue auditQueue) {
 
         return new BitIntegrityCheckTaskProcessorFactory(credentialRepo,
                                                          storageProviderFactory,
                                                          contentIndexClient,
                                                          auditLogStore,
-                                                         bitLogStore);
+                                                         bitLogStore,
+                                                         bitErrorQueue,
+                                                         auditQueue);
     }
 
     @Bean
@@ -218,6 +222,13 @@ public class AppConfig {
     public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager){
         TaskQueue queue =  new SQSTaskQueue(configurationManager.getAuditQueueName());
         log.info("created audit queue {}", queue);
+        return queue;
+    }
+
+    @Bean
+    public TaskQueue bitErrorQueue(WorkmanConfigurationManager configurationManager){
+        TaskQueue queue =  new SQSTaskQueue(configurationManager.getBitErrorQueueName());
+        log.info("created bit error queue {}", queue);
         return queue;
     }
 

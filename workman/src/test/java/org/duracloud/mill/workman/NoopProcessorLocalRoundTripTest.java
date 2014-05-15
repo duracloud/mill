@@ -41,6 +41,7 @@ public class NoopProcessorLocalRoundTripTest {
     private final static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue AUDIT_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue BIT_ERROR_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue DUPLICATION_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
 
@@ -78,6 +79,14 @@ public class NoopProcessorLocalRoundTripTest {
         @Override
         public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager) {
             return AUDIT_QUEUE;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.duracloud.mill.workman.spring.AppConfig#bitErrorQueue(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
+         */
+        @Override
+        public TaskQueue bitErrorQueue(WorkmanConfigurationManager configurationManager) {
+            return BIT_ERROR_QUEUE;
         }
         
         /* (non-Javadoc)

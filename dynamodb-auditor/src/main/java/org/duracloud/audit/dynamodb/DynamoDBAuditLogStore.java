@@ -25,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.dynamodbv2.model.AttributeAction;
+import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -149,14 +151,13 @@ public class DynamoDBAuditLogStore implements AuditLogStore {
         QueryRequest request =
             new QueryRequest(DynamoDBAuditLogItem.TABLE_NAME)
                     .withKeyConditions(keyConditions)
-                    .withIndexName(DynamoDBAuditLogItem.ID_TIMESTAMP_INDEX)
                     .withScanIndexForward(ascending);
                     
         if(limit > 0){
             request.setLimit(limit);
         }
         
-        request.setSelect(Select.ALL_PROJECTED_ATTRIBUTES);
+        request.setSelect(Select.ALL_ATTRIBUTES);
         return new StreamingIterator<AuditLogItem>(new DynamoDBIteratorSource<AuditLogItem>(client,
                                                                            request,
                                                                            DynamoDBAuditLogItem.class));
@@ -183,6 +184,42 @@ public class DynamoDBAuditLogStore implements AuditLogStore {
                                                          contentId));
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.audit.AuditLogStore#updateProperties(org.duracloud.audit.AuditLogItem, java.lang.String)
+     */
+    @Override
+    public void updateProperties(AuditLogItem item, String properties)
+            throws AuditLogWriteFailedException {
+        try {
+            
+            String hash = KeyUtil.calculateContentIdPathBasedHashKey(
+                    item.getAccount(),
+                    item.getStoreId(),
+                    item.getSpaceId(),
+                    item.getContentId());
+            long range = item.getTimestamp();
+            
+
+            Map<String,AttributeValue> key = new HashMap<>();
+            key.put(DynamoDBAuditLogItem.ID_ATTRIBUTE, new AttributeValue(hash));
+            AttributeValue rangeValue = new AttributeValue();
+            rangeValue.setN(String.valueOf(range));
+            key.put(DynamoDBAuditLogItem.TIMESTAMP_ATTRIBUTE, rangeValue);
+            Map<String, AttributeValueUpdate> attributeUpdates = new HashMap<>();
+            attributeUpdates.put(
+                    DynamoDBAuditLogItem.CONTENT_PROPERTIES_ATTRIBUTE,
+                    new AttributeValueUpdate(new AttributeValue(properties),
+                            AttributeAction.PUT));
+            client.updateItem(DynamoDBAuditLogItem.TABLE_NAME, key, attributeUpdates);
+            
+            log.debug("Item written:  Result: {}", item);
+        } catch (AmazonClientException ex) {
+            log.error("failed to write to db: {}", item);
+            throw new AuditLogWriteFailedException(ex, item);
+        }
+    }
+    
     private void checkInitialized() {
         if (null == client) {
             StringBuilder err = new StringBuilder("AuditLogStore must be ");

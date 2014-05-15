@@ -7,282 +7,614 @@
  */
 package org.duracloud.mill.bit;
 
-import org.duracloud.audit.AuditLogItem;
-import org.duracloud.audit.AuditLogStore;
-import org.duracloud.audit.dynamodb.DynamoDBAuditLogItem;
-import org.duracloud.common.util.ChecksumUtil;
-import org.duracloud.contentindex.client.ContentIndexClient;
-import org.duracloud.contentindex.client.ContentIndexItem;
-import org.duracloud.error.NotFoundException;
-import org.duracloud.mill.bitlog.BitIntegrityResult;
-import org.duracloud.mill.bitlog.BitLogItem;
-import org.duracloud.mill.bitlog.BitLogStore;
-import org.duracloud.storage.domain.StorageProviderType;
-import org.duracloud.storage.provider.StorageProvider;
-import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.isNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.isNull;
+import org.duracloud.audit.AuditLogItem;
+import org.duracloud.audit.AuditLogStore;
+import org.duracloud.audit.AuditLogWriteFailedException;
+import org.duracloud.audit.dynamodb.DynamoDBAuditLogItem;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.util.ChecksumUtil;
+import org.duracloud.contentindex.client.ContentIndexClient;
+import org.duracloud.contentindex.client.ContentIndexClientValidationException;
+import org.duracloud.contentindex.client.ContentIndexItem;
+import org.duracloud.mill.bitlog.BitIntegrityResult;
+import org.duracloud.mill.bitlog.BitLogItem;
+import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.duracloud.storage.domain.StorageProviderType;
+import org.duracloud.storage.error.NotFoundException;
+import org.duracloud.storage.provider.StorageProvider;
+import org.easymock.EasyMock;
+import org.easymock.EasyMockRunner;
+import org.easymock.EasyMockSupport;
+import org.easymock.Mock;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * @author Erik Paulsson
- *         Date: 5/5/14
+ * @author Erik Paulsson Date: 5/5/14
  */
-public class BitIntegrityCheckTaskProcessorTest {
+@RunWith(EasyMockRunner.class)
+public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
-    private static final String account = "account-id";
-    private static final String storeId = "store-id";
-    private static final String spaceId = "space-id";
-    private static final String contentId = "content-id";
-    private static final String checksum = "checksum";
-    private static final String badChecksum = "bad-checksum";
+    private static final String            account     = "account-id";
+    private static final String            storeId     = "store-id";
+    private static final String            spaceId     = "space-id";
+    private static final String            contentId   = "content-id";
+    private static final String            user        = "user";
+    private static final String            mimetype    = "text/plain";
+    private static final String            contentSize = "10240";
 
+    private static final String            checksum    = "checksum";
+    private static final String            badChecksum = "bad-checksum";
 
-    private BitIntegrityCheckTask task;
-    private StorageProvider store;
-    private AuditLogStore auditLogStore;
-    private ContentIndexClient contentIndexClient;
-    private BitLogStore bitLogStore;
-    private ChecksumUtil checksumUtil;
+    private BitIntegrityCheckTask          task;
+    @Mock
+    private StorageProvider                store;
+    @Mock
+    private AuditLogStore                  auditLogStore;
+    @Mock
+    private ContentIndexClient             contentIndexClient;
+    @Mock
+    private BitLogStore                    bitLogStore;
+    @Mock
+    private ChecksumUtil                   checksumUtil;
+    @Mock
+    private TaskQueue                      bitErrorQueue;
+    @Mock
+    private TaskQueue                      auditQueue;
+
     private BitIntegrityCheckTaskProcessor taskProcessor;
 
     @Before
     public void setup() throws IOException {
-        store = EasyMock.createMock(StorageProvider.class);
-        auditLogStore = EasyMock.createMock(AuditLogStore.class);
-        bitLogStore = EasyMock.createMock(BitLogStore.class);
-        contentIndexClient = EasyMock.createMock(ContentIndexClient.class);
-        checksumUtil = EasyMock.createMock(ChecksumUtil.class);
+        task = createBitIntegrityCheckTask(1);
+    }
 
-        task = new BitIntegrityCheckTask();
+    /**
+     * @return
+     * 
+     */
+    private BitIntegrityCheckTask createBitIntegrityCheckTask(final int attempts) {
+
+        BitIntegrityCheckTask task = new BitIntegrityCheckTask() {
+            @Override
+            public int getAttempts() {
+                return attempts;
+            }
+        };
+
         task.setAccount(account);
         task.setStoreId(storeId);
         task.setSpaceId(spaceId);
         task.setContentId(contentId);
+        return task;
     }
 
     @After
     public void teardown() {
-        EasyMock.verify(store, auditLogStore, bitLogStore, contentIndexClient, checksumUtil);
+        verifyAll();
     }
 
-    private void replayMocks() {
-        EasyMock.replay(store, auditLogStore, bitLogStore, contentIndexClient, checksumUtil);
-    }
-
-    private Map<String, String> createChecksumProps(String value) {
+    private Map<String, String> createChecksumProps(String checksum) {
         Map<String, String> props = new HashMap<>();
-        props.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, value);
+        props.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, checksum);
+        props.put(StorageProvider.PROPERTIES_CONTENT_SIZE, contentSize);
+        props.put(StorageProvider.PROPERTIES_CONTENT_MIMETYPE, mimetype);
+        props.put(StorageProvider.PROPERTIES_CONTENT_CREATOR, user);
+
         return props;
     }
 
     private void storeMockValidChecksum() {
         Map<String, String> props = createChecksumProps(checksum);
-        EasyMock.expect(store.getContentProperties(spaceId, contentId))
-                .andReturn(props);
+        storeMockGetProperties(props);
     }
 
     private void storeMockInvalidChecksum() {
         Map<String, String> props = createChecksumProps(badChecksum);
+        storeMockGetProperties(props);
+    }
+
+    private void storeMockNotFound() {
+        EasyMock.expect(store.getContentProperties(spaceId, contentId))
+                .andThrow(new NotFoundException("test")).times(4);
+        EasyMock.expect(store.getContent(spaceId, contentId)).andThrow(
+                new NotFoundException("test")).times(4);
+    }
+
+    /**
+     * @param props
+     */
+    private void storeMockGetProperties(Map<String, String> props) {
         EasyMock.expect(store.getContentProperties(spaceId, contentId))
                 .andReturn(props);
     }
 
-    private void auditLogStoreMockValidChecksum() throws NotFoundException {
-        AuditLogItem item = new DynamoDBAuditLogItem(contentId, null, account,
-                                                     storeId, spaceId, contentId,
-                                                     checksum, null, null, null,
-                                                     null, null, null, null, null,
-                                                     System.currentTimeMillis());
-        EasyMock.expect(auditLogStore.getLatestLogItem(
-            account, storeId, spaceId, contentId)).andReturn(item);
-    }
-
     private void bitLogStoreMockValid(StorageProviderType storeType)
-        throws  Exception {
+            throws Exception {
 
-        EasyMock.expect(bitLogStore.write(eq(account), eq(storeId), eq(spaceId),
-                                          eq(contentId), EasyMock.anyLong(),
-                                          eq(storeType), eq(BitIntegrityResult.SUCCESS),
-                                          eq(checksum), isNull(String.class),
-                                          isNull(String.class), isNull(String.class),
-                                          isNull(String.class)))
-                .andReturn(EasyMock.createMock(BitLogItem.class));
+        EasyMock.expect(
+                bitLogStore.write(eq(account), eq(storeId), eq(spaceId),
+                        eq(contentId), EasyMock.anyLong(), eq(storeType),
+                        eq(BitIntegrityResult.SUCCESS), eq(checksum),
+                        isNull(String.class), isNull(String.class),
+                        isNull(String.class), isNull(String.class))).andReturn(
+                EasyMock.createMock(BitLogItem.class));
     }
 
     private void bitLogStoreMockInvalid(StorageProviderType storeType,
-                                        String contentChecksum,
-                                        String storeChecksum,
-                                        String auditLogChecksum,
-                                        String contentIndexChecksum)
-        throws  Exception {
+            String contentChecksum,
+            String storeChecksum,
+            String auditLogChecksum,
+            String contentIndexChecksum) throws Exception {
 
-        EasyMock.expect(bitLogStore.write(eq(account), eq(storeId), eq(spaceId),
-                                          eq(contentId), EasyMock.anyLong(),
-                                          eq(storeType), eq(BitIntegrityResult.FAILURE),
-                                          eq(contentChecksum), eq(storeChecksum),
-                                          eq(auditLogChecksum),
-                                          eq(contentIndexChecksum), isNull(
-            String.class)))
+        EasyMock.expect(
+                bitLogStore.write(eq(account), eq(storeId), eq(spaceId),
+                        eq(contentId), EasyMock.anyLong(), eq(storeType),
+                        eq(BitIntegrityResult.FAILURE), isNullOrEq(contentChecksum),
+                        isNullOrEq(storeChecksum), isNullOrEq(auditLogChecksum),
+                        isNullOrEq(contentIndexChecksum), EasyMock.isA(String.class)))
                 .andReturn(EasyMock.createMock(BitLogItem.class));
     }
 
-    private void auditLogStoreMockInvalidChecksum()  throws NotFoundException {
+    /**
+     * @param value
+     * @return
+     */
+    private String isNullOrEq(String value) {
+        return value == null ?
+                isNull(String.class):
+                    eq(value);
+    }
+
+    private void auditLogStoreMockInvalidChecksum() throws org.duracloud.error.NotFoundException  {
+        auditLogStoreMockChecksum(badChecksum);
+    }
+
+    /**
+     * @param auditChecksum
+     * @throws NotFoundException
+     */
+    private void auditLogStoreMockChecksum(String auditChecksum)
+            throws org.duracloud.error.NotFoundException {
         AuditLogItem item = new DynamoDBAuditLogItem(contentId, null, account,
-                                                     storeId, spaceId, contentId,
-                                                     badChecksum, null, null, null,
-                                                     null, null, null, null, null,
-                                                     System.currentTimeMillis());
-        EasyMock.expect(auditLogStore.getLatestLogItem(
-            account, storeId, spaceId, contentId)).andReturn(item);
+                storeId, spaceId, contentId, auditChecksum, null, null, null,
+                null, null, null, null, null, System.currentTimeMillis());
+        EasyMock.expect(
+                auditLogStore.getLatestLogItem(account, storeId, spaceId,
+                        contentId)).andReturn(item);
+    }
+
+    private void auditLogStoreMockValidChecksum() throws org.duracloud.error.NotFoundException  {
+        auditLogStoreMockChecksum(checksum);
     }
 
     private void contentIndexClientMockValidChecksum() {
         Map<String, String> props = createChecksumProps(checksum);
         ContentIndexItem item = new ContentIndexItem(account, storeId, spaceId,
-                                                     contentId);
+                contentId);
         item.setProps(props);
-        EasyMock.expect(contentIndexClient.get(
-            account, storeId, spaceId, contentId)).andReturn(item);
+        contentIndexMockGet(item);
+    }
+    
+    private void contentIndexClientMockItemNotFound() {
+        contentIndexMockGet(null);
+    }
+
+    /**
+     * @param item
+     */
+    private void contentIndexMockGet(ContentIndexItem item) {
+        EasyMock.expect(
+                contentIndexClient.get(account, storeId, spaceId, contentId))
+                .andReturn(item);
     }
 
     private void contentIndexClientMockInvalidChecksum() {
         Map<String, String> props = createChecksumProps(badChecksum);
         ContentIndexItem item = new ContentIndexItem(account, storeId, spaceId,
-                                                     contentId);
+                contentId);
         item.setProps(props);
-        EasyMock.expect(contentIndexClient.get(
-            account, storeId, spaceId, contentId)).andReturn(item);
+        contentIndexMockGet(item);
     }
 
     private void checksumUtilMockValid() {
-        InputStream is = EasyMock.createMock(InputStream.class);
-        EasyMock.expect(store.getContent(spaceId, contentId)).andReturn(is);
+        InputStream is = storeMockInputstream();
         EasyMock.expect(checksumUtil.generateChecksum(is)).andReturn(checksum);
     }
 
     private void checksumUtilMockInvalid() {
+        InputStream is = storeMockInputstream();
+        EasyMock.expect(checksumUtil.generateChecksum(is)).andReturn(
+                badChecksum);
+    }
+
+    /**
+     * @return
+     */
+    private InputStream storeMockInputstream() {
         InputStream is = EasyMock.createMock(InputStream.class);
         EasyMock.expect(store.getContent(spaceId, contentId)).andReturn(is);
-        EasyMock.expect(checksumUtil.generateChecksum(is)).andReturn(badChecksum);
+        return is;
+    }
+
+    /**
+     * @param storageProviderType
+     * @return
+     */
+    private BitIntegrityCheckTaskProcessor createTaskProcessor(StorageProviderType storageProviderType) {
+        return new BitIntegrityCheckTaskProcessor(task, store,
+                storageProviderType, auditLogStore, bitLogStore,
+                contentIndexClient, checksumUtil, bitErrorQueue, auditQueue);
     }
 
     @Test
-    public void testS3ContentValid() throws Exception {
-        taskProcessor = new BitIntegrityCheckTaskProcessor(task, store,
-                                                           StorageProviderType.AMAZON_S3,
-                                                           auditLogStore,
-                                                           bitLogStore,
-                                                           contentIndexClient,
-                                                           checksumUtil);
-        storeMockValidChecksum();
-        auditLogStoreMockValidChecksum();
-        contentIndexClientMockValidChecksum();
-        checksumUtilMockValid();
-        bitLogStoreMockValid(StorageProviderType.AMAZON_S3);
-
-        replayMocks();
-        taskProcessor.execute();
+    public void testSuccessWithContentCheckS3() throws Exception {
+        testSuccess(StorageProviderType.AMAZON_S3, true);
     }
 
     @Test
-    public void testS3ContentInvalid() throws Exception {
-        taskProcessor = new BitIntegrityCheckTaskProcessor(task, store,
-                                                           StorageProviderType.AMAZON_S3,
-                                                           auditLogStore,
-                                                           bitLogStore,
-                                                           contentIndexClient,
-                                                           checksumUtil);
+    public void testSuccessWithContentCheckSDSC() throws Exception {
+        testSuccess(StorageProviderType.SDSC, true);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckGlacier() throws Exception {
+        testSuccess(StorageProviderType.AMAZON_GLACIER, false);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckChronStage() throws Exception {
+        testSuccess(StorageProviderType.CHRON_STAGE, false);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckIRODS() throws Exception {
+        testSuccess(StorageProviderType.IRODS, false);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckRackSpace() throws Exception {
+        testSuccess(StorageProviderType.RACKSPACE, false);
+    }
+
+    @Test
+    public void testSourContent() throws Exception {
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum();
-        auditLogStoreMockValidChecksum();
-        contentIndexClientMockValidChecksum();
         checksumUtilMockInvalid();
-        bitLogStoreMockInvalid(StorageProviderType.AMAZON_S3,
-                               badChecksum, checksum, checksum, checksum);
-
-        replayMocks();
-        taskProcessor.execute();
-    }
-
-    @Test
-    public void testGlacierContentValid() throws Exception {
-        taskProcessor = new BitIntegrityCheckTaskProcessor(task, store,
-                                                           StorageProviderType.AMAZON_GLACIER,
-                                                           auditLogStore,
-                                                           bitLogStore,
-                                                           contentIndexClient,
-                                                           checksumUtil);
-        storeMockValidChecksum();
-        auditLogStoreMockValidChecksum();
         contentIndexClientMockValidChecksum();
-        bitLogStoreMockValid(StorageProviderType.AMAZON_GLACIER);
-
-        replayMocks();
-        taskProcessor.execute();
+        auditLogStoreMockValidChecksum();
+        bitLogStoreMockInvalid(storeType, badChecksum, checksum, checksum,
+                checksum);
+        mockBitErrorTaskPut();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
     }
 
     @Test
-    public void testGlacierContentInvalid() throws Exception {
-        taskProcessor = new BitIntegrityCheckTaskProcessor(task, store,
-                                                           StorageProviderType.AMAZON_GLACIER,
-                                                           auditLogStore,
-                                                           bitLogStore,
-                                                           contentIndexClient,
-                                                           checksumUtil);
-        storeMockValidChecksum();
-        auditLogStoreMockValidChecksum();
-        contentIndexClientMockInvalidChecksum();
-        bitLogStoreMockInvalid(StorageProviderType.AMAZON_GLACIER, null, checksum,
-                               checksum, badChecksum);
-
-        replayMocks();
-        taskProcessor.execute();
-    }
-
-    @Test
-    public void testSDSCContentValid() throws Exception {
-        taskProcessor = new BitIntegrityCheckTaskProcessor(task, store,
-                                                           StorageProviderType.SDSC,
-                                                           auditLogStore,
-                                                           bitLogStore,
-                                                           contentIndexClient,
-                                                           checksumUtil);
-        storeMockValidChecksum();
-        auditLogStoreMockValidChecksum();
-        contentIndexClientMockValidChecksum();
+    public void testFailedStorageProviderChecksum() throws Exception {
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockInvalidChecksum();
         checksumUtilMockValid();
-        bitLogStoreMockValid(StorageProviderType.SDSC);
-
-        replayMocks();
-        taskProcessor.execute();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        bitLogStoreMockInvalid(storeType, checksum, badChecksum, checksum,
+                checksum);
+        mockBitErrorTaskPut();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
     }
 
     @Test
-    public void testSDSCContentInvalid() throws Exception {
-        taskProcessor = new BitIntegrityCheckTaskProcessor(task, store,
-                                                           StorageProviderType.SDSC,
-                                                           auditLogStore,
-                                                           bitLogStore,
-                                                           contentIndexClient,
-                                                           checksumUtil);
-        storeMockValidChecksum();
-        auditLogStoreMockInvalidChecksum();
+    public void testFailedStorageProviderChecksumWithNoContentChecksumFirstAttempt()
+            throws Exception {
+        StorageProviderType storeType = StorageProviderType.AMAZON_GLACIER;
+        storeMockInvalidChecksum();
         contentIndexClientMockValidChecksum();
-        // null is passed for the content stream generated checksum because
-        // the processor doesn't get to that point since the audit log
-        // checksum was invalid.
-        bitLogStoreMockInvalid(StorageProviderType.SDSC, null, checksum,
-                               badChecksum, checksum);
+        auditLogStoreMockValidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        taskProcessorExecutionExpectedFailure();
+    }
 
-        replayMocks();
-        taskProcessor.execute();
+    @Test
+    public void testFailedStorageProviderChecksumWithNoContentChecksumPenultimateAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(2);
+        StorageProviderType storeType = StorageProviderType.AMAZON_GLACIER;
+        storeMockInvalidChecksum();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        long penultimateWait = 1000;
+        this.taskProcessor.setPenultimateWaitMS(penultimateWait);
+
+        replayAll();
+        failAfterWait(penultimateWait);
+    }
+
+    @Test
+    public void testFailedStorageProviderChecksumWithNoContentChecksumLastAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(3);
+        StorageProviderType storeType = StorageProviderType.AMAZON_GLACIER;
+        storeMockInvalidChecksum();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        bitLogStoreMockInvalid(storeType, null, badChecksum, checksum, checksum);
+        mockBitErrorTaskPut();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
+    }
+
+    @Test
+    public void testContentIndexChecksumInvalid() throws Exception {
+        testContentIndexChecksumFailed(badChecksum);
+    }
+
+    @Test
+    public void testContentIndexChecksumNull() throws Exception {
+        testContentIndexChecksumFailed(badChecksum);
+    }
+
+    /**
+     * @param contentIndexChecksum
+     * @throws NotFoundException
+     * @throws Exception
+     * @throws TaskExecutionFailedException
+     */
+    private void testContentIndexChecksumFailed(String contentIndexChecksum)
+            throws NotFoundException, Exception, TaskExecutionFailedException {
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockValidChecksum();
+        checksumUtilMockValid();
+        contentIndexClientMockInvalidChecksum();
+        auditLogStoreMockValidChecksum();
+        contentIndexMockSave();
+        auditLogStoreMockUpdateProperties();
+        bitLogStoreMockInvalid(storeType, checksum, checksum, checksum,
+                contentIndexChecksum);
+        mockBitErrorTaskPut();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
+    }
+
+    @Test
+    public void testAuditLogChecksumFailed() throws Exception {
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockValidChecksum();
+        checksumUtilMockValid();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockInvalidChecksum();
+        bitLogStoreMockInvalid(storeType, checksum, checksum, badChecksum,
+                checksum);
+        mockBitErrorTaskPut();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
+    }
+
+    @Test
+    public void testAuditLogChecksumNull() throws Exception {
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockValidChecksum();
+        checksumUtilMockValid();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockChecksum(null);
+        bitLogStoreMockInvalid(storeType, checksum, checksum, null, checksum);
+        mockAuditTaskPut();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
+    }
+
+    
+    @Test
+    public void testContentNotFoundFirstAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(0);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockNotFound();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        taskProcessorExecutionExpectedFailure();
+    }
+    
+    @Test
+    public void testContentNotFoundPenultimateAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(2);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockNotFound();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        long penultimateWait = 1000;
+        this.taskProcessor.setPenultimateWaitMS(penultimateWait);
+
+        replayAll();
+        
+        failAfterWait(penultimateWait);
+    }
+
+    @Test
+    public void testContentNotFoundLastAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(3);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockNotFound();
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        bitLogStoreMockInvalid(storeType, null, null, checksum, checksum);
+        mockBitErrorTaskPut();
+        replayAll();
+        
+        this.taskProcessor.execute();
+        
+    }
+
+    
+    @Test
+    public void testAuditAndContentDoNotMatchStoreFirstAttmpt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(0);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockValidChecksum();
+        checksumUtilMockValid();
+        contentIndexClientMockInvalidChecksum();
+        auditLogStoreMockInvalidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        taskProcessorExecutionExpectedFailure();
+    }
+    
+    @Test
+    public void testAuditAndContentDoNotMatchStorePenultimateAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(2);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockValidChecksum();
+        checksumUtilMockValid();
+        contentIndexClientMockInvalidChecksum();
+        auditLogStoreMockInvalidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        long penultimateWait = 1000;
+        this.taskProcessor.setPenultimateWaitMS(penultimateWait);
+
+        replayAll();
+        
+        failAfterWait(penultimateWait);
+    }
+
+    @Test
+    public void testAuditAndContentDoNotMatchStoreLastAttempt()
+            throws Exception {
+        task = createBitIntegrityCheckTask(3);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockValidChecksum();
+        checksumUtilMockValid();
+        contentIndexClientMockInvalidChecksum();
+        auditLogStoreMockInvalidChecksum();
+        this.taskProcessor = createTaskProcessor(storeType);
+        bitLogStoreMockInvalid(storeType, checksum,checksum, badChecksum, badChecksum);
+        mockAuditTaskPut();
+        replayAll();
+        
+        this.taskProcessor.execute();
+        
+    }
+
+    @Test
+    public void testNoRecordOfItem()
+            throws Exception {
+        task = createBitIntegrityCheckTask(0);
+        StorageProviderType storeType = StorageProviderType.AMAZON_S3;
+        storeMockNotFound();
+        contentIndexClientMockItemNotFound();
+        auditLogStoreMockChecksum(null);
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        
+        this.taskProcessor.execute();
+        
+    }
+
+    /**
+     * @param penultimateWait
+     */
+    private void failAfterWait(long penultimateWait) {
+        long before = System.currentTimeMillis();
+        taskProcessorExecutionExpectedFailure();
+
+        long after = System.currentTimeMillis();
+
+        Assert.assertTrue(after - before >= penultimateWait);
+    }
+
+    /**
+     * 
+     */
+    private void taskProcessorExecutionExpectedFailure() {
+        try {
+            this.taskProcessor.execute();
+            Assert.fail("above invocations should have failed.");
+        } catch (TaskExecutionFailedException ex) {
+        }
+    }
+
+    /**
+     * @throws AuditLogWriteFailedException
+     * 
+     */
+    private void auditLogStoreMockUpdateProperties()
+            throws AuditLogWriteFailedException {
+        this.auditLogStore.updateProperties(EasyMock.isA(AuditLogItem.class),
+                EasyMock.isA(String.class));
+        EasyMock.expectLastCall();
+    }
+
+    /**
+     * @throws ContentIndexClientValidationException
+     * 
+     */
+    private void contentIndexMockSave()
+            throws ContentIndexClientValidationException {
+        EasyMock.expect(
+                this.contentIndexClient.save(EasyMock
+                        .isA(ContentIndexItem.class))).andReturn("testId");
+    }
+
+    /**
+     * 
+     */
+    private void mockBitErrorTaskPut() {
+        this.bitErrorQueue.put(EasyMock.isA(Task.class));
+        EasyMock.expectLastCall();
+    }
+
+    private void mockAuditTaskPut() {
+        this.auditQueue.put(EasyMock.isA(Task.class));
+        EasyMock.expectLastCall();
+    }
+
+    /**
+     * @param storeType
+     * @param checkContent
+     * @throws NotFoundException
+     * @throws Exception
+     * @throws TaskExecutionFailedException
+     */
+    private void testSuccess(StorageProviderType storeType, boolean checkContent)
+            throws NotFoundException, Exception, TaskExecutionFailedException {
+        storeMockValidChecksum();
+        if (checkContent) {
+            checksumUtilMockValid();
+        }
+        contentIndexClientMockValidChecksum();
+        auditLogStoreMockValidChecksum();
+        bitLogStoreMockValid(storeType);
+        this.taskProcessor = createTaskProcessor(storeType);
+        replayAll();
+        this.taskProcessor.execute();
     }
 }

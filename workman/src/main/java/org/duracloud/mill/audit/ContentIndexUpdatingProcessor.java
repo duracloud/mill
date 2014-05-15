@@ -14,11 +14,14 @@ import java.util.Map;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
+import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.common.util.TagUtil;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.contentindex.client.ContentIndexItem;
+import org.duracloud.mill.contentindex.ContentIndexItemUtil;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,34 +57,31 @@ public class ContentIndexUpdatingProcessor implements TaskProcessor {
             String storeId = task.getStoreId();
             String spaceId = task.getSpaceId();
             String contentId = task.getContentId();
-            String action = task.getAction();
             String storeType = task.getStoreType();
             Map<String, String> props = task.getContentProperties();
-            String acls = task.getSpaceACLs();
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
+            ActionType action  = ActionType.valueOf(task.getAction());
 
             ContentIndexItem indexItem = new ContentIndexItem(account, 
                                                               storeId,
                                                               spaceId, 
                                                               contentId);
 
-            Map<String, String> contentProps = null;
-            if (props != null) {
-                // remove the tags to ensure the tag
-                // data is not duplicated in content index
-                contentProps = new HashMap<String, String>(props);
-                contentProps.remove(TagUtil.TAGS);
-                indexItem.setProps(contentProps);
-                String tagString = props.get(TagUtil.TAGS);
-                if (tagString != null) {
-                    indexItem.setTags(new ArrayList<String>(TagUtil
-                            .parseTags(tagString)));
-                }
+            ContentIndexItemUtil.setProps(props, indexItem);
+
+            
+            indexItem.setVersion(timestamp.getTime());
+            indexItem.setStoreType(storeType);
+
+            if (action.equals(ActionType.DELETE_CONTENT)) {
+                contentIndexClient.delete(indexItem);
+            } else if (action.equals(ActionType.ADD_CONTENT)
+                    || action.equals(ActionType.SET_CONTENT_PROPERTIES)) {
+                contentIndexClient.save(indexItem);
+            } else {
+                log.debug("action type {} not being handled by this processor.", action);
             }
 
-            indexItem.setStoreType(storeType);
-            
-            contentIndexClient.save(indexItem);
             log.debug("content index item saved: {}", indexItem);
             log.debug("task successfully processed: {}", task);
         } catch (Exception e) {
@@ -91,5 +91,7 @@ public class ContentIndexUpdatingProcessor implements TaskProcessor {
             throw new TaskExecutionFailedException(message, e);
         }
     }
+
+
 
 }

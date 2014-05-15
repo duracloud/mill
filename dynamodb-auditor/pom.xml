@@ -28,7 +28,7 @@
         <version>2.16</version>
         <configuration>
           <systemPropertyVariables>
-            <dynamodb.port>${dynamodblocal.port}</dynamodb.port>
+            <dynamodb.port>8000</dynamodb.port>
           </systemPropertyVariables>
           <includes>
             <include>%regex[.*IT.class]</include>

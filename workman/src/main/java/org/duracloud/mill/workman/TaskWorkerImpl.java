@@ -26,7 +26,6 @@ import java.util.TimerTask;
  * 
  */
 public class TaskWorkerImpl implements TaskWorker {
-    private static final int MAX_ATTEMPTS = 3;
     private static Logger log = LoggerFactory.getLogger(TaskWorkerImpl.class);
     private static final Timer TIMER;
 
@@ -138,8 +137,8 @@ public class TaskWorkerImpl implements TaskWorker {
             int attempts = task.getAttempts();
             log.error("failed to complete " + task + " after " + attempts
                     + " attempts: " + e.getMessage(), e);
-
-            if(attempts < MAX_ATTEMPTS){
+            
+            if(attempts < TaskWorker.MAX_ATTEMPTS){
                 this.queue.requeue(task);
             }else{
                 sendToDeadLetterQueue(task);

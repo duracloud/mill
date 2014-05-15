@@ -28,6 +28,7 @@ public class WorkmanConfigurationManager
     public static final String NOTIFICATION_RECIPIENTS = "notificationRecipients";
     public static final String POLICY_MANAGER_REFRESH_FREQUENCY_MS = "policyManagerRefreshFrequencyMs";
     public static final String HIGH_PRIORITY_DUPLICATION_QUEUE_KEY = "highPriorityDuplicationQueue";
+    public static final String BIT_ERROR_QUEUE_KEY = "bitErrorQueue";
     
     public String getDeadLetterQueueName() {
         return System.getProperty(DEAD_LETTER_QUEUE_KEY);
@@ -101,6 +102,10 @@ public class WorkmanConfigurationManager
      */
     public String getHighPriorityDuplicationQueueName() {
         return System.getProperty(HIGH_PRIORITY_DUPLICATION_QUEUE_KEY);
+    }
+    
+    public String getBitErrorQueueName(){
+        return System.getProperty(BIT_ERROR_QUEUE_KEY);
     }
 
 }

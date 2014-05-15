@@ -14,5 +14,8 @@ package org.duracloud.mill.bitlog;
 public enum BitIntegrityResult {
     SUCCESS,
     FAILURE,
-    ERROR;
+    ERROR,
+    IGNORE; //IGNORE will not show up in the bit integrity log.  
+            //It is used by the BitCheckHandler to detect cases 
+            //the bit integrity task should be ignored.
 }

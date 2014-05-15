@@ -127,6 +127,11 @@
 
     <dependency>
       <groupId>org.duracloud</groupId>
+      <artifactId>common-json</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
       <artifactId>common-queue</artifactId>
     </dependency>
 

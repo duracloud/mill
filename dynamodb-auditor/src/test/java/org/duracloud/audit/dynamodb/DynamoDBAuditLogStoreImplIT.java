@@ -135,7 +135,20 @@ public class DynamoDBAuditLogStoreImplIT {
         AuditLogItem it = this.logStore.getLatestLogItem("account0", "store0","space0","content0");
         verifyItem(it);
     }
+    
+    @Test
+    public void testUpdateProperties() throws Exception {
+        int stores = 1;
+        int content = 1;
+        int dates = 1;
+        loadData(client, 1,stores,1,content,dates);
+        AuditLogItem it = this.logStore.getLatestLogItem("account0", "store0","space0","content0");
+        this.logStore.updateProperties(it, "xxx");
+        it = this.logStore.getLatestLogItem("account0", "store0","space0","content0");
+        Assert.assertEquals("xxx",it.getContentProperties());
+    }
 
+    
     @Test
     public void testGetLogItemForContentIdNotFound() throws Exception{
         int stores = 2;

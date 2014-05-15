@@ -7,18 +7,11 @@
  */
 package org.duracloud.mill.audit;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.common.util.DateUtil;
-import org.duracloud.common.util.TagUtil;
-import org.duracloud.contentindex.client.ContentIndexClient;
-import org.duracloud.contentindex.client.ContentIndexItem;
-import org.duracloud.mill.workman.MultiStepTaskProcessor;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.slf4j.Logger;
@@ -57,7 +50,6 @@ public class AuditLogWritingProcessor implements TaskProcessor {
             String spaceId = task.getSpaceId();
             String contentId = task.getContentId();
             String action = task.getAction();
-            String storeType = task.getStoreType();
             Map<String, String> props = task.getContentProperties();
             String acls = task.getSpaceACLs();
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
@@ -70,7 +62,7 @@ public class AuditLogWritingProcessor implements TaskProcessor {
                                 task.getContentSize(), 
                                 task.getUserId(), 
                                 action,
-                                props != null ? props.toString() : null, 
+                                props != null ? AuditLogStoreUtil.serialize(props) : null, 
                                 acls,
                                 task.getSourceSpaceId(), 
                                 task.getSourceContentId(),

@@ -234,6 +234,12 @@ public class AppDriver {
                               auditQueueName);
         }
 
+        String bitErrorQueueName = cmd.getOptionValue(BIT_ERROR_QUEUE_OPTION);
+        if (bitErrorQueueName != null) {
+            setSystemProperty(WorkmanConfigurationManager.BIT_ERROR_QUEUE_KEY,
+                              bitErrorQueueName);
+        }
+
         String workDirPath = cmd.getOptionValue(WORK_DIR_PATH_OPTION);
         if(workDirPath == null || workDirPath.trim() == ""){
             //this should never happen since workDirPath is required,
