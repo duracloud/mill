@@ -8,27 +8,13 @@
 package org.duracloud.mill.ltp;
 
 import java.io.File;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
+import java.io.IOException;
 
 import org.apache.commons.cli.CommandLine;
-import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.common.queue.aws.SQSTaskQueue;
-import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
-import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
-import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
-import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
-import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
-import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.util.SystemPropertyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -116,6 +102,13 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
                 .getOptionValue(LoopingTaskProducerCommandLineOptions.CONFIG_FILE_OPTION);
 
         if (configPath != null) {
+            if (new File(configPath).exists()) {
+                try {
+                    SystemPropertyLoader.load(configPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             setSystemProperty(
                     ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
                     configPath);

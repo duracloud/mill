@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -123,10 +124,12 @@ public class SimpleDBCredentialsRepo implements CredentialsRepo {
         String secondaryIdsStr = getValue(getResult,
                 "SECONDARY_STORAGE_PROVIDER_ACCOUNT_IDS", serverDetailsDomain);
 
-        String[] secondaryIds = secondaryIdsStr.trim().split(",");
-        // for each secondary get providers
-        for (String secondaryId : secondaryIds) {
-            creds.add(getProviderCredentials(secondaryId));
+        if(!StringUtils.isBlank(secondaryIdsStr)){
+            String[] secondaryIds = secondaryIdsStr.trim().split(",");
+            // for each secondary get providers
+            for (String secondaryId : secondaryIds) {
+                creds.add(getProviderCredentials(secondaryId));
+            }
         }
 
         // build account credentials object.

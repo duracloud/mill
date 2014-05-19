@@ -7,15 +7,12 @@
  */
 package org.duracloud.mill.audit;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.audit.task.AuditTask.ActionType;
-import org.duracloud.common.util.TagUtil;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.contentindex.client.ContentIndexItem;
 import org.duracloud.mill.contentindex.ContentIndexItemUtil;
@@ -35,7 +32,6 @@ public class ContentIndexUpdatingProcessor implements TaskProcessor {
     private final Logger       log = LoggerFactory
                                            .getLogger(ContentIndexUpdatingProcessor.class);
 
-    private AuditLogStore      auditLogStore;
     private ContentIndexClient contentIndexClient;
     private AuditTask          task;
 
@@ -58,7 +54,13 @@ public class ContentIndexUpdatingProcessor implements TaskProcessor {
             String spaceId = task.getSpaceId();
             String contentId = task.getContentId();
             String storeType = task.getStoreType();
+            
             Map<String, String> props = task.getContentProperties();
+            if(props == null || props.size() == 0){
+                props = new HashMap<String,String>();
+                props.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, task.getContentChecksum());
+            }
+
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
             ActionType action  = ActionType.valueOf(task.getAction());
 
@@ -72,7 +74,7 @@ public class ContentIndexUpdatingProcessor implements TaskProcessor {
             
             indexItem.setVersion(timestamp.getTime());
             indexItem.setStoreType(storeType);
-
+            
             if (action.equals(ActionType.DELETE_CONTENT)) {
                 contentIndexClient.delete(indexItem);
             } else if (action.equals(ActionType.ADD_CONTENT)
@@ -87,7 +89,7 @@ public class ContentIndexUpdatingProcessor implements TaskProcessor {
         } catch (Exception e) {
             String message = "Failed to execute " + task + ": "
                     + e.getMessage();
-            log.debug(message, e);
+            log.error(message, e);
             throw new TaskExecutionFailedException(message, e);
         }
     }
