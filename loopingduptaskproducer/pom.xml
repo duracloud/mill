@@ -69,7 +69,7 @@
 
     <dependency>
       <groupId>org.duracloud.mill</groupId>
-      <artifactId>common-bi</artifactId>
+      <artifactId>common-bit</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
