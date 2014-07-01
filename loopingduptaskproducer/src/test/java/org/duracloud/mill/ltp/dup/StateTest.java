@@ -13,9 +13,9 @@ import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.ltp.Morsel;
 import org.duracloud.mill.ltp.State;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.Assert;
 
 /**
  * @author Daniel Bernstein
@@ -41,11 +41,11 @@ public class StateTest {
     public void testToString() {
         DuplicationMorsel morsel = new DuplicationMorsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
         State<Morsel> state = new State<>();
-        Assert.notNull(state.toString());
+        Assert.assertNotNull(state.toString());
         LinkedHashSet<Morsel> morsels = new LinkedHashSet<>();
         morsels.add(morsel);
         state.setMorsels(morsels);
-        Assert.isTrue(state.toString().contains("test"));
+        Assert.assertTrue(state.toString().contains("test"));
     }
 
 }
