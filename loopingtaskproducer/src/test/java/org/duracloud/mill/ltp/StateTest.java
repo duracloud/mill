@@ -12,9 +12,9 @@ import java.util.Set;
 
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.Assert;
 
 /**
  * @author Daniel Bernstein
@@ -40,11 +40,11 @@ public class StateTest {
     public void testToString() {
         Morsel morsel = new Morsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
         State state = new State();
-        Assert.notNull(state.toString());
+        Assert.assertNotNull(state.toString());
         Set<Morsel> morsels = new HashSet<>();
         morsels.add(morsel);
         state.setMorsels(morsels);
-        Assert.isTrue(state.toString().contains("test"));
+        Assert.assertTrue(state.toString().contains("test"));
     }
 
 }
