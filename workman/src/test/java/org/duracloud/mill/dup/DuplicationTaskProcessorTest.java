@@ -11,6 +11,7 @@ import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.common.util.IOUtil;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.storage.error.NotFoundException;
+import org.duracloud.storage.error.StorageStateException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMock;
 import org.junit.After;
@@ -352,6 +353,40 @@ public class DuplicationTaskProcessorTest {
         taskProcessor.execute();
     }
 
+    /**
+     * Tests that  property dates that cannot be made due to the store client throwing
+     * a StorageStateException are handled gracefully.
+     * @throws Exception
+     */
+    @Test
+    public void testExecutePropertiesUpdateNotAllowed() throws Exception {
+        // Check space
+        destStore.createSpace(spaceId);
+        EasyMock.expectLastCall();
+
+        // Mismatched content properties
+        final String checksum = "checksum";
+        final String customPropKey = "important-information";
+        final String customPropVal = "is-stored-here";
+        Map<String, String> srcProps = new HashMap<>();
+        srcProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, checksum);
+        srcProps.put(customPropKey, customPropVal);
+        EasyMock.expect(srcStore.getContentProperties(spaceId, contentId))
+                .andReturn(srcProps);
+
+        Map<String, String> destProps = new HashMap<>();
+        destProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, checksum);
+        EasyMock.expect(destStore.getContentProperties(spaceId, contentId))
+                .andReturn(destProps);
+
+        // Duplicate properties
+        destStore.setContentProperties(spaceId, contentId, srcProps);
+        EasyMock.expectLastCall().andThrow(new StorageStateException("test", null));
+
+        replayMocks();
+
+        taskProcessor.execute();
+    }
     /**
      * Verifies the flow of actions that occur when a content item is not
      * available in the source store, but is available in the destination store.
