@@ -24,7 +24,8 @@ import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
-import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
+import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
+import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
@@ -33,8 +34,7 @@ import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.queue.aws.SQSTaskQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -236,8 +236,7 @@ public class AppDriver {
                 credentialsRepo = 
                         new ConfigFileCredentialRepo(config.getCredentialsFilePath());
             }else{
-                credentialsRepo = 
-                        new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
+                credentialsRepo = CredentialsRepoLocator.get();
             }
             
             StorageProviderFactory storageProviderFactory = new StorageProviderFactory();

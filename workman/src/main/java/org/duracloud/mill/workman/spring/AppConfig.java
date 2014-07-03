@@ -9,10 +9,11 @@ package org.duracloud.mill.workman.spring;
 
 import java.io.File;
 
+import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
-import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
+import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.queue.TaskQueue;
@@ -22,11 +23,11 @@ import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import org.springframework.context.annotation.ImportResource;
 
 /**
  * 
@@ -35,24 +36,25 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
  */
 @ComponentScan(basePackages = { "org.duracloud.mill" })
 @Configuration
+@ImportResource("classpath:/jpa-config.xml")
 public class AppConfig {
     
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
     
     @Bean
-    public RootTaskProcessorFactory rootTaskProcessorFactory(CredentialsRepo repo,
+    public RootTaskProcessorFactory rootTaskProcessorFactory(@Qualifier("credentialsRepo")CredentialsRepo credentialsRepo,
                                                              File workDir) {
         RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(
-            new DuplicationTaskProcessorFactory(repo, workDir));
+            new DuplicationTaskProcessorFactory(credentialsRepo, workDir));
         factory.addTaskProcessorFactory(
-            new NoopTaskProcessorFactory(repo, workDir));
+            new NoopTaskProcessorFactory(credentialsRepo, workDir));
         log.info("RootTaskProcessorFactory created.");
         return factory;
     }
 
-    @Bean
-    public CredentialsRepo credentialRepo(ConfigurationManager configurationManager) {
+    @Bean(name="credentialsRepo")
+    public CredentialsRepo credentialRepo(ConfigurationManager configurationManager, DuracloudAccountRepo accountRepo) {
         String path = configurationManager.getCredentialsFilePath();
         if(path != null){
             log.info(
@@ -61,7 +63,7 @@ public class AppConfig {
             return new ConfigFileCredentialRepo();
         }else{
             log.info("no credentials file path: using simpledb based credential repo...");
-            return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
+            return new DefaultCredentialsRepoImpl(accountRepo);
         }
     }
 

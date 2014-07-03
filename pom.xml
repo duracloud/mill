@@ -50,7 +50,7 @@
     <module>common-dup</module>
     <module>common-taskproducer</module>
     <module>common-storageprovider</module>
-    <module>simpledbcredentialsrepo</module>
+    <module>credentialsrepo-impl</module>
     <module>loopingtaskproducer</module>
     <module>workman</module>
     <module>taskproducertool</module>
@@ -109,7 +109,7 @@
     <innerClasses>**/*$*</innerClasses>
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.framework.version>3.2.4.RELEASE</spring.framework.version>
+    <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <duracloud.version>3.1.1</duracloud.version>
     <skipITs>true</skipITs>
     <powermock.version>1.5.2</powermock.version>
@@ -382,7 +382,7 @@
       <dependency>
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
-        <version>3.1</version>
+        <version>3.2</version>
       </dependency>
       <dependency>
          <groupId>org.powermock</groupId>
@@ -484,6 +484,30 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jms</artifactId>
+        <version>${spring.framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>${spring.framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
         <version>${spring.framework.version}</version>
         <exclusions>
           <exclusion>

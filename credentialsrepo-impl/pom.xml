@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.duracloud.mill</groupId>
+  <artifactId>credentialsrepo-impl</artifactId>
+  <version>1.0.4.2</version>
+  <name>DuraCloud Mill CredentialsRepo Implementation</name>
+
+  <parent>
+    <artifactId>duplication</artifactId>
+    <groupId>org.duracloud.mill</groupId>
+    <version>1.0.4.2</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <properties>
+    <mc.version>2.0.0</mc.version>
+  </properties>
+  <build>
+    <plugins>
+    </plugins>
+  </build>
+  <dependencies>
+
+  <dependency>
+    <groupId>org.duracloud.mill</groupId>
+    <artifactId>common</artifactId>
+    <version>${project.version}</version>
+  </dependency>
+
+  <dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+  </dependency>
+
+  <dependency>
+    <groupId>org.duracloud</groupId>
+    <artifactId>common</artifactId>
+  </dependency>
+
+  <dependency>
+    <groupId>org.duracloud</groupId>
+    <artifactId>account-management-db-repo</artifactId>
+    <version>${mc.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-beans</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-core</artifactId>
+        </exclusion>
+
+      </exclusions>
+
+  </dependency>
+
+  <dependency>
+    <groupId>org.duracloud</groupId>
+    <artifactId>account-management-db-model</artifactId>
+    <version>${mc.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-beans</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-core</artifactId>
+        </exclusion>
+
+      </exclusions>
+  </dependency>
+  <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-core</artifactId>
+  </dependency>
+
+  <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-beans</artifactId>
+  </dependency>
+  
+  </dependencies>
+
+</project>
