@@ -116,14 +116,14 @@ mkdir -p /etc/facter/facts.d
 cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
 #!/usr/bin/env python
 data = {
-    "dc_mill_node_type":"dup-worker", # 'dup-producer', 'dup-producer-ds', 'dup-producer-looping' OR 'dup-worker'
+    "dc_mill_node_type":"dup-worker", # 'dup-producer', 'dup-producer-looping' OR 'dup-worker'
     "dc_mill_jar_s3path":"duracloudprodaccount.duplication-bootstrap", # no trailing slash
     "dc_dup_queue_high":"prod-dup-high-priority",
     "dc_dup_queue_low":"prod-dup-low-priority",
     "dc_mill_dead_letter_queue":"prod-dup-dead-letter",
     "dc_mill_log_level":"INFO",
     "dc_mill_run_frequency":"1m",
-    "dc_mill_jar":"workman-1.0.4-driver.jar",
+    "dc_mill_jar":"workman-1.0.4.2.jar",
     "dc_workman_threads":50,
     "dc_workman_procs":1,
     "dc_workman_tmpdir":"/mnt/dup-worker-tmp",
