@@ -136,6 +136,17 @@ for k in data:
 EOF
 chmod +x /etc/facter/facts.d/duracloud-mill
 
+# Create database credentials file
+databaseProps=/home/duracloud/duracloud-mc-config/mc-config.properties
+mkdir -p ${databaseProps}
+cat << 'EOF' > ${databaseProps}
+db.host=${dbHost}
+db.port=${dbPort}
+db.name=${dbName}
+db.user=${dbUsername}
+db.pass=${dbPassword}
+EOF
+
 # Run puppet
 puppet apply /etc/puppet/manifests/site.pp
 
