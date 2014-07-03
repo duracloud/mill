@@ -57,7 +57,7 @@
     <module>common-storageprovider</module>
     <module>dynamodb-auditor</module>
     <module>auditlogtool</module>
-    <module>simpledbcredentialsrepo</module>
+    <module>credentialsrepo-impl</module>
     <module>loopingtaskproducer</module>
     <module>loopingduptaskproducer</module>
     <module>loopingbittaskproducer</module>
@@ -118,11 +118,15 @@
     <innerClasses>**/*$*</innerClasses>
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+<<<<<<< HEAD
     <spring.framework.version>4.0.2.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <dynamodb.port>8023</dynamodb.port>
     <dynamodb.dist.dir>${project.build.directory}/dynamodb-dist</dynamodb.dist.dir>
     <skipUTs>false</skipUTs>
+=======
+    <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
+>>>>>>> d07d68a... Completes https://jira.duraspace.org/browse/DPS-80: Update Mill to make calls to MySQL rather than SimpleDB
     <duracloud.version>3.1.1</duracloud.version>
     <skipITs>true</skipITs>
 
@@ -504,6 +508,30 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jms</artifactId>
+        <version>${spring.framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>${spring.framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
         <version>${spring.framework.version}</version>
         <exclusions>
           <exclusion>

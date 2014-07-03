@@ -19,6 +19,14 @@ import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
+import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
+import org.duracloud.mill.domain.NoopTask;
+import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.mill.queue.local.LocalTaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;
@@ -74,6 +82,13 @@ public class NoopProcessorLocalRoundTripTest {
         @Override
         public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
             return DEAD_LETTER_QUEUE;
+        }
+        
+        @Override
+        public CredentialsRepo credentialRepo(
+                ConfigurationManager configurationManager,
+                DuracloudAccountRepo accountRepo) {
+            return new ConfigFileCredentialRepo();
         }
 
         @Override

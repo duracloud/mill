@@ -27,10 +27,10 @@
       <artifactId>common-taskproducer</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.duracloud.mill</groupId>
-      <artifactId>simpledbcredentialsrepo</artifactId>
+      <artifactId>credentialsrepo-impl</artifactId>
       <version>${project.version}</version>
     </dependency>
 

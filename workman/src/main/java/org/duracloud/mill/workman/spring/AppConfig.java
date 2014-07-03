@@ -27,11 +27,13 @@ import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.bitlog.dynamodb.DynamoDBBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
-import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationPolicyRefresher;
+import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
+import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
@@ -45,6 +47,7 @@ import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -53,7 +56,7 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import org.springframework.context.annotation.ImportResource;
 
 /**
  * 
@@ -62,11 +65,13 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
  */
 @ComponentScan(basePackages = { "org.duracloud.mill" })
 @Configuration
+@ImportResource("classpath:/jpa-config.xml")
 public class AppConfig {
     
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
     
     @Bean
+<<<<<<< HEAD
     public RootTaskProcessorFactory 
                 rootTaskProcessorFactory(CredentialsRepo repo,
                                          StorageProviderFactory storageProviderFactory,
@@ -88,10 +93,20 @@ public class AppConfig {
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
                 workDir));
 
+=======
+    public RootTaskProcessorFactory rootTaskProcessorFactory(@Qualifier("credentialsRepo")CredentialsRepo credentialsRepo,
+                                                             File workDir) {
+        RootTaskProcessorFactory factory =  new RootTaskProcessorFactory();
+        factory.addTaskProcessorFactory(
+            new DuplicationTaskProcessorFactory(credentialsRepo, workDir));
+        factory.addTaskProcessorFactory(
+            new NoopTaskProcessorFactory(credentialsRepo, workDir));
+>>>>>>> d07d68a... Completes https://jira.duraspace.org/browse/DPS-80: Update Mill to make calls to MySQL rather than SimpleDB
         log.info("RootTaskProcessorFactory created.");
         return factory;
     }
 
+<<<<<<< HEAD
     @Bean
     public BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory(
         CredentialsRepo credentialRepo,
@@ -140,6 +155,10 @@ public class AppConfig {
 
     @Bean
     public CredentialsRepo credentialRepo(ConfigurationManager configurationManager) {
+=======
+    @Bean(name="credentialsRepo")
+    public CredentialsRepo credentialRepo(ConfigurationManager configurationManager, DuracloudAccountRepo accountRepo) {
+>>>>>>> d07d68a... Completes https://jira.duraspace.org/browse/DPS-80: Update Mill to make calls to MySQL rather than SimpleDB
         String path = configurationManager.getCredentialsFilePath();
         if(path != null){
             log.info(
@@ -148,7 +167,7 @@ public class AppConfig {
             return new ConfigFileCredentialRepo();
         }else{
             log.info("no credentials file path: using simpledb based credential repo...");
-            return new SimpleDBCredentialsRepo(new AmazonSimpleDBClient());
+            return new DefaultCredentialsRepoImpl(accountRepo);
         }
     }
 
