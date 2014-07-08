@@ -325,42 +325,45 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * @param contentId
      * @param sourceProperties
      */
-	private void duplicateProperties(final String spaceId,
-			final String contentId, final Map<String, String> sourceProperties)
-			throws TaskExecutionFailedException {
-		log.info("Duplicating properties for " + contentId + " in space "
-				+ spaceId + " in account " + dupTask.getAccount());
+    private void duplicateProperties(final String spaceId,
+            final String contentId, final Map<String, String> sourceProperties)
+            throws TaskExecutionFailedException {
+        log.info("Duplicating properties for " + contentId + " in space "
+                + spaceId + " in account " + dupTask.getAccount());
 
-		try {
-			new Retrier().execute(new Retriable() {
-				@Override
-				public String retry() throws Exception {
-					// Set properties
-					try {
-						destStore.setContentProperties(spaceId, contentId,
-								sourceProperties);
-					} catch (StorageStateException ex) {
-						log.warn(MessageFormat
-								.format("Unable to set content properties on destination store ({0}) for {1} (content) in {2} (space)",
-										destStore, contentId, spaceId));
-					}
+        try {
+            new Retrier().execute(new Retriable() {
+                @Override
+                public String retry() throws Exception {
+                    // Set properties
+                    try {
+                        destStore.setContentProperties(spaceId, contentId,
+                                sourceProperties);
+                    } catch (StorageStateException ex) {
+                        String message = "Unable to set content properties" +
+                        		 " on destination store ({0}) for " +
+                        		 "{1} (content) in {2} (space)";
+                        log.warn(MessageFormat
+                                .format(message,
+                                        destStore, contentId, spaceId));
+                    }
 
-					return "success";
+                    return "success";
 
-				}
-			});
+                }
+            });
 
-			log.info("Successfully duplicated properties for " + contentId
-					+ " in space " + spaceId + " in account "
-					+ dupTask.getAccount());
+            log.info("Successfully duplicated properties for " + contentId
+                    + " in space " + spaceId + " in account "
+                    + dupTask.getAccount());
 
-		} catch (Exception e) {
-			String msg = "Error attempting to duplicate content properties: "
-					+ e.getMessage();
-			throw new DuplicationTaskExecutionFailedException(
-					buildFailureMessage(msg), e);
-		}
-	}
+        } catch (Exception e) {
+            String msg = "Error attempting to duplicate content properties: "
+                    + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(
+                    buildFailureMessage(msg), e);
+        }
+    }
     /**
      * Pull out the system-generated properties, to allow the properties that
      * are added to the duplicated item to be only the user-defined properties.
