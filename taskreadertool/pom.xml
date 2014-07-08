@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>taskreadertool</artifactId>
-  <version>1.0.4.2</version>
+  <version>1.0.5</version>
   <name>DuraCloud Mill Task Reader Command Line Tool</name>
 
   <parent>
     <artifactId>duplication</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>1.0.4.2</version>
+    <version>1.0.5</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
