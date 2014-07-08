@@ -77,8 +77,8 @@ runcmd:
  - [sh, -c, "umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock"]
  # Install AWS CLI
  - pip install awscli
- # Install librarian-puppet for retrieving dependent puppet modules from github
- - gem install librarian-puppet
+ # Install librarian-puppet for retrieving dependent puppet modules from github (>1.0.3 requires >=Ruby 1.9)
+ - gem install librarian-puppet  --version 1.0.3
  # Get the github ssh key out of s3 so we can clone from our private github projects
  - aws --region us-east-1 s3 cp s3://${bootstrapAccount}.duplication-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
  # Add github.com to known_hosts
@@ -116,7 +116,7 @@ mkdir -p /etc/facter/facts.d
 cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
 #!/usr/bin/env python
 data = {
-    "dc_mill_node_type":"dup-producer", # 'dup-producer', 'dup-producer-looping' OR 'dup-worker'
+    "dc_mill_node_type":"dup-producer-looping", # 'dup-producer', 'dup-producer-looping' OR 'dup-worker'
     "dc_mill_jar_s3path":"${bootstrapAccount}.duplication-bootstrap", # no trailing slash
     "dc_dup_queue_high":"${highPriorityQueue}",
     "dc_dup_queue_low":"${lowPriorityQueue}", 
@@ -127,7 +127,7 @@ data = {
     "dc_mill_policy_repo_bucket_suffix":"${bucketSuffix}",
     "dc_mill_max_qsize":${maxQueueSize},
     "dc_mill_notification_email":"admin@duracloud.org",
-    "lumberjack_files":'{ "prod-looping": { "paths": ["/home/duracloud/logs/duracloud-mill-loopingtaskproducer.log"], "fields": { "type":"java", "source":"dc-mill-dup-prod-loop"} }, "fields": { "type":"java", "source":"dc-mill-dup-prod-ds" } }, "syslog": { "paths": ["/var/log/syslog"], "fields": { "type":"syslog" } } }',
+    "lumberjack_files":'{ "prod-looping": { "paths": ["/home/duracloud/logs/duracloud-mill-loopingtaskproducer.log"], "fields": { "type":"java", "source":"dc-mill-dup-prod-loop"} }, "syslog": { "paths": ["/var/log/syslog"], "fields": { "type":"syslog" } } }',
     "lumberjack_deb":"lumberjack_0.1.2_amd64.deb",
     "lumberjack_ensure":"present"
 }
@@ -137,9 +137,10 @@ EOF
 chmod +x /etc/facter/facts.d/duracloud-mill
 
 # Create database credentials file
-databaseProps=/home/duracloud/duracloud-mc-config/mc-config.properties
-mkdir -p ${databaseProps}
-cat << 'EOF' > ${databaseProps}
+databasePropsDir=/home/duracloud/duracloud-mc
+databasePropsFile=${databasePropsDir}/mc-config.properties
+mkdir -p ${databasePropsDir}
+cat << 'EOF' > ${databasePropsFile}
 db.host=${dbHost}
 db.port=${dbPort}
 db.name=${dbName}
