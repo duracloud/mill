@@ -49,13 +49,7 @@ public class DuplicationTaskProcessorFactoryTest {
         //expected failures
         List<StorageProviderType[]> failedProviderList = new LinkedList<>();
         failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.EMC });
-        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.HP });
-        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.IRODS });
-        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.MICROSOFT_AZURE });
         failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.UNKNOWN });
         for(StorageProviderType[] a : failedProviderList){

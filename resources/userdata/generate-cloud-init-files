@@ -40,7 +40,7 @@ for j in $producerCloudInit $workerCloudInit; do
   echo filtering $i;
   name='${'$(echo $i| cut -d'=' -f1)'}'
   value=$(echo $i| cut -d'=' -f2) 
-  echo replacing $name  with $value
+  #echo replacing $name  with $value
   
   fileAsString=`echo "$fileAsString" | sed "s/$name/$value/g"`
   done;

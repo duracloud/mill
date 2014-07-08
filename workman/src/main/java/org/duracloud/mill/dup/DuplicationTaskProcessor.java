@@ -20,6 +20,7 @@ import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.sdscstorage.SDSCStorageProvider;
 import org.duracloud.storage.error.NotFoundException;
+import org.duracloud.storage.error.StorageStateException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -324,32 +326,44 @@ public class DuplicationTaskProcessor implements TaskProcessor {
      * @param sourceProperties
      */
     private void duplicateProperties(final String spaceId,
-                                     final String contentId,
-                                     final Map<String, String> sourceProperties)
-        throws TaskExecutionFailedException {
-        log.info("Duplicating properties for " + contentId + " in space " +
-                 spaceId + " in account " + dupTask.getAccount());
+            final String contentId, final Map<String, String> sourceProperties)
+            throws TaskExecutionFailedException {
+        log.info("Duplicating properties for " + contentId + " in space "
+                + spaceId + " in account " + dupTask.getAccount());
+
         try {
             new Retrier().execute(new Retriable() {
                 @Override
                 public String retry() throws Exception {
                     // Set properties
-                    destStore.setContentProperties(spaceId,
-                                                   contentId,
-                                                   sourceProperties);
+                    try {
+                        destStore.setContentProperties(spaceId, contentId,
+                                sourceProperties);
+                    } catch (StorageStateException ex) {
+                        String message = "Unable to set content properties" +
+                        		 " on destination store ({0}) for " +
+                        		 "{1} (content) in {2} (space)";
+                        log.warn(MessageFormat
+                                .format(message,
+                                        destStore, contentId, spaceId));
+                    }
+
                     return "success";
+
                 }
             });
-        } catch(Exception e) {
-            String msg = "Error attempting to duplicate content properties: " +
-                         e.getMessage();
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg), e);
-        }
-        log.info("Successfully duplicated properties for " + contentId +
-                 " in space " + spaceId + " in account " + dupTask.getAccount());
-    }
 
+            log.info("Successfully duplicated properties for " + contentId
+                    + " in space " + spaceId + " in account "
+                    + dupTask.getAccount());
+
+        } catch (Exception e) {
+            String msg = "Error attempting to duplicate content properties: "
+                    + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(
+                    buildFailureMessage(msg), e);
+        }
+    }
     /**
      * Pull out the system-generated properties, to allow the properties that
      * are added to the duplicated item to be only the user-defined properties.
