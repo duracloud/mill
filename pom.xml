@@ -118,15 +118,11 @@
     <innerClasses>**/*$*</innerClasses>
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-<<<<<<< HEAD
-    <spring.framework.version>4.0.2.RELEASE</spring.framework.version>
+    <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <dynamodb.port>8023</dynamodb.port>
     <dynamodb.dist.dir>${project.build.directory}/dynamodb-dist</dynamodb.dist.dir>
     <skipUTs>false</skipUTs>
-=======
-    <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
->>>>>>> d07d68a... Completes https://jira.duraspace.org/browse/DPS-80: Update Mill to make calls to MySQL rather than SimpleDB
     <duracloud.version>3.1.1</duracloud.version>
     <skipITs>true</skipITs>
 

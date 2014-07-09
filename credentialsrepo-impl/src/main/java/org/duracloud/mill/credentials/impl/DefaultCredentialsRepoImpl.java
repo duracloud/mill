@@ -7,12 +7,17 @@
  */
 package org.duracloud.mill.credentials.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.duracloud.account.db.model.AccountInfo;
 import org.duracloud.account.db.model.ServerDetails;
 import org.duracloud.account.db.model.StorageProviderAccount;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +32,7 @@ import org.springframework.stereotype.Component;
 public class DefaultCredentialsRepoImpl implements CredentialsRepo {
     
     private DuracloudAccountRepo accountRepo;
+    
     /**
      * 
      * @param client
@@ -37,6 +43,43 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
         this.accountRepo = accountRepo;
     }
 
+    @Override
+    public AccountCredentials getAccountCredentials(String account)
+            throws AccountCredentialsNotFoundException {
+        List<StorageProviderCredentials> creds = new ArrayList<>();
+        AccountInfo accountInfo  = accountRepo.findBySubdomain(account);
+        if(accountInfo == null){
+            throw new AccountCredentialsNotFoundException("no account found for subdomain " + account);
+        } else {
+            ServerDetails details =  accountInfo.getServerDetails();
+            if(details != null){
+                creds.add(createStorageProviderCredentials(details.getPrimaryStorageProviderAccount()));
+                for(StorageProviderAccount sp : details.getSecondaryStorageProviderAccounts()){
+                    creds.add(createStorageProviderCredentials(sp));
+                }
+            }
+        }
+        AccountCredentials accountCreds = new AccountCredentials(account, creds);
+        return accountCreds;
+    }
+
+    private StorageProviderCredentials createStorageProviderCredentials(
+            StorageProviderAccount sp) {
+        return createStorageProviderCredentials(sp.getId().toString(), sp);
+    }
+    
+    @Override
+    public List<String> getAccounts() throws CredentialsRepoException {
+        List<AccountInfo> accountInfos = accountRepo.findAll();
+        List<String> subdomains = new ArrayList<>();
+        
+        for(int i = accountInfos.size()-1; i > -1 ; i--){
+            subdomains.add(0,accountInfos.remove(i).getSubdomain());
+        }
+        
+        return subdomains;
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -49,6 +92,8 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
             String subdomain, String storeId)
             throws AccountCredentialsNotFoundException,
             StorageProviderCredentialsNotFoundException {
+        
+        
         
         AccountInfo account  = accountRepo.findBySubdomain(subdomain);
         Long id = Long.valueOf(storeId);
