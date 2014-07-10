@@ -16,14 +16,13 @@ import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
-import org.duracloud.mill.credentials.simpledb.SimpleDBCredentialsRepo;
+import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
+import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -119,8 +118,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             credentialsRepo = new ConfigFileCredentialRepo(
                     config.getCredentialsFilePath());
         } else {
-            credentialsRepo = new SimpleDBCredentialsRepo(
-                    new AmazonSimpleDBClient());
+            credentialsRepo = CredentialsRepoLocator.get();
         }
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
