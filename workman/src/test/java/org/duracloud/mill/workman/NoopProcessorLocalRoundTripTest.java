@@ -16,20 +16,25 @@ import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.Task;
-import org.duracloud.contentindex.client.ContentIndexClient;
+import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
+import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
+import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
-import org.duracloud.mill.workman.spring.AppConfig;
+import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -41,78 +46,49 @@ import org.springframework.context.annotation.Configuration;
  */
 public class NoopProcessorLocalRoundTripTest {
 
-    private final static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
     private final static LocalTaskQueue HIGH_PRIORITY_QUEUE = new LocalTaskQueue();
-    private final static LocalTaskQueue AUDIT_QUEUE = new LocalTaskQueue();
-    private final static LocalTaskQueue BIT_ERROR_QUEUE = new LocalTaskQueue();
-    private final static LocalTaskQueue DUPLICATION_QUEUE = new LocalTaskQueue();
+    private final static LocalTaskQueue LOW_PRIORITY_QUEUE = new LocalTaskQueue();
+
     private final static LocalTaskQueue DEAD_LETTER_QUEUE = new LocalTaskQueue();
 
     private ApplicationContext context;
 
     @Configuration
-    @ComponentScan(basePackages={"org.duracloud.mill"})
-    public static class TestAppConfig extends AppConfig {
+    public static class TestAppConfig  {
 
-        /* (non-Javadoc)
-         * @see org.duracloud.mill.workman.spring.AppConfig#taskQueues(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
-         */
-        @Override
-        public List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager) {
-            return Arrays.asList(new TaskQueue[] { HIGH_PRIORITY_QUEUE,
-                                                   LOW_PRIORITY_QUEUE });
+ 
+        @Bean(initMethod="init", destroyMethod="destroy")
+        public TaskWorkerManager taskWorkerManager(RootTaskProcessorFactory factory,
+                                                    TaskQueue deadLetterQueue) {
+            return new TaskWorkerManager(Arrays.asList(new TaskQueue[] {
+                    HIGH_PRIORITY_QUEUE, LOW_PRIORITY_QUEUE }),
+                    deadLetterQueue, new TaskWorkerFactoryImpl(factory,
+                            deadLetterQueue));
         }
         
-        /* (non-Javadoc)
-         * @see org.duracloud.mill.workman.spring.AppConfig#contentIndexClient(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
-         */
-        @Override
-        public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config) {
-            return null;
+        @Bean
+        public RootTaskProcessorFactory 
+                    rootTaskProcessorFactory(File workDir) {
+
+            RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
+            factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(null,
+                    workDir));
+
+            return factory;
         }
         
-        /* (non-Javadoc)
-         * @see org.duracloud.mill.workman.spring.AppConfig#deadLetterQueue(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
-         */
-        @Override
-        public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
+        @Bean
+        public TaskQueue deadLetterQueue() {
             return DEAD_LETTER_QUEUE;
         }
         
-        @Override
-        public CredentialsRepo credentialRepo(
-                ConfigurationManager configurationManager,
-                DuracloudAccountRepo accountRepo) {
-            return new ConfigFileCredentialRepo();
-        }
+        
+        
 
-        @Override
-        public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager) {
-            return AUDIT_QUEUE;
-        }
-        
-        /* (non-Javadoc)
-         * @see org.duracloud.mill.workman.spring.AppConfig#bitErrorQueue(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
-         */
-        @Override
-        public TaskQueue bitErrorQueue(WorkmanConfigurationManager configurationManager) {
-            return BIT_ERROR_QUEUE;
-        }
-        
-        /* (non-Javadoc)
-         * @see org.duracloud.mill.workman.spring.AppConfig#duplicationTaskQueue(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
-         */
-        @Override
-        public TaskQueue duplicationQueue(WorkmanConfigurationManager configurationManager) {
-            return DUPLICATION_QUEUE;
-        }
-        
-        /* (non-Javadoc)
-         * @see org.duracloud.mill.workman.spring.AppConfig#duplicationPolicyManager(org.duracloud.mill.workman.spring.WorkmanConfigurationManager)
-         */
-        @Override
-        public DuplicationPolicyManager duplicationPolicyManager(WorkmanConfigurationManager configurationManager) {
-            return new DuplicationPolicyManager(new LocalDuplicationPolicyRepo(System.getProperty("java.io.tmpdir")));
+        @Bean
+        public File workDir() {
+            WorkmanConfigurationManager configurationManager = new WorkmanConfigurationManager();
+            return new File(configurationManager.getWorkDirectoryPath());
         }
     }
     /**
