@@ -186,15 +186,6 @@
       </snapshots>
     </repository>
     <repository>
-      <id>maven-repository.dev.java.net</id>
-      <name>Java.net Maven 1 Repository (legacy)</name>
-      <url>http://download.java.net/maven/1</url>
-      <layout>legacy</layout>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>com.springsource.repository.bundles.release</id>
       <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
       <url>http://repository.springsource.com/maven/bundles/release</url>
@@ -266,6 +257,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
@@ -300,6 +292,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
         <configuration>
           <skipTests>${skipUTs}</skipTests>
           <trimStackTrace>false</trimStackTrace>
@@ -526,18 +519,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>${spring.framework.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>common</artifactId>
         <version>${duracloud.version}</version>
@@ -561,11 +542,6 @@
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>content-index-client</artifactId>
-        <version>${duracloud.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.duracloud</groupId>
-        <artifactId>auditor</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
       <dependency>
