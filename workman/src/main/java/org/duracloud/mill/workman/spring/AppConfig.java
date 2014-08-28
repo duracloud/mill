@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -64,7 +63,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
  */
 @ComponentScan(basePackages = { "org.duracloud.mill" })
 @Configuration
-@ImportResource("classpath:/jpa-config.xml")
 public class AppConfig {
     
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);

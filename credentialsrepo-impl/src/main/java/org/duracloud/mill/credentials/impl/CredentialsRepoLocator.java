@@ -8,15 +8,21 @@
 package org.duracloud.mill.credentials.impl;
 
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 /**
  * 
  * @author Daniel Bernstein
  *
  */
 public class CredentialsRepoLocator {
+    private static ApplicationContext ctx;
+    
+    static {
+       ctx = new AnnotationConfigApplicationContext("org.duracloud.mill.credentials.impl");
+        
+    }
     public static CredentialsRepo get(){
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("jpa-config.xml");
         return ctx.getBean(CredentialsRepo.class);
 
     }

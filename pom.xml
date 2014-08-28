@@ -122,6 +122,7 @@
     <powermock.version>1.5.4</powermock.version>
     <dynamodb.port>8023</dynamodb.port>
     <dynamodb.dist.dir>${project.build.directory}/dynamodb-dist</dynamodb.dist.dir>
+    <spring.framework.data.jpa.version>1.6.0.RELEASE</spring.framework.data.jpa.version>
     <skipUTs>false</skipUTs>
     <duracloud.version>3.1.1</duracloud.version>
     <skipITs>true</skipITs>
@@ -529,6 +530,27 @@
           </exclusion>
         </exclusions>
       </dependency>
+
+      <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <version>${spring.framework.data.jpa.version}</version>
+      </dependency>
+
+
+      <dependency>
+        <groupId>commons-dbcp</groupId>
+        <artifactId>commons-dbcp</artifactId>
+        <version>1.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>5.1.25</version>
+      </dependency>
+
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>common-queue</artifactId>
