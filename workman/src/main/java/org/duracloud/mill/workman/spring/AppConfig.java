@@ -51,8 +51,6 @@ import org.springframework.context.annotation.Configuration;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 
 /**
  * 
@@ -159,18 +157,6 @@ public class AppConfig {
     @Bean 
     public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config){
         return ESContentIndexClientUtil.createContentIndexClient();
-    }
-
-    @Bean
-    public AmazonDynamoDBClient dynamoDBClient() {
-        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        client.setRegion(Region.getRegion(Regions.US_EAST_1));
-        return client;
-    }
-
-    @Bean
-    public DynamoDBMapper dynamoDBMapper(AmazonDynamoDBClient dynamoDBClient) {
-        return new DynamoDBMapper(dynamoDBClient);
     }
 
     @Bean

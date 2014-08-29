@@ -419,7 +419,7 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
                         && isContentChecksumOkay(storageProviderType,
                                 parameters.getContentChecksum(), storeChecksum)) {
                     String message  = "The audit log item was corrupted because an insert failed "
-                            + "or the checksum itself was corrupted in the process of insertion into Dynamo.";
+                            + "or the checksum itself was corrupted in the process of insertion into the auditLogStore.";
                     addErrorTask(parameters,
                                  message);
 
@@ -435,7 +435,7 @@ public class BitIntegrityCheckTaskProcessor implements TaskProcessor {
                                 parameters.getContentChecksum(), storeChecksum)) {
                     
                     String message = "The audit log item is null while content index and store checksums match. " +
-                            "Probable causes: a dynamo audit log insert failed silently under the AWS covers" +
+                            "Probable causes: an audit log insert failed silently under the covers" +
                             " or the item was manually deleted.";
                     
                     log.error(buildFailureMessage(message, parameters.getTask(), parameters.getStorageProviderType()));

@@ -9,8 +9,6 @@ package org.duracloud.mill.bitlog;
 
 import java.util.Iterator;
 
-import org.duracloud.mill.util.dynamodb.ItemNotFoundException;
-import org.duracloud.mill.util.dynamodb.ItemWriteFailedException;
 import org.duracloud.storage.domain.StorageProviderType;
 
 /**

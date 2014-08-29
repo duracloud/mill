@@ -18,7 +18,6 @@ import java.util.Map;
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.AuditLogWriteFailedException;
-import org.duracloud.audit.dynamodb.DynamoDBAuditLogItem;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.util.ChecksumUtil;
@@ -189,9 +188,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      */
     private void auditLogStoreMockChecksum(String auditChecksum)
             throws org.duracloud.error.NotFoundException {
-        AuditLogItem item = new DynamoDBAuditLogItem(contentId, null, account,
-                storeId, spaceId, contentId, auditChecksum, null, null, null,
-                null, null, null, null, null, System.currentTimeMillis());
+        AuditLogItem item = createMock(AuditLogItem.class);
         EasyMock.expect(
                 auditLogStore.getLatestLogItem(account, storeId, spaceId,
                         contentId)).andReturn(item);
