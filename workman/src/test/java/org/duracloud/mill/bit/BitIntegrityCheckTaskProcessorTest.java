@@ -277,7 +277,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testSuccessWithOutContentCheckChronStage() throws Exception {
-        testSuccess(StorageProviderType.CHRON_STAGE, false);
+        testSuccess(StorageProviderType.SNAPSHOT, false);
     }
 
     @Test
