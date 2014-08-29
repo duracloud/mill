@@ -71,11 +71,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.duracloud.mill</groupId>
-      <artifactId>dynamodb-bitlog</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.duracloud.mill</groupId>
@@ -143,12 +138,6 @@
     <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>auditor</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.duracloud.mill</groupId>
-      <artifactId>dynamodb-auditor</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <dependency>

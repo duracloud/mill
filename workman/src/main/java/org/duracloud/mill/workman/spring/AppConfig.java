@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.audit.AuditLogStore;
-import org.duracloud.audit.dynamodb.DynamoDBAuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.contentindex.client.ContentIndexClient;
@@ -25,7 +24,6 @@ import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactor
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
 import org.duracloud.mill.bitlog.BitLogStore;
-import org.duracloud.mill.bitlog.dynamodb.DynamoDBBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -176,19 +174,13 @@ public class AppConfig {
     }
 
     @Bean
-    public AuditLogStore auditLogStore(AmazonDynamoDBClient dynamoDBClient,
-                                       DynamoDBMapper dynamoDBMapper){
-        DynamoDBAuditLogStore store =  new DynamoDBAuditLogStore();
-        store.initialize(dynamoDBClient, dynamoDBMapper);
-        return store;
+    public AuditLogStore auditLogStore(){
+        return null;
     }
 
     @Bean
-    public BitLogStore bitLogStore(AmazonDynamoDBClient dynamoDBClient,
-                                   DynamoDBMapper dynamoDBMapper) {
-        DynamoDBBitLogStore store = new DynamoDBBitLogStore();
-        store.initialize(dynamoDBClient, dynamoDBMapper);
-        return store;
+    public BitLogStore bitLogStore() {
+        return null;
     }
 
     @Bean
