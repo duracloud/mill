@@ -16,34 +16,34 @@
     http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
   <context:annotation-config/>
-  <context:component-scan base-package="org.duracloud"/>
-  <context:property-placeholder location="file://${mc.config.path}" />
+  <context:component-scan base-package="org.duracloud.mill.db.repo"/>
+  <context:property-placeholder location="file://${mill.repo.config.path}" />
 
-  <jpa:repositories base-package="org.duracloud.account.db.repo"
-    entity-manager-factory-ref="credentialsRepoEntityManagerFactory"
-    transaction-manager-ref="credentialsRepoTransactionManager" />
+  <jpa:repositories base-package="org.duracloud.mill.db.repo" 
+    entity-manager-factory-ref="millRepoEntityManagerFactory"
+    transaction-manager-ref="millRepoTransactionManager" />
   <tx:annotation-driven />
 
-  <bean id="credentialsRepoDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+  <bean id="millRepoDataSource" class="org.apache.commons.dbcp.BasicDataSource"
     destroy-method="close">
     <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-    <property name="url" value="jdbc:mysql://${db.host}:${db.port}/${db.name}?autoReconnect=true"/>
-    <property name="username" value="${db.user}" />
-    <property name="password" value="${db.pass}" />
+    <property name="url" value="jdbc:mysql://${mill.db.host}:${mill.db.port}/${mill.db.name}?autoReconnect=true"/>
+    <property name="username" value="${mill.db.user}" />
+    <property name="password" value="${mill.db.pass}" />
   </bean>
 
-  <bean id="credentialsRepoTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-    <property name="entityManagerFactory" ref="credentialsRepoEntityManagerFactory" />
+  <bean id="millRepoTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    <property name="entityManagerFactory" ref="millRepoEntityManagerFactory" />
     <property name="jpaDialect">
       <bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
     </property>
   </bean>
 
-  <bean id="credentialsRepoEntityManagerFactory"
+  <bean id="millRepoEntityManagerFactory"
     class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-    <property name="dataSource" ref="credentialsRepoDataSource" />
-    <property name="persistenceUnitName" value="creditials-pu" />
-    <property name="packagesToScan" value="org.duracloud.account.db.model" />
+    <property name="dataSource" ref="millRepoDataSource" />
+    <property name="persistenceUnitName" value="mill-repo-pu" />
+    <property name="packagesToScan" value="org.duracloud.mill.db.model" />
     <property name="jpaVendorAdapter">
       <bean
         class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">

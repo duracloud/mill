@@ -21,6 +21,7 @@ import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.ContentIndexUpdatingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
+import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
 import org.duracloud.mill.bitlog.BitLogStore;
@@ -29,6 +30,7 @@ import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
+import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationPolicyRefresher;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
@@ -49,13 +51,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-
 /**
  * 
  * @author Daniel Bernstein
- *	       Date: Oct 24, 2013
+ *	   Date: Oct 24, 2013
  */
 @ComponentScan(basePackages = { "org.duracloud.mill" })
 @Configuration
@@ -160,8 +159,8 @@ public class AppConfig {
     }
 
     @Bean
-    public AuditLogStore auditLogStore(){
-        return null;
+    public AuditLogStore auditLogStore(JpaAuditLogItemRepo auditLogItemRepo){
+        return new JpaAuditLogStore(auditLogItemRepo);
     }
 
     @Bean

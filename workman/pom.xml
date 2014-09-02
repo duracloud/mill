@@ -97,6 +97,18 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>mill-jpa-repo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>bitlog</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
     </dependency>

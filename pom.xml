@@ -54,6 +54,7 @@
     <module>common-taskproducer</module>
     <module>common-storageprovider</module>
     <module>credentialsrepo-impl</module>
+    <module>mill-jpa-repo</module>
     <module>loopingtaskproducer</module>
     <module>loopingduptaskproducer</module>
     <module>loopingbittaskproducer</module>
