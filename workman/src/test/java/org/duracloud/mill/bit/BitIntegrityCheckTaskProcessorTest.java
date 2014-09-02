@@ -18,7 +18,7 @@ import java.util.Map;
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.AuditLogWriteFailedException;
-import org.duracloud.audit.dynamodb.DynamoDBAuditLogItem;
+import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.util.ChecksumUtil;
@@ -74,7 +74,9 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     private TaskQueue                      bitErrorQueue;
     @Mock
     private TaskQueue                      auditQueue;
-
+    @Mock
+    private AuditLogItem                   item;
+    
     private BitIntegrityCheckTaskProcessor taskProcessor;
 
     @Before
@@ -189,12 +191,12 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      */
     private void auditLogStoreMockChecksum(String auditChecksum)
             throws org.duracloud.error.NotFoundException {
-        AuditLogItem item = new DynamoDBAuditLogItem(contentId, null, account,
-                storeId, spaceId, contentId, auditChecksum, null, null, null,
-                null, null, null, null, null, System.currentTimeMillis());
+        item = createMock(AuditLogItem.class);
         EasyMock.expect(
                 auditLogStore.getLatestLogItem(account, storeId, spaceId,
                         contentId)).andReturn(item);
+        EasyMock.expect(item.getAction()).andReturn(ActionType.ADD_CONTENT.name());
+        EasyMock.expect(item.getContentMd5()).andReturn(auditChecksum).atLeastOnce();
     }
 
     private void auditLogStoreMockValidChecksum() throws org.duracloud.error.NotFoundException  {
@@ -277,7 +279,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testSuccessWithOutContentCheckChronStage() throws Exception {
-        testSuccess(StorageProviderType.CHRON_STAGE, false);
+        testSuccess(StorageProviderType.SNAPSHOT, false);
     }
 
     @Test
@@ -391,6 +393,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         bitLogStoreMockInvalid(storeType, checksum, checksum, checksum,
                 contentIndexChecksum);
         mockBitErrorTaskPut();
+        
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         this.taskProcessor.execute();
@@ -571,6 +574,9 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         this.auditLogStore.updateProperties(EasyMock.isA(AuditLogItem.class),
                 EasyMock.isA(String.class));
         EasyMock.expectLastCall();
+        
+        EasyMock.expect(item.getContentProperties()).andReturn(null);
+
     }
 
     /**

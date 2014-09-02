@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.audit.AuditLogStore;
-import org.duracloud.audit.dynamodb.DynamoDBAuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.contentindex.client.ContentIndexClient;
@@ -22,15 +21,16 @@ import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.ContentIndexUpdatingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
+import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
 import org.duracloud.mill.bitlog.BitLogStore;
-import org.duracloud.mill.bitlog.dynamodb.DynamoDBBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
+import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationPolicyRefresher;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
@@ -50,21 +50,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 
 /**
  * 
  * @author Daniel Bernstein
- *	       Date: Oct 24, 2013
+ *	   Date: Oct 24, 2013
  */
 @ComponentScan(basePackages = { "org.duracloud.mill" })
 @Configuration
-@ImportResource("classpath:/jpa-config.xml")
 public class AppConfig {
     
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
@@ -166,31 +159,13 @@ public class AppConfig {
     }
 
     @Bean
-    public AmazonDynamoDBClient dynamoDBClient() {
-        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        client.setRegion(Region.getRegion(Regions.US_EAST_1));
-        return client;
+    public AuditLogStore auditLogStore(JpaAuditLogItemRepo auditLogItemRepo){
+        return new JpaAuditLogStore(auditLogItemRepo);
     }
 
     @Bean
-    public DynamoDBMapper dynamoDBMapper(AmazonDynamoDBClient dynamoDBClient) {
-        return new DynamoDBMapper(dynamoDBClient);
-    }
-
-    @Bean
-    public AuditLogStore auditLogStore(AmazonDynamoDBClient dynamoDBClient,
-                                       DynamoDBMapper dynamoDBMapper){
-        DynamoDBAuditLogStore store =  new DynamoDBAuditLogStore();
-        store.initialize(dynamoDBClient, dynamoDBMapper);
-        return store;
-    }
-
-    @Bean
-    public BitLogStore bitLogStore(AmazonDynamoDBClient dynamoDBClient,
-                                   DynamoDBMapper dynamoDBMapper) {
-        DynamoDBBitLogStore store = new DynamoDBBitLogStore();
-        store.initialize(dynamoDBClient, dynamoDBMapper);
-        return store;
+    public BitLogStore bitLogStore() {
+        return null;
     }
 
     @Bean
