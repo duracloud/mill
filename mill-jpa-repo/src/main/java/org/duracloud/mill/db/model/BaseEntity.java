@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.MappedSuperclass;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 
@@ -66,5 +67,13 @@ public abstract class BaseEntity {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+       return ToStringBuilder.reflectionToString(this);
     }
 }

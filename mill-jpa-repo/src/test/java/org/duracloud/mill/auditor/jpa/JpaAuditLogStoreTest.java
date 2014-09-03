@@ -7,8 +7,12 @@
  */
 package org.duracloud.mill.auditor.jpa;
 
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,13 +25,11 @@ import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.error.NotFoundException;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
+import org.duracloud.mill.test.AbstractTestBase;
+import org.duracloud.mill.test.jpa.JpaTestBase;
 import org.easymock.Capture;
-import org.easymock.EasyMockRunner;
-import org.easymock.EasyMockSupport;
 import org.easymock.Mock;
-import org.junit.After;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,20 +37,12 @@ import org.springframework.data.domain.Pageable;
  * @author Daniel Bernstein
  *         Date: Aug 29, 2014
  */
-@RunWith(EasyMockRunner.class)
-public class JpaAuditLogStoreTest extends EasyMockSupport{
+public class JpaAuditLogStoreTest extends JpaTestBase<JpaAuditLogItem>{
 
     private JpaAuditLogStore auditLogStore;
     
     @Mock
     private JpaAuditLogItemRepo repo;
-    
-
-    
-    @After
-    public void tearDown(){
-        verifyAll();
-    }
     
     private String account = "account";
     private String storeId = "store-id";
@@ -140,32 +134,8 @@ public class JpaAuditLogStoreTest extends EasyMockSupport{
         verifyPageable(capture);
     }
 
-    private void verifyPageable(Capture<Pageable> capture) {
-        Pageable pageable = capture.getValue();
-        assertNotNull(pageable);
-        assertEquals(0,pageable.getPageNumber());
-    }
 
-    private void verifyIterator(int count, Iterator<AuditLogItem> it) {
-        int recount = 0;
-        while(it.hasNext()){
-            it.next();
-            recount++;
-        }
-        assertEquals(count, recount);
-    }
 
-    private Page<JpaAuditLogItem> setupPage(int count) {
-        Page<JpaAuditLogItem> page = createMock(Page.class);
-        
-         List<JpaAuditLogItem> items = new ArrayList<>();
-        for(int i = 0; i < count; i++){
-            items.add(new JpaAuditLogItem());
-        }
-        expect(page.getContent()).andReturn(items);
-        expect(page.getTotalPages()).andReturn(1);
-        return page;
-    }
 
     /**
      * Test method for {@link org.duracloud.mill.auditor.jpa.JpaAuditLogStore#getLogItems(java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
@@ -186,7 +156,7 @@ public class JpaAuditLogStoreTest extends EasyMockSupport{
                 .andReturn(page);
         replayAll();
 
-        Iterator<AuditLogItem> it = this.auditLogStore.getLogItems(account,
+        Iterator it = this.auditLogStore.getLogItems(account,
                                                                    storeId,
                                                                    spaceId,
                                                                    contentId);
@@ -238,4 +208,11 @@ public class JpaAuditLogStoreTest extends EasyMockSupport{
         
     }
 
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.test.jpa.JpaTestBase#create()
+     */
+    @Override
+    protected JpaAuditLogItem create() {
+        return createMock(JpaAuditLogItem.class);
+    }
 }
