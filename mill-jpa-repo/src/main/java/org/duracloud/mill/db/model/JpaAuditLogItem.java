@@ -7,10 +7,12 @@
  */
 package org.duracloud.mill.db.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.duracloud.audit.AuditLogItem;
 /**
  * 
@@ -19,15 +21,15 @@ import org.duracloud.audit.AuditLogItem;
  */
 @Entity
 @Table(name = "audit_log_item",
-       uniqueConstraints = @UniqueConstraint(columnNames = { "account",
-                                                             "store_id", 
-                                                             "space_id", 
-                                                             "content_md5", 
-                                                             "timestamp" }))
+       uniqueConstraints = @UniqueConstraint(columnNames = { "unique_key"}))
 public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
+    @Column(nullable=false)
     private String account;
+    @Column(nullable=false)
     private String storeId;
+    @Column(nullable=false)
     private String spaceId;
+    @Column(length=1024)
     private String contentId;
     private String contentMd5;
     private String mimetype;
@@ -38,6 +40,10 @@ public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
     private String username;
     private String sourceSpaceId;
     private String sourceContentId;
+    @Column(columnDefinition="unique_key char(32) NOT NULL")
+    private String uniqueKey;
+    
+    @Column(nullable=false)
     private Long timestamp;
     
     @Override
@@ -164,6 +170,20 @@ public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getUniqueKey() {
+        if(uniqueKey == null){
+            this.uniqueKey = DigestUtils.md5Hex(this.account + "/"
+                    + this.storeId + "/" + this.spaceId + "/"
+                    + (this.contentId == null ? " " : this.contentId) + "/"
+                    + this.timestamp);
+        }
+        return uniqueKey;
+    }
+
+    public void setUniqueKey(String uniqueKey) {
+        this.uniqueKey = uniqueKey;
     }
     
     

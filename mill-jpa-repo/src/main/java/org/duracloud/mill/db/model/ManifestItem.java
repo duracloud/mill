@@ -7,9 +7,12 @@
  */
 package org.duracloud.mill.db.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * @author Daniel Bernstein
@@ -17,17 +20,24 @@ import javax.persistence.UniqueConstraint;
  */
 @Entity
 @Table(name = "manifest_item",
-       uniqueConstraints = @UniqueConstraint(columnNames = { "account",
-                                                             "store_id", 
-                                                             "space_id", 
-                                                             "content_id" }))
+       uniqueConstraints = @UniqueConstraint(columnNames = { "unique_key"}))
 public class ManifestItem extends BaseEntity {
+    @Column(nullable=false)
     private String account;
+    @Column(nullable=false)
     private String storeId;
+    @Column(nullable=false)
     private String storeType;
+    @Column(nullable=false)
     private String spaceId;
+    @Column(nullable=false, length=1024)
     private String contentId;
+    @Column(nullable=false)
     private String contentChecksum;
+
+    @Column(columnDefinition="unique_key char(32) NOT NULL")
+    private String uniqueKey;
+
     
     public String getAccount() {
         return account;
@@ -64,5 +74,19 @@ public class ManifestItem extends BaseEntity {
     }
     public void setContentChecksum(String contentChecksum) {
         this.contentChecksum = contentChecksum;
+    }
+    
+    public String getUniqueKey() {
+        if(uniqueKey == null){
+            this.uniqueKey = DigestUtils.md5Hex(this.account + "/" +
+                                                this.storeId + "/" + 
+                                                this.spaceId + "/"+ 
+                                                this.contentId);
+        }
+        return uniqueKey;
+    }
+
+    public void setUniqueKey(String uniqueKey) {
+        this.uniqueKey = uniqueKey;
     }
 }
