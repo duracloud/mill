@@ -9,15 +9,18 @@ package org.duracloud.mill.db.model;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import javax.persistence.UniqueConstraint;
 
 /**
  * @author Daniel Bernstein
  *         Date: Sep 2, 2014
  */
 @Entity
-@Table(name="manifest_item")
+@Table(name = "manifest_item",
+       uniqueConstraints = @UniqueConstraint(columnNames = { "account",
+                                                             "store_id", 
+                                                             "space_id", 
+                                                             "content_id" }))
 public class ManifestItem extends BaseEntity {
     private String account;
     private String storeId;
