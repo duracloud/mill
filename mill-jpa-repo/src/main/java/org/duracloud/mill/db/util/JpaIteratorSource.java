@@ -1,3 +1,10 @@
+/*
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ *     http://duracloud.org/license/
+ */
 package org.duracloud.mill.db.util;
 
 import java.util.Collection;
@@ -6,7 +13,13 @@ import org.duracloud.common.collection.IteratorSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
+/**
+ * 
+ * @author Daniel Bernstein
+ *         Date: Sep 3, 2014
+ * @param <R>
+ * @param <T>
+ */
 public abstract class JpaIteratorSource<R, T> implements IteratorSource<T> {
     private int currentPage = 0;
     private int maxResults;
