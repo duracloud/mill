@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.manifest;
 
+import java.util.Date;
 import java.util.Iterator;
 
 import org.duracloud.error.NotFoundException;
@@ -24,13 +25,19 @@ public interface ManifestStore {
      * @param spaceId
      * @param contentId
      * @param contentChecksum
+     * @param contentSize 
+     * @param contentMimetype 
+     * @param timeStamp 
      * @throws ManifestItemWriteException
      */
-    void write(String account,
-               String storeId,
-               String spaceId,
-               String contentId,
-               String contentChecksum) throws ManifestItemWriteException;
+    void addUpdate(String account,
+             String storeId,
+             String spaceId,
+             String contentId,
+             String contentChecksum,
+             String contentMimetype,
+             String contentSize, 
+             Date timeStamp) throws ManifestItemWriteException;
 
     /**
      * @param account
@@ -56,5 +63,19 @@ public interface ManifestStore {
                          String storeId,
                          String spaceId,
                          String contentId) throws NotFoundException;
+
+    /**
+     * @param account
+     * @param storeId
+     * @param spaceId
+     * @param contentId
+     * @param eventTimestamp
+     * @throws ManifestItemWriteException 
+     */
+    void flagAsDeleted(String account,
+                       String storeId,
+                       String spaceId,
+                       String contentId,
+                       Date eventTimestamp) throws ManifestItemWriteException;
 
 }

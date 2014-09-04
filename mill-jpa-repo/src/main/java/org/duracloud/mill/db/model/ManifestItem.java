@@ -34,6 +34,12 @@ public class ManifestItem extends BaseEntity {
     private String contentId;
     @Column(nullable=false)
     private String contentChecksum;
+    @Column(nullable=false)
+    private String contentSize;
+    @Column(nullable=false)
+    private String contentMimetype;
+    
+    private boolean deleted = false;
 
     @Column(columnDefinition="unique_key char(32) NOT NULL")
     private String uniqueKey;
@@ -88,5 +94,23 @@ public class ManifestItem extends BaseEntity {
 
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+    public boolean isDeleted() {
+        return deleted;
+    }
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+    public String getContentMimetype() {
+        return contentMimetype;
+    }
+    public void setContentMimetype(String contentMimetype) {
+        this.contentMimetype = contentMimetype;
+    }
+    public String getContentSize() {
+        return contentSize;
+    }
+    public void setContentSize(String contentSize) {
+        this.contentSize = contentSize;
     }
 }

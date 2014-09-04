@@ -22,6 +22,7 @@ import org.duracloud.mill.db.util.JpaIteratorSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.util.CollectionUtils;
  * @author Daniel Bernstein
  * 
  */
+@Transactional
 public class JpaAuditLogStore implements AuditLogStore {
 
     private JpaAuditLogItemRepo auditLogRepo;
@@ -80,6 +82,7 @@ public class JpaAuditLogStore implements AuditLogStore {
 
     @SuppressWarnings("unchecked")
     @Override
+    @Transactional(readOnly=true)
     public Iterator<AuditLogItem> getLogItems(final String account,
             final String spaceId) {
         return (Iterator) new StreamingIterator<JpaAuditLogItem>(
@@ -95,6 +98,7 @@ public class JpaAuditLogStore implements AuditLogStore {
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Iterator<AuditLogItem> getLogItems(final String account,
                                               final String storeId,
                                               final String spaceId,
@@ -113,6 +117,7 @@ public class JpaAuditLogStore implements AuditLogStore {
     }
 
     @Override
+    @Transactional(readOnly=true)
     public AuditLogItem
             getLatestLogItem(String account,
                              String storeId,
@@ -131,6 +136,7 @@ public class JpaAuditLogStore implements AuditLogStore {
     }
 
     @Override
+    @Transactional(readOnly=true)
     public void updateProperties(AuditLogItem item, String properties)
             throws AuditLogWriteFailedException {
         

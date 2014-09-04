@@ -18,7 +18,6 @@ import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.contentindex.client.ESContentIndexClientUtil;
 import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
-import org.duracloud.mill.audit.ContentIndexUpdatingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
 import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
@@ -31,12 +30,16 @@ import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
+import org.duracloud.mill.db.repo.JpaManifestItemRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationPolicyRefresher;
 import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.manifest.ManifestStore;
+import org.duracloud.mill.manifest.ManifestWritingProcessorFactory;
+import org.duracloud.mill.manifest.jpa.JpaManifestStore;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
@@ -121,12 +124,12 @@ public class AppConfig {
                                                                     AuditLogStore auditLogStore,
                                                                     TaskQueue duplicationQueue, 
                                                                     DuplicationPolicyManager policyManager,
-                                                                    NotificationManager notificationManager){
+                                                                    NotificationManager notificationManager,
+                                                                    ManifestStore manifestStore){
 
         MultiStepTaskProcessorFactory factory = new MultiStepTaskProcessorFactory();
         factory.addFactory(new AuditLogWritingProcessorFactory(auditLogStore));
-        factory.addFactory(new ContentIndexUpdatingProcessorFactory(
-                contentIndexClient));
+        factory.addFactory(new ManifestWritingProcessorFactory(manifestStore));
         factory.addFactory(new DuplicationTaskProducingProcessorFactory(duplicationQueue, 
                                                                         policyManager));
         factory.addFactory(new SpaceCreatedNotifcationGeneratingProcessorFactory(
@@ -161,6 +164,11 @@ public class AppConfig {
     @Bean
     public AuditLogStore auditLogStore(JpaAuditLogItemRepo auditLogItemRepo){
         return new JpaAuditLogStore(auditLogItemRepo);
+    }
+
+    @Bean
+    public ManifestStore manifestStore(JpaManifestItemRepo manifestItemRepo){
+        return new JpaManifestStore(manifestItemRepo);
     }
 
     @Bean

@@ -7,22 +7,22 @@
  */
 package org.duracloud.mill.manifest.jpa;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import org.duracloud.audit.AuditLogItem;
-import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
-import org.duracloud.mill.db.model.JpaAuditLogItem;
+import java.util.Date;
+import java.util.Iterator;
+
 import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.db.repo.JpaManifestItemRepo;
 import org.duracloud.mill.manifest.ManifestItemWriteException;
-import org.duracloud.mill.test.AbstractTestBase;
 import org.duracloud.mill.test.jpa.JpaTestBase;
 import org.easymock.Capture;
 import org.easymock.Mock;
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,29 +41,125 @@ public class JpaManifestStoreTest extends JpaTestBase<ManifestItem> {
     private String spaceId = "space-id";
     private String contentId = "content-id";
     private String contentChecksum = "content-checksum";
+    private String contentSize = "content-size";
+    private String contentMimetype = "content-mimetype";
 
     /**
      * Test method for
-     * {@link org.duracloud.mill.manifest.jpa.JpaManifestStore#write(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}
+     * {@link org.duracloud.mill.manifest.jpa.JpaManifestStore#add(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}
      * .
      * 
      * @throws ManifestItemWriteException
      */
     @Test
-    public void testWrite() throws ManifestItemWriteException {
+    public void testAdd() throws ManifestItemWriteException {
         createTestSubject();
         Capture<ManifestItem> capture = new Capture<>();
+        expect(this.repo.findByAccountAndStoreIdAndSpaceIdAndContentId(account,
+                                                                       storeId,
+                                                                       spaceId,
+                                                                       contentId))
+                .andReturn(null);
         ManifestItem returnItem = createMock(ManifestItem.class);
         expect(repo.saveAndFlush(capture(capture))).andReturn(returnItem);
         replayAll();
-        store.write(account, storeId, spaceId, contentId, contentChecksum);
+        Date timestamp =  new Date();
+        store.addUpdate(account, storeId, spaceId, contentId, contentChecksum, contentMimetype, contentSize, timestamp);
         ManifestItem item = capture.getValue();
         assertEquals(account, item.getAccount());
         assertEquals(storeId, item.getStoreId());
         assertEquals(spaceId, item.getSpaceId());
         assertEquals(contentId, item.getContentId());
         assertEquals(contentChecksum, item.getContentChecksum());
+        assertEquals(timestamp, item.getModified());
+        assertEquals(contentMimetype, item.getContentMimetype());
+        assertEquals(contentSize, item.getContentSize());
+        
     }
+    
+    @Test
+    public void testUpdate() throws ManifestItemWriteException {
+        createTestSubject();
+        Date timestamp =  new Date();
+        ManifestItem returnItem = createMock(ManifestItem.class);
+        expect(returnItem.getModified()).andReturn(new Date(System.currentTimeMillis()-1000));
+        returnItem.setContentChecksum(contentChecksum);
+        expectLastCall();
+        returnItem.setContentMimetype(contentMimetype);
+        expectLastCall();
+        returnItem.setContentSize(contentSize);
+        expectLastCall();
+        returnItem.setModified(timestamp);
+        expectLastCall();
+        returnItem.setDeleted(false);
+        expectLastCall();
+
+        expect(this.repo.findByAccountAndStoreIdAndSpaceIdAndContentId(account,
+                                                                       storeId,
+                                                                       spaceId,
+                                                                       contentId))
+                .andReturn(returnItem);
+        
+        expect(repo.saveAndFlush(returnItem)).andReturn(returnItem);
+        replayAll();
+        store.addUpdate(account, storeId, spaceId, contentId, contentChecksum, contentMimetype, contentSize, timestamp);
+    }
+    
+    @Test
+    public void testIgnoreUpdate() throws ManifestItemWriteException {
+        createTestSubject();
+        Date timestamp =  new Date();
+        ManifestItem returnItem = createMock(ManifestItem.class);
+        expect(returnItem.getModified()).andReturn(new Date(System.currentTimeMillis()+1000));
+
+        expect(this.repo.findByAccountAndStoreIdAndSpaceIdAndContentId(account,
+                                                                       storeId,
+                                                                       spaceId,
+                                                                       contentId))
+                .andReturn(returnItem);
+        
+        replayAll();
+        store.addUpdate(account, storeId, spaceId, contentId, contentChecksum, contentMimetype, contentSize, timestamp);
+    }
+    
+    @Test
+    public void testFlagAsDeleted() throws ManifestItemWriteException {
+        createTestSubject();
+        Date timestamp =  new Date();
+        ManifestItem returnItem = createMock(ManifestItem.class);
+        expect(returnItem.isDeleted()).andReturn(false);
+        expect(returnItem.getModified()).andReturn(new Date(System.currentTimeMillis()-1000));
+        returnItem.setModified(timestamp);
+        expectLastCall();
+        returnItem.setDeleted(true);
+        expectLastCall();
+        expect(this.repo.findByAccountAndStoreIdAndSpaceIdAndContentId(account,
+                                                                       storeId,
+                                                                       spaceId,
+                                                                       contentId))
+                .andReturn(returnItem);
+        
+        expect(repo.saveAndFlush(returnItem)).andReturn(returnItem);
+        replayAll();
+        store.flagAsDeleted(account, storeId, spaceId, contentId, timestamp);
+    }
+    
+
+    @Test
+    public void testFlagAsNotFound() throws ManifestItemWriteException {
+        createTestSubject();
+        Date timestamp =  new Date();
+        expect(this.repo.findByAccountAndStoreIdAndSpaceIdAndContentId(account,
+                                                                       storeId,
+                                                                       spaceId,
+                                                                       contentId))
+                .andReturn(null);
+        
+        replayAll();
+        store.flagAsDeleted(account, storeId, spaceId, contentId, timestamp);
+    }
+
+    
 
     private void createTestSubject() {
         store = new JpaManifestStore(repo);
