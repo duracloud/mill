@@ -45,13 +45,14 @@ public class ManifestWritingProcessor implements
             String storeId = task.getStoreId();
             String spaceId = task.getSpaceId();
             String contentId = task.getContentId();
-            String mimetype = task.getContentMimetype();
-            String size = task.getContentSize();
             String action = task.getAction();
             Date timeStamp = new Date(Long.parseLong(task.getDateTime()));
             
             if(ActionType.ADD_CONTENT.name().equals(action) || 
                     ActionType.COPY_CONTENT.name().equals(action) ){
+                String mimetype = task.getContentMimetype();
+                String size = task.getContentSize();
+
                 this.manifestStore.addUpdate(account, 
                                     storeId, 
                                     spaceId, 
