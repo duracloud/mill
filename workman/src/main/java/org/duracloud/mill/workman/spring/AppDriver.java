@@ -33,15 +33,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 public class AppDriver {
 
-    /**
-     * 
-     */
-    private static final String CONFIG_FILE_OPTION = "c";
-    /**
-     * 
-     */
-    private static final String WORK_DIR_PATH_OPTION = "d";
     private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
+
+    private static final String CONFIG_FILE_OPTION = "c";
+    private static final String WORK_DIR_PATH_OPTION = "d";
     private static final String MAX_WORKERS_OPTION = "w";
     private static final String TASK_QUEUES_OPTION = "q";
     private static final String DEAD_LETTER_QUEUE_OPTION = "e";
