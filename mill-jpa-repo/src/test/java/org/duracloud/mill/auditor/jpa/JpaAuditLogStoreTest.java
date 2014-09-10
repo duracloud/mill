@@ -14,18 +14,15 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.error.NotFoundException;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
-import org.duracloud.mill.test.AbstractTestBase;
 import org.duracloud.mill.test.jpa.JpaTestBase;
 import org.easymock.Capture;
 import org.easymock.Mock;

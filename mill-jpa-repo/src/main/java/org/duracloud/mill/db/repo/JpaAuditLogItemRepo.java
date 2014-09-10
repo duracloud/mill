@@ -36,6 +36,9 @@ public interface JpaAuditLogItemRepo extends JpaRepository<JpaAuditLogItem, Long
             @Param("spaceId") String contentId,
             Pageable pageable);
 
+    public List<JpaAuditLogItem> findByWrittenFalse();
+    
+    
     /**
      * @param account
      * @param storeId

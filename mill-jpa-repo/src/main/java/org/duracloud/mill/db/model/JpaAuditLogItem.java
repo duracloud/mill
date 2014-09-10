@@ -21,7 +21,7 @@ import org.duracloud.audit.AuditLogItem;
  */
 @Entity
 @Table(name = "audit_log_item",
-       uniqueConstraints = @UniqueConstraint(columnNames = { "unique_key"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = { "uniqueKey"}))
 public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
     @Column(nullable=false)
     private String account;
@@ -40,8 +40,13 @@ public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
     private String username;
     private String sourceSpaceId;
     private String sourceContentId;
-    @Column(columnDefinition="unique_key char(32) NOT NULL")
+    @Column(columnDefinition="char(32) NOT NULL")
     private String uniqueKey;
+    
+    /*
+     * indicates whether or not the item has been written to file.
+     */
+    private boolean written = false; 
     
     @Column(nullable=false)
     private Long timestamp;
@@ -184,6 +189,14 @@ public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
 
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+
+    public boolean isWritten() {
+        return written;
+    }
+
+    public void setWritten(boolean written) {
+        this.written = written;
     }
     
     

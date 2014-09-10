@@ -59,6 +59,7 @@
     <module>loopingduptaskproducer</module>
     <module>loopingbittaskproducer</module>
     <module>workman</module>
+    <module>auditlog-generator</module>
     <module>taskproducertool</module>
     <module>taskreadertool</module>
     <module>policy-editor</module>
@@ -118,6 +119,8 @@
     <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <spring.framework.data.jpa.version>1.6.0.RELEASE</spring.framework.data.jpa.version>
+    <hibernate.version>4.3.5.Final</hibernate.version>
+    <mysql.driver.version>5.1.28</mysql.driver.version>
     <skipUTs>false</skipUTs>
     <duracloud.version>3.2.0-SNAPSHOT</duracloud.version>
     <skipITs>true</skipITs>
@@ -432,6 +435,12 @@
       </dependency>
 
       <dependency>
+        <groupId>commons-dbcp</groupId>
+        <artifactId>commons-dbcp</artifactId>
+        <version>1.4</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk</artifactId>
         <version>1.7.3</version>
@@ -589,6 +598,18 @@
         <groupId>org.duracloud</groupId>
         <artifactId>storeclient</artifactId>
         <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-entitymanager</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.driver.version}</version>
       </dependency>
 
     </dependencies>

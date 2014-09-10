@@ -46,6 +46,11 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>common</artifactId>
     </dependency>
@@ -68,7 +73,11 @@
     <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-entitymanager</artifactId>
-        <version>4.2.2.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
     </dependency>
   </dependencies>
 

@@ -12,11 +12,11 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Version;
 import javax.persistence.MappedSuperclass;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 
 /**
  * 

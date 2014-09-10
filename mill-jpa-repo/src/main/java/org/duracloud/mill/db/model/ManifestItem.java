@@ -20,7 +20,7 @@ import org.apache.commons.codec.digest.DigestUtils;
  */
 @Entity
 @Table(name = "manifest_item",
-       uniqueConstraints = @UniqueConstraint(columnNames = { "unique_key"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = { "uniqueKey"}))
 public class ManifestItem extends BaseEntity {
     @Column(nullable=false)
     private String account;
@@ -41,7 +41,7 @@ public class ManifestItem extends BaseEntity {
     
     private boolean deleted = false;
 
-    @Column(columnDefinition="unique_key char(32) NOT NULL")
+    @Column(columnDefinition="char(32) NOT NULL")
     private String uniqueKey;
 
     

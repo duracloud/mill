@@ -82,6 +82,11 @@
     <groupId>org.springframework</groupId>
     <artifactId>spring-beans</artifactId>
   </dependency>
+
+  <dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-entitymanager</artifactId>
+   </dependency>
   
   </dependencies>
 
