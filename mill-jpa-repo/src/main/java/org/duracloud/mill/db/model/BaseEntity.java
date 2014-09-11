@@ -34,6 +34,7 @@ public abstract class BaseEntity {
 
 
     @Version
+    @Column(nullable=false)
     private Date modified;
 
     public Long getId() {

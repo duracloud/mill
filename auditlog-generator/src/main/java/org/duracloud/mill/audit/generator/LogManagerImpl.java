@@ -66,7 +66,7 @@ public class LogManagerImpl implements LogManager {
     /**
      * @param item
      */
-    @Transactional
+    @Transactional(value="millRepoTransactionManager")
     public void write(JpaAuditLogItem item) {
         SpaceLog auditLog = getLog(item);
 

@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.db.model;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -27,8 +29,6 @@ public class ManifestItem extends BaseEntity {
     @Column(nullable=false)
     private String storeId;
     @Column(nullable=false)
-    private String storeType;
-    @Column(nullable=false)
     private String spaceId;
     @Column(nullable=false, length=1024)
     private String contentId;
@@ -41,7 +41,6 @@ public class ManifestItem extends BaseEntity {
     
     private boolean deleted = false;
 
-    @Column(columnDefinition="char(32) NOT NULL")
     private String uniqueKey;
 
     
@@ -56,12 +55,6 @@ public class ManifestItem extends BaseEntity {
     }
     public void setStoreId(String storeId) {
         this.storeId = storeId;
-    }
-    public String getStoreType() {
-        return storeType;
-    }
-    public void setStoreType(String storeType) {
-        this.storeType = storeType;
     }
     public String getSpaceId() {
         return spaceId;
@@ -82,6 +75,8 @@ public class ManifestItem extends BaseEntity {
         this.contentChecksum = contentChecksum;
     }
     
+    @Access(AccessType.PROPERTY)
+    @Column(columnDefinition="char(32) NOT NULL")
     public String getUniqueKey() {
         if(uniqueKey == null){
             this.uniqueKey = DigestUtils.md5Hex(this.account + "/" +

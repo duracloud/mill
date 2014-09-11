@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.transaction.TransactionScoped;
+
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.AuditLogWriteFailedException;
@@ -30,7 +32,7 @@ import org.springframework.util.CollectionUtils;
  * @author Daniel Bernstein
  * 
  */
-@Transactional
+@Transactional(value="millRepoTransactionManager")
 public class JpaAuditLogStore implements AuditLogStore {
 
     private JpaAuditLogItemRepo auditLogRepo;

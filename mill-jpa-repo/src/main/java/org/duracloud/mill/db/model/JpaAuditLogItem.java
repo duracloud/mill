@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.db.model;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -34,13 +36,16 @@ public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
     private String contentMd5;
     private String mimetype;
     private String contentSize;
+    @Column(length=2048)
     private String contentProperties;
+    @Column(length=2048)
     private String spaceAcls;
+    @Column(nullable=false)
     private String action;
+    @Column(nullable=false)
     private String username;
     private String sourceSpaceId;
     private String sourceContentId;
-    @Column(columnDefinition="char(32) NOT NULL")
     private String uniqueKey;
     
     /*
@@ -177,6 +182,8 @@ public class JpaAuditLogItem extends BaseEntity implements AuditLogItem {
         this.timestamp = timestamp;
     }
 
+    @Column(columnDefinition="char(32) NOT NULL")
+    @Access(AccessType.PROPERTY)
     public String getUniqueKey() {
         if(uniqueKey == null){
             this.uniqueKey = DigestUtils.md5Hex(this.account + "/"

@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Daniel Bernstein
  * 
  */
-@Transactional
+@Transactional(value="millRepoTransactionManager")
 public class JpaManifestStore implements
                              ManifestStore {
     private static Logger log = LoggerFactory.getLogger(JpaManifestStore.class);
