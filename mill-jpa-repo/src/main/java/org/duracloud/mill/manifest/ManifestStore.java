@@ -77,5 +77,12 @@ public interface ManifestStore {
                        String spaceId,
                        String contentId,
                        Date eventTimestamp) throws ManifestItemWriteException;
+    
+    /**
+     * 
+     * @param expiration
+     * @return Count of items deleted.
+     */
+    Long purgeDeletedItemsBefore(Date expiration);
 
 }

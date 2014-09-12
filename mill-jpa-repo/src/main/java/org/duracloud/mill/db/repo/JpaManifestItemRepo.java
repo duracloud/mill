@@ -7,10 +7,13 @@
  */
 package org.duracloud.mill.db.repo;
 
+import java.util.Date;
+
 import org.duracloud.mill.db.model.ManifestItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -47,4 +50,9 @@ public interface JpaManifestItemRepo extends
                                                           String storeId,
                                                           String spaceId,
                                                           String contentId);
+
+    /**
+     * @param expiration
+     */
+    Long deleteByDeletedTrueAndModifiedBefore(Date expiration);
 }

@@ -17,7 +17,7 @@
 
   <context:annotation-config/>
   <context:component-scan base-package="org.duracloud.mill.db.repo"/>
-  <context:property-placeholder location="file://${mill.repo.config.path}" />
+  <context:property-placeholder location="file://${mill.config.path}" />
 
   <jpa:repositories base-package="org.duracloud.mill.db.repo" 
     entity-manager-factory-ref="millRepoEntityManagerFactory"

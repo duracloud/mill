@@ -60,6 +60,7 @@
     <module>loopingbittaskproducer</module>
     <module>workman</module>
     <module>auditlog-generator</module>
+    <module>manifest-cleaner</module>
     <module>taskproducertool</module>
     <module>taskreadertool</module>
     <module>policy-editor</module>

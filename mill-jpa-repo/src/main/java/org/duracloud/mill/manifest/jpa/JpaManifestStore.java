@@ -220,7 +220,8 @@ public class JpaManifestStore implements
                                                                spaceId,
                                                                contentId);
         if (item == null) {
-            throw new NotFoundException(MessageFormat.format("No ManifestItem could be found matching the specified params: account={0}, storeId={1}, spaceId={2}, contentId={3}",
+            throw new NotFoundException(MessageFormat.format("No ManifestItem could be found matching the specified params: " +
+            		                                     "account={0}, storeId={1}, spaceId={2}, contentId={3}",
                                                              account,
                                                              storeId,
                                                              spaceId,
@@ -230,6 +231,14 @@ public class JpaManifestStore implements
         return item;
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.manifest.ManifestStore#purgeDeletedItemsBefore(java.util.Date)
+     */
+    @Override
+    public Long purgeDeletedItemsBefore(Date expiration) {
+       return this.manifestItemRepo.deleteByDeletedTrueAndModifiedBefore(expiration);
+    }
 
 
 }

@@ -19,7 +19,7 @@ import org.springframework.context.annotation.ImportResource;
 @Configuration
 @ImportResource("classpath:/mill-jpa-config.xml")
 public class MillJpaRepoConfig {
-    private static final String XML_CONFIG_PATH = "mill.repo.config.path";
+    public static final String XML_CONFIG_PATH = "mill.config.path";
     static {
         String prop = XML_CONFIG_PATH;
         String defaultPath = "/" + System.getProperty("user.home")
