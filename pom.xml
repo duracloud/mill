@@ -49,12 +49,10 @@
     <module>common</module>
     <module>common-dup</module>
     <module>common-bit</module>
-    <module>common-test</module>
     <module>bitlog</module>
     <module>common-taskproducer</module>
     <module>common-storageprovider</module>
     <module>credentialsrepo-impl</module>
-    <module>mill-jpa-repo</module>
     <module>loopingtaskproducer</module>
     <module>loopingduptaskproducer</module>
     <module>loopingbittaskproducer</module>
@@ -120,7 +118,7 @@
     <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <spring.framework.data.jpa.version>1.6.0.RELEASE</spring.framework.data.jpa.version>
-    <hibernate.version>4.3.5.Final</hibernate.version>
+    <hibernate.version>4.3.2.Final</hibernate.version>
     <mysql.driver.version>5.1.28</mysql.driver.version>
     <skipUTs>false</skipUTs>
     <duracloud.version>3.2.0-SNAPSHOT</duracloud.version>
@@ -531,24 +529,28 @@
       </dependency>
 
       <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>common-test</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>mill-jpa-repo</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-jpa</artifactId>
         <version>${spring.framework.data.jpa.version}</version>
       </dependency>
-
 
       <dependency>
         <groupId>commons-dbcp</groupId>
         <artifactId>commons-dbcp</artifactId>
         <version>1.4</version>
       </dependency>
-
-      <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>5.1.25</version>
-      </dependency>
-
 
       <dependency>
         <groupId>org.duracloud</groupId>
@@ -604,6 +606,12 @@
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-entitymanager</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-validator</artifactId>
         <version>${hibernate.version}</version>
       </dependency>
 

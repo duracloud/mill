@@ -84,6 +84,9 @@ public class SpaceLog {
         if(writer == null){
             currentLogFile = getAvailableLogFile();
             writer = createWriter(currentLogFile);
+            if(!currentLogFile.exists() || currentLogFile.length() == 0){
+                writer.write(getHeader());
+            }
         }
         
         //write to log
@@ -93,6 +96,28 @@ public class SpaceLog {
         if(this.currentLogFile.length() > MAX_FILE_SIZE){
             close();
         }
+    }
+
+    /**
+     * @return
+     */
+    private String getHeader() {
+        return StringUtils.join(new String[]{
+                "ACCOUNT",
+                "STORE_ID",
+                "SPACE_ID",
+                "CONTENT_ID",
+                "CONTENT_MD5", 
+                "CONTENT_SIZE",
+                "CONTENT_MIMETYPE",
+                "CONTENT_PROPERTIES", 
+                "SPACE_ACLS", 
+                "SOURCE_SPACE_ID",
+                "SOURCE_CONTENT_ID",
+                "TIMESTAMP", 
+                "ACTION", 
+                "USERNAME"
+        }, "\t") + "\n";
     }
 
     /**
@@ -130,14 +155,22 @@ public class SpaceLog {
                 item.getContentMd5(),
                 item.getContentSize(),
                 item.getMimetype(),
-                emptyStringIfNull(item.getContentProperties()),
-                emptyStringIfNull(item.getSpaceAcls()),
+                removeLineBreaks(emptyStringIfNull(item.getContentProperties())),
+                removeLineBreaks(emptyStringIfNull(item.getSpaceAcls())),
                 emptyStringIfNull(item.getSourceSpaceId()),
                 emptyStringIfNull(item.getSourceContentId()),
                 formatDate(new Date(item.getTimestamp())),
                 item.getAction(),
                 item.getUsername()
         }, "\t") + "\n";
+    }
+
+    /**
+     * @param emptyStringIfNull
+     * @return
+     */
+    private String removeLineBreaks(String str) {
+        return str.replace('\n', ' ');
     }
 
     /**

@@ -121,7 +121,14 @@ public class SpaceLogTest extends AbstractTestBase{
         BufferedReader reader = new BufferedReader(new FileReader(file));
         
         String line = reader.readLine();
+
+        assertTrue(line.contains("ACCOUNT"));
+        assertTrue(line.contains("STORE_ID"));
+        assertTrue(line.contains("SPACE_ID"));
+
         
+        line = reader.readLine();
+
         assertTrue(line.contains(accountId));
         assertTrue(line.contains(storeId));
         assertTrue(line.contains(spaceId));

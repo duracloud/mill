@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.credentials.impl;
 
-import org.duracloud.mill.util.FileChecker;
+import org.duracloud.mill.util.PropertyFileHelper;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
@@ -19,11 +19,12 @@ import org.springframework.context.annotation.ImportResource;
 @Configuration
 @ImportResource("classpath:/credentials-repo-jpa-config.xml")
 public class CredentialsRepoConfig {
-    private static final String MC_CONFIG_PATH_PROP = "mc.config.path";
+    private static final String CONFIG_PROPERTIES_PATH = "config.properties";
     static {
-        String prop = MC_CONFIG_PATH_PROP;
         String defaultPath = "/" + System.getProperty("user.home")
                 + "/duracloud-mc/mc-config.properties";
-        FileChecker.check(prop, defaultPath);
+        PropertyFileHelper.loadFromSystemProperty(CONFIG_PROPERTIES_PATH, defaultPath);
+        new MCJpaPropertiesVerifier().verify();
+        
     }
 }

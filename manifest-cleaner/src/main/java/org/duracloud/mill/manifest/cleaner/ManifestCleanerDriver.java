@@ -17,8 +17,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.duracloud.mill.db.repo.MillJpaRepoConfig;
+import org.duracloud.mill.db.util.MillJpaPropertiesVerifier;
 import org.duracloud.mill.manifest.ManifestStore;
+import org.duracloud.mill.util.SystemPropertyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -97,11 +98,8 @@ public class ManifestCleanerDriver {
             expirationDate = parseExpirationDate(time);
 
             String configPath = cmd.getOptionValue(CONFIG_FILE_OPTION);
-            setSystemProperty(MillJpaRepoConfig.XML_CONFIG_PATH, configPath);
-
-
-            setSystemProperty(MillJpaRepoConfig.XML_CONFIG_PATH, configPath);
-
+            SystemPropertyLoader.load(configPath);
+            new MillJpaPropertiesVerifier().verify();
             ApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill");
             log.info("spring context initialized.");
             ManifestStore store = context.getBean(ManifestStore.class);
@@ -109,10 +107,11 @@ public class ManifestCleanerDriver {
             log.info("Deleted {} items that were flagged as deleted before {}",
                      deleted,
                      expirationDate);
-            log.info("exiting...");
 
         } catch (Exception e) {
            log.error(e.getMessage(), e);
+        } finally{
+            log.info("exiting...");
         }
     }
 

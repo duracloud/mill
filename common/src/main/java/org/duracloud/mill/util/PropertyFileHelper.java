@@ -8,6 +8,7 @@
 package org.duracloud.mill.util;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,33 +18,38 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein
  *
  */
-public class FileChecker {
-    private static Logger log = LoggerFactory.getLogger(FileChecker.class);
+public class PropertyFileHelper {
+    private static Logger log = LoggerFactory.getLogger(PropertyFileHelper.class);
     /**
      * Ensures that a specified system property is set with a valid file path.
      * If the system property is not set, the specified default value will set instead.
      * If the resulting system property value does not resolve to an existing file,
-     * The system will exit after logging the error.
-     * @param systemProperty The system property to check
+     * The system will exit after logging the error. 
+     * @param profileFileSystemProperty The system property to check
      * @param defaultFilePath The default property file path 
      */
-    public static void check(String systemProperty, String defaultPropertyFilePath){
-        String path = System.getProperty(systemProperty);
+    public static void loadFromSystemProperty(String propertyFileSystemProperty, String defaultPropertyFilePath){
+        String path = System.getProperty(propertyFileSystemProperty);
 
         if(path == null){
             path = defaultPropertyFilePath;
-            System.setProperty(systemProperty, path);
-            log.info("Using default " + systemProperty + " value: "
+            System.setProperty(propertyFileSystemProperty, path);
+            log.info("Using default " + propertyFileSystemProperty + " value: "
                     + path + ".  To override default specify java commandline param -D"
-                    + systemProperty+"=/your/prop/file/path/here");
+                    + propertyFileSystemProperty+"=/your/prop/file/path/here");
         }else{
-            log.info("Using user-defined " + systemProperty + " property: " + path);
+            log.info("Using user-defined " + propertyFileSystemProperty + " property: " + path);
         }
         
         if(!new File(path).exists()){
             log.error(path + " does not exist. It is required to run this application. Exiting...");
             System.exit(1);
+        }else{
+            try {
+                SystemPropertyLoader.load(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
     }
 }

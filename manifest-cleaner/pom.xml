@@ -66,15 +66,13 @@
     </dependency>
 
     <dependency>
-      <groupId>org.duracloud.mill</groupId>
+      <groupId>org.duracloud</groupId>
       <artifactId>mill-jpa-repo</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.duracloud.mill</groupId>
+      <groupId>org.duracloud</groupId>
       <artifactId>common-test</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
