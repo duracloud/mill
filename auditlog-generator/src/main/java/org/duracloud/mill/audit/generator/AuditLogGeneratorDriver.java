@@ -85,14 +85,7 @@ public class AuditLogGeneratorDriver {
             log.error("failed to load config properties file " + configPath, e);
         }
 
-        config.setDuracloudHost(getSysProp("duracloud.audit.host",configPath));
-        String port = getSysProp("duracloud.audit.port", configPath);
-        if(port != null){
-            config.setDuracloudPort(Integer.parseInt(port));
-        }
         
-        config.setDuracloudUsername(getSysProp("duracloud.audit.username", configPath));
-        config.setDuracloudPassword(getSysProp("duracloud.audit.password", configPath));
         config.setAuditLogSpaceId(getSysProp("duracloud.audit.space", configPath));
         
         new MillJpaPropertiesVerifier().verify();

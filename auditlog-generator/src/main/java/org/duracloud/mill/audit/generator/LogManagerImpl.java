@@ -8,6 +8,7 @@
 package org.duracloud.mill.audit.generator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,20 +16,22 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
+import org.duracloud.common.util.ContentIdUtil;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
-import org.duracloud.sync.endpoint.DuraStoreSyncEndpoint;
-import org.duracloud.sync.endpoint.MonitoredFile;
-import org.duracloud.sync.endpoint.SyncResultType;
+import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 
 /**
  * @author Daniel Bernstein 
@@ -40,15 +43,17 @@ public class LogManagerImpl implements LogManager {
     private JpaAuditLogItemRepo repo;
     private Map<LogKey, SpaceLog> logMap = new HashMap<>();
     private File logsDirectory;
-    private DuraStoreSyncEndpoint endpoint;
-
+    private StorageProvider storageProvider;
+    private String auditLogSpaceId;
     @Autowired
-    public LogManagerImpl(DuraStoreSyncEndpoint endpoint,
+    public LogManagerImpl(StorageProvider storageProvider,
                           String logsDirectory,
-                          JpaAuditLogItemRepo repo) {
-        this.endpoint = endpoint;
+                          JpaAuditLogItemRepo repo,
+                          @Qualifier("auditLogSpaceId") String auditLogSpaceId) {
+        this.storageProvider = storageProvider;
         this.logsDirectory = new File(logsDirectory);
         this.repo = repo;
+        this.auditLogSpaceId = auditLogSpaceId;
         if (!this.logsDirectory.exists()) {
             throw new RuntimeException("logsDirectory (" + logsDirectory
                     + ") does not exist.");
@@ -127,24 +132,28 @@ public class LogManagerImpl implements LogManager {
                     @Override
                     public Object retry() throws SpaceLogUploadException {
                         log.info("Uploading log file {}", file.getAbsolutePath());
-                        SyncResultType result = endpoint
-                                .syncFileAndReturnDetailedResult(new MonitoredFile(file),
-                                                                 logsDirectory);
-                        if (SyncResultType.FAILED.equals(result)) {
+                        try ( FileInputStream fis = new FileInputStream(file)){
+                            String md5 = DigestUtils.md5Hex(new FileInputStream(file));
+                           
+                            String contentId = ContentIdUtil.getContentId(file, logsDirectory);
+                            storageProvider.addContent(auditLogSpaceId,contentId, "text/tsv", null, file.length(), md5, fis);
+                           
+                            log.info("successfully uploaded log {}  to durastore.",
+                                     file.getAbsoluteFile());
+
+                            if (fileIsFull(file)) {
+                                file.delete();
+                                log.info("log file {} deleted from local storage.", file.getAbsolutePath());
+                            }
+                            return "success";
+                            
+                        }catch(Exception ex){
                             throw new SpaceLogUploadException("failed to upload "
                                     + file.getAbsolutePath()
                                     + " to "
-                                    + endpoint);
-                        }
+                                    + storageProvider + ":" + ex.getMessage(), ex);
 
-                        log.info("successfully uploaded log {}  to durastore.",
-                                 file.getAbsoluteFile());
-
-                        if (fileIsFull(file)) {
-                            file.delete();
-                            log.info("log file {} deleted from local storage.", file.getAbsolutePath());
                         }
-                        return "success";
                     }
                 });
             }

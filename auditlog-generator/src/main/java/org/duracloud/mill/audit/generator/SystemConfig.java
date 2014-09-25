@@ -49,41 +49,7 @@ public class SystemConfig {
         return durastoreContext;
     }
 
-    public void setDurastoreContext(String durastoreContext) {
-        this.durastoreContext = durastoreContext;
-    }
 
-    public String getDuracloudHost() {
-        return duracloudHost;
-    }
-
-    public void setDuracloudHost(String duracloudHost) {
-        this.duracloudHost = duracloudHost;
-    }
-
-    public int getDuracloudPort() {
-        return duracloudPort;
-    }
-
-    public void setDuracloudPort(int duracloudPort) {
-        this.duracloudPort = duracloudPort;
-    }
-
-    public String getDuracloudUsername() {
-        return duracloudUsername;
-    }
-
-    public void setDuracloudUsername(String duracloudUsername) {
-        this.duracloudUsername = duracloudUsername;
-    }
-
-    public String getDuracloudPassword() {
-        return duracloudPassword;
-    }
-
-    public void setDuracloudPassword(String duracloudPassword) {
-        this.duracloudPassword = duracloudPassword;
-    }
 
     public String getAuditLogSpaceId() {
         return auditLogSpaceId;
@@ -92,6 +58,15 @@ public class SystemConfig {
     public void setAuditLogSpaceId(String auditLogSpaceId) {
         this.auditLogSpaceId = auditLogSpaceId;
     }
+
+    /**
+     * @return
+     */
+    public String getAwsAccessKeyId() {
+        return System.getProperty("aws.accessKeyId");
+    }
     
-    
+    public String getAwsSecretKey(){
+        return System.getProperty("aws.secretKey");
+    }
 }

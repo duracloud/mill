@@ -7,12 +7,14 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import org.duracloud.common.error.DuraCloudRuntimeException;
+
 /**
  * @author Daniel Bernstein
  *         Date: Sep 5, 2014
  */
-public class SpaceLogUploadException extends Exception {
-    public SpaceLogUploadException(String message){
-        super(message);
+public class SpaceLogUploadException extends DuraCloudRuntimeException {
+    public SpaceLogUploadException(String message, Exception ex){
+        super(message,ex);
     }
 }

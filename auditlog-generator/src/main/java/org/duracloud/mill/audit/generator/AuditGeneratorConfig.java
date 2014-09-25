@@ -7,9 +7,8 @@
  */
 package org.duracloud.mill.audit.generator;
 
-import org.duracloud.client.ContentStore;
-import org.duracloud.sync.endpoint.DuraStoreSyncEndpoint;
-import org.duracloud.sync.util.StoreClientUtil;
+import org.duracloud.s3storage.S3StorageProvider;
+import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -30,16 +29,6 @@ public class AuditGeneratorConfig {
         return dir;
     }
     
-    @Bean
-    public DuraStoreSyncEndpoint endpoint(){
-        String username = systemConfig().getDuracloudUsername();
-        String spaceId =  systemConfig().getAuditLogSpaceId();
-        log.info("initializing end point with username={} and spaceId={}",
-                 username,
-                 spaceId);
-        return new DuraStoreSyncEndpoint(contentStore(), username, spaceId, false);
-    }
-    
     /**
      * @return
      */
@@ -48,21 +37,16 @@ public class AuditGeneratorConfig {
     }
 
     @Bean
-    public ContentStore contentStore(){
-        String host = systemConfig().getDuracloudHost();
-        int port = systemConfig().getDuracloudPort();
-        String context = systemConfig().getDurastoreContext();
-        String username = systemConfig().getDuracloudUsername();
-        String password = systemConfig().getDuracloudPassword();
+    public String auditLogSpaceId(){
+        return SystemConfig.getInstance().getAuditLogSpaceId();
+    }
+    
+    @Bean
+    public StorageProvider storageProvider(){
+        String accessKey = systemConfig().getAwsAccessKeyId();
+        String secretKey = systemConfig().getAwsSecretKey();
+        return new S3StorageProvider(accessKey, secretKey);
 
-        log.info("initializing content store: host={}, port={}, context={}, username={}",
-                 host,
-                 port, 
-                 context,
-                 username);
-
-        StoreClientUtil util = new StoreClientUtil();
-        return util.createContentStore(host, port, context, username, password, null);
     }
 
 }
