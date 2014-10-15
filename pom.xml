@@ -564,11 +564,6 @@
       </dependency>
       <dependency>
         <groupId>org.duracloud</groupId>
-        <artifactId>content-index-client</artifactId>
-        <version>${duracloud.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.duracloud</groupId>
         <artifactId>storageprovider</artifactId>
         <version>${duracloud.version}</version>
       </dependency>

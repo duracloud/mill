@@ -7,6 +7,10 @@
  */
 package org.duracloud.mill.bitlog;
 
+import java.util.Date;
+
+import org.duracloud.storage.domain.StorageProviderType;
+
 /**
  * Represents the logged info for a bit integrity check for 
  * a single item.
@@ -18,13 +22,12 @@ public interface BitLogItem {
     public String getStoreId();
     public String getSpaceId();
     public String getContentId();
-    public long getTimestamp();
-    public String getStoreType();
-    public String getResult();
+    public StorageProviderType getStoreType();
+    public BitIntegrityResult getResult();
     public String getContentChecksum();
     public String getStorageProviderChecksum();
-    public String getAuditLogChecksum();
-    public String getContentIndexChecksum();
+    public String getManifestChecksum();
     public String getDetails();
+    public Date getModified();
 
 }

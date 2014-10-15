@@ -24,6 +24,7 @@ import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ContentIdUtil;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
+import org.duracloud.mill.db.repo.MillJpaRepoConfig;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class LogManagerImpl implements LogManager {
     /**
      * @param item
      */
-    @Transactional(value="millRepoTransactionManager")
+    @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
     public void write(JpaAuditLogItem item) {
         SpaceLog auditLog = getLog(item);
 

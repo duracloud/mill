@@ -7,12 +7,14 @@
  */
 package org.duracloud.mill.bitlog;
 
+import java.util.Date;
 import java.util.Iterator;
 
 import org.duracloud.storage.domain.StorageProviderType;
 
 /**
- * @author Daniel Bernstein Date: Apr 25, 2014
+ * @author Daniel Bernstein 
+ *         Date: Apr 25, 2014
  */
 public interface BitLogStore {
     /**
@@ -26,8 +28,7 @@ public interface BitLogStore {
      * @param result
      * @param contentCheckSum
      * @param storageProviderChecksum
-     * @param auditLogCheckSum
-     * @param contentIndexChecksum
+     * @param manifestChecksum
      * @param String details
      * @return the newly created BitLogItem
      */
@@ -35,13 +36,12 @@ public interface BitLogStore {
             String storeId,
             String spaceId,
             String contentId,
-            long timestamp,
+            Date timestamp,
             StorageProviderType storeType,
             BitIntegrityResult result,
             String contentCheckSum,
             String storageProviderChecksum,
-            String auditLogCheckSum,
-            String contentIndexChecksum,
+            String manifestChecksum,
             String details) throws ItemWriteFailedException;
 
     /**
@@ -50,27 +50,10 @@ public interface BitLogStore {
      * @param account
      * @param storeId
      * @param spaceId
-     * @param contentId
      * @return
      */
     public Iterator<BitLogItem> getBitLogItems(String account,
             String storeId,
-            String spaceId,
-            String contentId);
-    
-    /**
-     * Returns the latest BitLogItem matching the criteria. If not found a
-     * NotFoundException is thrown.
-     * 
-     * @param account
-     * @param storeId
-     * @param spaceId
-     * @param contentId
-     * @return
-     */
-    public BitLogItem getLatestBitLogItem(String account,
-            String storeId,
-            String spaceId,
-            String contentId) throws ItemNotFoundException;
-    
+            String spaceId);
+
 }

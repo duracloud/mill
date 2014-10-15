@@ -149,11 +149,6 @@
 
     <dependency>
       <groupId>org.duracloud</groupId>
-      <artifactId>content-index-client</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.duracloud</groupId>
       <artifactId>auditor</artifactId>
     </dependency>
 

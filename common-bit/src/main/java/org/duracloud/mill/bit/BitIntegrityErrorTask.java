@@ -20,22 +20,19 @@ import org.duracloud.storage.domain.StorageProviderType;
  *         Date: 04/22/2014
  */
 public class BitIntegrityErrorTask extends TypedTask {
-    /**
-     * 
-     */
+
     private static final String DESCRIPTION_KEY = "description";
     private static final String STORE_TYPE_KEY = "storeType";
     private static final String CONTENT_CHECKSUM_KEY = "contentChecksum";
-    private static final String CONTENT_INDEX_CHECKSUM_KEY = "contentIndexChecksum";
-    private static final String AUDIT_LOG_CHECKSUM_KEY = "auditLogChecksum";
+    private static final String MANIFEST_CHECKSUM_CHECKSUM_KEY = "manifestChecksum";
     private static final String STORE_CHECKSUM_KEY = "storeChecksum";
     
     private String description;
     private StorageProviderType storeType;
     private String contentChecksum,
                    storeChecksum,
-                   contentIndexChecksum,
-                   auditLogChecksum;
+                   manifestChecksum;
+                   
                    
     @Override
     public Task writeTask() {
@@ -45,8 +42,7 @@ public class BitIntegrityErrorTask extends TypedTask {
         p.put(DESCRIPTION_KEY, description);
         p.put(STORE_TYPE_KEY, storeType.name());
         p.put(CONTENT_CHECKSUM_KEY, contentChecksum);
-        p.put(CONTENT_INDEX_CHECKSUM_KEY, contentIndexChecksum);
-        p.put(AUDIT_LOG_CHECKSUM_KEY, auditLogChecksum);
+        p.put(MANIFEST_CHECKSUM_CHECKSUM_KEY, manifestChecksum);
         p.put(STORE_CHECKSUM_KEY, storeChecksum);
         return task;
     }
@@ -59,11 +55,9 @@ public class BitIntegrityErrorTask extends TypedTask {
         super.readTask(task);
         this.description = task.getProperty(DESCRIPTION_KEY);
         this.contentChecksum = task.getProperty(CONTENT_CHECKSUM_KEY);
-        this.contentIndexChecksum = task.getProperty(CONTENT_INDEX_CHECKSUM_KEY);
         this.storeChecksum = task.getProperty(STORE_CHECKSUM_KEY);
-        this.auditLogChecksum = task.getProperty(AUDIT_LOG_CHECKSUM_KEY);
         this.storeType = StorageProviderType.valueOf(task.getProperty(STORE_TYPE_KEY));
-
+        this.manifestChecksum = task.getProperty(MANIFEST_CHECKSUM_CHECKSUM_KEY);
     }
 
     /**
@@ -122,33 +116,19 @@ public class BitIntegrityErrorTask extends TypedTask {
         this.storeChecksum = storeChecksum;
     }
 
-    /**
-     * @return the contentIndexChecksum
-     */
-    public String getContentIndexChecksum() {
-        return contentIndexChecksum;
-    }
 
     /**
-     * @param contentIndexChecksum the contentIndexChecksum to set
+     * @return the manifestChecksum
      */
-    public void setContentIndexChecksum(String contentIndexChecksum) {
-        this.contentIndexChecksum = contentIndexChecksum;
+    public String getManifestChecksum() {
+        return manifestChecksum;
     }
-
+    
     /**
-     * @return the auditLogChecksum
+     * @param manifestChecksum the manifestChecksum to set
      */
-    public String getAuditLogChecksum() {
-        return auditLogChecksum;
+    public void setManifestChecksum(String manifestChecksum) {
+        this.manifestChecksum = manifestChecksum;
     }
-
-    /**
-     * @param auditLogChecksum the auditLogChecksum to set
-     */
-    public void setAuditLogChecksum(String auditLogChecksum) {
-        this.auditLogChecksum = auditLogChecksum;
-    }
- 
  
 }

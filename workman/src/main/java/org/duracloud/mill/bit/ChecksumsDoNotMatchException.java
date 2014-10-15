@@ -5,19 +5,14 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.bitlog;
+package org.duracloud.mill.bit;
 
 /**
  * @author Daniel Bernstein
- *         Date: Aug 29, 2014
+ *         Date: Oct 14, 2014
  */
-public class ItemWriteFailedException extends Exception {
-
-    /**
-     * @param ex
-     */
-    public ItemWriteFailedException(Exception ex) {
-        // TODO Auto-generated constructor stub
+public class ChecksumsDoNotMatchException extends Exception {
+    public ChecksumsDoNotMatchException(String message){
+        super(message);
     }
-
 }

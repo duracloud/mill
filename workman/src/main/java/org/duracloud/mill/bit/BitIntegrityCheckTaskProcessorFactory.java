@@ -7,54 +7,53 @@
  */
 package org.duracloud.mill.bit;
 
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.util.ChecksumUtil;
-import org.duracloud.contentindex.client.ContentIndexClient;
+import org.duracloud.common.util.ChecksumUtil.Algorithm;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
-import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+
 /**
- * @author Erik Paulsson
- *         Date: 4/23/14
+ * @author Daniel Bernstein
+ *         Date: 10/14/2014
  */
-public class BitIntegrityCheckTaskProcessorFactory
+public class BitIntegrityCheckTaskProcessorFactory 
     extends TaskProcessorFactoryBase {
 
     private static Logger log =
         LoggerFactory.getLogger(BitIntegrityCheckTaskProcessorFactory.class);
 
     private StorageProviderFactory storageProviderFactory;
-    private ContentIndexClient contentIndexClient;
-    private AuditLogStore auditLogStore;
     private BitLogStore bitLogStore;
     private TaskQueue bitErrorQueue;
     private TaskQueue auditTaskQueue;
+    private ManifestStore manifestStore;
 
-    public BitIntegrityCheckTaskProcessorFactory(CredentialsRepo repo,
+        public BitIntegrityCheckTaskProcessorFactory(CredentialsRepo repo,
                                                  StorageProviderFactory storageProviderFactory,
-                                                 ContentIndexClient contentIndexClient,
-                                                 AuditLogStore auditLogStore,
                                                  BitLogStore bitLogStore,
                                                  TaskQueue bitErrorQueue,
-                                                 TaskQueue auditTaskQueue) {
+                                                 TaskQueue auditTaskQueue,
+                                                 ManifestStore manifestStore) {
         super(repo);
-        this.contentIndexClient = contentIndexClient;
-        this.auditLogStore = auditLogStore;
         this.storageProviderFactory = storageProviderFactory;
         this.bitLogStore = bitLogStore;
         this.bitErrorQueue = bitErrorQueue;
         this.auditTaskQueue = auditTaskQueue;
+        this.manifestStore = manifestStore;
     }
 
     @Override
@@ -77,14 +76,14 @@ public class BitIntegrityCheckTaskProcessorFactory
             StorageProviderType storageProviderType = credentials.getProviderType();
             return new BitIntegrityCheckTaskProcessor(bitTask,
                                                       store,
-                                                      storageProviderType,
-                                                      auditLogStore,
+                                                      manifestStore, storageProviderType,
                                                       bitLogStore,
-                                                      contentIndexClient,
-                                                      new ChecksumUtil(
-                                                          ChecksumUtil.Algorithm.MD5),
                                                       bitErrorQueue,
-                                                      auditTaskQueue);
+                                                      auditTaskQueue,
+                                                      new ContentChecksumHelper(storageProviderType,
+                                                                                bitTask,
+                                                                                store,
+                                                                                new ChecksumUtil(Algorithm.MD5)));
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: unable to locate" +
                           " credentials for subdomain: " + e.getMessage(), e);

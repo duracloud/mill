@@ -9,9 +9,7 @@ package org.duracloud.mill.audit;
 
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.common.queue.task.NoopTask;
-import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
@@ -36,8 +34,6 @@ public class AuditLogWritingProcessorFactoryTest extends EasyMockSupport{
     @Mock
     private AuditLogStore logStore;
     
-    @Mock
-    private ContentIndexClient contentIndex;
     
     /**
      * @throws java.lang.Exception

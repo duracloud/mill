@@ -9,31 +9,28 @@ package org.duracloud.mill.bit;
 
 import java.util.Map;
 
-import org.duracloud.audit.AuditLogItem;
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
-import org.duracloud.contentindex.client.ContentIndexClient;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.storage.domain.StorageProviderType;
+
 /**
- * The set of parameters used by BitCheckHandlers.
+ * The execution state that visits BitCheckHandlers.
  * @author Daniel Bernstein
- *	       Date: May 13, 2014
+ *	       Date: 10/15/2014
  */
-class BitCheckParameters {
+class BitCheckExecutionState {
     private BitIntegrityCheckTask task;
     private StorageProviderType storageProviderType;
-    private String contentChecksum;
+    private String manifestChecksum;
     private String storeChecksum;
-    private String contentIndexChecksum;
-    private AuditLogItem auditLogItem;
     private Map<String, String> contentProperties;
     private BitLogStore bitLogStore;
     private TaskQueue bitErrorQueue;
-    private ContentIndexClient contentIndexClient;
-    private AuditLogStore auditLogStore;
     private TaskQueue auditTaskQueue;
     private String details;
+    private ContentChecksumHelper helper;
+    private ManifestStore manifestStore;
     /**
      * @param task
      * @param storageProviderType
@@ -44,41 +41,20 @@ class BitCheckParameters {
      * @param contentProperties
      * @param bitLogStore
      */
-    public BitCheckParameters(BitIntegrityCheckTask task,
+    public BitCheckExecutionState(BitIntegrityCheckTask task,
             StorageProviderType storageProviderType,
-            String contentChecksum,
-            String storeChecksum,
-            String contentIndexChecksum,
-            AuditLogItem auditLogItem,
-            Map<String, String> contentProperties,
             BitLogStore bitLogStore,
             TaskQueue bitErrorQueue,
-            ContentIndexClient contentIndexClient,
-            AuditLogStore auditLogStore,
-            TaskQueue auditTaskQueue){
+            TaskQueue auditTaskQueue, 
+            ContentChecksumHelper helper,
+            ManifestStore manifestStore){
         this.task = task;
         this.storageProviderType = storageProviderType;
-        this.contentChecksum = contentChecksum;
-        this.storeChecksum = storeChecksum;
-        this.contentIndexChecksum = contentIndexChecksum;
-        this.auditLogItem = auditLogItem;
-        this.contentProperties = contentProperties;
         this.bitLogStore = bitLogStore;
         this.bitErrorQueue = bitErrorQueue;
-        this.contentIndexClient = contentIndexClient;
-        this.auditLogStore = auditLogStore;
         this.auditTaskQueue = auditTaskQueue;
-    }
-    
-    /**
-     * @return
-     */
-    public String getAuditLogChecksum() {
-        if(this.auditLogItem == null){
-            return null;
-        }else{
-            return auditLogItem.getContentMd5();
-        }
+        this.helper = helper;
+        this.manifestStore = manifestStore;
     }
     
     /**
@@ -102,12 +78,6 @@ class BitCheckParameters {
         return storageProviderType;
     }
     
-    /**
-     * @return the auditLogItem
-     */
-    public AuditLogItem getAuditLogItem() {
-        return auditLogItem;
-    }
     
     /**
      * @return the contentProperties
@@ -117,25 +87,12 @@ class BitCheckParameters {
     }
     
     /**
-     * @return the contentChecksum
-     */
-    public String getContentChecksum() {
-        return contentChecksum;
-    }
-    
-    /**
      * @return the storeChecksum
      */
     public String getStoreChecksum() {
         return storeChecksum;
     }
-    
-    /**
-     * @return the contentIndexChecksum
-     */
-    public String getContentIndexChecksum() {
-        return contentIndexChecksum;
-    }
+
     
     /**
      * @return the bitLogStore
@@ -144,20 +101,6 @@ class BitCheckParameters {
         return bitLogStore;
     }
 
-    /**
-     * @return
-     */
-    public ContentIndexClient getContentIndexClient() {
-        return contentIndexClient;
-    }
-    
-    /**
-     * @return the auditLogStore
-     */
-    public AuditLogStore getAuditLogStore() {
-        return auditLogStore;
-    }
-    
     /**
      * @return the auditTaskQueue
      */
@@ -178,4 +121,35 @@ class BitCheckParameters {
     public void setDetails(String details) {
         this.details = details;
     }
+    
+    public String getManifestChecksum() {
+        return manifestChecksum;
+    }
+
+    public void setManifestChecksum(String manifestChecksum) {
+        this.manifestChecksum = manifestChecksum;
+    }
+
+    public void setStoreChecksum(String storeChecksum) {
+        this.storeChecksum = storeChecksum;
+    }
+
+    public void setContentProperties(Map<String, String> contentProperties) {
+        this.contentProperties = contentProperties;
+    }
+
+    /**
+     * @return
+     */
+    public ContentChecksumHelper getContentChecksumHelper() {
+        return helper;
+    }
+
+    /**
+     * 
+     */
+    public ManifestStore getManifestStore() {
+        return this.manifestStore;
+    }
+
 }

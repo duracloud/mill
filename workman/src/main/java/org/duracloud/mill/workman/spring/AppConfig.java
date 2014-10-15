@@ -15,8 +15,6 @@ import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
-import org.duracloud.contentindex.client.ContentIndexClient;
-import org.duracloud.contentindex.client.ESContentIndexClientUtil;
 import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
@@ -24,6 +22,8 @@ import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.bitlog.jpa.JpaBitLogItemRepo;
+import org.duracloud.mill.bitlog.jpa.JpaBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -71,7 +71,7 @@ public class AppConfig {
                                          StorageProviderFactory storageProviderFactory,
                                          File workDir,
                                          BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory,
-                                         BitIntegrityReportTaskProcessorFactory bitIntegrityReportTaskProcessorFactory,
+                                         BitIntegrityReportTaskProcessorFactory bitIntegrityCheckReportTaskProcessorFactory,
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
                                          WorkmanConfigurationManager configurationManager) {
 
@@ -83,7 +83,7 @@ public class AppConfig {
                                                 auditQueue(configurationManager)));
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
         factory.addTaskProcessorFactory(bitIntegrityCheckTaskProcessorFactory);
-        factory.addTaskProcessorFactory(bitIntegrityReportTaskProcessorFactory);
+        factory.addTaskProcessorFactory(bitIntegrityCheckReportTaskProcessorFactory);
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
                 workDir));
 
@@ -95,21 +95,18 @@ public class AppConfig {
     public BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory(
         @Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
         StorageProviderFactory storageProviderFactory,
-        ContentIndexClient contentIndexClient,
-        AuditLogStore auditLogStore,
         BitLogStore bitLogStore,
         TaskQueue bitErrorQueue,
-        TaskQueue auditQueue) {
+        TaskQueue auditQueue,
+        ManifestStore manifestStore) {
 
         return new BitIntegrityCheckTaskProcessorFactory(credentialRepo,
                                                          storageProviderFactory,
-                                                         contentIndexClient,
-                                                         auditLogStore,
                                                          bitLogStore,
                                                          bitErrorQueue,
-                                                         auditQueue);
+                                                         auditQueue, manifestStore);
     }
-
+    
     @Bean
     public BitIntegrityReportTaskProcessorFactory bitIntegrityReportProcessorFactory(
         @Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
@@ -120,8 +117,7 @@ public class AppConfig {
     }
 
     @Bean 
-    public MultiStepTaskProcessorFactory auditTaskProcessorFactory(ContentIndexClient contentIndexClient,
-                                                                    AuditLogStore auditLogStore,
+    public MultiStepTaskProcessorFactory auditTaskProcessorFactory(AuditLogStore auditLogStore,
                                                                     TaskQueue duplicationQueue, 
                                                                     DuplicationPolicyManager policyManager,
                                                                     NotificationManager notificationManager,
@@ -156,11 +152,6 @@ public class AppConfig {
         return new StorageProviderFactory();
     }
 
-    @Bean 
-    public ContentIndexClient contentIndexClient(WorkmanConfigurationManager config){
-        return ESContentIndexClientUtil.createContentIndexClient();
-    }
-
     @Bean
     public AuditLogStore auditLogStore(JpaAuditLogItemRepo auditLogItemRepo){
         return new JpaAuditLogStore(auditLogItemRepo);
@@ -172,8 +163,8 @@ public class AppConfig {
     }
 
     @Bean
-    public BitLogStore bitLogStore() {
-        return null;
+    public BitLogStore bitLogStore(JpaBitLogItemRepo bitLogRepo) {
+        return new JpaBitLogStore(bitLogRepo);
     }
 
     @Bean

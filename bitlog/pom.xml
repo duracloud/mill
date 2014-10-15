@@ -17,15 +17,23 @@
 
 
   <dependencies>
- 	<dependency>
-          <groupId>org.duracloud.mill</groupId>
-          <artifactId>common</artifactId>
-          <version>${project.version}</version>
-        </dependency>
- 	<dependency>
-          <groupId>org.duracloud</groupId>
-          <artifactId>common</artifactId>
-        </dependency>
+    
+    <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>common</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>mill-jpa-repo</artifactId>
+    </dependency>
+    
   </dependencies>
 
 </project>
