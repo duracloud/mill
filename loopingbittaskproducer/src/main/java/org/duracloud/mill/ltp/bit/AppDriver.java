@@ -17,7 +17,6 @@ import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
-import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
@@ -56,6 +55,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         super.executeImpl(cmd);
 
         processTaskQueueNameOption(cmd);
+        processInclusionListOption(cmd);
         processExclusionListOption(cmd);
 
         try {
@@ -82,17 +82,37 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      */
     private void processExclusionListOption(CommandLine cmd) {
         String exclusionList = cmd
-                .getOptionValue(LoopingBitIntegrityTaskProducerCommandLineOptions.SPACE_EXCLUSION_LIST_OPTION);
+                .getOptionValue(LoopingBitIntegrityTaskProducerCommandLineOptions.EXCLUSION_LIST_OPTION);
         if (exclusionList != null) {
             File list = new File(exclusionList);
             if(!list.exists()){
-                throw new DuraCloudRuntimeException("space exclusion list not found: " + list);
+                throw new DuraCloudRuntimeException("exclusion list not found: " + list);
             }
             
             
             setSystemProperty(
-                    LoopingBitTaskProducerConfigurationManager.SPACE_EXCLUSION_LIST,
+                    LoopingBitTaskProducerConfigurationManager.EXCLUSION_LIST,
                     exclusionList);
+        }
+    }
+    
+    
+    /**
+     * @param cmd
+     */
+    private void processInclusionListOption(CommandLine cmd) {
+        String inclusionList = cmd
+                .getOptionValue(LoopingBitIntegrityTaskProducerCommandLineOptions.INCLUSION_LIST_OPTION);
+        if (inclusionList != null) {
+            File list = new File(inclusionList);
+            if(!list.exists()){
+                throw new DuraCloudRuntimeException("inclusionlist not found: " + list);
+            }
+            
+            
+            setSystemProperty(
+                    LoopingBitTaskProducerConfigurationManager.INCLUSION_LIST,
+                    inclusionList);
         }
     }
 
@@ -131,9 +151,13 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         StateManager<BitIntegrityMorsel> stateManager = new StateManager<BitIntegrityMorsel>(
                 stateFilePath, BitIntegrityMorsel.class);
 
-        LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(
-                credentialsRepo, storageProviderFactory,
-                taskQueue, stateManager, maxTaskQueueSize, frequency, config.getExclusionManager());
+        LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo,
+                                                                                       storageProviderFactory,
+                                                                                       taskQueue,
+                                                                                       stateManager,
+                                                                                       maxTaskQueueSize,
+                                                                                       frequency,
+                                                                                       config.getPathFilterManager());
         return producer;
     }
     

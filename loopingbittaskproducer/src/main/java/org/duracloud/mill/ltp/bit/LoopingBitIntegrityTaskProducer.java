@@ -24,7 +24,7 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
-import org.duracloud.mill.ltp.ExclusionManager;
+import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.RunStats;
@@ -40,14 +40,15 @@ import org.slf4j.LoggerFactory;
  */
 public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitIntegrityMorsel> {
     private static Logger log = LoggerFactory.getLogger(LoopingBitIntegrityTaskProducer.class);
-    private ExclusionManager exclusionManager;
+    private PathFilterManager exclusionManager;
+    
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
             StorageProviderFactory storageProviderFactory,
             TaskQueue taskQueue,
             StateManager<BitIntegrityMorsel> state,
             int maxTaskQueueSize, 
             Frequency frequency,
-            ExclusionManager exclusionManager) {
+            PathFilterManager exclusionManager) {
         super(credentialsRepo, storageProviderFactory, taskQueue, state,maxTaskQueueSize,frequency);
         this.exclusionManager = exclusionManager;
     }
@@ -62,6 +63,8 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         try {
             for(String account :  getAccountsList()){
                 String accountPath = "/"+account;
+                
+                
                 if(exclusionManager.isExcluded(accountPath)){
                     continue;
                 }

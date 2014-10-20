@@ -17,19 +17,29 @@ import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
 public class LoopingBitIntegrityTaskProducerCommandLineOptions extends
         LoopingTaskProducerCommandLineOptions {
     private static final long serialVersionUID = 1L;
- 
-    public static final String SPACE_EXCLUSION_LIST_OPTION = "x";
+
+    public static final String EXCLUSION_LIST_OPTION = "x";
+
+    public static final String INCLUSION_LIST_OPTION = "i";
 
     /**
      * 
      */
     public LoopingBitIntegrityTaskProducerCommandLineOptions() {
         super();
-        Option configFile = new Option(SPACE_EXCLUSION_LIST_OPTION, "exclusion-list", true,
+        Option exlucsionsList = new Option(EXCLUSION_LIST_OPTION, "exclusion-list", true,
                 "A file containing exclusions as regular expressions, one expression per line." +
                 "Expressions will be matched against the following path: /{account}/{storeId}/{spaceId}");
-        configFile.setArgs(1);
-        configFile.setArgName("file");
-        addOption(configFile);
+        exlucsionsList.setArgs(1);
+        exlucsionsList.setArgName("file");
+        addOption(exlucsionsList);
+
+        Option inclusionList = new Option(INCLUSION_LIST_OPTION, "inclusion-list", true,
+                                       "A file containing inclusions as regular expressions, one expression per line." +
+                                       "Expressions will be matched against the following path: /{account}/{storeId}/{spaceId}");
+                               inclusionList.setArgs(1);
+                               inclusionList.setArgName("file");
+                               addOption(inclusionList);
+
     }
 }
