@@ -7,10 +7,14 @@
  */
 package org.duracloud.mill.bitlog;
 
+import org.duracloud.common.error.DuraCloudCheckedException;
+
 /**
  * @author Daniel Bernstein
  *         Date: Aug 29, 2014
  */
-public class ItemNotFoundException extends Exception {
-
+public class ItemNotFoundException extends DuraCloudCheckedException {
+    public ItemNotFoundException(Exception ex){
+        super(ex);
+    }
 }

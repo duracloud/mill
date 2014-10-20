@@ -7,17 +7,19 @@
  */
 package org.duracloud.mill.bitlog;
 
+import org.duracloud.common.error.DuraCloudRuntimeException;
+
 /**
  * @author Daniel Bernstein
  *         Date: Aug 29, 2014
  */
-public class ItemWriteFailedException extends Exception {
+public class ItemWriteFailedException extends DuraCloudRuntimeException {
 
     /**
      * @param ex
      */
     public ItemWriteFailedException(Exception ex) {
-        // TODO Auto-generated constructor stub
+        super(ex);
     }
 
 }
