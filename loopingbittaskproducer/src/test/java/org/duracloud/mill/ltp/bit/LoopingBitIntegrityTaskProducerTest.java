@@ -263,8 +263,11 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
         String account = "test-account";
         accounts.add(account);
 
-        StorageProviderCredentials storageCreds = new StorageProviderCredentials("id", null, null,
-                StorageProviderType.AMAZON_S3);
+        StorageProviderCredentials storageCreds = new StorageProviderCredentials("id",
+                                                                                 null,
+                                                                                 null,
+                                                                                 StorageProviderType.AMAZON_S3,
+                                                                                 true);
         
         AccountCredentials creds = new AccountCredentials(account,
                 Arrays.asList(storageCreds));

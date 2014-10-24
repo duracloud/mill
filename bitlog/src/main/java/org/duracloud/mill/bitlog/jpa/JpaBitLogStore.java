@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
 public class JpaBitLogStore implements
                            BitLogStore {
-    
+
     private JpaBitLogItemRepo bitLogItemRepo;
 
     /**
@@ -91,15 +91,32 @@ public class JpaBitLogStore implements
     public Iterator<BitLogItem> getBitLogItems(final String account,
                                                final String storeId,
                                                final String spaceId) {
- 
+
         return (Iterator) new StreamingIterator<JpaBitLogItem>(new JpaIteratorSource<JpaBitLogItemRepo, JpaBitLogItem>(bitLogItemRepo) {
             @Override
-            protected Page<JpaBitLogItem> getNextPage(Pageable pageable, JpaBitLogItemRepo repo) {
-                return repo.findByAccountAndStoreIdAndSpaceIdOrderByContentIdAsc(account,storeId, spaceId,
-                                                                                          pageable);
+            protected Page<JpaBitLogItem> getNextPage(Pageable pageable,
+                                                      JpaBitLogItemRepo repo) {
+                return repo
+                        .findByAccountAndStoreIdAndSpaceIdOrderByContentIdAsc(account,
+                                                                              storeId,
+                                                                              spaceId,
+                                                                              pageable);
             }
         });
-        
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.duracloud.mill.bitlog.BitLogStore#delete(java.lang.String,
+     * java.lang.String, java.lang.String)
+     */
+    @Override
+    public void delete(String account, String storeId, String spaceId) {
+        bitLogItemRepo.deleteByAccountAndStoreIdAndSpaceId(account,
+                                                           storeId,
+                                                           spaceId);
     }
 
 }

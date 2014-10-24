@@ -53,9 +53,9 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
         } else {
             ServerDetails details =  accountInfo.getServerDetails();
             if(details != null){
-                creds.add(createStorageProviderCredentials(details.getPrimaryStorageProviderAccount()));
+                creds.add(createStorageProviderCredentials(details.getPrimaryStorageProviderAccount(), true));
                 for(StorageProviderAccount sp : details.getSecondaryStorageProviderAccounts()){
-                    creds.add(createStorageProviderCredentials(sp));
+                    creds.add(createStorageProviderCredentials(sp, false));
                 }
             }
         }
@@ -64,8 +64,8 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
     }
 
     private StorageProviderCredentials createStorageProviderCredentials(
-            StorageProviderAccount sp) {
-        return createStorageProviderCredentials(sp.getId().toString(), sp);
+            StorageProviderAccount sp, boolean primary) {
+        return createStorageProviderCredentials(sp.getId().toString(), sp, primary);
     }
     
     @Override
@@ -104,11 +104,11 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
             if(details != null){
                 StorageProviderAccount provider = details.getPrimaryStorageProviderAccount();
                 if(provider.getId().equals(id)){
-                    return createStorageProviderCredentials(storeId, provider);
+                    return createStorageProviderCredentials(storeId, provider, true);
                 }else{
                     for(StorageProviderAccount sp : details.getSecondaryStorageProviderAccounts()){
                         if(sp.getId().equals(id)){
-                            return createStorageProviderCredentials(storeId, sp);
+                            return createStorageProviderCredentials(storeId, sp, false);
                         }
                     }
                 }
@@ -121,10 +121,11 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
     }
 
     private StorageProviderCredentials createStorageProviderCredentials(
-            String storeId, StorageProviderAccount provider) {
+            String storeId, StorageProviderAccount provider, boolean primary) {
         return new StorageProviderCredentials(storeId,
                 provider.getUsername(), provider.getPassword(),
-                provider.getProviderType());
+                provider.getProviderType(),
+                primary);
     }
 
 

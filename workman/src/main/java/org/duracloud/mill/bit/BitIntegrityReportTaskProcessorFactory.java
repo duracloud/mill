@@ -9,10 +9,15 @@ package org.duracloud.mill.bit;
 
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
+import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
+import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +32,15 @@ public class BitIntegrityReportTaskProcessorFactory
         LoggerFactory.getLogger(BitIntegrityReportTaskProcessorFactory.class);
 
     private BitLogStore bitLogStore;
-
+    private StorageProviderFactory storageProviderFactory;
+    private WorkmanConfigurationManager workmanConfigurationManager;
     public BitIntegrityReportTaskProcessorFactory(CredentialsRepo repo,
-                                                 BitLogStore bitLogStore) {
+                                                 BitLogStore bitLogStore, StorageProviderFactory storageProviderFactory,
+                                                 WorkmanConfigurationManager workmanConfigurationManager) {
         super(repo);
         this.bitLogStore = bitLogStore;
+        this.storageProviderFactory = storageProviderFactory;
+        this.workmanConfigurationManager = workmanConfigurationManager;
     }
 
     @Override
@@ -47,8 +56,19 @@ public class BitIntegrityReportTaskProcessorFactory
         bitTask.readTask(task);
         
         try {
-            return new BitIntegrityReportTaskProcessor(bitTask,
-                                                      bitLogStore);
+            
+            AccountCredentials credentials = getCredentialRepo().getAccountCredentials(bitTask.getAccount());
+            for(StorageProviderCredentials creds : credentials.getProviderCredentials()){
+                if(creds.isPrimary()){
+                  StorageProvider store = storageProviderFactory.create(creds);
+                  
+              return new BitIntegrityReportTaskProcessor(bitTask,
+                                                        bitLogStore, store, workmanConfigurationManager);
+                    
+                }
+            }
+            
+            throw new TaskProcessorCreationFailedException("Unable to find a set of primary storage providder credentials");
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: " + e.getMessage(), e);
             throw new TaskProcessorCreationFailedException(

@@ -56,4 +56,11 @@ public interface BitLogStore {
             String storeId,
             String spaceId);
 
+    /**
+     * @param account
+     * @param storeId
+     * @param spaceId
+     */
+    public void delete(String account, String storeId, String spaceId);
+
 }

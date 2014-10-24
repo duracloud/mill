@@ -137,7 +137,7 @@ public class LogManagerImplTest extends AbstractTestBase {
             }
             files.add(file);
 
-            String contentId = ContentIdUtil.getContentId(file, logsRootDir);
+            String contentId = ContentIdUtil.getContentId(file, logsRootDir, null);
             expect(this.storageProvider.addContent(eq(logSpace),
                                                    eq(contentId),
                                                    isA(String.class),

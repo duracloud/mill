@@ -136,7 +136,7 @@ public class LogManagerImpl implements LogManager {
                         try ( FileInputStream fis = new FileInputStream(file)){
                             String md5 = DigestUtils.md5Hex(new FileInputStream(file));
                            
-                            String contentId = ContentIdUtil.getContentId(file, logsDirectory);
+                            String contentId = ContentIdUtil.getContentId(file, logsDirectory, null);
                             storageProvider.addContent(auditLogSpaceId,contentId, "text/tsv", null, file.length(), md5, fis);
                            
                             log.info("successfully uploaded log {}  to durastore.",

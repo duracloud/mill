@@ -70,18 +70,18 @@ public class DuplicationTaskProcessorFactoryTest {
         TaskQueue auditQueue = EasyMock.createMock(TaskQueue.class);
 
         AccountCredentials a = new AccountCredentials("test", Arrays.asList(new StorageProviderCredentials[] {
-                new StorageProviderCredentials("0", "test", "test", source),
-                new StorageProviderCredentials("1", "test", "test", destination) }));
+                new StorageProviderCredentials("0", "test", "test", source, true),
+                new StorageProviderCredentials("1", "test", "test", destination, false) }));
 
         EasyMock.expect(
                 repo.getStorageProviderCredentials(EasyMock.isA(String.class),
                         EasyMock.isA(String.class)))
                 .andReturn(
                         new StorageProviderCredentials("0", "test", "test",
-                                source))
+                                source, true))
                 .andReturn(
                         new StorageProviderCredentials("1", "test", "test",
-                                destination));
+                                destination, false));
 
         EasyMock.replay(repo, auditQueue);
 

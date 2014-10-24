@@ -21,6 +21,7 @@ import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactor
 import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
+import org.duracloud.mill.bit.SpaceComparisonTaskProcessorFactory;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.bitlog.jpa.JpaBitLogItemRepo;
 import org.duracloud.mill.bitlog.jpa.JpaBitLogStore;
@@ -56,92 +57,104 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 
- * @author Daniel Bernstein
- *	   Date: Oct 24, 2013
+ * @author Daniel Bernstein Date: Oct 24, 2013
  */
 @ComponentScan(basePackages = { "org.duracloud.mill" })
 @Configuration
 public class AppConfig {
-    
+
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
-    
+
     @Bean
-    public RootTaskProcessorFactory 
-                rootTaskProcessorFactory(@Qualifier("credentialsRepo") CredentialsRepo repo,
-                                         StorageProviderFactory storageProviderFactory,
-                                         File workDir,
-                                         BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory,
-                                         BitIntegrityReportTaskProcessorFactory bitIntegrityCheckReportTaskProcessorFactory,
-                                         MultiStepTaskProcessorFactory auditTaskProcessorFactory,
-                                         WorkmanConfigurationManager configurationManager) {
+    public RootTaskProcessorFactory
+            rootTaskProcessorFactory(@Qualifier("credentialsRepo") CredentialsRepo repo,
+                                     StorageProviderFactory storageProviderFactory,
+                                     File workDir,
+                                     BitIntegrityCheckTaskProcessorFactory bitCheckTaskProcessorFactory,
+                                     @Qualifier("bitReportProcessorFactory") MultiStepTaskProcessorFactory bitReportTaskProcessorFactory,
+                                     @Qualifier("auditTaskProcessorFactory") MultiStepTaskProcessorFactory auditTaskProcessorFactory,
+                                     WorkmanConfigurationManager configurationManager) {
 
         RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
-        factory.addTaskProcessorFactory(
-            new DuplicationTaskProcessorFactory(repo,
-                                                storageProviderFactory,
-                                                workDir,
-                                                auditQueue(configurationManager)));
+        factory.addTaskProcessorFactory(new DuplicationTaskProcessorFactory(repo,
+                                                                            storageProviderFactory,
+                                                                            workDir,
+                                                                            auditQueue(configurationManager)));
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
-        factory.addTaskProcessorFactory(bitIntegrityCheckTaskProcessorFactory);
-        factory.addTaskProcessorFactory(bitIntegrityCheckReportTaskProcessorFactory);
+        factory.addTaskProcessorFactory(bitCheckTaskProcessorFactory);
+        factory.addTaskProcessorFactory(bitReportTaskProcessorFactory);
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
-                workDir));
-
+                                                                     workDir));
         log.info("RootTaskProcessorFactory created.");
         return factory;
     }
 
     @Bean
-    public BitIntegrityCheckTaskProcessorFactory bitIntegrityCheckTaskProcessorFactory(
-        @Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
-        StorageProviderFactory storageProviderFactory,
-        BitLogStore bitLogStore,
-        TaskQueue bitErrorQueue,
-        TaskQueue auditQueue,
-        ManifestStore manifestStore) {
+    public BitIntegrityCheckTaskProcessorFactory
+            bitIntegrityCheckTaskProcessorFactory(@Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
+                                                  StorageProviderFactory storageProviderFactory,
+                                                  BitLogStore bitLogStore,
+                                                  TaskQueue bitErrorQueue,
+                                                  TaskQueue auditQueue,
+                                                  ManifestStore manifestStore) {
 
         return new BitIntegrityCheckTaskProcessorFactory(credentialRepo,
                                                          storageProviderFactory,
                                                          bitLogStore,
                                                          bitErrorQueue,
-                                                         auditQueue, manifestStore);
+                                                         auditQueue,
+                                                         manifestStore);
     }
-    
+
+    @Bean(name="bitReportProcessorFactory")
+    public MultiStepTaskProcessorFactory
+            bitReportProcessorFactory(@Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
+                                      ManifestStore manifestStore,
+                                      StorageProviderFactory storageProviderFactory,
+                                      BitLogStore bitLogStore,
+                                      TaskQueue bitErrorQueue,
+                                      WorkmanConfigurationManager config) {
+
+        MultiStepTaskProcessorFactory factory = new MultiStepTaskProcessorFactory();
+        factory.addFactory(new SpaceComparisonTaskProcessorFactory(credentialRepo,
+                                                                   storageProviderFactory,
+                                                                   bitLogStore,
+                                                                   bitErrorQueue,
+                                                                   manifestStore));
+        factory.addFactory(new BitIntegrityReportTaskProcessorFactory(credentialRepo,
+                                                                      bitLogStore,
+                                                                      storageProviderFactory,
+                                                                      config));
+        return factory;
+    }
+
     @Bean
-    public BitIntegrityReportTaskProcessorFactory bitIntegrityReportProcessorFactory(
-        @Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
-        BitLogStore bitLogStore) {
-
-        return new BitIntegrityReportTaskProcessorFactory(credentialRepo,
-                                                         bitLogStore);
-    }
-
-    @Bean 
-    public MultiStepTaskProcessorFactory auditTaskProcessorFactory(AuditLogStore auditLogStore,
-                                                                    TaskQueue duplicationQueue, 
-                                                                    DuplicationPolicyManager policyManager,
-                                                                    NotificationManager notificationManager,
-                                                                    ManifestStore manifestStore){
+    public MultiStepTaskProcessorFactory
+            auditTaskProcessorFactory(AuditLogStore auditLogStore,
+                                      TaskQueue duplicationQueue,
+                                      DuplicationPolicyManager policyManager,
+                                      NotificationManager notificationManager,
+                                      ManifestStore manifestStore) {
 
         MultiStepTaskProcessorFactory factory = new MultiStepTaskProcessorFactory();
         factory.addFactory(new AuditLogWritingProcessorFactory(auditLogStore));
         factory.addFactory(new ManifestWritingProcessorFactory(manifestStore));
-        factory.addFactory(new DuplicationTaskProducingProcessorFactory(duplicationQueue, 
+        factory.addFactory(new DuplicationTaskProducingProcessorFactory(duplicationQueue,
                                                                         policyManager));
-        factory.addFactory(new SpaceCreatedNotifcationGeneratingProcessorFactory(
-                                notificationManager));
+        factory.addFactory(new SpaceCreatedNotifcationGeneratingProcessorFactory(notificationManager));
         return factory;
     }
 
-    @Bean(name="credentialsRepo")
-    public CredentialsRepo credentialRepo(ConfigurationManager configurationManager, DuracloudAccountRepo accountRepo) {
+    @Bean(name = "credentialsRepo")
+    public CredentialsRepo
+            credentialRepo(ConfigurationManager configurationManager,
+                           DuracloudAccountRepo accountRepo) {
         String path = configurationManager.getCredentialsFilePath();
-        if(path != null){
-            log.info(
-                    "found credentials file path ({}): using config file based credential repo...",
-                    path);
+        if (path != null) {
+            log.info("found credentials file path ({}): using config file based credential repo...",
+                     path);
             return new ConfigFileCredentialRepo();
-        }else{
+        } else {
             log.info("no credentials file path: using simpledb based credential repo...");
             return new DefaultCredentialsRepoImpl(accountRepo);
         }
@@ -153,12 +166,12 @@ public class AppConfig {
     }
 
     @Bean
-    public AuditLogStore auditLogStore(JpaAuditLogItemRepo auditLogItemRepo){
+    public AuditLogStore auditLogStore(JpaAuditLogItemRepo auditLogItemRepo) {
         return new JpaAuditLogStore(auditLogItemRepo);
     }
 
     @Bean
-    public ManifestStore manifestStore(JpaManifestItemRepo manifestItemRepo){
+    public ManifestStore manifestStore(JpaManifestItemRepo manifestItemRepo) {
         return new JpaManifestStore(manifestItemRepo);
     }
 
@@ -174,98 +187,106 @@ public class AppConfig {
         return new File(configurationManager.getWorkDirectoryPath());
     }
 
-    @Bean(initMethod="init", destroyMethod="destroy")
-    public TaskWorkerManager taskWorkerManager(WorkmanConfigurationManager config, RootTaskProcessorFactory factory,
-                                                TaskQueue deadLetterQueue) {
+    @Bean(initMethod = "init", destroyMethod = "destroy")
+    public TaskWorkerManager
+            taskWorkerManager(WorkmanConfigurationManager config,
+                              RootTaskProcessorFactory factory,
+                              TaskQueue deadLetterQueue) {
         return new TaskWorkerManager(createTaskQueues(config),
                                      deadLetterQueue,
-                                     new TaskWorkerFactoryImpl(factory, 
+                                     new TaskWorkerFactoryImpl(factory,
                                                                deadLetterQueue));
     }
-    
-    protected List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager){
+
+    protected List<TaskQueue>
+            createTaskQueues(WorkmanConfigurationManager configurationManager) {
         List<String> taskQueuesNames = configurationManager.getTaskQueueNames();
         List<TaskQueue> taskQueues = new LinkedList<>();
-        for(String taskQueueName : taskQueuesNames){
+        for (String taskQueueName : taskQueuesNames) {
             TaskQueue taskQueue = new SQSTaskQueue(taskQueueName.trim());
             taskQueues.add(taskQueue);
             log.info("created queue {}: priority = {}",
-                    taskQueue.getName(),taskQueues.size());
+                     taskQueue.getName(),
+                     taskQueues.size());
         }
         return taskQueues;
     }
 
     @Bean
-    public TaskQueue auditQueue(WorkmanConfigurationManager configurationManager){
-        TaskQueue queue =  new SQSTaskQueue(configurationManager.getAuditQueueName());
+    public TaskQueue
+            auditQueue(WorkmanConfigurationManager configurationManager) {
+        TaskQueue queue = new SQSTaskQueue(configurationManager.getAuditQueueName());
         log.info("created audit queue {}", queue);
         return queue;
     }
 
     @Bean
-    public TaskQueue bitErrorQueue(WorkmanConfigurationManager configurationManager){
-        TaskQueue queue =  new SQSTaskQueue(configurationManager.getBitErrorQueueName());
+    public TaskQueue
+            bitErrorQueue(WorkmanConfigurationManager configurationManager) {
+        TaskQueue queue = new SQSTaskQueue(configurationManager.getBitErrorQueueName());
         log.info("created bit error queue {}", queue);
         return queue;
     }
 
-    
     @Bean
-    public TaskQueue duplicationQueue(WorkmanConfigurationManager configurationManager){
-        TaskQueue queue =  new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
+    public TaskQueue
+            duplicationQueue(WorkmanConfigurationManager configurationManager) {
+        TaskQueue queue = new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
         log.info("created duplication queue {}", queue);
         return queue;
     }
 
     @Bean
-    public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager){
-        TaskQueue queue =  new SQSTaskQueue(configurationManager.getDeadLetterQueueName());
+    public TaskQueue
+            deadLetterQueue(WorkmanConfigurationManager configurationManager) {
+        TaskQueue queue = new SQSTaskQueue(configurationManager.getDeadLetterQueueName());
         log.info("created dead letter  queue {}", queue);
         return queue;
     }
 
-    @Bean(initMethod="init")
-    public WorkmanConfigurationManager configurationManager(){
+    @Bean(initMethod = "init")
+    public WorkmanConfigurationManager configurationManager() {
         log.info("creating the workman configuration manager...");
         return new WorkmanConfigurationManager();
     }
-    
+
     @Bean
-    public DuplicationPolicyManager duplicationPolicyManager(
-            WorkmanConfigurationManager configurationManager){
+    public DuplicationPolicyManager
+            duplicationPolicyManager(WorkmanConfigurationManager configurationManager) {
 
         DuplicationPolicyRepo policyRepo;
         String policyDir = configurationManager.getDuplicationPolicyDir();
-        
-        if(policyDir != null) {
-            policyRepo = new LocalDuplicationPolicyRepo(
-                            policyDir);
-        }else{
+
+        if (policyDir != null) {
+            policyRepo = new LocalDuplicationPolicyRepo(policyDir);
+        } else {
             String suffix = configurationManager.getPolicyBucketSuffix();
-            if(suffix != null){
-                policyRepo = new S3DuplicationPolicyRepo(
-                    suffix);
+            if (suffix != null) {
+                policyRepo = new S3DuplicationPolicyRepo(suffix);
             } else {
                 policyRepo = new S3DuplicationPolicyRepo();
             }
-        }        
+        }
 
         return new DuplicationPolicyManager(policyRepo);
 
     }
 
-    @Bean (initMethod="init", destroyMethod="destroy")
-    public DuplicationPolicyRefresher duplicationPolicyRefresh(WorkmanConfigurationManager workmanConfigurationManager, DuplicationPolicyManager policyManager){
-        return new DuplicationPolicyRefresher(
-                Long.valueOf(workmanConfigurationManager
-                        .getPolicyManagerRefreshFrequencyMs()), policyManager);
+    @Bean(initMethod = "init", destroyMethod = "destroy")
+    public DuplicationPolicyRefresher
+            duplicationPolicyRefresh(WorkmanConfigurationManager workmanConfigurationManager,
+                                     DuplicationPolicyManager policyManager) {
+        return new DuplicationPolicyRefresher(Long.valueOf(workmanConfigurationManager
+                                                      .getPolicyManagerRefreshFrequencyMs()),
+                                              policyManager);
     }
+
     @Bean
-    public NotificationManager notificationManager(WorkmanConfigurationManager configurationManager) {
+    public NotificationManager
+            notificationManager(WorkmanConfigurationManager configurationManager) {
         String[] recipients = configurationManager.getNotificationRecipients();
         SESNotificationManager manager = new SESNotificationManager(recipients);
         return manager;
     }
 
-    
 }
