@@ -42,7 +42,6 @@
   <dependency>
     <groupId>org.duracloud</groupId>
     <artifactId>account-management-db-repo</artifactId>
-    <version>${mc.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>
@@ -60,7 +59,6 @@
   <dependency>
     <groupId>org.duracloud</groupId>
     <artifactId>account-management-db-model</artifactId>
-    <version>${mc.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>

@@ -541,6 +541,18 @@
       </dependency>
 
       <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>account-management-db-model</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>account-management-db-repo</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-jpa</artifactId>
         <version>${spring.framework.data.jpa.version}</version>
