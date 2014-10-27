@@ -102,6 +102,8 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         expect(item.getContentChecksum()).andReturn("checksum");
         expect(item.getManifestChecksum()).andReturn("checksum");
         expect(item.getStorageProviderChecksum()).andReturn("checksum");
+        expect(item.getDetails()).andReturn("details");
+
         expect(item.getModified()).andReturn(new Date());
 
         Iterator<BitLogItem> it = createMock(Iterator.class);
