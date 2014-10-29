@@ -14,11 +14,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.db.model.BitIntegrityReportResult;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
@@ -144,6 +146,12 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         
         bitLogStore.delete(account, storeId, spaceId);
         expectLastCall();
+        
+        expect(bitLogStore.isCompletelySuccessful(account, storeId, spaceId)).andReturn(true);
+
+        bitLogStore.addReport(eq(account), eq(storeId), eq(spaceId), isA(String.class), eq(BitIntegrityReportResult.SUCCESS), isA(Date.class));
+        expectLastCall();
+
         replayAll();
         taskProcessor.execute();
     }

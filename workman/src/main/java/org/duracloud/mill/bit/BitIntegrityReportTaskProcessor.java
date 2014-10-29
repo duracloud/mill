@@ -23,6 +23,7 @@ import org.duracloud.common.util.ChecksumUtil.Algorithm;
 import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.db.model.BitIntegrityReportResult;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
@@ -50,6 +51,7 @@ public class BitIntegrityReportTaskProcessor implements
      */
     public BitIntegrityReportTaskProcessor(BitIntegrityCheckReportTask task,
                                            BitLogStore bitLogStore,
+                                          
                                            StorageProvider store,
                                            WorkmanConfigurationManager config) {
         this.task = task;
@@ -87,14 +89,16 @@ public class BitIntegrityReportTaskProcessor implements
             ChecksumUtil util = new ChecksumUtil(Algorithm.MD5);
             final String checksum = util.generateChecksum(bitLog);
             // upload to duracloud
+            final String bitlogSpaceId = "x-duracloud-admin";
+            final String contentId = "bit-integrity/" + spaceId + "/" + storeId + "/"
+                    + bitLog.getName();
 
             new Retrier().execute(new Retriable() {
 
                 @Override
                 public Object retry() throws Exception {
-                    return store.addContent("x-duracloud-admin",
-                                            "bit-integrity/" + spaceId + "/" + storeId + "/"
-                                                    + bitLog.getName(),
+                    return store.addContent(bitlogSpaceId,
+                                            contentId,
                                             "text/tsv",
                                             null,
                                             bitLog.length(),
@@ -103,6 +107,15 @@ public class BitIntegrityReportTaskProcessor implements
                 }
             });
 
+            BitIntegrityReportResult result = BitIntegrityReportResult.FAILURE;
+            
+            if(bitLogStore.isCompletelySuccessful(account, storeId, spaceId)){
+                result = BitIntegrityReportResult.SUCCESS;
+            }
+            
+            String reportContentId = bitlogSpaceId + "/"+contentId;
+            bitLogStore.addReport(account, storeId, spaceId, reportContentId, result , new Date());
+            
             // delete all bit integrity log items for space.
             bitLogStore.delete(account, storeId, spaceId);
             bitLog.delete();

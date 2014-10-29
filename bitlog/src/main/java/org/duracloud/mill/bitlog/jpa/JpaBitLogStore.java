@@ -9,18 +9,23 @@ package org.duracloud.mill.bitlog.jpa;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.duracloud.common.collection.StreamingIterator;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.bitlog.ItemWriteFailedException;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+import org.duracloud.mill.db.model.BitIntegrityReportResult;
+import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.db.repo.MillJpaRepoConfig;
 import org.duracloud.mill.db.util.JpaIteratorSource;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author Daniel Bernstein Date: Oct 17, 2014
@@ -30,12 +35,14 @@ public class JpaBitLogStore implements
                            BitLogStore {
 
     private JpaBitLogItemRepo bitLogItemRepo;
+    private JpaBitIntegrityReportRepo bitReportRepo;
 
     /**
      * @param bitLogRepo
      */
-    public JpaBitLogStore(JpaBitLogItemRepo bitLogItemRepo) {
+    public JpaBitLogStore(JpaBitLogItemRepo bitLogItemRepo, JpaBitIntegrityReportRepo bitReportRepo) {
         this.bitLogItemRepo = bitLogItemRepo;
+        this.bitReportRepo = bitReportRepo;
     }
 
     /*
@@ -118,5 +125,38 @@ public class JpaBitLogStore implements
                                                            storeId,
                                                            spaceId);
     }
-
+    
+    
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.bitlog.BitLogStore#addReport(java.lang.String, java.lang.String, java.lang.String, java.lang.String, org.duracloud.mill.bitlog.BitIntegrityResult, java.util.Date)
+     */
+    @Override
+    public void addReport(String account,
+                          String storeId,
+                          String spaceId,
+                          String reportContentId,
+                          BitIntegrityReportResult result,
+                          Date completionDate) {
+        BitIntegrityReport report = new BitIntegrityReport();
+        report.setAccount(account);
+        report.setStoreId(storeId);
+        report.setSpaceId(spaceId);
+        report.setReportContentId(reportContentId);
+        report.setCompletionDate(new Date());
+        report.setResult(result);
+        this.bitReportRepo.save(report);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.bitlog.BitLogStore#isCompletelySuccessful(java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean isCompletelySuccessful(String account,
+                                          String storeId,
+                                          String spaceId) {
+        List<BitLogItem> items = this.bitLogItemRepo.findErrorsAndFailures(account, storeId, spaceId);
+        
+        return (CollectionUtils.isEmpty(items));
+    }
 }

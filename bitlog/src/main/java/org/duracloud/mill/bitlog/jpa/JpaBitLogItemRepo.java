@@ -7,6 +7,9 @@
  */
 package org.duracloud.mill.bitlog.jpa;
 
+import java.util.List;
+
+import org.duracloud.mill.bitlog.BitLogItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -45,4 +48,16 @@ public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
      public void deleteByAccountAndStoreIdAndSpaceId(String account,
                                                     String storeId,
                                                     String spaceId);
+
+
+    /**
+     * @param account
+     * @param storeId
+     * @param spaceId
+     * @return
+     */
+     @Query("select b from JpaBitLogItem b where b.account = ?1 and b.storeId = ?2 and b.spaceId = ?3 and (b.result = 'ERROR' or b.result = 'FAILURE')")
+    public List<BitLogItem> findErrorsAndFailures(String account,
+                                                  String storeId,
+                                                  String spaceId);
 }

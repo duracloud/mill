@@ -31,6 +31,7 @@ import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
+import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.db.repo.JpaManifestItemRepo;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationPolicyRefresher;
@@ -176,8 +177,8 @@ public class AppConfig {
     }
 
     @Bean
-    public BitLogStore bitLogStore(JpaBitLogItemRepo bitLogRepo) {
-        return new JpaBitLogStore(bitLogRepo);
+    public BitLogStore bitLogStore(JpaBitLogItemRepo bitLogRepo, JpaBitIntegrityReportRepo reportRep) {
+        return new JpaBitLogStore(bitLogRepo, reportRep);
     }
 
     @Bean

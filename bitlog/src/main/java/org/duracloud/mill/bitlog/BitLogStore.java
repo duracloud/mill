@@ -10,6 +10,7 @@ package org.duracloud.mill.bitlog;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.duracloud.mill.db.model.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
 
 /**
@@ -63,4 +64,29 @@ public interface BitLogStore {
      */
     public void delete(String account, String storeId, String spaceId);
 
+    /**
+     * 
+     * @param account
+     * @param storeId
+     * @param spaceId
+     * @param reportContentId
+     * @param result
+     * @param completionDate
+     */
+    public void addReport(String account,
+                          String storeId,
+                          String spaceId,
+                          String reportContentId,
+                          BitIntegrityReportResult result,
+                          Date completionDate);
+
+    /**
+     * @param account
+     * @param storeId
+     * @param spaceId
+     * @return
+     */
+    public boolean isCompletelySuccessful(String account,
+                                             String storeId,
+                                             String spaceId);
 }
