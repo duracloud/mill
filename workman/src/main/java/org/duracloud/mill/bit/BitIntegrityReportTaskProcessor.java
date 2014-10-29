@@ -93,7 +93,7 @@ public class BitIntegrityReportTaskProcessor implements
                 @Override
                 public Object retry() throws Exception {
                     return store.addContent("x-duracloud-admin",
-                                            spaceId + "/" + storeId + "/"
+                                            "bit-integrity/" + spaceId + "/" + storeId + "/"
                                                     + bitLog.getName(),
                                             "text/tsv",
                                             null,
@@ -139,7 +139,7 @@ public class BitIntegrityReportTaskProcessor implements
         DateFormat fileDateFormat = new SimpleDateFormat(DateUtil.DateFormat.PLAIN_FORMAT
                 .getPattern());
 
-        File bitLog = new File(bitLogDir, "bit-integrity-report_" + account
+        File bitLog = new File(bitLogDir, "bit-integrity_" + account
                 + "_" + storeId + "_" + spaceId + "_"
                 + fileDateFormat.format(new Date()) + ".txt");
         return bitLog;
