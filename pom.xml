@@ -539,6 +539,12 @@
         <artifactId>mill-jpa-repo</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
+      
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>reportdata</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.duracloud</groupId>

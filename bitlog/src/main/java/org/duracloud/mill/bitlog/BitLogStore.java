@@ -10,7 +10,7 @@ package org.duracloud.mill.bitlog;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.duracloud.mill.db.model.BitIntegrityReportResult;
+import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
 
 /**
@@ -76,6 +76,7 @@ public interface BitLogStore {
     public void addReport(String account,
                           String storeId,
                           String spaceId,
+                          String reportSpaceId,
                           String reportContentId,
                           BitIntegrityReportResult result,
                           Date completionDate);

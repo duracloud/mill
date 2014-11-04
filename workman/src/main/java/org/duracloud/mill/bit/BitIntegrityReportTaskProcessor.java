@@ -23,10 +23,10 @@ import org.duracloud.common.util.ChecksumUtil.Algorithm;
 import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
-import org.duracloud.mill.db.model.BitIntegrityReportResult;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
+import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,16 +89,16 @@ public class BitIntegrityReportTaskProcessor implements
             ChecksumUtil util = new ChecksumUtil(Algorithm.MD5);
             final String checksum = util.generateChecksum(bitLog);
             // upload to duracloud
-            final String bitlogSpaceId = "x-duracloud-admin";
-            final String contentId = "bit-integrity/" + spaceId + "/" + storeId + "/"
+            final String reportSpaceId = "x-duracloud-admin";
+            final String reportContentId = "bit-integrity/" + spaceId + "/" + storeId + "/"
                     + bitLog.getName();
 
             new Retrier().execute(new Retriable() {
 
                 @Override
                 public Object retry() throws Exception {
-                    return store.addContent(bitlogSpaceId,
-                                            contentId,
+                    return store.addContent(reportSpaceId,
+                                            reportContentId,
                                             "text/tsv",
                                             null,
                                             bitLog.length(),
@@ -113,8 +113,7 @@ public class BitIntegrityReportTaskProcessor implements
                 result = BitIntegrityReportResult.SUCCESS;
             }
             
-            String reportContentId = bitlogSpaceId + "/"+contentId;
-            bitLogStore.addReport(account, storeId, spaceId, reportContentId, result , new Date());
+            bitLogStore.addReport(account, storeId, spaceId, reportSpaceId, reportContentId, result , new Date());
             
             // delete all bit integrity log items for space.
             bitLogStore.delete(account, storeId, spaceId);

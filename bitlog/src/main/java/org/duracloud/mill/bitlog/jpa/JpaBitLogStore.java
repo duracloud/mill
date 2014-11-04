@@ -17,10 +17,10 @@ import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.bitlog.ItemWriteFailedException;
 import org.duracloud.mill.db.model.BitIntegrityReport;
-import org.duracloud.mill.db.model.BitIntegrityReportResult;
 import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.db.repo.MillJpaRepoConfig;
 import org.duracloud.mill.db.util.JpaIteratorSource;
+import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -129,12 +129,13 @@ public class JpaBitLogStore implements
     
     
     /* (non-Javadoc)
-     * @see org.duracloud.mill.bitlog.BitLogStore#addReport(java.lang.String, java.lang.String, java.lang.String, java.lang.String, org.duracloud.mill.bitlog.BitIntegrityResult, java.util.Date)
+     * @see org.duracloud.mill.bitlog.BitLogStore#addReport(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, org.duracloud.mill.bitlog.BitIntegrityResult, java.util.Date)
      */
     @Override
     public void addReport(String account,
                           String storeId,
                           String spaceId,
+                          String reportSpaceId,
                           String reportContentId,
                           BitIntegrityReportResult result,
                           Date completionDate) {

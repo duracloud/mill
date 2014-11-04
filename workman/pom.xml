@@ -149,6 +149,11 @@
 
     <dependency>
       <groupId>org.duracloud</groupId>
+      <artifactId>reportdata</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
       <artifactId>auditor</artifactId>
     </dependency>
 
