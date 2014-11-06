@@ -7,20 +7,11 @@
  */
 package org.duracloud.mill.audit.generator;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
+import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.common.util.ContentIdUtil;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
@@ -32,6 +23,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -134,17 +133,26 @@ public class LogManagerImpl implements LogManager {
                     public Object retry() throws SpaceLogUploadException {
                         log.info("Uploading log file {}", file.getAbsolutePath());
                         try ( FileInputStream fis = new FileInputStream(file)){
-                            String md5 = DigestUtils.md5Hex(new FileInputStream(file));
-                           
-                            String contentId = ContentIdUtil.getContentId(file, logsDirectory, null);
-                            storageProvider.addContent(auditLogSpaceId,contentId, "text/tsv", null, file.length(), md5, fis);
-                           
+                            ChecksumUtil checksumUtil =
+                                new ChecksumUtil(ChecksumUtil.Algorithm.MD5);
+                            String md5 = checksumUtil.generateChecksum(file);
+                            String contentId =
+                                ContentIdUtil.getContentId(file, logsDirectory, null);
+                            storageProvider.addContent(auditLogSpaceId,
+                                                       contentId,
+                                                       "text/tsv",
+                                                       null,
+                                                       file.length(),
+                                                       md5,
+                                                       fis);
+                            fis.close();
                             log.info("successfully uploaded log {}  to durastore.",
                                      file.getAbsoluteFile());
 
                             if (fileIsFull(file)) {
                                 file.delete();
-                                log.info("log file {} deleted from local storage.", file.getAbsolutePath());
+                                log.info("log file {} deleted from local storage.",
+                                         file.getAbsolutePath());
                             }
                             return "success";
                             
@@ -162,9 +170,9 @@ public class LogManagerImpl implements LogManager {
             log.info("All logs successfully uploaded.");
 
         } catch (Exception ex) {
-            log.error("Upload failed: not all files uploaded successfully:  " + ex.getMessage(), ex);
+            log.error("Upload failed: not all files uploaded successfully:  " +
+                      ex.getMessage(), ex);
         }
-
     }
 
     private boolean fileIsFull(File file) {

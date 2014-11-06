@@ -7,17 +7,6 @@
  */
 package org.duracloud.mill.audit.generator;
 
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.common.util.ContentIdUtil;
@@ -29,6 +18,21 @@ import org.easymock.Mock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Bernstein Date: Sep 8, 2014
@@ -137,7 +141,8 @@ public class LogManagerImplTest extends AbstractTestBase {
             }
             files.add(file);
 
-            String contentId = ContentIdUtil.getContentId(file, logsRootDir, null);
+            String contentId =
+                ContentIdUtil.getContentId(file, logsRootDir, null);
             expect(this.storageProvider.addContent(eq(logSpace),
                                                    eq(contentId),
                                                    isA(String.class),
@@ -167,6 +172,7 @@ public class LogManagerImplTest extends AbstractTestBase {
         try {
             RandomAccessFile f = new RandomAccessFile(file, "rw");
             f.setLength(length);
+            f.close();
         } catch (Exception e) {
             System.err.println(e);
         }
