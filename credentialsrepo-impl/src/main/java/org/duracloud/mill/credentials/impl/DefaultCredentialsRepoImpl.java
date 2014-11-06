@@ -22,12 +22,14 @@ import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * A jpa-based implementation of the <code>CredentialsRepo</code>.
  * 
  * @author Daniel Bernstein Date: Oct 29, 2013
  */
+@Transactional(CredentialsRepoConfig.TRANSACTION_MANAGER_BEAN)
 @Component
 public class DefaultCredentialsRepoImpl implements CredentialsRepo {
     

@@ -143,6 +143,7 @@ public class JpaBitLogStore implements
         report.setAccount(account);
         report.setStoreId(storeId);
         report.setSpaceId(spaceId);
+        report.setReportSpaceId(reportSpaceId);
         report.setReportContentId(reportContentId);
         report.setCompletionDate(new Date());
         report.setResult(result);
