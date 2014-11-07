@@ -13,6 +13,7 @@ import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
@@ -34,13 +35,17 @@ public class BitIntegrityReportTaskProcessorFactory
     private BitLogStore bitLogStore;
     private StorageProviderFactory storageProviderFactory;
     private WorkmanConfigurationManager workmanConfigurationManager;
+    private NotificationManager notificationManager;
+    
     public BitIntegrityReportTaskProcessorFactory(CredentialsRepo repo,
                                                  BitLogStore bitLogStore, StorageProviderFactory storageProviderFactory,
-                                                 WorkmanConfigurationManager workmanConfigurationManager) {
+                                                 WorkmanConfigurationManager workmanConfigurationManager, 
+                                                 NotificationManager notificationManager) {
         super(repo);
         this.bitLogStore = bitLogStore;
         this.storageProviderFactory = storageProviderFactory;
         this.workmanConfigurationManager = workmanConfigurationManager;
+        this.notificationManager = notificationManager;
     }
 
     @Override
@@ -62,8 +67,11 @@ public class BitIntegrityReportTaskProcessorFactory
                 if(creds.isPrimary()){
                   StorageProvider store = storageProviderFactory.create(creds);
                   
-              return new BitIntegrityReportTaskProcessor(bitTask,
-                                                        bitLogStore, store, workmanConfigurationManager);
+                    return new BitIntegrityReportTaskProcessor(bitTask,
+                                                               bitLogStore,
+                                                               store,
+                                                               workmanConfigurationManager,
+                                                               notificationManager);
                     
                 }
             }

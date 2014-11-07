@@ -437,7 +437,7 @@ public class BitIntegrityCheckTaskProcessor implements
     private String buildFailureMessage(String message,
                                        BitIntegrityCheckTask bitTask,
                                        StorageProviderType storageProviderType) {
-        return BitIntegrityMessageUtil.buildFailureMessage(message,
+        return BitIntegrityHelper.buildFailureMessage(message,
                                                            bitTask,
                                                            storageProviderType);
     }

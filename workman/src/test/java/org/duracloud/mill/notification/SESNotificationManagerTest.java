@@ -7,34 +7,39 @@
  */
 package org.duracloud.mill.notification;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import net.sf.ehcache.config.PinningConfiguration.Store;
+
+import org.duracloud.mill.bitlog.BitIntegrityResult;
+import org.duracloud.mill.bitlog.BitLogItem;
+import org.duracloud.mill.bitlog.jpa.JpaBitLogItem;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+import org.duracloud.mill.test.AbstractTestBase;
+import org.duracloud.storage.domain.StorageProviderType;
 import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.Before;
+import org.easymock.Mock;
 import org.junit.Test;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
 
+import static org.easymock.EasyMock.*;
+
 /**
  * @author Daniel Bernstein
  *	       Date: Jan 2, 2014
  */
-public class SESNotificationManagerTest {
+public class SESNotificationManagerTest extends AbstractTestBase {
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-    }
+    @Mock
+    private AmazonSimpleEmailServiceClient client;
+
+    private SESNotificationManager notificationManager;
 
     /**
      * Test method for
@@ -43,14 +48,37 @@ public class SESNotificationManagerTest {
      */
     @Test
     public void testNewSpace() {
-        AmazonSimpleEmailServiceClient client = EasyMock.createMock(AmazonSimpleEmailServiceClient.class);
+        setupSubject();
+        replayAll();
+        notificationManager.newSpace("test", "storeId", "spaceId", "datetime", "username");
+    }
+
+    private void setupSubject() {
         SendEmailResult result = new SendEmailResult();
         EasyMock.expect(client.sendEmail(EasyMock.isA(SendEmailRequest.class))).andReturn(result);
-        EasyMock.replay(client);
         String[] recipients = new String[]{"test1@duracloud.org", "test2@duracloud.org"};
-        SESNotificationManager notification = new SESNotificationManager(recipients, client);
-        notification.newSpace("test", "storeId", "spaceId", "datetime", "username");
-        EasyMock.verify(client);
+        notificationManager = new SESNotificationManager(recipients, client);
+    }
+    
+    @Test
+    public void testBitErrors() {
+        setupSubject();
+        BitIntegrityReport report = createMock(BitIntegrityReport.class);
+        JpaBitLogItem item =                 new JpaBitLogItem();
+        item.setResult(BitIntegrityResult.FAILURE);
+        item.setModified(new Date());
+        item.setStorageProviderType(StorageProviderType.AMAZON_S3  );
+       
+        List<BitLogItem> errors = Arrays.asList(new BitLogItem[]{
+                item
+        });
+        expect(report.getAccount()).andReturn("account");
+        expect(report.getStoreId()).andReturn("store-id");
+        expect(report.getSpaceId()).andReturn("space-id");
+        expect(report.getId()).andReturn(1l);
+
+        replayAll();
+        notificationManager.bitIntegrityErrors(report, errors);
     }
 
 }

@@ -132,7 +132,7 @@ public class JpaBitLogStore implements
      * @see org.duracloud.mill.bitlog.BitLogStore#addReport(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, org.duracloud.mill.bitlog.BitIntegrityResult, java.util.Date)
      */
     @Override
-    public void addReport(String account,
+    public BitIntegrityReport addReport(String account,
                           String storeId,
                           String spaceId,
                           String reportSpaceId,
@@ -147,18 +147,9 @@ public class JpaBitLogStore implements
         report.setReportContentId(reportContentId);
         report.setCompletionDate(new Date());
         report.setResult(result);
-        this.bitReportRepo.save(report);
+        report.setDisplay(!result.equals(BitIntegrityReportResult.FAILURE));
+        return this.bitReportRepo.saveAndFlush(report);
     }
     
-    /* (non-Javadoc)
-     * @see org.duracloud.mill.bitlog.BitLogStore#isCompletelySuccessful(java.lang.String, java.lang.String, java.lang.String)
-     */
-    @Override
-    public boolean isCompletelySuccessful(String account,
-                                          String storeId,
-                                          String spaceId) {
-        List<BitLogItem> items = this.bitLogItemRepo.findErrorsAndFailures(account, storeId, spaceId);
-        
-        return (CollectionUtils.isEmpty(items));
-    }
+
 }

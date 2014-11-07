@@ -14,11 +14,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
@@ -62,13 +65,17 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
 
     @Mock
     private WorkmanConfigurationManager config;
+    
+    @Mock
+    private NotificationManager notificiationManager;
 
     @Before
     public void setup() throws IOException {
         taskProcessor = new BitIntegrityReportTaskProcessor(task,
                                                             bitLogStore,
                                                             store,
-                                                            config);
+                                                            config, 
+                                                            notificiationManager);
 
     }
 
@@ -99,7 +106,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         expect(item.getSpaceId()).andReturn(spaceId);
         expect(item.getStoreType()).andReturn(StorageProviderType.AMAZON_S3);
         expect(item.getContentId()).andReturn("content");
-        expect(item.getResult()).andReturn(BitIntegrityResult.ERROR);
+        expect(item.getResult()).andReturn(BitIntegrityResult.ERROR).times(2);
         expect(item.getContentChecksum()).andReturn("checksum");
         expect(item.getManifestChecksum()).andReturn("checksum");
         expect(item.getStorageProviderChecksum()).andReturn("checksum");
@@ -146,17 +153,19 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         bitLogStore.delete(account, storeId, spaceId);
         expectLastCall();
         
-        expect(bitLogStore.isCompletelySuccessful(account, storeId, spaceId)).andReturn(true);
 
-        bitLogStore.addReport(eq(account),
+        BitIntegrityReport report = createMock(BitIntegrityReport.class);
+        expect(bitLogStore.addReport(eq(account),
                               eq(storeId),
                               eq(spaceId),
                               isA(String.class),
                               isA(String.class),
-                              eq(BitIntegrityReportResult.SUCCESS),
-                              isA(Date.class));
+                              eq(BitIntegrityReportResult.FAILURE),
+                              isA(Date.class))).andReturn(report);
+        
+        notificiationManager.bitIntegrityErrors(isA(BitIntegrityReport.class), isA(List.class));
         expectLastCall();
-
+        
         replayAll();
         taskProcessor.execute();
     }

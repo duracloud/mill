@@ -84,7 +84,7 @@ public class ContentChecksumHelper {
                         String checksum = checksumUtil
                                 .generateChecksum(inputStream);
                         if (!correctChecksum.equals(checksum)) {
-                            throw new ChecksumsDoNotMatchException(BitIntegrityMessageUtil
+                            throw new ChecksumsDoNotMatchException(BitIntegrityHelper
                                     .buildFailureMessage("The content checksum does not match specified checksum: ",
                                                          bitTask,
                                                          storageProviderType));
@@ -98,13 +98,13 @@ public class ContentChecksumHelper {
             });
         } catch (NotFoundException | ChecksumsDoNotMatchException ex) {
             if (ex instanceof NotFoundException) {
-                log.warn(BitIntegrityMessageUtil
+                log.warn(BitIntegrityHelper
                         .buildFailureMessage("Could not compute checksum  - content not found",
                                              bitTask,
                                              storageProviderType));
             }
         } catch (Exception e) {
-            throw new BitIntegrityCheckTaskExecutionFailedException(BitIntegrityMessageUtil
+            throw new BitIntegrityCheckTaskExecutionFailedException(BitIntegrityHelper
                                                                             .buildFailureMessage("Could not compute checksum from content stream",
                                                                                                  bitTask,
                                                                                                  storageProviderType),

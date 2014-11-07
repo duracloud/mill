@@ -8,8 +8,13 @@
 package org.duracloud.mill.notification;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.duracloud.mill.bit.BitIntegrityHelper;
+import org.duracloud.mill.bitlog.BitIntegrityResult;
+import org.duracloud.mill.bitlog.BitLogItem;
+import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +101,54 @@ public class SESNotificationManager implements NotificationManager {
         body.append("Storage Provider Id: " + storeId + "\n");
         body.append("Space: " + spaceId + "\n");
         
+        Message message = new Message(new Content(subject), new Body(new Content(body.toString())));
+        email.setMessage(message);
+        try {
+            client.sendEmail(email);
+            log.info("new space email sent: {}", email);
+        } catch (Exception e) {
+            log.error("failed to send " + email + ": " + e.getMessage(), e);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.notification.NotificationManager#bitIntegrityErrors(java.lang.String, java.lang.String, java.lang.String, java.util.List)
+     */
+    @Override
+    public void bitIntegrityErrors(BitIntegrityReport report,
+                                   List<BitLogItem> errors) {
+        
+        String account = report.getAccount();
+        String storeId = report.getStoreId();
+        String spaceId = report.getSpaceId();
+        if (ArrayUtils.isEmpty(this.recipientEmailAddresses)) {
+            log.warn(
+                    "Bit integirty errors: subdomain: {}, storeId: {}, spaceId: {}: " +
+                    "No recipients configured - no one to notify: ignoring...",
+                    account, storeId, spaceId);
+            return;
+        }
+        
+        SendEmailRequest email = new SendEmailRequest();
+        
+        Destination destination = new Destination();
+        destination.setToAddresses(Arrays.asList(this.recipientEmailAddresses));
+        email.setDestination(destination);
+        email.setSource("notifications@duracloud.org");
+
+        String host = account + ".duracloud.org";
+
+        String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +errors.size()+ ")  detected on " + 
+                         host + ", providerId=" + storeId + 
+                         ", spaceId=" + spaceId;
+        
+        StringBuilder body = new StringBuilder();
+        
+        body.append(BitIntegrityHelper.getHeader());
+        for(BitLogItem error : errors){
+            body.append(BitIntegrityHelper.formatLogLine(error) + "\n");
+        }
+
         Message message = new Message(new Content(subject), new Body(new Content(body.toString())));
         email.setMessage(message);
         try {

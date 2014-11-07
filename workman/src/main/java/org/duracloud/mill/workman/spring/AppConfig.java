@@ -72,8 +72,10 @@ public class AppConfig {
                                      StorageProviderFactory storageProviderFactory,
                                      File workDir,
                                      BitIntegrityCheckTaskProcessorFactory bitCheckTaskProcessorFactory,
-                                     @Qualifier("bitReportProcessorFactory") MultiStepTaskProcessorFactory bitReportTaskProcessorFactory,
-                                     @Qualifier("auditTaskProcessorFactory") MultiStepTaskProcessorFactory auditTaskProcessorFactory,
+                                     @Qualifier("bitReportProcessorFactory") 
+                                         MultiStepTaskProcessorFactory bitReportTaskProcessorFactory,
+                                     @Qualifier("auditTaskProcessorFactory") 
+                                         MultiStepTaskProcessorFactory auditTaskProcessorFactory,
                                      WorkmanConfigurationManager configurationManager) {
 
         RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
@@ -114,7 +116,8 @@ public class AppConfig {
                                       StorageProviderFactory storageProviderFactory,
                                       BitLogStore bitLogStore,
                                       TaskQueue bitErrorQueue,
-                                      WorkmanConfigurationManager config) {
+                                      WorkmanConfigurationManager config,
+                                      NotificationManager notificationManager) {
 
         MultiStepTaskProcessorFactory factory = new MultiStepTaskProcessorFactory();
         factory.addFactory(new SpaceComparisonTaskProcessorFactory(credentialRepo,
@@ -125,7 +128,8 @@ public class AppConfig {
         factory.addFactory(new BitIntegrityReportTaskProcessorFactory(credentialRepo,
                                                                       bitLogStore,
                                                                       storageProviderFactory,
-                                                                      config));
+                                                                      config, 
+                                                                      notificationManager));
         return factory;
     }
 

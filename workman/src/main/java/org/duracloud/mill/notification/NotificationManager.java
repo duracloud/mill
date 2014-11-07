@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.notification;
 
+import java.util.List;
+
+import org.duracloud.mill.bitlog.BitLogItem;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+
 /**
  * @author Daniel Bernstein
  *	       Date: Dec 31, 2013
@@ -26,5 +31,15 @@ public interface NotificationManager {
             String spaceId,
             String datetime,
             String username);
+
+    /**
+     * 
+     * @param report
+     * @param errors
+     */
+    void bitIntegrityErrors(BitIntegrityReport report,
+                            List<BitLogItem> errors);
+    
+    
 
 }

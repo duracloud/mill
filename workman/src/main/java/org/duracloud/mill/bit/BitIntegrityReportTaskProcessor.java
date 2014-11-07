@@ -14,15 +14,19 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.common.util.ChecksumUtil.Algorithm;
 import org.duracloud.common.util.DateUtil;
+import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
@@ -42,22 +46,22 @@ public class BitIntegrityReportTaskProcessor implements
     private BitLogStore bitLogStore;
     private StorageProvider store;
     private WorkmanConfigurationManager config;
-    private DateFormat dateFormat = new SimpleDateFormat(DateUtil.DateFormat.DEFAULT_FORMAT
-            .getPattern());
 
+    private NotificationManager notificationManager;
     /**
      * @param bitTask
      * @param bitLogStore
      */
     public BitIntegrityReportTaskProcessor(BitIntegrityCheckReportTask task,
                                            BitLogStore bitLogStore,
-                                          
                                            StorageProvider store,
-                                           WorkmanConfigurationManager config) {
+                                           WorkmanConfigurationManager config,
+                                           NotificationManager notificationManager) {
         this.task = task;
         this.bitLogStore = bitLogStore;
         this.store = store;
         this.config = config;
+        this.notificationManager = notificationManager;
     }
 
     /*
@@ -84,7 +88,7 @@ public class BitIntegrityReportTaskProcessor implements
                                              bitLogDir);
 
         try {
-            writeLog(bitLog, account, storeId, spaceId);
+            List<BitLogItem> errors = writeLog(bitLog, account, storeId, spaceId);
 
             ChecksumUtil util = new ChecksumUtil(Algorithm.MD5);
             final String checksum = util.generateChecksum(bitLog);
@@ -107,17 +111,29 @@ public class BitIntegrityReportTaskProcessor implements
                 }
             });
 
-            BitIntegrityReportResult result = BitIntegrityReportResult.FAILURE;
+            BitIntegrityReportResult result = BitIntegrityReportResult.SUCCESS;
             
-            if(bitLogStore.isCompletelySuccessful(account, storeId, spaceId)){
-                result = BitIntegrityReportResult.SUCCESS;
+            if(errors.size() > 0){
+                result = BitIntegrityReportResult.FAILURE;
             }
             
-            bitLogStore.addReport(account, storeId, spaceId, reportSpaceId, reportContentId, result , new Date());
+            BitIntegrityReport report = bitLogStore.addReport(account,
+                                                              storeId,
+                                                              spaceId,
+                                                              reportSpaceId,
+                                                              reportContentId,
+                                                              result,
+                                                              new Date()); 
             
+            if(errors.size() > 0){
+                this.notificationManager.bitIntegrityErrors(report, errors);
+            }
+
             // delete all bit integrity log items for space.
             bitLogStore.delete(account, storeId, spaceId);
             bitLog.delete();
+            
+            
         } catch (Exception ex) {
             throw new TaskExecutionFailedException("task processing failed: "
                     + ex.getMessage(), ex);
@@ -125,23 +141,41 @@ public class BitIntegrityReportTaskProcessor implements
 
     }
 
-    private void writeLog(File bitLog,
+
+    private List<BitLogItem> writeLog(File bitLog,
                           String account,
                           String storeId,
                           String spaceId) throws Exception {
+        List<BitLogItem> errors = new LinkedList<>();
         try (FileWriter writer = new FileWriter(bitLog)) {
             // for each bit integrity item for space write to file
-            writer.write(getHeader());
+            writer.write(BitIntegrityHelper.getHeader());
             Iterator<BitLogItem> it = this.bitLogStore.getBitLogItems(account,
                                                                       storeId,
-                                                                      spaceId);
+                                                                          spaceId);
             while (it.hasNext()) {
-                writer.write(formatLogLine(it.next()));
+                BitLogItem item = it.next();
+                if(isError(item)){
+                    errors.add(item);
+                }
+                writer.write(BitIntegrityHelper.formatLogLine(item));
                 if (it.hasNext()) {
                     writer.write("\n");
                 }
             }
         }
+        
+        return errors;
+    }
+
+    /**
+     * @param item
+     * @return
+     */
+    private boolean isError(BitLogItem item) {
+        BitIntegrityResult result = item.getResult();
+        return (result.equals(BitIntegrityResult.ERROR) || 
+                result.equals(BitIntegrityResult.FAILURE));
     }
 
     private File createNewLogFile(String account,
@@ -157,47 +191,6 @@ public class BitIntegrityReportTaskProcessor implements
         return bitLog;
     }
 
-    /**
-     * @param next
-     * @return
-     */
-    private String formatLogLine(BitLogItem item) {
-        String[] values = {
-                dateFormat.format(item.getModified()),
-                item.getAccount(), 
-                item.getStoreId(),
-                item.getStoreType().name(), 
-                item.getSpaceId(),
-                item.getContentId(), 
-                item.getResult().name(),
-                item.getContentChecksum(), 
-                item.getStorageProviderChecksum(),
-                item.getManifestChecksum(),
-                item.getDetails()};
 
-        return StringUtils.join(values, "\t");
-
-    }
-
-    /**
-     * @return
-     */
-    private String getHeader() {
-        String[] values = {
-                "DATE_CHECKED",
-                "ACCOUNT", 
-                "STORE_ID",
-                "STORE_TYPE", 
-                "SPACE_ID",
-                "CONTENT_ID", 
-                "RESULT",
-                "CONTENT_CHECKSUM", 
-                "PROVIDER_CHECKSUM",
-                "MANIFEST_CHECKSUM",
-                "DETAILS"};
-
-        return StringUtils.join(values, "\t")+"\n";
-
-    }
 
 }
