@@ -33,7 +33,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class AuditLogGeneratorDriver {
 
     private static final Logger log = LoggerFactory.getLogger(AuditLogGeneratorDriver.class);
-    private static final String CONFIG_FILE_OPTION = null;
+    private static final String CONFIG_FILE_OPTION = "c";
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
