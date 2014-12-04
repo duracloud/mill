@@ -14,6 +14,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.util.PropertyFileHelper;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.dialect.MySQL5Dialect;
@@ -38,7 +39,7 @@ import org.springframework.transaction.PlatformTransactionManager;
                        entityManagerFactoryRef = CredentialsRepoConfig.ENTITY_MANAGER_FACTORY_BEAN,
                        transactionManagerRef = CredentialsRepoConfig.TRANSACTION_MANAGER_BEAN)
 public class CredentialsRepoConfig {
-    private static final String CONFIG_PROPERTIES_PATH = "config.properties";
+    private static final String CONFIG_PROPERTIES_PATH = ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY;
     public static final String ENTITY_MANAGER_FACTORY_BEAN = "credentialsRepoEntityManagerFactory";
     public static final String CREDENTIALS_REPO_DATA_SOURCE_BEAN = "credentialsRepoDataSource";
     public static final String TRANSACTION_MANAGER_BEAN = "credentialsJpaRepoTransactionManager";
