@@ -8,7 +8,7 @@
 package org.duracloud.mill.ltp.dup;
 
 import org.apache.commons.cli.Option;
-import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
+import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein
  *	       Date: Apr 23, 2014
  */
-public class DuplicationOptions extends LoopingTaskProducerCommandLineOptions {
+public class DuplicationOptions extends CommonCommandLineOptions {
     public static final String LOCAL_DUPLICATION_DIR_OPTION = "l";
     public static final String POLICY_BUCKET_SUFFIX         = "p";
 

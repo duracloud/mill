@@ -11,7 +11,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.cli.CommandLine;
-import org.duracloud.mill.config.ConfigurationManager;
+import org.duracloud.mill.util.CommonCommandLineOptions;
+import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.SystemPropertyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,42 +23,45 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Daniel Bernstein Date: Nov 4, 2013
  */
-public class LoopingTaskProducerDriverSupport extends DriverSupport {
+public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
     private static Logger log = LoggerFactory.getLogger(LoopingTaskProducerDriverSupport.class);
 
-    protected int maxTaskQueueSize;
-    protected String stateFilePath;
-    protected Frequency frequency;
-    
     /**
      * 
      */
-    public LoopingTaskProducerDriverSupport(LoopingTaskProducerCommandLineOptions options) {
+    public LoopingTaskProducerDriverSupport(CommonCommandLineOptions options) {
         super(options);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.duracloud.mill.ltp.DriverSupport#executeImpl(org.apache.commons.cli
-     * .CommandLine)
-     */
     @Override
-    protected void executeImpl(CommandLine cmd) {
-        processConfigFileOption(cmd);
-        maxTaskQueueSize = processMaxQueueSizeOption(cmd);
-        stateFilePath = processStateFilePathOption(cmd);
-        frequency = processFrequencyOption(cmd);
+    final protected void executeImpl(CommandLine cmd) {
+        
+        try {
+
+            LoopingTaskProducer producer = buildTaskProducer();
+            producer.run();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error(ex.getMessage(), ex);
+            System.exit(1);
+        }
+
+        log.info("looping task producer completed successfully.");
+        System.exit(0);
     }
+
+    /**
+     * @return
+     */
+    protected abstract LoopingTaskProducer buildTaskProducer();
 
     /**
      * @param cmd
      * @return
      */
-    private String processStateFilePathOption(CommandLine cmd) {
-        String stateFilePath = cmd
-                .getOptionValue(LoopingTaskProducerCommandLineOptions.STATE_FILE_PATH);
+    protected String getStateFilePath(String key) {
+        String stateFilePath = System.getProperty(key);
         if (stateFilePath != null) {
             File stateFile = new File(stateFilePath);
             if (!stateFile.exists()) {
@@ -79,9 +83,8 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
      * @param cmd
      * @return
      */
-    private int processMaxQueueSizeOption(CommandLine cmd) {
-        String maxTaskQueueSizeOption = cmd
-                .getOptionValue(LoopingTaskProducerCommandLineOptions.MAX_TASK_QUEUE_SIZE_OPTION);
+    protected int getMaxQueueSize(String key) {
+        String maxTaskQueueSizeOption = System.getProperty(key);
         int maxTaskQueueSize = 10 * 1000;
 
         if (maxTaskQueueSizeOption != null) {
@@ -94,47 +97,21 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
     }
 
   
-    /**
-     * @param cmd
-     */
-    protected void processConfigFileOption(CommandLine cmd) {
-        String configPath = cmd
-                .getOptionValue(LoopingTaskProducerCommandLineOptions.CONFIG_FILE_OPTION);
 
-        if (configPath != null) {
-            if (new File(configPath).exists()) {
-                try {
-                    SystemPropertyLoader.load(configPath);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            setSystemProperty(
-                    ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY,
-                    configPath);
-        }
-    }
 
     /**
      * @param cmd
      */
-    protected void processTaskQueueNameOption(CommandLine cmd) {
-        String outputQueueName = cmd
-                .getOptionValue(LoopingTaskProducerCommandLineOptions.OUTPUT_QUEUE_OPTION);
-        if (outputQueueName != null) {
-            setSystemProperty(
-                    LoopingTaskProducerConfigurationManager.OUTPUT_QUEUE_KEY,
-                    outputQueueName);
-        }
+    protected String getTaskQueueName(String key) {
+        return System.getProperty(key);
     }
 
     /**
      * @param cmd
      * @return
      */
-    protected Frequency processFrequencyOption(CommandLine cmd) {
-        String frequencyStr = cmd
-                .getOptionValue(LoopingTaskProducerCommandLineOptions.FREQUENCY_OPTION);
+    protected Frequency getFrequency(String key) {
+        String frequencyStr = System.getProperty(key);
         if (frequencyStr == null) {
             frequencyStr = "1m";
         }
@@ -151,9 +128,5 @@ public class LoopingTaskProducerDriverSupport extends DriverSupport {
         }
         return frequency;
     }
-
-
-
-
 
 }

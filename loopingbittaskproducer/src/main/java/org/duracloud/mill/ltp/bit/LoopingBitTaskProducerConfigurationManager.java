@@ -9,6 +9,7 @@ package org.duracloud.mill.ltp.bit;
 
 import java.io.File;
 
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 
@@ -17,18 +18,15 @@ import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
  *	       Date: May 5, 2014
  */
 public class LoopingBitTaskProducerConfigurationManager extends LoopingTaskProducerConfigurationManager {
-    public static final String EXCLUSION_LIST = "exclusionList";
-    public static final String INCLUSION_LIST = "inclusionList";
-
     public PathFilterManager getPathFilterManager(){
         PathFilterManager pathFilterManager = new PathFilterManager();
         
-        String exclusions = System.getProperty(EXCLUSION_LIST);
+        String exclusions = System.getProperty(ConfigConstants.EXCLUSION_LIST_KEY);
         if(exclusions != null){
             pathFilterManager.setExclusions(new File(exclusions));
         }
 
-        String inclusions = System.getProperty(INCLUSION_LIST);
+        String inclusions = System.getProperty(ConfigConstants.INCLUSION_LIST_KEY);
         if(inclusions != null){
             pathFilterManager.setInclusions(new File(inclusions));
         }

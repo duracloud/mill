@@ -9,33 +9,21 @@ package org.duracloud.mill.workman;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
 
-import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.Task;
-import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
-import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
-import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
-import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
-import org.duracloud.mill.dup.DuplicationPolicyManager;
-import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
-import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -98,8 +86,7 @@ public class NoopProcessorLocalRoundTripTest {
     public void setUp() throws Exception {
         File testProperties = new File("src/test/resources/workman-test.properties");
         Assert.assertTrue(testProperties.exists());
-        System.setProperty(ConfigurationManager.WORK_DIRECTORY_PATH_KEY, "target");
-        System.setProperty(ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY, testProperties.getAbsolutePath());
+        System.setProperty(ConfigConstants.WORK_DIRECTORY_PATH, "target");
         System.setProperty(TaskWorkerManager.MIN_WAIT_BEFORE_TAKE_KEY, "1");
 
         context = new AnnotationConfigApplicationContext(TestAppConfig.class);

@@ -8,14 +8,14 @@
 package org.duracloud.mill.ltp.bit;
 
 import org.apache.commons.cli.Option;
-import org.duracloud.mill.ltp.LoopingTaskProducerCommandLineOptions;
+import org.duracloud.mill.util.CommonCommandLineOptions;
 
 /**
  * @author Daniel Bernstein
  *	       Date: May 5, 2014
  */
 public class LoopingBitIntegrityTaskProducerCommandLineOptions extends
-        LoopingTaskProducerCommandLineOptions {
+        CommonCommandLineOptions {
     private static final long serialVersionUID = 1L;
 
     public static final String EXCLUSION_LIST_OPTION = "x";

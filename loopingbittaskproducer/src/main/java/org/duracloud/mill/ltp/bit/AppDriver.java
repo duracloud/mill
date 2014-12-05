@@ -8,18 +8,22 @@
 package org.duracloud.mill.ltp.bit;
 
 import java.io.File;
+import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
-import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.util.CommonCommandLineOptions;
+import org.duracloud.mill.util.PropertyDefinition;
+import org.duracloud.mill.util.PropertyDefinitionListBuilder;
+import org.duracloud.mill.util.PropertyVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,63 +40,24 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      * 
      */
     public AppDriver() {
-        super(new LoopingBitIntegrityTaskProducerCommandLineOptions());
+        super(new CommonCommandLineOptions());
     }
 
     public static void main(String[] args) {
         new AppDriver().execute(args);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.duracloud.mill.ltp.DriverSupport#executeImpl(org.apache.commons.cli
-     * .CommandLine)
-     */
-    @Override
-    protected void executeImpl(CommandLine cmd) {
-        super.executeImpl(cmd);
-
-        processTaskQueueNameOption(cmd);
-        processInclusionListOption(cmd);
-        processExclusionListOption(cmd);
-
-        try {
-
-            LoopingBitIntegrityTaskProducer producer = buildTaskProducer(cmd,
-                                                                        maxTaskQueueSize, 
-                                                                        stateFilePath, 
-                                                                        frequency);
-            producer.run();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            log.error(ex.getMessage(), ex);
-            System.exit(1);
-        }
-
-        log.info("looping task producer completed successfully.");
-        System.exit(0);
-
-    }
     
     /**
      * @param cmd
      */
-    private void processExclusionListOption(CommandLine cmd) {
-        String exclusionList = cmd
-                .getOptionValue(LoopingBitIntegrityTaskProducerCommandLineOptions.EXCLUSION_LIST_OPTION);
+    private void processExclusionListOption() {
+        String exclusionList = System.getProperty(ConfigConstants.EXCLUSION_LIST_KEY);
         if (exclusionList != null) {
             File list = new File(exclusionList);
             if(!list.exists()){
                 throw new DuraCloudRuntimeException("exclusion list not found: " + list);
             }
-            
-            
-            setSystemProperty(
-                    LoopingBitTaskProducerConfigurationManager.EXCLUSION_LIST,
-                    exclusionList);
         }
     }
     
@@ -100,54 +65,44 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
     /**
      * @param cmd
      */
-    private void processInclusionListOption(CommandLine cmd) {
-        String inclusionList = cmd
-                .getOptionValue(LoopingBitIntegrityTaskProducerCommandLineOptions.INCLUSION_LIST_OPTION);
+    private void processInclusionListOption() {
+        String inclusionList = System.getProperty(ConfigConstants.INCLUSION_LIST_KEY);
         if (inclusionList != null) {
             File list = new File(inclusionList);
             if(!list.exists()){
                 throw new DuraCloudRuntimeException("inclusionlist not found: " + list);
             }
-            
-            
-            setSystemProperty(
-                    LoopingBitTaskProducerConfigurationManager.INCLUSION_LIST,
-                    inclusionList);
         }
     }
 
 
-    /**
-     * @param cmd
-     * @param maxTaskQueueSize
-     * @param stateFilePath
-     * @param frequency
-     * @return
-     */
-    private LoopingBitIntegrityTaskProducer buildTaskProducer(CommandLine cmd,
-            int maxTaskQueueSize,
-            String stateFilePath,
-            Frequency frequency) {
+    @Override
+    protected LoopingTaskProducer buildTaskProducer() {
 
+        List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
+                .addMcDb()
+                .addBitIntegrityQueue()
+                .addLoopingBitStateFilePath()
+                .addLoopingBitFrequency()
+                .addLoopingBitMaxQueueSize()
+                .build();
+        PropertyVerifier verifier = new PropertyVerifier(defintions);
+        verifier.verify(System.getProperties());
+        
+        
+        processExclusionListOption();
+        processInclusionListOption();
+        
         LoopingBitTaskProducerConfigurationManager config = new LoopingBitTaskProducerConfigurationManager();
-        config.init();
 
-        CredentialsRepo credentialsRepo;
-
-        if (config.getCredentialsFilePath() != null) {
-            credentialsRepo = new ConfigFileCredentialRepo(
-                    config.getCredentialsFilePath());
-        } else {
-            credentialsRepo = CredentialsRepoLocator.get();
-        }
+        CredentialsRepo  credentialsRepo = CredentialsRepoLocator.get();
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
-
         TaskQueue taskQueue = new SQSTaskQueue(
-                config.getOutputQueue());
+                config.getBitIntegrityQueue());
 
-
+        String stateFilePath = getStateFilePath(ConfigConstants.LOOPING_BIT_STATE_FILE_PATH);
         StateManager<BitIntegrityMorsel> stateManager = new StateManager<BitIntegrityMorsel>(
                 stateFilePath, BitIntegrityMorsel.class);
 
@@ -155,8 +110,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                                                        storageProviderFactory,
                                                                                        taskQueue,
                                                                                        stateManager,
-                                                                                       maxTaskQueueSize,
-                                                                                       frequency,
+                                                                                       getMaxQueueSize(ConfigConstants.LOOPING_BIT_MAX_TASK_QUEUE_SIZE),
+                                                                                       getFrequency(ConfigConstants.LOOPING_BIT_FREQUENCY),
                                                                                        config.getPathFilterManager());
         return producer;
     }

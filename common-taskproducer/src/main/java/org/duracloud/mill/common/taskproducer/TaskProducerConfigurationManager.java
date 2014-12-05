@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.common.taskproducer;
 
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.config.ConfigurationManager;
 
 /**
@@ -14,9 +15,15 @@ import org.duracloud.mill.config.ConfigurationManager;
  *	       Date: Nov 5, 2013
  */
 public class TaskProducerConfigurationManager extends ConfigurationManager {
-    public static final String DUPLICATION_POLICY_DIR_KEY = "duplicationPolicyDir";
 
     public String getDuplicationPolicyDir() {
-        return System.getProperty(DUPLICATION_POLICY_DIR_KEY);
+        return System.getProperty(ConfigConstants.LOCAL_DUPLICATION_DIR);
+    }
+
+    /**
+     * @return
+     */
+    public String getDuplicationPolicyBucketSuffix() {
+        return System.getProperty(ConfigConstants.DUPLICATION_POLICY_BUCKET_SUFFIX);
     }
 }

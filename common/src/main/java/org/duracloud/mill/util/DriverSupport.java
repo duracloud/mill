@@ -5,7 +5,10 @@
  *
  *     http://duracloud.org/license/
  */
-package org.duracloud.mill.ltp;
+package org.duracloud.mill.util;
+
+import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -60,7 +63,25 @@ public abstract class DriverSupport {
             die();
         }
         
+        processConfigFileOption(cmd);
+
         executeImpl(cmd);
+    }
+    
+    /**
+     * @param cmd
+     */
+    protected void processConfigFileOption(CommandLine cmd) {
+        String configPath = cmd.getOptionValue(CommonCommandLineOptions.CONFIG_FILE_OPTION);
+        if (configPath != null) {
+            if (new File(configPath).exists()) {
+                try {
+                    SystemPropertyLoader.load(configPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     /**

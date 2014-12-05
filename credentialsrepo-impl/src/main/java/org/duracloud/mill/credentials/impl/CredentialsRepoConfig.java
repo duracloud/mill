@@ -14,6 +14,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.util.PropertyFileHelper;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -39,16 +40,11 @@ import org.springframework.transaction.PlatformTransactionManager;
                        entityManagerFactoryRef = CredentialsRepoConfig.ENTITY_MANAGER_FACTORY_BEAN,
                        transactionManagerRef = CredentialsRepoConfig.TRANSACTION_MANAGER_BEAN)
 public class CredentialsRepoConfig {
-    private static final String CONFIG_PROPERTIES_PATH = ConfigurationManager.DURACLOUD_MILL_CONFIG_FILE_KEY;
     public static final String ENTITY_MANAGER_FACTORY_BEAN = "credentialsRepoEntityManagerFactory";
     public static final String CREDENTIALS_REPO_DATA_SOURCE_BEAN = "credentialsRepoDataSource";
     public static final String TRANSACTION_MANAGER_BEAN = "credentialsJpaRepoTransactionManager";
 
     static {
-        String defaultPath = "/" + System.getProperty("user.home")
-                + "/duracloud-mc/mc-config.properties";
-        PropertyFileHelper.loadFromSystemProperty(CONFIG_PROPERTIES_PATH,
-                                                  defaultPath);
         new MCJpaPropertiesVerifier().verify();
 
     }
@@ -59,12 +55,11 @@ public class CredentialsRepoConfig {
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl(MessageFormat
                 .format("jdbc:mysql://{0}:{1}/{2}?autoReconnect=true",
-                        System.getProperty("db.host", "localhost"),
-                        System.getProperty("db.port", "3306"),
-                        System.getProperty("db.name", "mill")));
-        dataSource.setUsername(System.getProperty("db.user", "mill"));
-        dataSource.setPassword(System.getProperty("db.pass", "password"));
-
+                        System.getProperty(ConfigConstants.MC_DB_HOST, "localhost"),
+                        System.getProperty(ConfigConstants.MC_DB_PORT, "3306"),
+                        System.getProperty(ConfigConstants.MC_DB_NAME, "mill")));
+        dataSource.setUsername(System.getProperty(ConfigConstants.MC_DB_USER, "mill"));
+        dataSource.setPassword(System.getProperty(ConfigConstants.MC_DB_PASS, "password"));
         return dataSource;
     }
 

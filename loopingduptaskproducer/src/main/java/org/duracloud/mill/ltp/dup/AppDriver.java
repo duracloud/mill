@@ -8,27 +8,31 @@
 package org.duracloud.mill.ltp.dup;
 
 import java.io.File;
+import java.util.List;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.PersistenceConfiguration;
 
-import org.apache.commons.cli.CommandLine;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
-import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
-import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.util.PropertyDefinition;
+import org.duracloud.mill.util.PropertyDefinitionListBuilder;
+import org.duracloud.mill.util.PropertyVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,114 +56,82 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         new AppDriver().execute(args);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.duracloud.mill.ltp.DriverSupport#executeImpl(org.apache.commons.cli
-     * .CommandLine)
-     */
+
+
     @Override
-    protected void executeImpl(CommandLine cmd) {
-        super.executeImpl(cmd);
+    protected LoopingTaskProducer buildTaskProducer() {
+        
+        List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
+                .addMcDb()
+                .addDuplicationLowPriorityQueue()
+                .addLoopingDupStateFilePath()
+                .addLoopingDupFrequency()
+                .addLoopingDupMaxQueueSize()
+                .addDuplicationPolicyBucketSuffix()
+                .addLocalDuplicationDir()
+                .build();
+        PropertyVerifier verifier = new PropertyVerifier(defintions);
+        verifier.verify(System.getProperties());
+        
+        TaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
+        processLocalDuplicationDirOption(config);
 
-        processLocalDuplicationDirOption(cmd);
-        processTaskQueueNameOption(cmd);
-
-        try {
-
-            LoopingDuplicationTaskProducer producer = buildTaskProducer(cmd,
-                                                                        maxTaskQueueSize, 
-                                                                        stateFilePath, 
-                                                                        frequency);
-            producer.run();
-
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
-            System.exit(1);
-        }
-
-        log.info("looping task producer completed successfully.");
-        System.exit(0);
-
-    }
-
-    /**
-     * @param cmd
-     * @param maxTaskQueueSize
-     * @param stateFilePath
-     * @param frequency
-     * @return
-     */
-    private LoopingDuplicationTaskProducer buildTaskProducer(CommandLine cmd,
-            int maxTaskQueueSize,
-            String stateFilePath,
-            Frequency frequency) {
-        LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
-        config.init();
-
-        CredentialsRepo credentialsRepo;
-
-        if (config.getCredentialsFilePath() != null) {
-            credentialsRepo = new ConfigFileCredentialRepo(
-                    config.getCredentialsFilePath());
-        } else {
-            credentialsRepo = CredentialsRepoLocator.get();
-        }
+        CredentialsRepo credentialsRepo = CredentialsRepoLocator.get();
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
         DuplicationPolicyManager policyManager;
-        if (config.getDuplicationPolicyDir() != null) {
+        String policyDir = config.getDuplicationPolicyDir();
+        if (policyDir != null) {
             policyManager = new DuplicationPolicyManager(
-                    new LocalDuplicationPolicyRepo(
-                            config.getDuplicationPolicyDir()));
+                    new LocalDuplicationPolicyRepo(policyDir));
         } else {
             DuplicationPolicyRepo policyRepo;
-            if (cmd.hasOption(DuplicationOptions.POLICY_BUCKET_SUFFIX)) {
-                policyRepo = new S3DuplicationPolicyRepo(
-                        cmd.getOptionValue(DuplicationOptions.POLICY_BUCKET_SUFFIX));
+            String bucketSuffix = config.getDuplicationPolicyBucketSuffix();
+            if (bucketSuffix != null) {
+                policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
             } else {
                 policyRepo = new S3DuplicationPolicyRepo();
             }
             policyManager = new DuplicationPolicyManager(policyRepo);
         }
 
-        TaskQueue taskQueue = new SQSTaskQueue(
-                config.getOutputQueue());
+        TaskQueue taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
 
         CacheManager cacheManager = CacheManager.create();
-        Cache cache = new Cache("contentIdCache", 100 * 1000, true, true,
-                60 * 5, 60 * 5);
+        CacheConfiguration cacheConfig = new CacheConfiguration();
+        cacheConfig.setName("contentIdCache");
+        cacheConfig.addPersistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.LOCALTEMPSWAP));
+        cacheConfig.setEternal(true);
+        Cache cache = new Cache(cacheConfig);
         cacheManager.addCache(cache);
 
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(
-                stateFilePath, DuplicationMorsel.class);
+                getStateFilePath(ConfigConstants.LOOPING_DUP_STATE_FILE_PATH), DuplicationMorsel.class);
 
-        LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(
-                credentialsRepo, storageProviderFactory, policyManager,
-                taskQueue, cache, stateManager, maxTaskQueueSize, frequency);
+        LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(credentialsRepo,
+                                                                                     storageProviderFactory,
+                                                                                     policyManager,
+                                                                                     taskQueue,
+                                                                                     cache,
+                                                                                     stateManager,
+                                                                                     getMaxQueueSize(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE),
+                                                                                     getFrequency(ConfigConstants.LOOPING_DUP_FREQUENCY));
         return producer;
     }
 
     /**
-     * @param cmd
+     * @param config
      */
-    private void processLocalDuplicationDirOption(CommandLine cmd) {
-        String localDuplicationPolicyDirPath = cmd
-                .getOptionValue(DuplicationOptions.LOCAL_DUPLICATION_DIR_OPTION);
+    private void processLocalDuplicationDirOption(TaskProducerConfigurationManager config) {
+        String localDuplicationPolicyDirPath = config.getDuplicationPolicyDir();
         if (localDuplicationPolicyDirPath != null) {
             if (!new File(localDuplicationPolicyDirPath).exists()) {
                 System.err.print("The local duplication policy directory "
                         + "path you specified, "
                         + localDuplicationPolicyDirPath + " does not exist: ");
                 die();
-            } else {
-                setSystemProperty(
-                        TaskProducerConfigurationManager.DUPLICATION_POLICY_DIR_KEY,
-                        localDuplicationPolicyDirPath);
             }
-
             log.info("local duplication policy directory: {}",
                     localDuplicationPolicyDirPath);
         }

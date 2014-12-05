@@ -28,7 +28,6 @@ import org.duracloud.mill.bitlog.jpa.JpaBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.file.ConfigFileCredentialRepo;
 import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
 import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
@@ -154,15 +153,7 @@ public class AppConfig {
     public CredentialsRepo
             credentialRepo(ConfigurationManager configurationManager,
                            DuracloudAccountRepo accountRepo) {
-        String path = configurationManager.getCredentialsFilePath();
-        if (path != null) {
-            log.info("found credentials file path ({}): using config file based credential repo...",
-                     path);
-            return new ConfigFileCredentialRepo();
-        } else {
-            log.info("no credentials file path: using simpledb based credential repo...");
-            return new DefaultCredentialsRepoImpl(accountRepo);
-        }
+        return new DefaultCredentialsRepoImpl(accountRepo);
     }
 
     @Bean
@@ -249,7 +240,7 @@ public class AppConfig {
         return queue;
     }
 
-    @Bean(initMethod = "init")
+    @Bean
     public WorkmanConfigurationManager configurationManager() {
         log.info("creating the workman configuration manager...");
         return new WorkmanConfigurationManager();
