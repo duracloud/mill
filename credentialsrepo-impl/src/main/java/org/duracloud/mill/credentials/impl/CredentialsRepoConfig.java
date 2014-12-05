@@ -84,17 +84,12 @@ public class CredentialsRepoConfig {
         emf.setPersistenceUnitName("credentials-repo-pu");
         emf.setPackagesToScan("org.duracloud.account.db.model");
 
-        String hbm2ddlAuto = System.getProperty("hibernate.hbm2ddl.auto");
-
         HibernateJpaVendorAdapter va = new HibernateJpaVendorAdapter();
-        va.setGenerateDdl(hbm2ddlAuto != null);
         va.setDatabase(Database.MYSQL);
         emf.setJpaVendorAdapter(va);
 
         Properties props = new Properties();
-        if (hbm2ddlAuto != null) {
-            props.setProperty("hibernate.hbm2ddl.auto", hbm2ddlAuto);
-        }
+        props.setProperty("hibernate.hbm2ddl.auto", "validate");
         props.setProperty("hibernate.dialect",
                           MySQL5Dialect.class.getName());
         props.setProperty("hibernate.ejb.naming_strategy",
