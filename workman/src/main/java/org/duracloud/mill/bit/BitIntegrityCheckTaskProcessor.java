@@ -7,6 +7,9 @@
  */
 package org.duracloud.mill.bit;
 
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +18,8 @@ import java.util.Map;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
+import org.duracloud.common.util.DateUtil;
+import org.duracloud.common.util.DateUtil.DateFormat;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.db.model.ManifestItem;
@@ -238,38 +243,72 @@ public class BitIntegrityCheckTaskProcessor implements
                 handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
             String manifestChecksum = state.getManifestChecksum();
             String storeChecksum = state.getStoreChecksum();
-            StorageProviderType storageProviderType = state
-                    .getStorageProviderType();
+            BitIntegrityCheckTask task = state.getTask();
+            if (storeChecksum != null
+                    && !storeChecksum.equals(manifestChecksum)) {
+                
+                    if (isLastAttempt(task)) {
+                        //if content item is less than a day old, then assume mill hasn't processed and ignore.
+                        Map<String,String> props = state.getContentProperties();
+                        
+                        String modified = props.get(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
+                        try {
+                            Date modifiedDate = DateUtil.convertToDate(modified, DateFormat.DEFAULT_FORMAT);
+                            Calendar c = Calendar.getInstance();
+                            c.add(Calendar.DATE, -1);
+                            Date oneDayAgo = c.getTime();
+                            if(modifiedDate.after(oneDayAgo)){
+                                String message = "The manifest entry's checksum did not match the others: " + 
+                                        "The content item is less than 1 day old. It is most likely that " +
+                                        "the item has not yet been processed by the mill. Therefore we are " + 
+                                        "ignorning this content item for now.";
+                                return new HandlerResult(BitIntegrityResult.IGNORE,
+                                                         message);
+                            }
+                            
+                        } catch (ParseException e) {
+                            throw new BitIntegrityCheckTaskExecutionFailedException("failed to parse date using DateFormat.DEFAULT_FORMAT: "
+                                                                                        + modified,
+                                                                                e);
+                        }
+                        
+                        String message = "The manifest entry's checksum did not match the others: " + 
+                                "the last update to the manifest must have failed or has " +
+                                "not yet been processed by the audit system in the last 24 hours " + 
+                                "due to major downtime for the mill or a fantastically backed-up audit queue.";
 
-            if (manifestChecksum != null && storeChecksum != null
-                    && !manifestChecksum.equals(storeChecksum)
-                    && isContentChecksumCalculated(storageProviderType)) {
-                String contentChecksum = state.getContentChecksumHelper()
-                        .getContentChecksum(storeChecksum);
-
-                if (storeChecksum.equals(contentChecksum)) {
-                    if (isLastAttempt(state.getTask())) {
-                        String message = "The manifest entry's checksum did not match the others: "
-                                + "the last update to the manifest must have failed (or has not yet been processed by the audit system)";
+                        if(!isContentChecksumOkay(state,storeChecksum)){
+                                message = MessageFormat
+                                        .format("neither the content checksum ({0}) nor the manifest checksum " +
+                                    		"({1})  match the store checksum ({2}).",
+                                                state.getContentChecksumHelper()
+                                                     .getContentChecksum(storeChecksum),
+                                                manifestChecksum,
+                                                storeChecksum);
+                                log.error(message + ": storeId = {}, spaceId = {}, contentId = {}",
+                                          task.getStoreId(),
+                                          task.getSpaceId(),
+                                          task.getContentId());
+                        }else{
+                            log.error(message + "{}", task);
+                        }
 
                         updateManifestChecksum(state, storeChecksum);
                         addErrorTask(state, message);
-
                         return new HandlerResult(BitIntegrityResult.FAILURE,
                                                  message);
                     } else if (isPenultimateAttempt(state.getTask())) {
                         sleep();
                     }
-
-                }
             }
 
             return new HandlerResult();
         }
 
+
         /**
          * @param state
-         * @param storeChecksum
+         * @param checksum
          * @throws BitIntegrityCheckTaskExecutionFailedException 
          */
         private void updateManifestChecksum(BitCheckExecutionState state,
@@ -282,18 +321,41 @@ public class BitIntegrityCheckTaskProcessor implements
             String spaceId = task.getSpaceId();
             String contentId = task.getContentId();
             try {
-                ManifestItem item = manifestStore.getItem(account,
-                                                          storeId,
-                                                          spaceId,
-                                                          contentId);
+                
+                
+                ManifestItem item;
+
+                //if the item doesn't exist, we must get the content mimetype and size 
+                //from the storage provider
+                String contentMimetype;
+                String contentSize;
+
+                try{ 
+                    item = manifestStore.getItem(account,
+                                                 storeId,
+                                                 spaceId,
+                                                 contentId);
+
+                    contentMimetype = item.getContentMimetype();;
+                    contentSize = item.getContentSize();
+
+                }catch(org.duracloud.error.NotFoundException ex ){
+                    Map<String, String> props = state.getContentProperties();
+                    contentMimetype = props
+                            .get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
+                    contentSize = props
+                            .get(StorageProvider.PROPERTIES_CONTENT_SIZE);
+                }
+
                 manifestStore.addUpdate(account,
                                         storeId,
                                         spaceId,
                                         contentId,
                                         checksum,
-                                        item.getContentMimetype(),
-                                        item.getContentSize(),
+                                        contentMimetype,
+                                        contentSize,
                                         new Date());
+                
             } catch (Exception ex) {
                 throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("failed to update manifest: "
                         + ex.getMessage(), task, state.getStorageProviderType()));

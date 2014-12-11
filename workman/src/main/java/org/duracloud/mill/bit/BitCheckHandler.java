@@ -76,7 +76,7 @@ abstract class BitCheckHandler {
                         .getStorageProviderType())) {
                     contentChecksum = bitCheckState
                             .getContentChecksumHelper()
-                            .getContentChecksum(bitCheckState.getManifestChecksum());
+                            .getContentChecksum(storeChecksum);
                 }
 
                 writeResult(result.getResult(),
@@ -150,7 +150,7 @@ abstract class BitCheckHandler {
         task.setDescription(message);
         if (storeChecksum != null && isContentChecksumCalculated(state.getStorageProviderType())) {
             task.setContentChecksum(state.getContentChecksumHelper()
-                    .getContentChecksum(manifestChecksum));
+                    .getContentChecksum(storeChecksum));
         }
         task.setStoreType(state.getStorageProviderType());
         task.setStoreChecksum(storeChecksum);
