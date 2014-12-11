@@ -147,6 +147,7 @@ abstract class BitCheckHandler {
         task.setAccount(bitTask.getAccount());
         task.setStoreId(bitTask.getStoreId());
         task.setSpaceId(bitTask.getSpaceId());
+        task.setContentId(bitTask.getContentId());
         task.setDescription(message);
         if (storeChecksum != null && isContentChecksumCalculated(state.getStorageProviderType())) {
             task.setContentChecksum(state.getContentChecksumHelper()
