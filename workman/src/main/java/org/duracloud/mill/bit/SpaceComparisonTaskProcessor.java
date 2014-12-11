@@ -78,10 +78,16 @@ public class SpaceComparisonTaskProcessor implements
 
             while (it.hasNext()) {
                 String contentId = it.next();
-                ManifestItem item = this.manifestStore.getItem(account,
-                                                               storeId,
-                                                               spaceId,
-                                                               contentId);
+                ManifestItem item;
+                try{
+                    item = this.manifestStore.getItem(account,
+                                                      storeId,
+                                                      spaceId,
+                                                      contentId);
+                }catch(org.duracloud.error.NotFoundException ex){
+                    item = null;
+                }
+                
                 if (item == null || item.isDeleted()) {
                     // if there is no non-deleted item in the manifest
                     // if storage provider content is less than a day old
