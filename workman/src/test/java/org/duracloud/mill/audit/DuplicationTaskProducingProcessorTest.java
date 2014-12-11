@@ -182,6 +182,9 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
                 throws TaskNotFoundException {}
         public void deleteTask(Task task) throws TaskNotFoundException {}
         public Integer size() { return null;}
+        public Integer sizeIncludingInvisibleAndDelayed() {
+            return null;
+        }
         /* (non-Javadoc)
          * @see org.duracloud.common.queue.TaskQueue#requeue(org.duracloud.common.queue.task.Task)
          */

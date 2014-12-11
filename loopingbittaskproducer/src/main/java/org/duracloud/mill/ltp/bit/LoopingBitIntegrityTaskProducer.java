@@ -136,7 +136,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                             morsel);
                     
                     //check if queue is empty.
-                    long size = getTaskQueue().size();
+                    long size = getTaskQueue().sizeIncludingInvisibleAndDelayed();
                     if(size == 0){
                         addReportTaskProcessorTask(queue.poll());
                     } else {
