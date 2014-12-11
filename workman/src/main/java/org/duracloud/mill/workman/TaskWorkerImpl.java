@@ -141,6 +141,7 @@ public class TaskWorkerImpl implements TaskWorker {
             if(attempts < TaskWorker.MAX_ATTEMPTS){
                 this.queue.requeue(task);
             }else{
+                task.addProperty("error", e.getMessage());
                 sendToDeadLetterQueue(task);
             }
             
