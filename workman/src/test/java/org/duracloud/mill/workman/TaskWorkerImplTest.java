@@ -7,13 +7,15 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.easymock.EasyMock.*;
 
 /**
  * 
@@ -96,11 +98,13 @@ public class TaskWorkerImplTest {
 
     @Test
     public void testRunWithProcessorExceptionLastAttempt() throws Exception {
-        EasyMock.expect(task.getAttempts()).andReturn(4);
+        expect(task.getAttempts()).andReturn(4);
         queue.deleteTask(EasyMock.isA(Task.class));
-        EasyMock.expectLastCall();
+        expectLastCall();
         deadLetterQueue.put(EasyMock.isA(Task.class));
-        EasyMock.expectLastCall();
+        expectLastCall();
+        task.addProperty(eq("error"), isNull(String.class));
+        expectLastCall();
         runWithProcessorException();
     }
 
