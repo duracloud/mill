@@ -7,12 +7,6 @@
  */
 package org.duracloud.mill.bit;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogStore;
@@ -28,7 +22,17 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
 
 /**
  * @author Daniel Bernstein Date: 5/7/2014
@@ -186,7 +190,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
         expect(manifestItem2.getContentId()).andReturn(contentId);
 
         expect(manifestIt.hasNext()).andReturn(false);
-        expect(manifestStore.getItems(eq(storeId), eq(spaceId)))
+        expect(manifestStore.getItems(eq(account), eq(storeId), eq(spaceId)))
                 .andReturn(manifestIt);
         return manifestItem2;
     }
@@ -235,7 +239,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
     }
 
     /**
-     * @param i
+     * @param days
      * @return
      */
     private Date getDayFromXDaysAgo(int days) {

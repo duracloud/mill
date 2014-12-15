@@ -7,12 +7,6 @@
  */
 package org.duracloud.mill.bit;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogStore;
@@ -25,6 +19,12 @@ import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Daniel Bernstein Date: Oct 21, 2014
@@ -125,7 +125,7 @@ public class SpaceComparisonTaskProcessor implements
 
             // iterate current non-deleted manifest items
             Iterator<ManifestItem> manifestIterator = this.manifestStore
-                    .getItems(storeId, spaceId);
+                    .getItems(account, storeId, spaceId);
 
             while (manifestIterator.hasNext()) {
                 // if not in storage provider
