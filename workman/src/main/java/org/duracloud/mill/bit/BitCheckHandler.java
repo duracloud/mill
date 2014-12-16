@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.bit;
 
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
@@ -165,81 +166,10 @@ abstract class BitCheckHandler {
                         final String storeChecksum,
                         final String contentChecksum,
                         final BitLogStore bitLogStore,
-                        StorageProviderType storageProviderType,
+                        final StorageProviderType storageProviderType,
                         final BitIntegrityCheckTask bitTask,
-                        String details) throws TaskExecutionFailedException {
-        if (result == BitIntegrityResult.SUCCESS) {
-            writeSuccessResult(result,
-                               storeChecksum,
-                               bitTask,
-                               bitLogStore,
-                               storageProviderType);
-        } else {
-            writeNonSuccessResult(result,
-                                  manifestChecksum,
-                                  storeChecksum,
-                                  contentChecksum,
-                                  bitTask,
-                                  bitLogStore,
-                                  storageProviderType,
-                                  details);
-        }
-    }
-
-    private void
-            writeSuccessResult(final BitIntegrityResult result,
-                               final String checksum,
-                               final BitIntegrityCheckTask bitTask,
-                               final BitLogStore bitLogStore,
-                               final StorageProviderType storageProviderType) throws TaskExecutionFailedException {
-        try {
-            new Retrier().execute(new Retriable() {
-                @Override
-                public String retry() throws Exception {
-                    // Since the checksums match only log one of the checksum
-                    // values
-                    bitLogStore.write(bitTask.getAccount(),
-                                      bitTask.getStoreId(),
-                                      bitTask.getSpaceId(),
-                                      bitTask.getContentId(),
-                                      new Date(System.currentTimeMillis()),
-                                      storageProviderType,
-                                      result,
-                                      checksum,
-                                      null,
-                                      null,
-                                      null);
-                    return "success";
-                }
-            });
-        } catch (Exception e) {
-            throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("Could not write successful result to BitLogStore",
-                                                                                        bitTask,
-                                                                                        storageProviderType),
-                                                                    e);
-        }
-        log.info("Checksum result={} account={} storeId={} storeType={} space={}"
-                         + " contentId={} checksum={}",
-                 result,
-                 bitTask.getAccount(),
-                 bitTask.getStoreId(),
-                 storageProviderType,
-                 bitTask.getSpaceId(),
-                 bitTask.getContentId(),
-                 checksum);
-    }
-
-    private void
-            writeNonSuccessResult(final BitIntegrityResult result,
-                                  final String manifestChecksum,
-                                  final String storeChecksum,
-                                  final String contentChecksum,
-                                  final BitIntegrityCheckTask bitTask,
-                                  final BitLogStore bitLogStore,
-                                  final StorageProviderType storageProviderType,
-                                  final String details)
-
-            throws TaskExecutionFailedException {
+                        final String details) throws TaskExecutionFailedException {
+       
         try {
             new Retrier().execute(new Retriable() {
                 @Override
@@ -256,28 +186,36 @@ abstract class BitCheckHandler {
                                       contentChecksum,
                                       storeChecksum,
                                       manifestChecksum,
-                                      details);
+                                      details == null ? "--" : details);
                     return "success";
                 }
             });
         } catch (Exception e) {
-            throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("Could not write non-successful result to BitLogStore",
+            throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("Could not write result to BitLogStore",
                                                                                         bitTask,
                                                                                         storageProviderType),
                                                                     e);
         }
-        log.error("Checksum result={} account={} storeId={} storeType={} space={}"
-                          + " contentId={} manifestChecksum={} storeChecksum={}"
-                          + " contentChecksum={}",
-                  result,
-                  bitTask.getAccount(),
-                  bitTask.getStoreId(),
-                  storageProviderType,
-                  bitTask.getSpaceId(),
-                  bitTask.getContentId(),
-                  manifestChecksum,
-                  storeChecksum,
-                  contentChecksum);
+
+        String message = MessageFormat
+                .format("Checksum result={0} account={1} storeId={2} storeType={3} space={4}"
+                                + " contentId={5} manifestChecksum={6} storeChecksum={7}"
+                                + " contentChecksum={8}",
+                        result,
+                        bitTask.getAccount(),
+                        bitTask.getStoreId(),
+                        storageProviderType,
+                        bitTask.getSpaceId(),
+                        bitTask.getContentId(),
+                        manifestChecksum,
+                        storeChecksum,
+                        contentChecksum);
+        
+        if (result == BitIntegrityResult.SUCCESS) {
+            log.info(message);
+        } else {
+            log.error(message);
+        }
     }
 
     /**
