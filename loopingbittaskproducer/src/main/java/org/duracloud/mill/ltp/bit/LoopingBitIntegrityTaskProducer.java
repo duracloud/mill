@@ -135,7 +135,15 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                             "{} completely nibbled.",
                             morsel);
                     
-                    //check if queue is empty.
+                    //check if queue is empty after waiting a moment, it is possible that AWS will not have registered
+                    //a new task that was added in the previous step. I observed this problem while debugging this code.
+                    //If I put the breakpoint on the if statement and I ran the task producer against space with a single content item
+                    //then size would be reported as 0.  However if I put the breakpoint a line above on "long size = ..." then 
+                    //the size variable was evaluating to 1. At 5 seconds, I was still seeing the inconsistency.  At 10 seconds the 
+                    //matter seems to be resolved.
+                    int delay = 10000;
+                    log.debug("delay before checking the queue size in ms: {}", delay);
+                    sleep(delay);
                     long size = getTaskQueue().sizeIncludingInvisibleAndDelayed();
                     if(size == 0){
                         addReportTaskProcessorTask(queue.poll());
@@ -159,6 +167,18 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     }
     
     
+    /**
+     * @param ms
+     */
+    private void sleep(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     /**
      * @param poll
      */
