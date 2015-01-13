@@ -32,8 +32,8 @@ public class TaskWorkerManager {
     private Logger log = LoggerFactory.getLogger(TaskWorkerManager.class);
 
     public static final int DEFAULT_MAX_WORKERS = 5;
-    public static final String MAX_WORKER_PROPERTY_KEY = "duracloud.maxWorkers";
-    public static final String MIN_WAIT_BEFORE_TAKE_KEY = "duracloud.minWaitBeforeTake";
+    public static final String MAX_WORKER_PROPERTY_KEY = "max-workers";
+    public static final String MIN_WAIT_BEFORE_TAKE_KEY = "min-wait-before-take";
     public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 15*1000;
     private static final long DEFAULT_MAX_WAIT_BEFORE_TAKE = 8*60*1000;
     private Long defaultMinWaitTime = DEFAULT_MIN_WAIT_BEFORE_TAKE;
