@@ -210,6 +210,7 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
                                                                maxQueueSize,
                                                                new Frequency("1s"),
                                                                new PathFilterManager());
+        producer.setWaitTimeInMsBeforeQueueSizeCheck(1);
         return producer;
     }
 

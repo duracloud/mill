@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitIntegrityMorsel> {
     private static Logger log = LoggerFactory.getLogger(LoopingBitIntegrityTaskProducer.class);
     private PathFilterManager exclusionManager;
+    private int waitTimeInMsBeforeQueueSizeCheck = 10000;
     
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
             StorageProviderFactory storageProviderFactory,
@@ -141,9 +142,8 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                     //then size would be reported as 0.  However if I put the breakpoint a line above on "long size = ..." then 
                     //the size variable was evaluating to 1. At 5 seconds, I was still seeing the inconsistency.  At 10 seconds the 
                     //matter seems to be resolved.  Makes me a little nervous.  --dbernstein
-                    int delay = 10000;
-                    log.debug("delay before checking the queue size in ms: {}", delay);
-                    sleep(delay);
+                    log.debug("delay before checking the queue size in ms: {}", waitTimeInMsBeforeQueueSizeCheck);
+                    sleep(waitTimeInMsBeforeQueueSizeCheck);
                     long size = getTaskQueue().sizeIncludingInvisibleAndDelayed();
                     if(size == 0){
                         addReportTaskProcessorTask(queue.poll());
@@ -304,4 +304,9 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             return new BitIntegrityRunStats();
     }
       
+    public void
+            setWaitTimeInMsBeforeQueueSizeCheck(int ms) {
+        this.waitTimeInMsBeforeQueueSizeCheck = ms;
+    }
+
 }
