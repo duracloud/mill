@@ -76,13 +76,16 @@ public class ContentChecksumHelper {
         // }
 
         try {
-            contentChecksum = new Retrier().execute(new Retriable() {
+            new Retrier().execute(new Retriable() {
                 @Override
                 public String retry() throws Exception {
                     try (InputStream inputStream = store.getContent(bitTask
                             .getSpaceId(), bitTask.getContentId())) {
                         String checksum = checksumUtil
                                 .generateChecksum(inputStream);
+
+                        contentChecksum = checksum;
+
                         if (!correctChecksum.equals(checksum)) {
                             throw new ChecksumsDoNotMatchException(BitIntegrityHelper
                                     .buildFailureMessage("The content checksum does not match specified checksum: ",
@@ -102,6 +105,10 @@ public class ContentChecksumHelper {
                         .buildFailureMessage("Could not compute checksum  - content not found",
                                              bitTask,
                                              storageProviderType));
+            }else{
+                log.warn("Checksums did not match provided checksum = {}, content checksum = {}",
+                         correctChecksum,
+                         contentChecksum);
             }
         } catch (Exception e) {
             throw new BitIntegrityCheckTaskExecutionFailedException(BitIntegrityHelper
