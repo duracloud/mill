@@ -37,7 +37,6 @@ abstract class BitCheckHandler {
 
     private static Logger log = LoggerFactory.getLogger(BitCheckHandler.class);
 
-    private static long penultimateAttemptWaitMS = 5 * 60 * 1000;
     /**
      * Designates the list of storage providers on whose content we perform
      * checksum verifications. Some storage providers content is not available

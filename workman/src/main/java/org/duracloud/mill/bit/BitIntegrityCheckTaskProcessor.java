@@ -87,8 +87,7 @@ public class BitIntegrityCheckTaskProcessor implements
         HANDLERS.add(new SuccessfulCheckHandler());
         HANDLERS.add(new SourContentHandler());
         HANDLERS.add(new FailedStorageProviderChecksumHandler());
-        HANDLERS.add(new FailedManifestChecksumHandler());
-        HANDLERS.add(new AllChecksumsMismatchedHandler());
+        HANDLERS.add(new FailedManifestAndNoMatchesChecksumHandler());
         HANDLERS.add(new ContentNotFoundHandler());
         HANDLERS.add(new NoRecordOfItemHandler());
     }
@@ -237,7 +236,7 @@ public class BitIntegrityCheckTaskProcessor implements
         }
     }
 
-    private static class FailedManifestChecksumHandler extends BitCheckHandler {
+    private static class FailedManifestAndNoMatchesChecksumHandler extends BitCheckHandler {
         @Override
         protected HandlerResult
                 handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
@@ -279,7 +278,7 @@ public class BitIntegrityCheckTaskProcessor implements
 
                         if(!isContentChecksumOkay(state,storeChecksum)){
                                 message = MessageFormat
-                                        .format("neither the content checksum ({0}) nor the manifest checksum " +
+                                        .format("Neither the content checksum ({0}) nor the manifest checksum " +
                                     		"({1})  match the store checksum ({2}).",
                                                 state.getContentChecksumHelper()
                                                      .getContentChecksum(storeChecksum),
@@ -364,51 +363,6 @@ public class BitIntegrityCheckTaskProcessor implements
         }
     }
 
-    private static class AllChecksumsMismatchedHandler extends BitCheckHandler {
-        @Override
-        protected HandlerResult
-                handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
-            String manifestChecksum = state.getManifestChecksum();
-            String storeChecksum = state.getStoreChecksum();
-            StorageProviderType storageProviderType = state
-                    .getStorageProviderType();
-
-            if (manifestChecksum != null && storeChecksum != null
-                    && !manifestChecksum.equals(storeChecksum)) {
-
-                boolean handle = true;
-
-                if (isContentChecksumCalculated(storageProviderType)) {
-                    String contentChecksum = state.getContentChecksumHelper()
-                            .getContentChecksum(storeChecksum);
-
-                    if (contentChecksum != null
-                            && (contentChecksum.equals(manifestChecksum) || contentChecksum
-                                    .equals(storeChecksum))) {
-                        handle = false;
-                    }
-                }
-
-                if (handle) {
-                    if (isLastAttempt(state.getTask())) {
-                        String message = "None of the three checksums match - "
-                                + "cause of failure cannot be determined automatically: human investigation required.";
-
-                        addErrorTask(state, message);
-
-                        return new HandlerResult(BitIntegrityResult.FAILURE,
-                                                 message);
-                    } else if (isPenultimateAttempt(state.getTask())) {
-                        sleep();
-                    }
-                }
-
-            }
-
-            return new HandlerResult();
-        }
-    }
-
     private static class ContentNotFoundHandler extends BitCheckHandler {
         @Override
         protected HandlerResult
@@ -453,7 +407,6 @@ public class BitIntegrityCheckTaskProcessor implements
 
             StorageProviderType storageProviderType = state
                     .getStorageProviderType();
-            BitIntegrityCheckTask task = state.getTask();
 
             if (storeChecksum == null && manifestChecksum == null) {
 
