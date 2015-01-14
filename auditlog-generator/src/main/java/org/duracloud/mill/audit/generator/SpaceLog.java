@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.duracloud.audit.AuditLogItem;
+import org.duracloud.audit.AuditLogUtil;
 import org.duracloud.common.util.DateUtil.DateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,7 @@ public class SpaceLog {
             currentLogFile = getAvailableLogFile();
             writer = createWriter(currentLogFile);
             if(!currentLogFile.exists() || currentLogFile.length() == 0){
-                writer.write(getHeader());
+                writer.write(getHeader()+'\n');
             }
         }
         
@@ -102,22 +103,7 @@ public class SpaceLog {
      * @return
      */
     private String getHeader() {
-        return StringUtils.join(new String[]{
-                "ACCOUNT",
-                "STORE_ID",
-                "SPACE_ID",
-                "CONTENT_ID",
-                "CONTENT_MD5", 
-                "CONTENT_SIZE",
-                "CONTENT_MIMETYPE",
-                "CONTENT_PROPERTIES", 
-                "SPACE_ACLS", 
-                "SOURCE_SPACE_ID",
-                "SOURCE_CONTENT_ID",
-                "TIMESTAMP", 
-                "ACTION", 
-                "USERNAME"
-        }, "\t") + "\n";
+        return AuditLogUtil.getHeader();
     }
 
     /**
