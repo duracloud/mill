@@ -36,6 +36,10 @@ public class AuditLogGeneratorDriver extends DriverSupport{
         super(new CommonCommandLineOptions());
     }
     
+    public static void main(String[] args) {
+        new AuditLogGeneratorDriver().execute(args);
+    }
+    
     /* (non-Javadoc)
      * @see org.duracloud.mill.util.DriverSupport#executeImpl(org.apache.commons.cli.CommandLine)
      */
