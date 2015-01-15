@@ -32,10 +32,10 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
     @Test
     public void test() {
 
-        expect(repo.findByWrittenFalse())
+        expect(repo.findByWrittenFalseOrderByTimestampAsc())
                 .andReturn(Arrays.asList(new JpaAuditLogItem[] { new JpaAuditLogItem() }));
 
-        expect(repo.findByWrittenFalse())
+        expect(repo.findByWrittenFalseOrderByTimestampAsc())
                 .andReturn(new ArrayList<JpaAuditLogItem>());
 
         logManager.write(isA(JpaAuditLogItem.class));

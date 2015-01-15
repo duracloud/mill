@@ -41,7 +41,7 @@ public class AuditLogGenerator {
             // space-specific file
             while (true) {
 
-                List<JpaAuditLogItem> items = auditLogItemRepo.findByWrittenFalse();
+                List<JpaAuditLogItem> items = auditLogItemRepo.findByWrittenFalseOrderByTimestampAsc();
                 if (CollectionUtils.isEmpty(items)) {
                     log.info("No audit items found for processing: nowhere to go, nothing to do.", items.size());
                     break;
