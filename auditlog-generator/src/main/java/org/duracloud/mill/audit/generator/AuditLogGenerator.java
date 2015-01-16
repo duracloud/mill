@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.duracloud.mill.db.model.JpaAuditLogItem;
@@ -27,6 +29,7 @@ public class AuditLogGenerator {
             .getLogger(AuditLogGenerator.class);
     private JpaAuditLogItemRepo auditLogItemRepo;
     private LogManager logManager;
+    private int ageInDaysOfDeletableWrittenLogEntries = 30;
 
     @Autowired
     public AuditLogGenerator(JpaAuditLogItemRepo auditLogItemRepo, LogManager logManager) {
@@ -54,7 +57,17 @@ public class AuditLogGenerator {
                 }
                 
                 log.info("{} audit items written.", items.size());
+                
             }
+            
+            log.info("flushing all written log entries over {} days old.", ageInDaysOfDeletableWrittenLogEntries);
+            
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.DATE, ageInDaysOfDeletableWrittenLogEntries*-1);
+            Date date = c.getTime();
+            long deleted = this.auditLogItemRepo.deleteByWrittenTrueAndTimestampLessThan(date.getTime());
+            log.info("successfully deleted {} audit log entries that had been written and were timestamped before {}", deleted, date);
+            
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);

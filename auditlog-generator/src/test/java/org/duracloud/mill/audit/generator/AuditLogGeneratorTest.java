@@ -38,6 +38,9 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
         expect(repo.findByWrittenFalseOrderByTimestampAsc())
                 .andReturn(new ArrayList<JpaAuditLogItem>());
 
+        expect(repo.deleteByWrittenTrueAndTimestampLessThan(anyLong()))
+                .andReturn(0l);
+
         logManager.write(isA(JpaAuditLogItem.class));
         expectLastCall();
 
