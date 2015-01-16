@@ -41,35 +41,29 @@ public class PathFilterManagerTest {
     }
 
     @Test
-    public void testIsExcludedNoInclusions() {
+    public void testAllExclused() {
 
         StringBuilder exclusions = new StringBuilder();
-        exclusions.append("/.*/space1[/]?.*\n");
-        exclusions.append("/account1/space2\n");
-        exclusions.append("/account3[/]?.*");
+        exclusions.append("/*/*/*\n");
 
         setupPathFilterManager("", exclusions.toString());
         
-        Assert.assertTrue(this.pathFilterManager.isExcluded("/account1/space2"));
-        Assert.assertFalse(this.pathFilterManager
-                .isExcluded("/account2/space2"));
-        Assert.assertTrue(this.pathFilterManager.isExcluded("/account1/space1"));
-        Assert.assertTrue(this.pathFilterManager.isExcluded("/account2/space1"));
-        Assert.assertTrue(this.pathFilterManager.isExcluded("/account3"));
-        Assert.assertTrue(this.pathFilterManager.isExcluded("/account3/space3"));
+        Assert.assertTrue(this.pathFilterManager.isExcluded("/account1"));
+        Assert.assertTrue(this.pathFilterManager.isExcluded("/account1/store1"));
+        Assert.assertTrue(this.pathFilterManager.isExcluded("/account1/store1/space1"));
     }
 
     @Test
     public void testCommentedOutLines() {
 
         StringBuilder exclusions = new StringBuilder();
-        exclusions.append("#/test");
+        exclusions.append("#/test/*/*");
         setupPathFilterManager("", exclusions.toString());
         Assert.assertFalse(this.pathFilterManager.isExcluded("/test"));
         Assert.assertFalse(this.pathFilterManager.isExcluded("#/test"));
 
         exclusions = new StringBuilder();
-        exclusions.append("/test");
+        exclusions.append("/test/*/*");
         setupPathFilterManager("", exclusions.toString());
         Assert.assertTrue(this.pathFilterManager.isExcluded("/test"));
 
@@ -78,7 +72,7 @@ public class PathFilterManagerTest {
     @Test
     public void testInclusionsNoExclusions() {
         StringBuilder inclusions = new StringBuilder();
-        inclusions.append("/test");
+        inclusions.append("/test/*/*");
         setupPathFilterManager(inclusions.toString(),"");
         Assert.assertFalse(this.pathFilterManager
                            .isExcluded("/test"));
@@ -88,12 +82,13 @@ public class PathFilterManagerTest {
     @Test
     public void testWithInclusionsAndExclusions() {
         StringBuilder inclusions = new StringBuilder();
-        inclusions.append("/test(/[^/]*(/test-space)?)?");
+        inclusions.append("/test/*/*");
         
         StringBuilder exclusions = new StringBuilder();
-        exclusions.append("/.*/.*/x-duracloud-admin");
+        exclusions.append("/*/*/x-duracloud-admin");
 
-        setupPathFilterManager(inclusions.toString(),"");
+        setupPathFilterManager(inclusions.toString(),exclusions.toString());
+
         Assert.assertFalse(this.pathFilterManager
                            .isExcluded("/test"));
         Assert.assertFalse(this.pathFilterManager
@@ -101,11 +96,8 @@ public class PathFilterManagerTest {
         Assert.assertFalse(this.pathFilterManager
                           .isExcluded("/test/blah/test-space"));
 
-        Assert.assertTrue(this.pathFilterManager
-                           .isExcluded("/test/blah/test-space-excluded"));
-
         Assert.assertTrue(this.pathFilterManager.isExcluded("/test/blah/x-duracloud-admin"));
-        Assert.assertTrue(this.pathFilterManager.isExcluded("/test1/blah1/x-duracloud-admin"));
+        Assert.assertTrue(this.pathFilterManager.isExcluded("/test1/blah/x-duracloud-admin"));
 
     }
 
