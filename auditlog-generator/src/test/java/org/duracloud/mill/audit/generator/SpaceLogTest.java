@@ -139,7 +139,7 @@ public class SpaceLogTest extends AbstractTestBase{
         assertTrue(line.contains(sourceSpaceId));
         assertTrue(line.contains("action"));
         assertTrue(line.contains("username"));
-        assertTrue(line.contains("acls"));
+        assertTrue(line.contains("{ \"acl\": \"write\" }"));
         assertTrue(line.contains(this.spaceLog.formatDate(timestamp)));
     }
     
@@ -161,7 +161,7 @@ public class SpaceLogTest extends AbstractTestBase{
         expect(item.getSourceSpaceId()).andReturn(sourceSpaceId);
         expect(item.getAction()).andReturn("action");
         expect(item.getUsername()).andReturn("username");
-        expect(item.getSpaceAcls()).andReturn("acls");
+        expect(item.getSpaceAcls()).andReturn("{\n\r \"acl\": \"write\" \t\n\r}");
         expect(item.getTimestamp()).andReturn(timestamp.getTime());
         
     }

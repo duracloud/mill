@@ -141,8 +141,8 @@ public class SpaceLog {
                 item.getContentMd5(),
                 item.getContentSize(),
                 item.getMimetype(),
-                removeLineBreaks(emptyStringIfNull(item.getContentProperties())),
-                removeLineBreaks(emptyStringIfNull(item.getSpaceAcls())),
+                removeLineBreaksAndTabs(emptyStringIfNull(item.getContentProperties())),
+                removeLineBreaksAndTabs(emptyStringIfNull(item.getSpaceAcls())),
                 emptyStringIfNull(item.getSourceSpaceId()),
                 emptyStringIfNull(item.getSourceContentId()),
                 formatDate(new Date(item.getTimestamp())),
@@ -155,8 +155,8 @@ public class SpaceLog {
      * @param emptyStringIfNull
      * @return
      */
-    private String removeLineBreaks(String str) {
-        return str.replace('\n', ' ');
+    private String removeLineBreaksAndTabs(String str) {
+        return str.replaceAll("[\n\r\t]", "");
     }
 
     /**
