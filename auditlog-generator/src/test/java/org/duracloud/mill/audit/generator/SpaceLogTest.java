@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.duracloud.audit.AuditLogItem;
+import org.duracloud.audit.AuditLogUtil;
 import org.duracloud.mill.test.AbstractTestBase;
 import org.easymock.Mock;
 import org.junit.After;
@@ -122,10 +123,7 @@ public class SpaceLogTest extends AbstractTestBase{
         
         String line = reader.readLine();
 
-        assertTrue(line.contains("ACCOUNT"));
-        assertTrue(line.contains("STORE_ID"));
-        assertTrue(line.contains("SPACE_ID"));
-
+        assertEquals(AuditLogUtil.getHeader(),line);
         
         line = reader.readLine();
 
