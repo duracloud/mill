@@ -25,4 +25,9 @@ public interface LogManager {
      */
     void flushLogs();
 
+    /**
+     * 
+     */
+    void purgeExpired();
+
 }

@@ -7,8 +7,6 @@
  */
 package org.duracloud.mill.audit.generator;
 
-import static org.easymock.EasyMock.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -17,6 +15,8 @@ import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
 import org.duracloud.mill.test.AbstractTestBase;
 import org.easymock.Mock;
 import org.junit.Test;
+
+import static org.easymock.EasyMock.*;
 
 /**
  * @author Daniel Bernstein Date: Sep 9, 2014
@@ -38,9 +38,9 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
         expect(repo.findByWrittenFalseOrderByTimestampAsc())
                 .andReturn(new ArrayList<JpaAuditLogItem>());
 
-        expect(repo.deleteByWrittenTrueAndTimestampLessThan(anyLong()))
-                .andReturn(0l);
-
+        logManager.purgeExpired();
+        expectLastCall();
+        
         logManager.write(isA(JpaAuditLogItem.class));
         expectLastCall();
 

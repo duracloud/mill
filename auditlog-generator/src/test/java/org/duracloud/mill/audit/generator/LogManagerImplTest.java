@@ -7,6 +7,14 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.duracloud.audit.AuditLogItem;
 import org.duracloud.common.util.ContentIdUtil;
@@ -19,20 +27,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import static org.easymock.EasyMock.*;
 
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.isNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Daniel Bernstein Date: Sep 8, 2014
@@ -123,6 +120,14 @@ public class LogManagerImplTest extends AbstractTestBase {
         replayAll();
         this.manager.write(item);
     }
+    
+    @Test
+    public void testPurge() {
+        createManager();
+        expect(this.repo.deleteByWrittenTrueAndTimestampLessThan(anyLong())).andReturn(0l);
+        replayAll();
+        this.manager.purgeExpired();
+    }
 
     @Test
     public void testFlushLogs() throws IOException {
@@ -155,10 +160,7 @@ public class LogManagerImplTest extends AbstractTestBase {
         }
 
         replayAll();
-        manager = new LogManagerImpl(storageProvider,
-                                     logsRootDir.getAbsolutePath(),
-                                     repo, 
-                                     logSpace);
+        createManager();
 
         this.manager.flushLogs();
 
@@ -166,6 +168,13 @@ public class LogManagerImplTest extends AbstractTestBase {
         assertTrue(!files.get(1).exists());
         assertTrue(files.get(2).exists());
 
+    }
+
+    private void createManager() {
+        manager = new LogManagerImpl(storageProvider,
+                                     logsRootDir.getAbsolutePath(),
+                                     repo, 
+                                     logSpace);
     }
 
     private void createFileOfLength(File file, long length) {

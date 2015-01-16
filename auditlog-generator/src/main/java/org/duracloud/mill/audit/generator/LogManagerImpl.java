@@ -28,7 +28,9 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,8 @@ public class LogManagerImpl implements LogManager {
     private File logsDirectory;
     private StorageProvider storageProvider;
     private String auditLogSpaceId;
+    private int ageInDaysOfPurgeableWrittenLogEntries = 30;
+
     @Autowired
     public LogManagerImpl(StorageProvider storageProvider,
                           String logsDirectory,
@@ -197,4 +201,20 @@ public class LogManagerImpl implements LogManager {
         uploadLogs();
     }
 
+
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.audit.generator.LogManager#purgeExpired()
+     */
+    @Override
+    @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
+    public void purgeExpired() {
+         log.info("flushing all written log entries over {} days old.", ageInDaysOfPurgeableWrittenLogEntries);
+        
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, ageInDaysOfPurgeableWrittenLogEntries*-1);
+        Date date = c.getTime();
+        long deleted = this.repo.deleteByWrittenTrueAndTimestampLessThan(date.getTime());
+        log.info("successfully deleted {} audit log entries that had been written and were timestamped before {}", deleted, date);
+
+    }
 }
