@@ -187,7 +187,7 @@ public class BitIntegrityReportTaskProcessor implements
 
         File bitLog = new File(bitLogDir, "bit-integrity_" + account
                 + "_" + storeId + "_" + spaceId + "_"
-                + fileDateFormat.format(new Date()) + ".txt");
+                + fileDateFormat.format(new Date()) + ".tsv");
         return bitLog;
     }
 
