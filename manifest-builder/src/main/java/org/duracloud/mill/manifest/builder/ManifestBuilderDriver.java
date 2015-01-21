@@ -8,11 +8,6 @@
  */
 
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -31,6 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -111,7 +111,7 @@ public class ManifestBuilderDriver extends DriverSupport {
             log.info("context initialized");
 
             boolean dryRun = Boolean.valueOf(cmd.hasOption("d"));
-            boolean clean = Boolean.valueOf(cmd.hasOption("c"));
+            boolean clean = Boolean.valueOf(cmd.hasOption("C"));
             String host = cmd.getOptionValue("host");
             String port = cmd.getOptionValue("port","443");
             String username = cmd.getOptionValue("u");
