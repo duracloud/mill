@@ -76,17 +76,17 @@ public class BitIntegrityHelper {
      */
     public static String getHeader() {
         String[] values = {
-                "DATE_CHECKED",
-                "ACCOUNT", 
-                "STORE_ID",
-                "STORE_TYPE", 
-                "SPACE_ID",
-                "CONTENT_ID", 
-                "RESULT",
-                "CONTENT_CHECKSUM", 
-                "PROVIDER_CHECKSUM",
-                "MANIFEST_CHECKSUM",
-                "DETAILS"};
+                "date-checked",
+                "account", 
+                "store-id",
+                "store-type", 
+                "space-id",
+                "content-id", 
+                "result",
+                "content-checksum", 
+                "provider-checksum",
+                "manifest-checksum",
+                "details"};
 
         return StringUtils.join(values, "\t")+"\n";
 
