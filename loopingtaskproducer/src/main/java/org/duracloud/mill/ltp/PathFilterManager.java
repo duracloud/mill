@@ -134,7 +134,9 @@ public class PathFilterManager {
 
     private boolean matchesList(String path, List<String> list, boolean matchAllSegments) {
         for (String pattern : list) {
-            return matches(pattern, path, matchAllSegments);
+            if(matches(pattern, path, matchAllSegments)){
+                return true;
+            }
         }
         return false;
     }

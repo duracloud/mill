@@ -78,6 +78,17 @@ public class PathFilterManagerTest {
                            .isExcluded("/test"));
         Assert.assertTrue(this.pathFilterManager.isExcluded("/test1"));
     }
+    
+    @Test
+    public void testMultipleInclusionsMatchingPatternOtherThanFirstInList() {
+        StringBuilder inclusions = new StringBuilder();
+        inclusions.append("/test/*/space1\n");
+        inclusions.append("/test/*/space2");
+
+        setupPathFilterManager(inclusions.toString(),"");
+        Assert.assertFalse(this.pathFilterManager
+                           .isExcluded("/test/1/space2"));
+    }
 
     @Test
     public void testWithInclusionsAndExclusions() {
