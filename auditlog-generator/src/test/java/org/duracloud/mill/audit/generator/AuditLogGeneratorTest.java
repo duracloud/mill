@@ -8,7 +8,8 @@
 package org.duracloud.mill.audit.generator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
@@ -31,9 +32,17 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
 
     @Test
     public void test() {
+        List<JpaAuditLogItem> list = new ArrayList<>();
+        int duplicates = 11;
+        list.add(createAuditLogItem(new Date(System.currentTimeMillis()), "account1"));
+
+        for(int i = 0; i < duplicates; i++){
+            list.add(createAuditLogItem(new Date(System.currentTimeMillis() + 1+i), "account2"));
+        }
+
 
         expect(repo.findByWrittenFalseOrderByTimestampAsc())
-                .andReturn(Arrays.asList(new JpaAuditLogItem[] { new JpaAuditLogItem() }));
+                .andReturn(list);
 
         expect(repo.findByWrittenFalseOrderByTimestampAsc())
                 .andReturn(new ArrayList<JpaAuditLogItem>());
@@ -42,7 +51,7 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
         expectLastCall();
         
         logManager.write(isA(JpaAuditLogItem.class));
-        expectLastCall();
+        expectLastCall().times(2);
 
         logManager.flushLogs();
         expectLastCall();
@@ -50,6 +59,22 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
         replayAll();
         AuditLogGenerator generator = new AuditLogGenerator(repo, logManager);
         generator.execute();
+    }
+
+    /**
+     * @param date
+     * @return
+     */
+    private JpaAuditLogItem createAuditLogItem(Date date, String account) {
+        JpaAuditLogItem item = new JpaAuditLogItem();
+        item.setAccount(account);
+        item.setAction("action");
+        item.setContentId("content-id");
+        item.setStoreId("store-id");
+        item.setSpaceId("space-id");
+        item.setContentSize("1000");
+        item.setContentProperties("content-properties");
+        return item;
     }
 
 }
