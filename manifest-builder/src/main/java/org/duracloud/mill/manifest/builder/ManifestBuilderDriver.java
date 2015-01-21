@@ -22,6 +22,7 @@ import org.duracloud.client.ContentStoreManager;
 import org.duracloud.client.ContentStoreManagerImpl;
 import org.duracloud.common.model.Credential;
 import org.duracloud.mill.db.util.MillJpaPropertiesVerifier;
+import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
@@ -42,18 +43,18 @@ public class ManifestBuilderDriver extends DriverSupport {
     private static Logger log = LoggerFactory
             .getLogger(ManifestBuilderDriver.class);
 
-    private static class ManifestBuilderOptions extends Options{
+    private static class ManifestBuilderOptions extends CommonCommandLineOptions{
         public ManifestBuilderOptions() {
             super();
             
             addOption("u", "username", true, "DuraCloud username");
             addOption("p", "password", true, "DuraCloud password");
-            addOption("o", "host", true, "DuraCloud host");
+            addOption("h", "host", true, "DuraCloud host");
             addOption("r", "port", true, "DuraCloud port: 443 by default",false);
             addOption("s", "space-list", true, "A list of spaces to be included", false);
             addOption("t", "store-list", true, "A list of storage providers to be included",false);
             addOption("d", "dry-run", false, "Do not modify the manifest - only show what updates will be made.",false);
-            addOption("c", "clean", false, "Indicates that the manifest database should be cleared before performing updates.",false);
+            addOption("C", "clean", false, "Indicates that the manifest database should be cleared before performing updates.",false);
         }
         
         /* (non-Javadoc)

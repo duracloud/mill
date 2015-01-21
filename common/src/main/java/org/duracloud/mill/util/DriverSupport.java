@@ -59,7 +59,7 @@ public abstract class DriverSupport {
     public final void execute(String[] args){
         CommandLine cmd = parseArgs(args);
 
-        if (cmd.hasOption("h")) {
+        if (cmd.hasOption("H")) {
             die();
         }
         
