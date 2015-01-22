@@ -55,6 +55,7 @@ public class ManifestBuilderDriver extends DriverSupport {
             addOption("t", "store-list", true, "A list of storage providers to be included",false);
             addOption("d", "dry-run", false, "Do not modify the manifest - only show what updates will be made.",false);
             addOption("C", "clean", false, "Indicates that the manifest database should be cleared before performing updates.",false);
+            addOption("T", "threads", true, "The number of threads to be used. Default: 10",false);
         }
         
         /* (non-Javadoc)
@@ -132,6 +133,12 @@ public class ManifestBuilderDriver extends DriverSupport {
                     storeList = Arrays.asList(stores.split("[,]"));                
                 }
             }
+            
+            int threads = 0;
+            if (cmd.hasOption("T")) {
+                threads = Integer.parseInt(cmd.getOptionValue("T", "10"));
+            }
+            
             String account = host.split("[.]")[0];
             ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port);
             storeManager.login(new Credential(username, password));
@@ -145,7 +152,7 @@ public class ManifestBuilderDriver extends DriverSupport {
             }
             
             ManifestBuilder builder = (ManifestBuilder)context.getBean(ManifestBuilder.class);
-            builder.init(account, contentStores, spaceList, clean, dryRun);
+            builder.init(account, contentStores, spaceList, clean, dryRun, threads);
             builder.execute();
         } catch (Exception e) {
             log.error(e.getMessage(), e);

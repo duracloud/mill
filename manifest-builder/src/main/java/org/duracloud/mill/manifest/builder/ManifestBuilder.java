@@ -13,18 +13,20 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.duracloud.client.ContentStore;
 import org.duracloud.common.util.DateUtil;
-import org.duracloud.mill.db.repo.MillJpaRepoConfig;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Daniel Bernstein Date: Jan 2, 2015
@@ -39,7 +41,10 @@ public class ManifestBuilder {
     private boolean dryRun;
     private boolean clean;
     private ManifestStore manifestStore;
-
+    private ThreadPoolExecutor executor;
+    private int successes = 0;
+    private int errors = 0;
+    private int totalProcessed = 0;
     @Autowired
     public ManifestBuilder(ManifestStore manifestStore) {
         this.manifestStore = manifestStore;
@@ -53,26 +58,63 @@ public class ManifestBuilder {
      * @param manifestItemRepo
      * @param clean
      * @param dryRun
+     * @param threads 
      */
     public void init(String account,
                      Collection<ContentStore> contentStores,
                      List<String> spaceList,
                      boolean clean,
-                     boolean dryRun) {
+                     boolean dryRun, 
+                     int threads) {
         this.account = account;
         this.contentStores = contentStores;
         this.spaceList = spaceList;
         this.clean = clean;
         this.dryRun = dryRun;
+        
+        if(this.executor != null){
+            this.executor.shutdownNow();
+        }
+
+        this.successes = 0;
+        this.errors = 0;
+        this.totalProcessed = 0;
+
+        this.executor = new ThreadPoolExecutor(threads,
+                                               threads,
+                                               0l,
+                                               TimeUnit.MILLISECONDS,
+                                               new LinkedBlockingQueue<Runnable>(500));  
 
     }
 
     public void execute() throws Exception {
+        long startTime = System.currentTimeMillis();
+        
         if(clean){
             clean();
         }
         build();
+        
+        this.executor.shutdown();
+        log.info("awaiting the completion of all outstanding tasks...");
+        if(this.executor.awaitTermination(5, TimeUnit.MINUTES)){
+            log.info("Completed all tasks.");
+        }else{
+            log.info("Unable to complete all tasks within the timeout period of 5 minutes.");
+            this.executor.shutdownNow();
+        }
+        
+        String duration = DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-startTime);
+        
+        log.info("duration={} total_item_processed={}  successes={} errors={}",
+                 duration,
+                 totalProcessed,
+                 successes,
+                 errors);
+        
     }
+    
 
     /**
      * 
@@ -87,6 +129,8 @@ public class ManifestBuilder {
                 }
             }
         }
+
+        
     }
 
     /**
@@ -95,15 +139,64 @@ public class ManifestBuilder {
      * @param store
      */
     private void
-            buildSpace(String storeId, String spaceId, ContentStore store) throws Exception {
+            buildSpace(final String storeId, final String spaceId, final ContentStore store) throws Exception {
         log.info("starting manifest rebuild for storeId={} spaceId={}",storeId, spaceId);
         Iterator<String> contentIds = store.getSpaceContents(spaceId);
         while (contentIds.hasNext()) {
-            String contentId = contentIds.next();
-            updateContentId(storeId,spaceId, contentId,store);
-        }
-        log.info("completed manifest rebuild for storeId={} spaceId={}",storeId, spaceId);
+            final String contentId = contentIds.next();
 
+            while(true){
+                try{
+                    this.executor.execute(new Runnable(){
+                        /* (non-Javadoc)
+                         * @see java.lang.Runnable#run()
+                         */
+                        @Override
+                        public void run() {
+                            try {
+                                updateContentId(storeId,
+                                                spaceId,
+                                                contentId,
+                                                store);
+                                successes++;
+                            } catch (Exception e) {
+                                errors++;
+                                log.error(MessageFormat
+                                                  .format("failed to update manifest for storeId={0} spaceId={1} contentId={2} message={3}",
+                                                          storeId,
+                                                          spaceId,
+                                                          contentId,
+                                                          e.getMessage()),
+                                          e);
+                            }
+                            
+                        }
+                        
+                    });
+                    
+                    break;
+                }catch(RejectedExecutionException ex){
+                    log.debug("failed to add new task: {} : thread executor -> taskCount={}, current pool size={}",
+                              ex.getMessage(),
+                              executor.getTaskCount(),
+                              executor.getPoolSize());
+                    log.debug("Thread pool busy sleeping for 10ms");
+                    sleep();
+                }
+            }
+
+            this.totalProcessed++;
+
+        }
+        
+        log.info("all manifest rebuild tasks scheduled for  for storeId={} spaceId={}",storeId, spaceId);
+ 
+    }
+
+    private void sleep() {
+        try{
+            Thread.sleep(10);
+        }catch(InterruptedException e){}
     }
 
     /**
