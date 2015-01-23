@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +53,6 @@ public class LogManagerImplTest extends AbstractTestBase {
 
     @Mock
     private StorageProvider storageProvider;
-
-    @Mock
-    private JpaAuditLogItem item;
 
     @Mock
     private SpaceLog spaceLog;
@@ -99,28 +97,55 @@ public class LogManagerImplTest extends AbstractTestBase {
             }
         };
 
-        expect(item.getAccount()).andReturn(accountId);
-        expect(item.getStoreId()).andReturn(storeId);
-        expect(item.getSpaceId()).andReturn(spaceId);
+        long itemId1 = 1;
+        long itemId2 = 2l;
+        
+        JpaAuditLogItem item1 = createItem(itemId1,new Date(System.currentTimeMillis()-1));
+        JpaAuditLogItem duplicateItem = createItem(itemId2,new Date(System.currentTimeMillis()));
 
-        long itemId = 101l;
-        expect(item.getId()).andReturn(itemId);
-
-        // expect(item.getContentMd5()).andReturn(checksum).atLeastOnce();
-        spaceLog.write(isA(AuditLogItem.class));
+        spaceLog.write(eq(item1));
         expectLastCall();
 
         JpaAuditLogItem freshItem = createMock(JpaAuditLogItem.class);
         freshItem.setWritten(true);
-        expectLastCall();
+        expectLastCall().times(2);
 
-        expect(this.repo.saveAndFlush(freshItem)).andReturn(freshItem);
-        expect(this.repo.getOne(itemId)).andReturn(freshItem);
+        expect(this.repo.saveAndFlush(freshItem)).andReturn(freshItem).times(2);
+        expect(this.repo.getOne(anyLong())).andReturn(freshItem).times(2);
 
         replayAll();
-        this.manager.write(item);
+
+        this.manager.write(item1);
+        this.manager.write(duplicateItem);
+
     }
     
+    /**
+     * @param itemId1
+     * @param date
+     * @return
+     */
+    private JpaAuditLogItem createItem(long itemId, Date date) {
+        JpaAuditLogItem item = createMock(JpaAuditLogItem.class);
+        expect(item.getContentId()).andReturn("content-id").atLeastOnce();
+        expect(item.getContentMd5()).andReturn("content-md5").atLeastOnce();
+        expect(item.getContentProperties()).andReturn("content-props").atLeastOnce();
+        expect(item.getContentSize()).andReturn("content-size").atLeastOnce();
+        expect(item.getMimetype()).andReturn("mimetype").atLeastOnce();
+        expect(item.getSourceContentId()).andReturn("source").atLeastOnce();
+        expect(item.getSourceSpaceId()).andReturn("source").atLeastOnce();
+        expect(item.getSpaceAcls()).andReturn("acls").atLeastOnce();
+        expect(item.getUsername()).andReturn("username").atLeastOnce();
+
+        expect(item.getAction()).andReturn("action").atLeastOnce();
+        expect(item.getAccount()).andReturn(accountId).atLeastOnce();
+        expect(item.getStoreId()).andReturn(storeId).atLeastOnce();
+        expect(item.getSpaceId()).andReturn(spaceId).atLeastOnce();
+        //expect(item.getTimestamp()).andReturn(date.getTime());
+        expect(item.getId()).andReturn(itemId);
+        return item;
+    }
+
     @Test
     public void testPurge() {
         createManager();

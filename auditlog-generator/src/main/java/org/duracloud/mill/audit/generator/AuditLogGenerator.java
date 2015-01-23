@@ -7,10 +7,8 @@
  */
 package org.duracloud.mill.audit.generator;
 
-import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
 import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
 import org.slf4j.Logger;
@@ -29,8 +27,6 @@ public class AuditLogGenerator {
             .getLogger(AuditLogGenerator.class);
     private JpaAuditLogItemRepo auditLogItemRepo;
     private LogManager logManager;
-    
-    private List<JpaAuditLogItem> recentWrites = new LinkedList<>();
     
     @Autowired
     public AuditLogGenerator(JpaAuditLogItemRepo auditLogItemRepo, LogManager logManager) {
@@ -81,54 +77,10 @@ public class AuditLogGenerator {
      * @param item
      */
     private void write(JpaAuditLogItem item) {
-        if(!isEqualToRecentlyWritten(item)){
-            this.logManager.write(item);
-            this.recentWrites.add(0, item);
-            if(this.recentWrites.size() > 10){
-                this.recentWrites.remove(this.recentWrites.size()-1);
-            }
-        }else{
-            log.info("We detected log item that matches another item that just written, " +
-            		"differing only in timestamp: {}. This item will not be written....", item);
-        }
-        
+        logManager.write(item);
     }
 
-    /**
-     * @param item
-     * @return
-     */
-    private boolean isEqualToRecentlyWritten(JpaAuditLogItem current) {
-        for(JpaAuditLogItem old : this.recentWrites){
-            if(equals(old.getAccount(),current.getAccount()) &&
-               equals(old.getAction(),current.getAction()) &&
-               equals(old.getContentId(),current.getContentId()) &&
-               equals(old.getContentMd5(),current.getContentMd5()) && 
-               equals(old.getContentProperties(), current.getContentProperties()) && 
-               equals(old.getContentSize(),current.getContentSize()) &&
-               equals(old.getStoreId(),current.getStoreId()) &&
-               equals(old.getSpaceId(),current.getSpaceId()) &&
-               equals(old.getSpaceAcls(),current.getSpaceAcls()) &&
-               equals(old.getMimetype(),current.getMimetype()) &&
-               equals(old.getSourceContentId(),current.getSourceContentId()) &&
-               equals(old.getSourceSpaceId(),current.getSourceSpaceId()) &&
-               equals(old.getUsername(),current.getUsername())) {
-                return true;
-            }
-               
-        }
-        
-        return false;
 
-    }
 
-    /**
-     * @param string1
-     * @param string2
-     * @return
-     */
-    private boolean equals(String string1, String string2) {
-       return StringUtils.equals(string1, string2);
-    }
 
 }

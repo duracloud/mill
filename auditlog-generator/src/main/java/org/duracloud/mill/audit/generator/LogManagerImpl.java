@@ -9,6 +9,7 @@ package org.duracloud.mill.audit.generator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
@@ -32,6 +33,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -48,6 +51,7 @@ public class LogManagerImpl implements LogManager {
     private StorageProvider storageProvider;
     private String auditLogSpaceId;
     private int ageInDaysOfPurgeableWrittenLogEntries = 30;
+    private List<JpaAuditLogItem> recentWrites = new LinkedList<>();
 
     @Autowired
     public LogManagerImpl(StorageProvider storageProvider,
@@ -80,7 +84,16 @@ public class LogManagerImpl implements LogManager {
         SpaceLog auditLog = getLog(item);
 
         try {
-            auditLog.write(item);
+            if(!isEqualToRecentlyWritten(item)){
+                auditLog.write(item);
+                this.recentWrites.add(0, item);
+                if(this.recentWrites.size() > 10){
+                    this.recentWrites.remove(this.recentWrites.size()-1);
+                }
+            }else{
+                log.info("We detected log item that matches another item that just written, " +
+                            "differing only in timestamp: {}. This item will not be written....", item);
+            }
             JpaAuditLogItem fresh = repo.getOne(item.getId());
             fresh.setWritten(true);
             repo.saveAndFlush(fresh);
@@ -216,5 +229,40 @@ public class LogManagerImpl implements LogManager {
         long deleted = this.repo.deleteByWrittenTrueAndTimestampLessThan(date.getTime());
         log.info("successfully deleted {} audit log entries that had been written and were timestamped before {}", deleted, date);
 
+    }
+    
+    /**
+     * @param item
+     * @return
+     */
+    private boolean isEqualToRecentlyWritten(JpaAuditLogItem current) {
+        for(JpaAuditLogItem old : this.recentWrites){
+            if(equals(old.getAccount(),current.getAccount()) &&
+               equals(old.getAction(),current.getAction()) &&
+               equals(old.getContentId(),current.getContentId()) &&
+               equals(old.getContentMd5(),current.getContentMd5()) && 
+               equals(old.getContentProperties(), current.getContentProperties()) && 
+               equals(old.getContentSize(),current.getContentSize()) &&
+               equals(old.getStoreId(),current.getStoreId()) &&
+               equals(old.getSpaceId(),current.getSpaceId()) &&
+               equals(old.getSpaceAcls(),current.getSpaceAcls()) &&
+               equals(old.getMimetype(),current.getMimetype()) &&
+               equals(old.getSourceContentId(),current.getSourceContentId()) &&
+               equals(old.getSourceSpaceId(),current.getSourceSpaceId()) &&
+               equals(old.getUsername(),current.getUsername())) {
+                return true;
+            }
+               
+        }
+        return false;
+    }
+    
+    /**
+     * @param string1
+     * @param string2
+     * @return
+     */
+    private boolean equals(String string1, String string2) {
+       return StringUtils.equals(string1, string2);
     }
 }

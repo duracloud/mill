@@ -33,14 +33,7 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
     @Test
     public void test() {
         List<JpaAuditLogItem> list = new ArrayList<>();
-        int duplicates = 11;
         list.add(createAuditLogItem(new Date(System.currentTimeMillis()), "account1"));
-
-        for(int i = 0; i < duplicates; i++){
-            list.add(createAuditLogItem(new Date(System.currentTimeMillis() + 1+i), "account2"));
-        }
-
-
         expect(repo.findByWrittenFalseOrderByTimestampAsc())
                 .andReturn(list);
 
@@ -51,7 +44,7 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
         expectLastCall();
         
         logManager.write(isA(JpaAuditLogItem.class));
-        expectLastCall().times(2);
+        expectLastCall();
 
         logManager.flushLogs();
         expectLastCall();
