@@ -16,6 +16,7 @@ import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.TransactionSystemException;
 
 /**
  * As a processor of audit tasks as the name suggests, this class creates an
@@ -44,6 +45,9 @@ public class AuditLogWritingProcessor implements TaskProcessor {
      */
     @Override
     public void execute() throws TaskExecutionFailedException {
+
+
+
         try {
             String account = task.getAccount();
             String storeId = task.getStoreId();
@@ -53,6 +57,7 @@ public class AuditLogWritingProcessor implements TaskProcessor {
             Map<String, String> props = task.getContentProperties();
             String acls = task.getSpaceACLs();
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
+            
             auditLogStore.write(account, 
                                 storeId, 
                                 spaceId, 
@@ -69,6 +74,15 @@ public class AuditLogWritingProcessor implements TaskProcessor {
                                 timestamp);
 
             log.debug("audit task successfully processed: {}", task);
+        } catch(TransactionSystemException e){
+            log.error("failed to write item  ( account={} storeId={} spaceId={} contentId={} timestamp={} ) " +
+            	     "to the database due to a transactional error. Likely cause: duplicate entry. Details: {}. Ignoring...",
+                     task.getAccount(),
+                     task.getStoreId(),
+                     task.getSpaceId(),
+                     task.getContentId(),
+                     new Date(Long.valueOf(task.getDateTime())),
+                     e.getMessage());
         } catch (Exception e) {
             String message = "Failed to execute " + task + ": "
                     + e.getMessage();

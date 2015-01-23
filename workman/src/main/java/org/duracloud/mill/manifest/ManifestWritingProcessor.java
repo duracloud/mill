@@ -8,7 +8,6 @@
 package org.duracloud.mill.manifest;
 
 import java.util.Date;
-import java.util.Map;
 
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.audit.task.AuditTask.ActionType;
