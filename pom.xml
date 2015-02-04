@@ -7,6 +7,7 @@
   <packaging>pom</packaging>
   <version>1.1.0-SNAPSHOT</version>
   <name>DuraCloud Mill</name>
+  <description>Task processing system which supports DuraCloud</description>
   <url>http://duracloud.org</url>
 
   <prerequisites>
@@ -20,11 +21,13 @@
     <developer>
       <name>Bernstein, Danny</name>
       <email>dbernstein@duraspace.org</email>
+      <organization>DuraSpace</organization>
     </developer>
 
     <developer>
       <name>Branan, Bill</name>
       <email>bbranan@duraspace.org</email>
+      <organization>DuraSpace</organization>
     </developer>
 
   </developers>
@@ -40,6 +43,12 @@
     <name>DuraSpace</name>
     <url>http://www.duraspace.org</url>
   </organization>
+
+  <scm>
+ 	  <connection>scm:git:git@github.com:duracloud/mill.git</connection>
+ 	  <url>scm:git:git@github.com:duracloud/mill.git</url>
+ 	  <developerConnection>scm:git:git@github.com:duracloud/mill.git</developerConnection>
+  </scm>
 
   <modules>
     <module>common</module>
@@ -103,6 +112,67 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+        <id>profile-generate-docs-source-signature</id>
+        <activation>
+            <activeByDefault>false</activeByDefault>
+            <property>
+                <name>releaseBuild</name>
+            </property>
+        </activation>
+        <build>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.3</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.9.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                     </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.5</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </build>
+    </profile>
+
   </profiles>
 
   <properties>
@@ -126,43 +196,21 @@
   <distributionManagement>
 
     <repository>
-      <id>duraspace-releases</id>
-      <name>DuraSpace Release Maven Repository</name>
-      <url>https://m2.duraspace.org/content/repositories/releases</url>
+      <id>sonatype-releases</id>
+      <name>Sonatype Release Staging Maven Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
     </repository>
 
     <snapshotRepository>
-      <id>duraspace-snapshots</id>
-      <name>DuraSpace Snapshots Maven Repository</name>
-      <url>https://m2.duraspace.org/content/repositories/snapshots</url>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Maven Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
 
   </distributionManagement>
 
   <repositories>
-    <repository>
-      <id>duraspace-production</id>
-      <name>DuraSpace Production</name>
-      <url>https://m2.duraspace.org/content/repositories/releases</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
 
-    <repository>
-      <id>duraspace-thirdparty</id>
-      <name>DuraSpace Thirdparty</name>
-      <url>https://m2.duraspace.org/content/repositories/thirdparty</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
     <repository>
       <id>central</id>
       <name>Maven Repository Switchboard</name>
@@ -171,29 +219,13 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+
     <repository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-      <layout>default</layout>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Maven Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
       <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>com.springsource.repository.bundles.release</id>
-      <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
-      <url>http://repository.springsource.com/maven/bundles/release</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>com.springsource.repository.bundles.external</id>
-      <name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
-      <url>http://repository.springsource.com/maven/bundles/external</url>
-      <snapshots>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </snapshots>
     </repository>
 
@@ -202,15 +234,10 @@
   <pluginRepositories>
 
     <pluginRepository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-      <layout>default</layout>
-    </pluginRepository>
-    <pluginRepository>
       <id>oss.sonatype.org</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
     </pluginRepository>
+
   </pluginRepositories>
 
   <build>
