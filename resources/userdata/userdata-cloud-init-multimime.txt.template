@@ -65,6 +65,7 @@ apt_reboot_if_required: True
 packages:
  - wget
  - git
+ - curl
  - puppet
  - rubygems # Used to install librarian-puppet
  - python-pip # Used to install awscli
@@ -103,17 +104,19 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="user-script"
 
 #!/bin/bash
+
+#make sure keytool is on the path
+export PATH=$PATH:/usr/lib/jvm/default-java/bin
+
 rm -rf /etc/puppet
-git clone https://github.com/SumoLogic/sumo-collector-puppet-module.git sumologic
 git clone -b ${puppetDuracloudMillBranch} git@github.com:duraspace/puppet-duracloud-mill.git /etc/puppet/
 
-# move sumologic module into the dist folder after puppet librarian is finished.
-mkdir -p /etc/puppet/modules_dist
-mv sumologic /etc/puppet/modules_dist/
 
 # Run librarian-puppet
 cd /etc/puppet && HOME=/root librarian-puppet install
 
+
+#puppet module install mlehner616-sumo
 
 # Get hiera data files for puppet
 mkdir -p /etc/puppet/hieradata && aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 600 /etc/puppet/hieradata/*
@@ -127,7 +130,10 @@ data = {
     "dc_mill_log_level":"INFO",
     "dc_mill_config_file":"/home/duracloud/mill/mill-config.properties",
     "dc_mill_version":"${jarVersion}",
-    "dc_workman_tmpdir":"${workdir}"
+    "dc_workman_tmpdir":"${workdir}",
+    "sumo_access_id":"${sumo_access_id}",
+    "sumo_access_key":"${sumo_access_key}"
+
 }
 for k in data:
     print "%s=%s" % (k,data[k])
@@ -141,10 +147,6 @@ mkdir -p $millConfigDir
 cat << 'EOF' > $millConfigFile
 #MILL_CONFIG
 EOF
-
-#substitute category and host in sumologic configuration
-#sed -i.orig "s/$category/mill-workman/g" /sumo/sumo.json
-#sed -i.orig "s/$host/`hostname`/g" /sumo/sumo.json
 
 # Run puppet
 puppet apply /etc/puppet/manifests/site.pp
