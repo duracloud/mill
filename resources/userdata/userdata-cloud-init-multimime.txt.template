@@ -18,8 +18,8 @@ manage_etc_hosts: false
 
 # dynamically set hostname using the instance's instanceid
 bootcmd:
- - cloud-init-per instance my_set_hostname sh -xc "echo ${instancePrefix}-dup-producer-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
- - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 ${instancePrefix}-dup-producer-$INSTANCE_ID.duracloud.org ${instancePrefix}-dup-producer-$INSTANCE_ID >> /etc/hosts"
+ - cloud-init-per instance my_set_hostname sh -xc "echo ${instancePrefix}-${nodeType}-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
+ - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 ${instancePrefix}-${nodeType}-$INSTANCE_ID.duracloud.org ${instancePrefix}-${nodeType}-$INSTANCE_ID >> /etc/hosts"
 
 # make user-data scripts always run on boot
 cloud_final_modules:
@@ -66,7 +66,7 @@ packages:
  - wget
  - git
  - puppet
- - rubygems   # Used to install librarian-puppet
+ - rubygems # Used to install librarian-puppet
  - python-pip # Used to install awscli
 
 # run commands
@@ -80,7 +80,7 @@ runcmd:
  # Install librarian-puppet for retrieving dependent puppet modules from github (>1.0.3 requires >=Ruby 1.9)
  - gem install librarian-puppet  --version 1.0.3
  # Get the github ssh key out of s3 so we can clone from our private github projects
- - aws --region us-east-1 s3 cp s3://${bootstrapAccount}.duplication-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
+ - aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
  # Add github.com to known_hosts
  - ssh -T -oStrictHostKeyChecking=no git@github.com
 
@@ -104,49 +104,47 @@ Content-Disposition: attachment; filename="user-script"
 
 #!/bin/bash
 rm -rf /etc/puppet
-mkdir /etc/puppet
+git clone https://github.com/SumoLogic/sumo-collector-puppet-module.git sumologic
 git clone -b ${puppetDuracloudMillBranch} git@github.com:duraspace/puppet-duracloud-mill.git /etc/puppet/
+
+# move sumologic module into the dist folder after puppet librarian is finished.
+mkdir -p /etc/puppet/modules_dist
+mv sumologic /etc/puppet/modules_dist/
+
 # Run librarian-puppet
 cd /etc/puppet && HOME=/root librarian-puppet install
+
+
 # Get hiera data files for puppet
-mkdir -p /etc/puppet/hieradata && aws --region us-east-1 s3 cp s3://${bootstrapAccount}.duplication-bootstrap/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 600 /etc/puppet/hieradata/*
+mkdir -p /etc/puppet/hieradata && aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 600 /etc/puppet/hieradata/*
 
 # set up custom Puppet Facter facts
 mkdir -p /etc/facter/facts.d
 cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
 #!/usr/bin/env python
 data = {
-    "dc_mill_node_type":"dup-producer-looping", # 'dup-producer', 'dup-producer-looping' OR 'dup-worker'
-    "dc_mill_jar_s3path":"${bootstrapAccount}.duplication-bootstrap", # no trailing slash
-    "dc_dup_queue_high":"${highPriorityQueue}",
-    "dc_dup_queue_low":"${lowPriorityQueue}", 
-    "dc_mill_dead_letter_queue":"${deadLetterQueue}",
+    "dc_mill_node_type":"${nodeType}", # 'dup-producer', 'bit-producer' OR 'worker'
     "dc_mill_log_level":"INFO",
-    "dc_mill_run_frequency":"1m",
-    "dc_dup_producer_looping_jar":"loopingtaskproducer-${jarVersion}.jar",
-    "dc_mill_policy_repo_bucket_suffix":"${bucketSuffix}",
-    "dc_mill_max_qsize":${maxQueueSize},
-    "dc_mill_notification_email":"admin@duracloud.org",
-    "lumberjack_files":'{ "prod-looping": { "paths": ["/home/duracloud/logs/duracloud-mill-loopingtaskproducer.log"], "fields": { "type":"java", "source":"dc-mill-dup-prod-loop"} }, "syslog": { "paths": ["/var/log/syslog"], "fields": { "type":"syslog" } } }',
-    "lumberjack_deb":"lumberjack_0.1.2_amd64.deb",
-    "lumberjack_ensure":"present"
+    "dc_mill_config_file":"/home/duracloud/mill/mill-config.properties",
+    "dc_mill_version":"${jarVersion}",
+    "dc_workman_tmpdir":"${workdir}"
 }
 for k in data:
     print "%s=%s" % (k,data[k])
 EOF
 chmod +x /etc/facter/facts.d/duracloud-mill
 
-# Create database credentials file
-databasePropsDir=/home/duracloud/duracloud-mc
-databasePropsFile=${databasePropsDir}/mc-config.properties
-mkdir -p ${databasePropsDir}
-cat << 'EOF' > ${databasePropsFile}
-db.host=${dbHost}
-db.port=${dbPort}
-db.name=${dbName}
-db.user=${dbUsername}
-db.pass=${dbPassword}
+# Create mill config file
+millConfigDir=/home/duracloud/mill
+millConfigFile=$millConfigDir/mill-config.properties
+mkdir -p $millConfigDir
+cat << 'EOF' > $millConfigFile
+#MILL_CONFIG
 EOF
+
+#substitute category and host in sumologic configuration
+#sed -i.orig "s/$category/mill-workman/g" /sumo/sumo.json
+#sed -i.orig "s/$host/`hostname`/g" /sumo/sumo.json
 
 # Run puppet
 puppet apply /etc/puppet/manifests/site.pp
