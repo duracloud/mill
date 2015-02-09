@@ -2,25 +2,8 @@
 import argparse
 import re
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--template', type=argparse.FileType('r'), required=True)
-parser.add_argument('-m', '--mill_props', type=argparse.FileType('r'), required=True)
-parser.add_argument('-e', '--extended_props', type=argparse.FileType('r'), required=True)
-args = parser.parse_args()
-
-template = args.template.readlines();
-#parse template file
-
-#parse mill properties file
-mill_props = args.mill_props.readlines();
-
-#parse extended properties file
-extended_props = args.extended_props.readlines();
-
-props = {} 
-
-#define the load props subroutine
-def loadProps(props, property_file): 
+#define the load_props subroutine
+def load_props(props, property_file): 
 	for line in property_file: 
 		stripped = line.strip() 
 		if not stripped == "" and not stripped.startswith("#"): 
@@ -30,9 +13,31 @@ def loadProps(props, property_file):
 	return props
 
 
+#main program execution
+parser = argparse.ArgumentParser()
+parser.add_argument('-t', '--template', type=argparse.FileType('r'), required=True)
+parser.add_argument('-m', '--mill_props', type=argparse.FileType('r'), required=True)
+parser.add_argument('-e', '--extended_props', nargs="+", type=argparse.FileType('r'), required=True)
+args = parser.parse_args()
+
+template = args.template.readlines();
+#parse template file
+
+#parse mill properties file
+mill_props = args.mill_props.readlines();
+
+#parse extended properties file
+extended_props = {}
+
+for f in args.extended_props: 
+	extended_props = load_props(extended_props,f.readlines())
+
+props = {} 
+
 #load properties into one large dictionary
-props = loadProps(props, mill_props)
-props = loadProps(props, extended_props)
+props = load_props(props, mill_props)
+#overlay extended props on props
+props.update(extended_props)
 
 # for each line in template
 for line in template: 
