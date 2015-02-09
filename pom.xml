@@ -84,33 +84,6 @@
       <properties>
         <log.level>${log.level.default}</log.level>
       </properties>
-
-      <build>
-        <plugins>
-
-          <!-- For Coveralls code coverage -->
-          <plugin>
-            <groupId>org.eluder.coveralls</groupId>
-            <artifactId>coveralls-maven-plugin</artifactId>
-            <version>2.0.1</version>
-          </plugin>
-
-          <plugin>
-              <groupId>org.jacoco</groupId>
-              <artifactId>jacoco-maven-plugin</artifactId>
-              <version>0.6.3.201306030806</version>
-              <executions>
-                  <execution>
-                      <id>prepare-agent</id>
-                      <goals>
-                          <goal>prepare-agent</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
-
-        </plugins>
-      </build>
     </profile>
 
     <profile>
