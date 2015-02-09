@@ -131,8 +131,10 @@ data = {
     "dc_mill_config_file":"/home/duracloud/mill/mill-config.properties",
     "dc_mill_version":"${jarVersion}",
     "dc_workman_tmpdir":"${workdir}",
+    "dc_workman_queue_order":"${queue.task.ordered}",
     "sumo_access_id":"${sumo_access_id}",
-    "sumo_access_key":"${sumo_access_key}"
+    "sumo_access_key":"${sumo_access_key}",
+    "sumo_collector_name":"${sumo_collector_name}"
 
 }
 for k in data:
@@ -147,6 +149,10 @@ mkdir -p $millConfigDir
 cat << 'EOF' > $millConfigFile
 #MILL_CONFIG
 EOF
+
+#copy sumo.json.erb file into place
+mkdir -p /etc/puppet/modules/sumo/templates
+cp /etc/puppet/sumo/duracloud_sources.json.erb /etc/puppet/modules/sumo/templates/sumo.json.erb
 
 # Run puppet
 puppet apply /etc/puppet/manifests/site.pp
