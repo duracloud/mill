@@ -126,7 +126,7 @@ mkdir -p /etc/facter/facts.d
 cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
 #!/usr/bin/env python
 data = {
-    "dc_mill_node_type":"${nodeType}", # 'dup-producer', 'bit-producer' OR 'worker'
+    "dc_mill_node_type":"${nodeType}", # 'dup-producer', 'bit-producer' ,'worker', or 'sentinel'
     "dc_mill_log_level":"INFO",
     "dc_mill_config_file":"/home/duracloud/mill/mill-config.properties",
     "dc_mill_version":"${jarVersion}",
