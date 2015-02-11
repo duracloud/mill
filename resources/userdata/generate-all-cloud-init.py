@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python3
 ###################################################
 # This program generates all cloud init files for the mill
 # files for the six different configurations we have identified:

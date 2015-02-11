@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python3
 ###################################################
 # This program generates a single cloud init file for the mill
 # based on a template, a list of properties, and in/exclusion 
@@ -13,7 +13,7 @@
 import argparse
 import re
 import os
-
+import collections
 #define the load_props subroutine
 def load_props(props, property_file): 
 	for line in property_file: 
@@ -21,7 +21,7 @@ def load_props(props, property_file):
 		if not stripped == "" and not stripped.startswith("#"): 
 			key, value = stripped.split('=') 
 			props[key] = value 
-			
+        		
 	return props
 
 
@@ -49,6 +49,9 @@ props = {}
 
 for f in args.property_files: 
 	props = load_props(props,f.readlines())
+
+#sort the properties
+props = collections.OrderedDict(sorted(props.items()))
 
 # for each line in template
 for line in template: 
