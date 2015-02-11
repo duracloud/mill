@@ -105,18 +105,11 @@ Content-Disposition: attachment; filename="user-script"
 
 #!/bin/bash
 
-#make sure keytool is on the path
-export PATH=$PATH:/usr/lib/jvm/default-java/bin
-
 rm -rf /etc/puppet
 git clone -b ${puppetDuracloudMillBranch} git@github.com:duraspace/puppet-duracloud-mill.git /etc/puppet/
 
-
 # Run librarian-puppet
 cd /etc/puppet && HOME=/root librarian-puppet install
-
-
-#puppet module install mlehner616-sumo
 
 # Get hiera data files for puppet
 mkdir -p /etc/puppet/hieradata && aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 600 /etc/puppet/hieradata/*
@@ -141,23 +134,27 @@ for k in data:
 EOF
 chmod +x /etc/facter/facts.d/duracloud-mill
 
-# Create mill config file
 millConfigDir=/home/duracloud/mill
 millConfigFile=$millConfigDir/mill-config.properties
 mkdir -p $millConfigDir
+# Create mill config file
 cat << 'EOF' > $millConfigFile
 #MILL_CONFIG
 EOF
 
+#create bit inclusion list
 cat << 'EOF' > $millConfigDir/inclusions.txt
 #BIT_INCLUSIONS
 EOF
 
+#create bit exclusion list
 cat << 'EOF' > $millConfigDir/exclusions.txt
 #BIT_EXCLUSIONS
 EOF
 
 #copy sumo.json.erb file into place
+# this is a minor hack to be removed once the 
+# the proper sumo module way of doing things is worked out.
 mkdir -p /etc/puppet/modules/sumo/templates
 cp /etc/puppet/sumo/duracloud_sources.json.erb /etc/puppet/modules/sumo/templates/sumo.json.erb
 
