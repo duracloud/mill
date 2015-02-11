@@ -18,6 +18,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--template', type=argparse.FileType('r'), required=True)
 parser.add_argument('-m', '--mill_props', type=argparse.FileType('r'), required=True)
 parser.add_argument('-e', '--extended_props', nargs="+", type=argparse.FileType('r'), required=True)
+parser.add_argument('-x', '--bit_exclusions',  type=argparse.FileType('r'), default=None, required=False)
+parser.add_argument('-i', '--bit_inclusions',  type=argparse.FileType('r'), default=None, required=False)
 args = parser.parse_args()
 
 template = args.template.readlines();
@@ -25,6 +27,10 @@ template = args.template.readlines();
 
 #parse mill properties file
 mill_props = args.mill_props.readlines();
+
+bit_inclusions = args.bit_inclusions
+bit_exclusions = args.bit_exclusions
+
 
 #parse extended properties file
 extended_props = {}
@@ -47,6 +53,16 @@ for line in template:
 		for x in mill_props:
 			print(x, end="") 
 		
+	elif "BIT_INCLUSIONS" in line and bit_inclusions != None: 
+		print(line, end="")
+		for x in bit_inclusions.readlines():
+			print(x, end="") 
+		
+	elif "BIT_EXCLUSIONS" in line and bit_exclusions != None: 
+		print(line, end="")
+		for x in bit_exclusions.readlines():
+			print(x, end="") 
+
 	elif not match: 
 		print(line, end="") 
 	else:

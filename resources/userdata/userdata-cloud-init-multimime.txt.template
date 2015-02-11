@@ -149,6 +149,14 @@ cat << 'EOF' > $millConfigFile
 #MILL_CONFIG
 EOF
 
+cat << 'EOF' > $millConfigDir/inclusions.txt
+#BIT_INCLUSIONS
+EOF
+
+cat << 'EOF' > $millConfigDir/exclusions.txt
+#BIT_EXCLUSIONS
+EOF
+
 #copy sumo.json.erb file into place
 mkdir -p /etc/puppet/modules/sumo/templates
 cp /etc/puppet/sumo/duracloud_sources.json.erb /etc/puppet/modules/sumo/templates/sumo.json.erb
