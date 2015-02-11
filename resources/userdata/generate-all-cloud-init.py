@@ -21,11 +21,11 @@ import argparse
 import os 
 #main program execution
 parser = argparse.ArgumentParser()
-parser.add_argument('-m', '--mill_props', required=True)
-parser.add_argument('-e', '--extended_props', nargs="+", required=True)
-parser.add_argument('-x', '--bit_exclusions',  default=None, required=False)
-parser.add_argument('-i', '--bit_inclusions',  default=None, required=False)
-parser.add_argument('-o', '--output_dir',  required=True)
+parser.add_argument('-m', '--mill_props', required=True, help='A mill properties file path')
+parser.add_argument('-e', '--extended_props', nargs="+", required=True, help='A space separated list of one or more properties files')
+parser.add_argument('-x', '--bit_exclusions',  default=None, required=False, help='The path to an exclusion file')
+parser.add_argument('-i', '--bit_inclusions',  default=None, required=False, help='The path to an inclusion file')
+parser.add_argument('-o', '--output_dir',  required=True, help='The destination directory for the generated cloud init files')
 args = parser.parse_args()
 
 extended_props_list = ', '.join(map(str, args.extended_props))
