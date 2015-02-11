@@ -43,7 +43,8 @@ public class AppDriver extends DriverSupport {
             Option taskQueues = new Option(TASK_QUEUES_OPTION,
                                            "task-queue-names",
                                            true,
-                                           "A comma-separated prioritized list of amazon sqs queues where the first is highest.");
+                                           "A comma-separated prioritized list of queue name keys " +
+                                           "(ie not the sqs queue names themselves!) where the first is highest.");
             taskQueues.setArgs(1);
             taskQueues.setRequired(false);
             taskQueues.setArgName("name");

@@ -13,6 +13,8 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
@@ -20,7 +22,8 @@ import org.duracloud.mill.config.ConfigConstants;
  */
 public class WorkmanConfigurationManager 
                 extends TaskProducerConfigurationManager {
-
+    
+    private static Logger log = LoggerFactory.getLogger(WorkmanConfigurationManager.class);
     
     public String getDeadLetterQueueName() {
         return System.getProperty(ConfigConstants.QUEUE_NAME_DEAD_LETTER);
@@ -30,7 +33,15 @@ public class WorkmanConfigurationManager
      * @return
      */
     public List<String> getTaskQueueNames() {
-        return Arrays.asList(System.getProperty(ConfigConstants.QUEUE_TASK_ORDERED).split(","));
+        List<String> queueNames = Arrays.asList(System.getProperty(ConfigConstants.QUEUE_TASK_ORDERED).split(","));
+        for(int i = 0; i < queueNames.size(); i++){
+            String key = queueNames.get(i);
+            String value = System.getProperty(key.trim());
+            log.info("Resolved concrete queue name from key : {}={}", key, value);
+            queueNames.set(i, value);
+        }
+        
+        return queueNames;
     }
 
     /**
