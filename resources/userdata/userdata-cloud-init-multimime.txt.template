@@ -121,7 +121,7 @@ cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
 data = {
     "dc_mill_node_type":"${nodeType}", # 'dup-producer', 'bit-producer' ,'worker', or 'sentinel'
     "dc_mill_log_level":"INFO",
-    "dc_mill_config_file":"${mill_config_file_path}",
+    "dc_mill_config_file":"${workdir}/mill-config.properties",
     "dc_mill_version":"${jarVersion}",
     "dc_workman_tmpdir":"${workdir}",
     "sumo_access_id":"${sumo_access_id}",
@@ -133,19 +133,28 @@ for k in data:
 EOF
 chmod +x /etc/facter/facts.d/duracloud-mill
 
-millConfigFile=${mill_config_file_path}
-mkdir -p "$(dirname $millConfigFile)"
-# Create mill config file
+# create mill config file
+millConfigFile=${workdir}/mill-config.properties
+millConfigDir="$(dirname $millConfigFile)"
+mkdir -p $millConfigDir
+
 cat << 'EOF' > $millConfigFile
 #MILL_CONFIG
 EOF
 
-#create bit inclusion list
+
+# create bit inclusion list
+inclusionDir="$(dirname ${looping.bit.inclusion-list-file})"
+mkdir -p $inclusionDir
+
 cat << 'EOF' > ${looping.bit.inclusion-list-file}
 #BIT_INCLUSIONS
 EOF
 
 #create bit exclusion list
+exclusionDir="$(dirname ${looping.bit.exclusion-list-file})"
+mkdir -p $exclusionDir
+
 cat << 'EOF' > ${looping.bit.exclusion-list-file}
 #BIT_EXCLUSIONS
 EOF
@@ -158,5 +167,11 @@ cp /etc/puppet/sumo/duracloud_sources.json.erb /etc/puppet/modules/sumo/template
 
 # Run puppet
 puppet apply /etc/puppet/manifests/site.pp
+
+#apply permissions after puppet to ensure no conflict
+chown -R duracloud:duracloud $millConfigDir
+chown -R duracloud:duracloud $inclusionDir
+chown -R duracloud:duracloud $exclusionDir
+
 
 --===============2205584129673038508==--
