@@ -56,16 +56,23 @@ public abstract class DriverSupport {
         return cmd;
     }
     
-    public final void execute(String[] args){
-        CommandLine cmd = parseArgs(args);
+    public final void execute(String[] args) {
 
-        if (cmd.hasOption("H")) {
-            die();
+        try {
+            CommandLine cmd = parseArgs(args);
+
+            if (cmd.hasOption("H")) {
+                die();
+            }
+
+            processConfigFileOption(cmd);
+
+            executeImpl(cmd);
+        } catch (Throwable ex) {
+            log.error("failed to startup " + getClass().getCanonicalName()
+                    + ": " + ex.getMessage(), ex);
         }
-        
-        processConfigFileOption(cmd);
 
-        executeImpl(cmd);
     }
     
     /**
