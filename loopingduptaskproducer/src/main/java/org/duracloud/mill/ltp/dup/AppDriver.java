@@ -30,6 +30,8 @@ import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.notification.NotificationManager;
+import org.duracloud.mill.notification.SESNotificationManager;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
@@ -62,6 +64,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
     protected LoopingTaskProducer buildTaskProducer() {
         
         List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
+                .addNotificationRecipients()
                 .addMcDb()
                 .addDuplicationLowPriorityQueue()
                 .addLoopingDupStateFilePath()
@@ -109,6 +112,9 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(
                 getStateFilePath(ConfigConstants.LOOPING_DUP_STATE_FILE_PATH), DuplicationMorsel.class);
 
+        NotificationManager notificationMananger = 
+                new SESNotificationManager(config.getNotificationRecipients());
+
         LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(credentialsRepo,
                                                                                      storageProviderFactory,
                                                                                      policyManager,
@@ -116,7 +122,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                                                      cache,
                                                                                      stateManager,
                                                                                      getMaxQueueSize(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE),
-                                                                                     getFrequency(ConfigConstants.LOOPING_DUP_FREQUENCY));
+                                                                                     getFrequency(ConfigConstants.LOOPING_DUP_FREQUENCY),
+                                                                                     notificationMananger);
         return producer;
     }
 

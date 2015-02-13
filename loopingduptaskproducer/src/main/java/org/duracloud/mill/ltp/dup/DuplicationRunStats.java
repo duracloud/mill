@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp.dup;
 
+import java.text.MessageFormat;
+
 import org.duracloud.mill.ltp.RunStats;
 
 public class DuplicationRunStats extends RunStats {
@@ -64,5 +66,13 @@ public class DuplicationRunStats extends RunStats {
     public void addToDeletes(int deletesToAdd) {
       this.deletes += deletesToAdd;
         
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return MessageFormat.format("delete_messages={0} duplication_messages={1}", this.deletes, dups);
     }
 }

@@ -10,7 +10,6 @@ package org.duracloud.mill.workman.spring;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
 import org.slf4j.Logger;
@@ -59,17 +58,7 @@ public class WorkmanConfigurationManager
             return 5*60*1000l;
         }
     }
-    /**
-     * @return
-     */
-    public String[] getNotificationRecipients() {
-        String recipients =  System.getProperty(ConfigConstants.NOTIFICATION_RECIPIENTS);
-        if(StringUtils.isBlank(recipients)){
-            return null;
-        }else{
-            return recipients.split(",");
-        }
-    }
+
 
     /**
      * @return

@@ -14,7 +14,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
@@ -25,6 +24,7 @@ import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +58,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private List<T> morselsToReload = new LinkedList<>();
     private Frequency frequency;
     private RunStats cumulativeTotals;
+    private NotificationManager notificationManager;
     
     private Map<String,RunStats> runstats = new HashMap<>();
 
@@ -66,7 +67,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                                TaskQueue taskQueue,
                                StateManager<T> state,
                                int maxTaskQueueSize, 
-                               Frequency frequency) {
+                               Frequency frequency,
+                               NotificationManager notificationManager) {
         
         this.credentialsRepo = credentialsRepo;
         this.storageProviderFactory = storageProviderFactory;
@@ -76,6 +78,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         this.maxTaskQueueSize = maxTaskQueueSize;
         this.frequency = frequency;
         this.cumulativeTotals = createRunStats();
+        this.notificationManager = notificationManager;
     }
     
     protected Frequency getFrequency(){
@@ -196,7 +199,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         Date nextRun = c.getTime();
         this.stateManager.setNextRunStartDate(nextRun);
         this.stateManager.setCurrentRunStartDate(null);
-        log.info("The run has completed.  Scheduling the next run for {}", nextRun);
+        String subject = getClass().getSimpleName() + "'s run completed.";
+        StringBuilder builder = new StringBuilder();
+        
+        builder.append(subject + " on " + System.getenv("HOSTNAME"));
+        builder.append(this.cumulativeTotals.toString() + "\n");
+        builder.append("Scheduling the next run for " + nextRun + "\n");
+        log.info(subject + ": next run will start " + nextRun);
+        notificationManager.sendEmail(subject, builder.toString());
     }
 
     /**

@@ -20,6 +20,8 @@ import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.notification.NotificationManager;
+import org.duracloud.mill.notification.SESNotificationManager;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
@@ -80,6 +82,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
     protected LoopingTaskProducer buildTaskProducer() {
 
         List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
+                .addNotificationRecipients()
                 .addMcDb()
                 .addBitIntegrityQueue()
                 .addLoopingBitStateFilePath()
@@ -99,6 +102,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
+        NotificationManager notificationMananger = 
+                new SESNotificationManager(config.getNotificationRecipients());
         TaskQueue taskQueue = new SQSTaskQueue(
                 config.getBitIntegrityQueue());
 
@@ -112,6 +117,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                                                        stateManager,
                                                                                        getMaxQueueSize(ConfigConstants.LOOPING_BIT_MAX_TASK_QUEUE_SIZE),
                                                                                        getFrequency(ConfigConstants.LOOPING_BIT_FREQUENCY),
+                                                                                       notificationMananger,
                                                                                        config.getPathFilterManager());
         return producer;
     }

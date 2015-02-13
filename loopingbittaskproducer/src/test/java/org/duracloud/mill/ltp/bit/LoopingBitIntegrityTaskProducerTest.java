@@ -10,12 +10,9 @@ package org.duracloud.mill.ltp.bit;
 import java.io.File;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
@@ -25,9 +22,10 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
-import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -42,12 +40,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.easymock.EasyMock.*;
+
 /**
  * @author Daniel Bernstein
  *	       Date: May 1, 2014
  */
 @RunWith(EasyMockRunner.class)
-public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
+public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
 
     @Mock
     private CredentialsRepo credentialsRepo;
@@ -56,6 +56,9 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
     @Mock
     private StorageProvider store;
 
+    @Mock
+    private NotificationManager notificationManager;
+    
     private StateManager<BitIntegrityMorsel> stateManager;
 
     private TaskQueue taskQueue;
@@ -66,9 +69,6 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
-        credentialsRepo = EasyMock.createMock(CredentialsRepo.class);
-        storageProviderFactory = EasyMock.createMock(StorageProviderFactory.class);
-        store = EasyMock.createMock("store", StorageProvider.class);
         File stateFile = File.createTempFile("state", "json");
         stateFile.deleteOnExit();
         stateManager = new StateManager<>(stateFile.getAbsolutePath(), BitIntegrityMorsel.class);
@@ -101,6 +101,7 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
         setupStore(morselCount, sourceCount);
         setupStorageProviderFactory(morselCount*2);
         setupCredentialsRepo();
+        setupNotificationManager();
 
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount);
         replayAll();
@@ -136,6 +137,11 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
         //and report tasks.
         Assert.assertEquals(tasksProcessed, maxTaskQueueSize+morselCount);
     }
+
+    private void setupNotificationManager() {
+        notificationManager.sendEmail(isA(String.class), isA(String.class));
+        expectLastCall();
+    }
     
     @SuppressWarnings("unchecked")  
     @Test
@@ -146,7 +152,8 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
          expectGetSpaces(morselCount);
         setupStorageProviderFactory(morselCount);
         setupCredentialsRepo();
-        
+        setupNotificationManager();
+
         EasyMock.expectLastCall().times(morselCount);
         
 
@@ -209,6 +216,7 @@ public class LoopingBitIntegrityTaskProducerTest  extends EasyMockSupport {
                                                                stateManager, 
                                                                maxQueueSize,
                                                                new Frequency("1s"),
+                                                               notificationManager,
                                                                new PathFilterManager());
         producer.setWaitTimeInMsBeforeQueueSizeCheck(1);
         return producer;

@@ -31,6 +31,7 @@ import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.MorselComparator;
 import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -55,8 +56,15 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             Cache cache, 
             StateManager<DuplicationMorsel> state,
             int maxTaskQueueSize, 
-            Frequency frequency) {
-        super(credentialsRepo, storageProviderFactory, taskQueue, state,maxTaskQueueSize,frequency);
+            Frequency frequency,
+            NotificationManager notificationManager) {
+        super(credentialsRepo,
+              storageProviderFactory,
+              taskQueue,
+              state,
+              maxTaskQueueSize,
+              frequency,
+              notificationManager);
         this.cache = cache;
         this.policyManager = policyManager;
     }

@@ -39,6 +39,7 @@
       <artifactId>common-bit</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.duracloud.mill</groupId>
       <artifactId>common-dup</artifactId>

@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp.bit;
 
+import java.text.MessageFormat;
+
 import org.duracloud.mill.ltp.RunStats;
 
 /**
@@ -53,5 +55,14 @@ public class BitIntegrityRunStats extends RunStats {
     public int getAdded() {
         return added;
     }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return MessageFormat.format("bit_check_messages_added={0}", added);
+    }
+
 
 }

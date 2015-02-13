@@ -31,30 +31,48 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.StateManager;
+import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMock;
+import org.easymock.EasyMockRunner;
+import org.easymock.EasyMockSupport;
 import org.easymock.IAnswer;
+import org.easymock.Mock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.easymock.EasyMock.*;
 
 /**
  * @author Daniel Bernstein
  *	       Date: Nov 6, 2013
  */
-public class LoopingDuplicationTaskProducerTest {
+@RunWith(EasyMockRunner.class)
+public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
 
     private static final String CACHE_NAME = "test";
 
+    @Mock
     private CredentialsRepo credentialsRepo;
+    @Mock
     private StorageProviderFactory storageProviderFactory;
+    @Mock
     private StorageProvider sourceStore;
+    @Mock
     private StorageProvider destStore;
     private static Cache cache;
+    @Mock
     private DuplicationPolicyManager policyManager;
+    @Mock
     private StateManager<DuplicationMorsel> stateManager;
+    
+    @Mock
+    private NotificationManager notificationManager;
+
     private TaskQueue taskQueue;
 
     /**
@@ -63,12 +81,6 @@ public class LoopingDuplicationTaskProducerTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
-        credentialsRepo = EasyMock.createMock(CredentialsRepo.class);
-        storageProviderFactory = EasyMock.createMock(StorageProviderFactory.class);
-        sourceStore = EasyMock.createMock("sourceStore", StorageProvider.class);
-        destStore = EasyMock.createMock("destStore", StorageProvider.class);
-        policyManager = EasyMock.createMock(DuplicationPolicyManager.class);
-        stateManager = EasyMock.createMock(StateManager.class);
         taskQueue = new LocalTaskQueue();
 
     }
@@ -78,27 +90,10 @@ public class LoopingDuplicationTaskProducerTest {
      */
     @After
     public void tearDown() throws Exception {
-        EasyMock.verify(credentialsRepo, 
-                storageProviderFactory, 
-                policyManager,
-                stateManager,
-                sourceStore,
-                destStore);
-
+        verifyAll();
         cache.removeAll();
     }
     
-    /**
-     * 
-     */
-    private void replay() {
-        EasyMock.replay(credentialsRepo, 
-                        storageProviderFactory, 
-                        policyManager,
-                        stateManager,
-                        sourceStore,
-                        destStore);
-    }
 
     /**
      * Test method for {@link org.duracloud.mill.ltp.LoopingTaskProducer#run()}.
@@ -117,9 +112,10 @@ public class LoopingDuplicationTaskProducerTest {
         setupCredentialsRepo(4*morselCount);
         setupPolicyManager(morselCount);
         setupStateManager(morselCount, sourceCount);
+        
         setupCache();
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount, destCount);
-        replay();
+        replayAll();
         runLoopingTaskProducer(maxTaskQueueSize);
         Assert.assertEquals(maxTaskQueueSize, taskQueue.size().intValue());
     }
@@ -137,7 +133,8 @@ public class LoopingDuplicationTaskProducerTest {
         setupStorageProviderFactory(morselCount);
         setupCredentialsRepo(morselCount*2);
         setupPolicyManager(morselCount);
-        
+        setupNotificationManager();
+
         expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(),1);
 
         stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
@@ -149,12 +146,17 @@ public class LoopingDuplicationTaskProducerTest {
         
         setupCache();
         int maxQueueSize = 1;
-        replay();
+        replayAll();
 
         runLoopingTaskProducer(maxQueueSize);
         Assert.assertEquals(maxQueueSize, taskQueue.size().intValue());
     }
     
+    private void setupNotificationManager() {
+        notificationManager.sendEmail(isA(String.class), isA(String.class));
+        expectLastCall();
+    }
+
     /**
      * 
      */
@@ -205,7 +207,7 @@ public class LoopingDuplicationTaskProducerTest {
         
         expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(), 1);
         expectGetMorsels(morsels, 1);
-        
+
         stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
         StateManager<DuplicationMorsel> stateManagerDelegate = new StateManager<DuplicationMorsel>("fakepath", DuplicationMorsel.class) {
             @Override
@@ -224,9 +226,10 @@ public class LoopingDuplicationTaskProducerTest {
         setupCheckDatesInProgressRun();
         setupDatesOnRunCompletion();
         setupCache();
+        setupNotificationManager();
         int maxTaskQueueSize = 1000;
 
-        replay();
+        replayAll();
         
         int tasksProcessed = 0;
         runLoopingTaskProducer(maxTaskQueueSize);
@@ -280,7 +283,8 @@ public class LoopingDuplicationTaskProducerTest {
                                                                cache, 
                                                                stateManager, 
                                                                maxQueueSize,
-                                                               new Frequency("1d"));
+                                                               new Frequency("1d"),
+                                                               notificationManager);
         producer.run();
     }
 
