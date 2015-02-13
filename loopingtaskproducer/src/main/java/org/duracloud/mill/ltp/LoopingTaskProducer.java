@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -199,10 +201,17 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         Date nextRun = c.getTime();
         this.stateManager.setNextRunStartDate(nextRun);
         this.stateManager.setCurrentRunStartDate(null);
-        String subject = getClass().getSimpleName() + "'s run completed.";
-        StringBuilder builder = new StringBuilder();
         
-        builder.append(subject + " on " + System.getenv("HOSTNAME"));
+        String hostname = "unknown";
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            log.error("unable to get hostname:" + e.getMessage());
+        }
+
+        String subject = getClass().getSimpleName() + "'s run completed on " + hostname;
+        StringBuilder builder = new StringBuilder();
+        builder.append(subject + "\n");
         builder.append(this.cumulativeTotals.toString() + "\n");
         builder.append("Scheduling the next run for " + nextRun + "\n");
         log.info(subject + ": next run will start " + nextRun);
