@@ -39,7 +39,13 @@ public class SpaceCreatedNotifcationGeneratingProcessor implements TaskProcessor
         if (AuditTask.ActionType.CREATE_SPACE.name().equals(task.getAction())) {
             String account = task.getAccount();
             log.info("new space audit task received for account {} received: {}", account, task);
-            this.notificationManager.newSpace(account,
+            String storeId = task.getStoreId();
+            String spaceId = task.getSpaceId();
+            log.warn(
+                     "New space notification: subdomain: {}, storeId: {}, spaceId: {}: ",
+                     account, storeId, spaceId);
+
+            newSpace(account,
                     task.getStoreId(),
                     task.getSpaceId(), 
                     task.getDateTime(),
@@ -49,5 +55,24 @@ public class SpaceCreatedNotifcationGeneratingProcessor implements TaskProcessor
         }
     }
     
-   
+    private void newSpace(String subdomain,
+                         String storeId,
+                         String spaceId,
+                         String datetime,
+                         String username) {
+                     
+                     
+                     String host = subdomain + ".duracloud.org";
+                     String subject = "New Space on " + host + ", provider " + storeId + ": " + 
+                             spaceId;
+                     StringBuilder body = new StringBuilder();
+                     
+                     body.append("A new space has been created!\n\n");
+                     body.append("Subdomain: https://" + host + "\n");
+                     body.append("Storage Provider Id: " + storeId + "\n");
+                     body.append("Space: " + spaceId + "\n");
+                     
+                     this.notificationManager.sendEmail(subject, body.toString());
+    }
+
 }

@@ -19,8 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-
+import static org.easymock.EasyMock.*;
 /**
  * @author Daniel Bernstein
  *	       Date: Oct 30, 2013
@@ -52,11 +51,7 @@ public class SpaceCreatedNotificationGeneratingProcessorTest extends EasyMockSup
         AuditTask task = AuditTestHelper.createTestAuditTask();
         task.setAction(AuditTask.ActionType.CREATE_SPACE.name());
 
-        notificationManager.newSpace(task.getAccount(), 
-                                     task.getStoreId(),
-                                     task.getSpaceId(), 
-                                     task.getDateTime(), 
-                                     task.getUserId());
+        notificationManager.sendEmail(isA(String.class), isA(String.class));
         EasyMock.expectLastCall();
         replayAll();
         new SpaceCreatedNotifcationGeneratingProcessor(task,notificationManager).execute();

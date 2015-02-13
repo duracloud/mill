@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
@@ -126,7 +127,11 @@ public class BitIntegrityReportTaskProcessor implements
                                                               new Date()); 
             
             if(errors.size() > 0){
-                this.notificationManager.bitIntegrityErrors(report, errors);
+                log.warn(
+                         "Bit integirty errors: subdomain: {}, storeId: {}, spaceId: {}: ",
+                         account, storeId, spaceId);
+
+                notifyManagerOfBitIntegrityErrors(report, errors);
             }
 
             // delete all bit integrity log items for space.
@@ -141,6 +146,35 @@ public class BitIntegrityReportTaskProcessor implements
 
     }
 
+
+    /**
+     * @param report
+     * @param errors
+     */
+    private void notifyManagerOfBitIntegrityErrors(BitIntegrityReport report,
+                                                   List<BitLogItem> errors) {
+
+        String account = report.getAccount();
+        String storeId = report.getStoreId();
+        String spaceId = report.getSpaceId();
+        
+
+        String host = account + ".duracloud.org";
+
+        String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +errors.size()+ ")  detected on " + 
+                         host + ", providerId=" + storeId + 
+                         ", spaceId=" + spaceId;
+
+        StringBuilder body = new StringBuilder();
+        
+        body.append(BitIntegrityHelper.getHeader());
+        for(BitLogItem error : errors){
+            body.append(BitIntegrityHelper.formatLogLine(error) + "\n");
+        }
+
+
+        this.notificationManager.sendEmail(subject,body.toString());
+    }
 
     private List<BitLogItem> writeLog(File bitLog,
                           String account,

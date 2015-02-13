@@ -101,18 +101,18 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         expect(config.getWorkDirectoryPath()).andReturn(dir.getAbsolutePath());
         BitLogItem item = createMock(BitLogItem.class);
 
-        expect(item.getAccount()).andReturn(account);
-        expect(item.getStoreId()).andReturn(storeId);
-        expect(item.getSpaceId()).andReturn(spaceId);
-        expect(item.getStoreType()).andReturn(StorageProviderType.AMAZON_S3);
-        expect(item.getContentId()).andReturn("content");
-        expect(item.getResult()).andReturn(BitIntegrityResult.ERROR).times(2);
-        expect(item.getContentChecksum()).andReturn("checksum");
-        expect(item.getManifestChecksum()).andReturn("checksum");
-        expect(item.getStorageProviderChecksum()).andReturn("checksum");
-        expect(item.getDetails()).andReturn("details");
+        expect(item.getAccount()).andReturn(account).times(2);
+        expect(item.getStoreId()).andReturn(storeId).times(2);
+        expect(item.getSpaceId()).andReturn(spaceId).times(2);
+        expect(item.getStoreType()).andReturn(StorageProviderType.AMAZON_S3).times(2);
+        expect(item.getContentId()).andReturn("content").times(2);
+        expect(item.getResult()).andReturn(BitIntegrityResult.ERROR).times(3);
+        expect(item.getContentChecksum()).andReturn("checksum").times(2);
+        expect(item.getManifestChecksum()).andReturn("checksum").times(2);
+        expect(item.getStorageProviderChecksum()).andReturn("checksum").times(2);
+        expect(item.getDetails()).andReturn("details").times(2);
 
-        expect(item.getModified()).andReturn(new Date());
+        expect(item.getModified()).andReturn(new Date()).times(2);
 
         Iterator<BitLogItem> it = createMock(Iterator.class);
         expect(it.hasNext()).andReturn(true);
@@ -155,6 +155,11 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         
 
         BitIntegrityReport report = createMock(BitIntegrityReport.class);
+        expect(report.getAccount()).andReturn(account);
+        expect(report.getStoreId()).andReturn(storeId);
+        expect(report.getSpaceId()).andReturn(spaceId);
+        expect(report.getId()).andReturn(1l);
+        
         expect(bitLogStore.addReport(eq(account),
                               eq(storeId),
                               eq(spaceId),
@@ -163,7 +168,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
                               eq(BitIntegrityReportResult.FAILURE),
                               isA(Date.class))).andReturn(report);
         
-        notificiationManager.bitIntegrityErrors(isA(BitIntegrityReport.class), isA(List.class));
+        notificiationManager.sendEmail(isA(String.class), isA(String.class));
         expectLastCall();
         
         replayAll();
