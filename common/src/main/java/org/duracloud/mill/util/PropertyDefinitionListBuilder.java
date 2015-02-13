@@ -24,7 +24,7 @@ public class PropertyDefinitionListBuilder {
      */
     public PropertyDefinitionListBuilder addAws() {
         add(ConfigConstants.AWS_ACCESS_KEY_ID, false);
-        add(ConfigConstants.AWS_SECRET_KEY, true, false);
+        add(ConfigConstants.AWS_SECRET_KEY, false, true);
         return this;
     }
 
