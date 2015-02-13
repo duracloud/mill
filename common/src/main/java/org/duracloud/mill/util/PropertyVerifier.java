@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
@@ -22,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class PropertyVerifier {
 
+    private static Logger log = LoggerFactory.getLogger(PropertyVerifier.class);
     private Collection<PropertyDefinition> propDefs;
     
     public PropertyVerifier(Collection<PropertyDefinition> propDefs){
@@ -56,34 +59,37 @@ public class PropertyVerifier {
         return failedDefinitions;
     }
     
-    public void printFailuresAndExit(Collection<PropertyDefinition> failures){
-        PrintStream writer = System.err;
-        writer.print("ERROR:  The property file is missing required field and/or contains invalid values. See below for details:\n");
+    public void logFailuresAndThrowRuntime(Collection<PropertyDefinition> failures){
+        StringBuilder error =  new StringBuilder("The property file is missing required field and/or contains invalid values. See below for details:");
         //Failures
         for(PropertyDefinition def : failures){
             String validValues = "";
             
+            error.append("\n");
             if(def.getValidValues().size() > 0){
                 validValues = ", valid values: (" + StringUtils.join(def.getValidValues(), " | ") + ")";
             }
-            writer.print(MessageFormat.format("    property:  {0}, required: {1} {2}\n", def.getName(), def.isRequired(), validValues));
+            error.append(MessageFormat.format("    property:  {0}, required: {1} {2}", def.getName(), def.isRequired(), validValues));
         }
         
-        System.exit(1);
+        
+        throw new RuntimeException(error.toString());
     }
  
     
-    public void printValues(Properties props){
-        PrintStream writer = System.out;
-        writer.print("Current configuration:\n");
+    public void logValues(Properties props){
+        StringBuilder message = new StringBuilder("Current configuration:");
         //Failures
         for(PropertyDefinition def : this.propDefs){
+            message.append("\n");
             String value =  props.getProperty(def.getName());
             if(def.isSensitive()){
                 value = "*****************";
             }
-            writer.print(MessageFormat.format("    {0}: {1}\n", def.getName(), value));
+            message.append(MessageFormat.format("    {0}: {1}", def.getName(), value));
         }
+        
+        log.info(message.toString());
     }
 
 
@@ -93,9 +99,9 @@ public class PropertyVerifier {
     public void verify(Properties properties) {
         Collection<PropertyDefinition> failures = validateProperties(properties);
         if(failures.size() > 0){
-           printFailuresAndExit(failures); 
+           logFailuresAndThrowRuntime(failures); 
         }else{
-            printValues(properties);
+            logValues(properties);
         }
     }
 }
