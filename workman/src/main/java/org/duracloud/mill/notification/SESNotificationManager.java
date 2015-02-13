@@ -82,18 +82,9 @@ public class SESNotificationManager implements NotificationManager {
             return;
         }
         
-        SendEmailRequest email = new SendEmailRequest();
-        
-        Destination destination = new Destination();
-        destination.setToAddresses(Arrays.asList(this.recipientEmailAddresses));
-        email.setDestination(destination);
-        email.setSource("notifications@duracloud.org");
-
         String host = subdomain + ".duracloud.org";
-
         String subject = "New Space on " + host + ", provider " + storeId + ": " + 
                 spaceId;
-        
         StringBuilder body = new StringBuilder();
         
         body.append("A new space has been created!\n\n");
@@ -101,14 +92,7 @@ public class SESNotificationManager implements NotificationManager {
         body.append("Storage Provider Id: " + storeId + "\n");
         body.append("Space: " + spaceId + "\n");
         
-        Message message = new Message(new Content(subject), new Body(new Content(body.toString())));
-        email.setMessage(message);
-        try {
-            client.sendEmail(email);
-            log.info("new space email sent: {}", email);
-        } catch (Exception e) {
-            log.error("failed to send " + email + ": " + e.getMessage(), e);
-        }
+        sendEmail(subject, body.toString());
     }
     
     /* (non-Javadoc)
@@ -129,19 +113,13 @@ public class SESNotificationManager implements NotificationManager {
             return;
         }
         
-        SendEmailRequest email = new SendEmailRequest();
-        
-        Destination destination = new Destination();
-        destination.setToAddresses(Arrays.asList(this.recipientEmailAddresses));
-        email.setDestination(destination);
-        email.setSource("notifications@duracloud.org");
 
         String host = account + ".duracloud.org";
 
         String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +errors.size()+ ")  detected on " + 
                          host + ", providerId=" + storeId + 
                          ", spaceId=" + spaceId;
-        
+
         StringBuilder body = new StringBuilder();
         
         body.append(BitIntegrityHelper.getHeader());
@@ -149,11 +127,20 @@ public class SESNotificationManager implements NotificationManager {
             body.append(BitIntegrityHelper.formatLogLine(error) + "\n");
         }
 
-        Message message = new Message(new Content(subject), new Body(new Content(body.toString())));
-        email.setMessage(message);
+        sendEmail(subject,body.toString());
+    }
+    
+    private void sendEmail(String subject, String body) {
+        SendEmailRequest email = new SendEmailRequest();
         try {
+            Destination destination = new Destination();
+            destination.setToAddresses(Arrays.asList(this.recipientEmailAddresses));
+            email.setDestination(destination);
+            email.setSource("notifications@duracloud.org");
+            Message message = new Message(new Content(subject), new Body(new Content(body)));
+            email.setMessage(message);
             client.sendEmail(email);
-            log.info("new space email sent: {}", email);
+            log.info("email sent: {}", email);
         } catch (Exception e) {
             log.error("failed to send " + email + ": " + e.getMessage(), e);
         }

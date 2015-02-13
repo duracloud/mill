@@ -19,7 +19,7 @@ import org.duracloud.mill.db.model.BitIntegrityReport;
 public interface NotificationManager {
 
     /**
-     * Sends a notification to the Mill's administrator
+     * Sends a new space notification to the Mill's administrator
      * @param subdomain of the account on which a new space was created.
      * @param storeId of the storage provider in which the space was created.
      * @param spaceId of the space
@@ -33,13 +33,11 @@ public interface NotificationManager {
             String username);
 
     /**
-     * 
+     * sends bit integrity report errors to the Mill's administrator
      * @param report
      * @param errors
      */
     void bitIntegrityErrors(BitIntegrityReport report,
                             List<BitLogItem> errors);
     
-    
-
 }
