@@ -196,7 +196,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * @return
      */
     private File getCompletionFile() {
-        return new File(this.config.getWorkDirectoryPath(), "producer-complete.txt");
+        return new File(this.config.getWorkDirectoryPath(), getLoopingProducerTypePrefix() + "producer-complete.txt");
     }
 
     private void resetIncrementalSessionStats() {
@@ -424,5 +424,11 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * @param cumulativeTotals
      */
     protected abstract void logCumulativeSessionStats(Map<String,RunStats> runstats, RunStats cumulativeTotals);
+    
+    /**
+     * A short looping producer type identifier for use with state files.
+     * @return
+     */
+    protected abstract String getLoopingProducerTypePrefix();
 
 }

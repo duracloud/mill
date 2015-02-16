@@ -370,4 +370,13 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     protected Queue<DuplicationMorsel> createQueue() {
         return new PriorityBlockingQueue<>(1000, new MorselComparator());
     }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.ltp.LoopingTaskProducer#getLoopingProducerTypePrefix()
+     */
+    @Override
+    protected String getLoopingProducerTypePrefix() {
+        return "dup";
+    }
+    
 }

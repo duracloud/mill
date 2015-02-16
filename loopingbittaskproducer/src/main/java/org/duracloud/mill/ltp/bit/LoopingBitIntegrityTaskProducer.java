@@ -320,4 +320,11 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         this.waitTimeInMsBeforeQueueSizeCheck = ms;
     }
 
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.ltp.LoopingTaskProducer#getLoopingProducerTypePrefix()
+     */
+    @Override
+    protected String getLoopingProducerTypePrefix() {
+        return "bit";
+    }
 }
