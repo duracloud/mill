@@ -196,7 +196,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * @return
      */
     private File getCompletionFile() {
-        return new File(this.config.getWorkDirectoryPath(), getLoopingProducerTypePrefix() + "producer-complete.txt");
+        return new File(this.config.getWorkDirectoryPath(),
+                        getLoopingProducerTypePrefix() + "-producer-complete.txt");
     }
 
     private void resetIncrementalSessionStats() {
