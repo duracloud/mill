@@ -51,9 +51,18 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             int maxTaskQueueSize, 
             Frequency frequency,
             NotificationManager notificationManager,
-            PathFilterManager exclusionManager) {
-        super(credentialsRepo, storageProviderFactory, taskQueue, state,maxTaskQueueSize,frequency, notificationManager);
+            PathFilterManager exclusionManager, 
+            LoopingBitTaskProducerConfigurationManager config) {
+        super(credentialsRepo,
+              storageProviderFactory,
+              taskQueue,
+              state,
+              maxTaskQueueSize,
+              frequency,
+              notificationManager,
+              config);
         this.exclusionManager = exclusionManager;
+       
     }
     
 

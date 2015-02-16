@@ -23,6 +23,7 @@ import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
@@ -62,6 +63,10 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     private StateManager<BitIntegrityMorsel> stateManager;
 
     private TaskQueue taskQueue;
+    
+    @Mock
+    private LoopingBitTaskProducerConfigurationManager config;
+
 
     /**
      * @throws java.lang.Exception
@@ -102,7 +107,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         setupStorageProviderFactory(morselCount*2);
         setupCredentialsRepo();
         setupNotificationManager();
-
+        setupLoopingTaskProducerConfig(5);
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount);
         replayAll();
         LoopingBitIntegrityTaskProducer ltp = createTaskProducer(maxTaskQueueSize);
@@ -137,6 +142,11 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         //and report tasks.
         Assert.assertEquals(tasksProcessed, maxTaskQueueSize+morselCount);
     }
+    
+    private void setupLoopingTaskProducerConfig(int times) {
+        expect(this.config.getWorkDirectoryPath()).andReturn("java.io.tmpdir").times(times);
+    }
+
 
     private void setupNotificationManager() {
         notificationManager.sendEmail(isA(String.class), isA(String.class));
@@ -153,9 +163,9 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         setupStorageProviderFactory(morselCount);
         setupCredentialsRepo();
         setupNotificationManager();
-
-        EasyMock.expectLastCall().times(morselCount);
         
+        EasyMock.expectLastCall().times(morselCount);
+        setupLoopingTaskProducerConfig(2);
 
         
         int maxQueueSize = 1;
@@ -217,7 +227,8 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
                                                                maxQueueSize,
                                                                new Frequency("1s"),
                                                                notificationManager,
-                                                               new PathFilterManager());
+                                                               new PathFilterManager(),
+                                                               this.config);
         producer.setWaitTimeInMsBeforeQueueSizeCheck(1);
         return producer;
     }

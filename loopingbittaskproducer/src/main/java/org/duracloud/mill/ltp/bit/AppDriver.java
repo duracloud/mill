@@ -88,6 +88,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 .addLoopingBitStateFilePath()
                 .addLoopingBitFrequency()
                 .addLoopingBitMaxQueueSize()
+                .addWorkDir()
                 .build();
         PropertyVerifier verifier = new PropertyVerifier(defintions);
         verifier.verify(System.getProperties());
@@ -118,7 +119,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                                                        getMaxQueueSize(ConfigConstants.LOOPING_BIT_MAX_TASK_QUEUE_SIZE),
                                                                                        getFrequency(ConfigConstants.LOOPING_BIT_FREQUENCY),
                                                                                        notificationMananger,
-                                                                                       config.getPathFilterManager());
+                                                                                       config.getPathFilterManager(),
+                                                                                       config);
         return producer;
     }
     

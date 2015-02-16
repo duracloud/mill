@@ -22,12 +22,14 @@ import net.sf.ehcache.Element;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
+import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.MorselComparator;
 import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
@@ -57,14 +59,16 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             StateManager<DuplicationMorsel> state,
             int maxTaskQueueSize, 
             Frequency frequency,
-            NotificationManager notificationManager) {
+            NotificationManager notificationManager, 
+            LoopingTaskProducerConfigurationManager config) {
         super(credentialsRepo,
               storageProviderFactory,
               taskQueue,
               state,
               maxTaskQueueSize,
               frequency,
-              notificationManager);
+              notificationManager,
+              config);
         this.cache = cache;
         this.policyManager = policyManager;
     }

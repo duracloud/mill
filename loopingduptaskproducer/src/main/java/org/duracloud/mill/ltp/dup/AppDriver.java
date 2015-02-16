@@ -72,11 +72,12 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 .addLoopingDupMaxQueueSize()
                 .addDuplicationPolicyBucketSuffix()
                 .addLocalDuplicationDir()
+                .addWorkDir()
                 .build();
         PropertyVerifier verifier = new PropertyVerifier(defintions);
         verifier.verify(System.getProperties());
         
-        TaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
+        LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
         processLocalDuplicationDirOption(config);
 
         CredentialsRepo credentialsRepo = CredentialsRepoLocator.get();
@@ -123,7 +124,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                                                      stateManager,
                                                                                      getMaxQueueSize(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE),
                                                                                      getFrequency(ConfigConstants.LOOPING_DUP_FREQUENCY),
-                                                                                     notificationMananger);
+                                                                                     notificationMananger,
+                                                                                     config);
         return producer;
     }
 

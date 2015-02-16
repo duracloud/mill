@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Calendar;
@@ -61,7 +63,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private Frequency frequency;
     private RunStats cumulativeTotals;
     private NotificationManager notificationManager;
-    
+    private LoopingTaskProducerConfigurationManager config;
     private Map<String,RunStats> runstats = new HashMap<>();
 
     public LoopingTaskProducer(CredentialsRepo credentialsRepo,
@@ -70,7 +72,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                                StateManager<T> state,
                                int maxTaskQueueSize, 
                                Frequency frequency,
-                               NotificationManager notificationManager) {
+                               NotificationManager notificationManager, 
+                               LoopingTaskProducerConfigurationManager config) {
         
         this.credentialsRepo = credentialsRepo;
         this.storageProviderFactory = storageProviderFactory;
@@ -81,6 +84,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         this.frequency = frequency;
         this.cumulativeTotals = createRunStats();
         this.notificationManager = notificationManager;
+        this.config = config;
     }
     
     protected Frequency getFrequency(){
@@ -103,6 +107,9 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
     
     public void run(){
+        
+        deleteCompletionFileIfExists();
+        
         Timer timer = new Timer();
         try {
             
@@ -143,6 +150,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     
             if(morselQueue.isEmpty()){
                 scheduleNextRun();
+                writeCompletionFile();
             }
             
             logSessionStats();
@@ -150,6 +158,45 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         }finally {
             timer.cancel();
         }
+    }
+
+    /**
+     * Writes zero length file to the work directory to mark the completion of a run.
+     */
+    private void writeCompletionFile() {
+        File completionFile = getCompletionFile();
+        try {
+            if(completionFile.createNewFile()){
+                log.info("successfully created completion marker file: {}",
+                         completionFile.getAbsolutePath());
+            }else{
+                log.warn("completion marker file unexpectably exists already " +
+            		 "- something may be amiss: {}",
+                         completionFile.getAbsolutePath());
+                
+            }
+        } catch (IOException e) {
+            log.error("Unable to create the completion file {}: {}",
+                      completionFile.getAbsolutePath(),
+                      e.getMessage());
+        }
+    }
+
+    /**
+     * Deletes the completion marker file if it exists.
+     */
+    private void deleteCompletionFileIfExists() {
+        File completionFile = getCompletionFile();
+        if(completionFile.exists()){
+            completionFile.delete();
+        }
+    }
+
+    /**
+     * @return
+     */
+    private File getCompletionFile() {
+        return new File(this.config.getWorkDirectoryPath(), "producer-complete.txt");
     }
 
     private void resetIncrementalSessionStats() {
