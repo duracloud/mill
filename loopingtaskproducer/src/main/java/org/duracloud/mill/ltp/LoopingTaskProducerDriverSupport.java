@@ -60,29 +60,6 @@ public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
      * @param cmd
      * @return
      */
-    protected String getStateFilePath(String key) {
-        String stateFilePath = System.getProperty(key);
-        if (stateFilePath != null) {
-            File stateFile = new File(stateFilePath);
-            if (!stateFile.exists()) {
-                File parent = stateFile.getParentFile();
-                parent.mkdirs();
-                if (!parent.exists()) {
-                    System.err.print("The state file's parent directory, \""
-                            + stateFilePath + "\", does not exist.");
-                    die();
-                }
-            }
-        }
-
-        log.info("state file path = {}", stateFilePath);
-        return stateFilePath;
-    }
-
-    /**
-     * @param cmd
-     * @return
-     */
     protected int getMaxQueueSize(String key) {
         String maxTaskQueueSizeOption = System.getProperty(key);
         int maxTaskQueueSize = 10 * 1000;

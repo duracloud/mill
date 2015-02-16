@@ -67,7 +67,6 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 .addNotificationRecipients()
                 .addMcDb()
                 .addDuplicationLowPriorityQueue()
-                .addLoopingDupStateFilePath()
                 .addLoopingDupFrequency()
                 .addLoopingDupMaxQueueSize()
                 .addDuplicationPolicyBucketSuffix()
@@ -110,9 +109,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         Cache cache = new Cache(cacheConfig);
         cacheManager.addCache(cache);
 
-        StateManager<DuplicationMorsel> stateManager = new StateManager<>(
-                getStateFilePath(ConfigConstants.LOOPING_DUP_STATE_FILE_PATH), DuplicationMorsel.class);
-
+        String stateFilePath = new File(config.getWorkDirectoryPath(), "dup-producer-state.json").getAbsolutePath();
+        StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath, DuplicationMorsel.class);
         NotificationManager notificationMananger = 
                 new SESNotificationManager(config.getNotificationRecipients());
 

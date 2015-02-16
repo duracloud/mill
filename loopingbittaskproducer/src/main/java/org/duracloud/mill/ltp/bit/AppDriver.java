@@ -85,7 +85,6 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 .addNotificationRecipients()
                 .addMcDb()
                 .addBitIntegrityQueue()
-                .addLoopingBitStateFilePath()
                 .addLoopingBitFrequency()
                 .addLoopingBitMaxQueueSize()
                 .addWorkDir()
@@ -108,7 +107,9 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         TaskQueue taskQueue = new SQSTaskQueue(
                 config.getBitIntegrityQueue());
 
-        String stateFilePath = getStateFilePath(ConfigConstants.LOOPING_BIT_STATE_FILE_PATH);
+        String stateFilePath = new File(config.getWorkDirectoryPath(), 
+                                        "bit-producer-state.json").getAbsolutePath();
+
         StateManager<BitIntegrityMorsel> stateManager = new StateManager<BitIntegrityMorsel>(
                 stateFilePath, BitIntegrityMorsel.class);
 

@@ -136,11 +136,6 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
     
-    public PropertyDefinitionListBuilder addLoopingBitStateFilePath(){
-        add(ConfigConstants.LOOPING_BIT_STATE_FILE_PATH, true);
-        return this;
-    }
-    
     public PropertyDefinitionListBuilder addLoopingDupFrequency() {
         add(ConfigConstants.LOOPING_DUP_FREQUENCY,false);
         return this;
@@ -148,11 +143,6 @@ public class PropertyDefinitionListBuilder {
 
     public PropertyDefinitionListBuilder addLoopingDupMaxQueueSize() {
         add(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE,false);
-        return this;
-    }
-    
-    public PropertyDefinitionListBuilder addLoopingDupStateFilePath(){
-        add(ConfigConstants.LOOPING_DUP_STATE_FILE_PATH, true);
         return this;
     }
 

@@ -52,7 +52,6 @@ public class ConfigConstants {
      */
     public static final String LOOPING_BIT_MAX_TASK_QUEUE_SIZE = "looping.bit.max-task-queue-size";
     public static final String LOOPING_BIT_FREQUENCY = "looping.bit.frequency";
-    public static final String LOOPING_BIT_STATE_FILE_PATH = "looping.bit.state-file-path";
     public static final String EXCLUSION_LIST_KEY = "looping.bit.exclusion-list-file";
     public static final String INCLUSION_LIST_KEY = "looping.bit.inclusion-list-file";
 
@@ -69,7 +68,6 @@ public class ConfigConstants {
      */
     public static final String LOOPING_DUP_FREQUENCY = "looping.dup.frequency";
     public static final String LOOPING_DUP_MAX_TASK_QUEUE_SIZE = "looping.dup.max-task-queue-size";
-    public static final String LOOPING_DUP_STATE_FILE_PATH = "looping.dup.state-file-path";
 
     /*
      * MC DATABASE
