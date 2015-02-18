@@ -7,7 +7,6 @@
  */
 package org.duracloud.mill.audit.generator;
 
-import org.duracloud.sync.endpoint.DuraStoreSyncEndpoint;
 
 /**
  * @author Daniel Bernstein
@@ -57,16 +56,5 @@ public class SystemConfig {
 
     public void setAuditLogSpaceId(String auditLogSpaceId) {
         this.auditLogSpaceId = auditLogSpaceId;
-    }
-
-    /**
-     * @return
-     */
-    public String getAwsAccessKeyId() {
-        return System.getProperty("aws.accessKeyId");
-    }
-    
-    public String getAwsSecretKey(){
-        return System.getProperty("aws.secretKey");
     }
 }

@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+
 /**
  * @author Daniel Bernstein
  *         Date: Sep 9, 2014
@@ -43,9 +45,9 @@ public class AuditGeneratorConfig {
     
     @Bean
     public StorageProvider storageProvider(){
-        String accessKey = systemConfig().getAwsAccessKeyId();
-        String secretKey = systemConfig().getAwsSecretKey();
-        return new S3StorageProvider(accessKey, secretKey);
+        //build the storage provider with a placeholder key since audit log generator 
+        //does not depend on creating new spaces.
+        return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);
 
     }
 
