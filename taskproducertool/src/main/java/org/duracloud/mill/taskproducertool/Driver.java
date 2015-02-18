@@ -14,13 +14,15 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.duracloud.mill.task.DuplicationTask;
-import org.duracloud.common.queue.task.NoopTask;
-import org.duracloud.common.queue.task.Task;
-import org.duracloud.common.queue.task.TypedTask;
-import org.duracloud.common.queue.task.Task.Type;
+import org.duracloud.audit.task.AuditTask;
+import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.task.NoopTask;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.task.Task.Type;
+import org.duracloud.common.queue.task.TypedTask;
+import org.duracloud.mill.task.DuplicationTask;
 
 /**
  * A simple client for placing various kinds of messages (NOOP, DUP, and BIT) on a task queue.
@@ -80,7 +82,7 @@ public class Driver {
         options.addOption(password);
 
         Option type = new Option("t", "type", true,
-                "The type of operation: NOOP, DUP, BIT");
+                "The type of operation: NOOP, DUP, BIT, AUDIT");
         type.setArgs(1);
         type.setArgName("type");
         type.setRequired(true);
@@ -156,6 +158,17 @@ public class Driver {
                 noopTask.setContentId(contentId);
                 noopTask.setStoreId(sourceStoreId);
                 typedTask = noopTask;
+            } else if(taskType.equals(Type.AUDIT)) {
+                AuditTask auditTask = new AuditTask();
+                auditTask.setAccount(subdomain);
+                auditTask.setSpaceId(spaceId);
+                auditTask.setContentId(contentId);
+                auditTask.setStoreId(sourceStoreId);
+                auditTask.setContentChecksum("checksum");
+                auditTask.setAction(ActionType.ADD_CONTENT.name());
+                auditTask.setContentSize("1000");
+                auditTask.setContentMimetype("text/plain");
+                typedTask = auditTask;
             } else {
                throw new RuntimeException("taskType " + taskType + " not supported.");
             }

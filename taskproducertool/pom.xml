@@ -37,6 +37,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>auditor</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
