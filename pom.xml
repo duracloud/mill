@@ -174,7 +174,7 @@
     <hibernate.version>4.3.2.Final</hibernate.version>
     <mysql.driver.version>5.1.28</mysql.driver.version>
     <skipUTs>false</skipUTs>
-    <duracloud.version>3.3.0-SNAPSHOT</duracloud.version>
+    <duracloud.version>3.2.2</duracloud.version>
     <skipITs>true</skipITs>
     <slf4j.version>1.7.6</slf4j.version>
   </properties>
