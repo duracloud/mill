@@ -17,6 +17,7 @@ import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.mill.workman.TaskProcessorBase;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.sdscstorage.SDSCStorageProvider;
 import org.duracloud.storage.error.NotFoundException;
@@ -43,7 +44,7 @@ import static org.duracloud.common.util.ChecksumUtil.Algorithm.MD5;
  * @author Bill Branan
  * 
  */
-public class DuplicationTaskProcessor implements TaskProcessor {
+public class DuplicationTaskProcessor extends TaskProcessorBase {
 
     private DuplicationTask dupTask;
     private StorageProvider sourceStore;
@@ -57,7 +58,10 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                                     StorageProvider sourceStore,
                                     StorageProvider destStore,
                                     File workDir) {
-        this.dupTask = new DuplicationTask();
+        super(new DuplicationTask());
+
+        this.dupTask = ((DuplicationTask)getTask());
+
         this.dupTask.readTask(task);
         this.sourceStore = sourceStore;
         this.destStore = destStore;
@@ -68,6 +72,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
                                        StorageProvider sourceStore,
                                        StorageProvider destStore,
                                        File workDir) {
+        super(dupTask);
         this.dupTask = dupTask;
         this.sourceStore = sourceStore;
         this.destStore = destStore;
@@ -75,7 +80,7 @@ public class DuplicationTaskProcessor implements TaskProcessor {
     }
 
     @Override
-    public void execute() throws TaskExecutionFailedException {
+    protected void executeImpl() throws TaskExecutionFailedException {
         // Read task
         String spaceId = dupTask.getSpaceId();
         String contentId = dupTask.getContentId();

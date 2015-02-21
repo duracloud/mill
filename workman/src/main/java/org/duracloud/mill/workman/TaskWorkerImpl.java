@@ -133,10 +133,18 @@ public class TaskWorkerImpl implements TaskWorker {
             TaskProcessor processor = this.processorFactory.create(task);
             processor.execute();
             this.queue.deleteTask(task);
+            
+            log.info("completed task:  task_type={} task_class{} attempts={} result={}",
+                     task.getType(),
+                     task.getClass().getSimpleName(),
+                     task.getAttempts(),
+                     "success");
+
         }  catch (TaskExecutionFailedException e) {
             int attempts = task.getAttempts();
-            log.error("failed to complete " + task + " after " + attempts
-                    + " attempts: " + e.getMessage(), e);
+
+            log.error("failed to complete:  task_type=" + task.getType() + " attempts=" + attempts
+                    + " message=\"" + e.getMessage() + "\" "+ ":  result=failure", e);
             
             if(attempts < TaskWorker.MAX_ATTEMPTS){
                 this.queue.requeue(task);
@@ -162,7 +170,7 @@ public class TaskWorkerImpl implements TaskWorker {
      * @param task
      */
     private void sendToDeadLetterQueue(Task task) {
-        log.debug("putting {} on dead letter queue", task);
+        log.info("putting {} on dead letter queue", task);
 
         try {
             log.debug("deleting {} from {}", task, this.queue);
@@ -172,7 +180,7 @@ public class TaskWorkerImpl implements TaskWorker {
         }
 
         this.deadLetterQueue.put(task);
-        log.info("sent {} to dead letter queue {}", task, deadLetterQueue);
+        log.info("sent {} to dead-letter-queue={}", task, deadLetterQueue.getName());
         
     }
 }

@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
@@ -29,7 +28,7 @@ import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
-import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.mill.workman.TaskProcessorBase;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.provider.StorageProvider;
@@ -39,8 +38,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Daniel Bernstein Date: May 7, 2014
  */
-public class BitIntegrityReportTaskProcessor implements
-                                            TaskProcessor {
+public class BitIntegrityReportTaskProcessor extends
+                                            TaskProcessorBase {
     private static Logger log = LoggerFactory
             .getLogger(BitIntegrityReportTaskProcessor.class);
     private BitIntegrityCheckReportTask task;
@@ -58,6 +57,7 @@ public class BitIntegrityReportTaskProcessor implements
                                            StorageProvider store,
                                            WorkmanConfigurationManager config,
                                            NotificationManager notificationManager) {
+        super(task);
         this.task = task;
         this.bitLogStore = bitLogStore;
         this.store = store;
@@ -68,10 +68,10 @@ public class BitIntegrityReportTaskProcessor implements
     /*
      * (non-Javadoc)
      * 
-     * @see org.duracloud.mill.workman.TaskProcessor#execute()
+     * @see org.duracloud.mill.workman.TaskProcessorBase#executeImpl()
      */
     @Override
-    public void execute() throws TaskExecutionFailedException {
+    protected void executeImpl() throws TaskExecutionFailedException {
         final String account = task.getAccount();
         final String storeId = task.getStoreId();
         final String spaceId = task.getSpaceId();

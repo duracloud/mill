@@ -26,9 +26,11 @@ import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.mill.workman.TaskProcessorBase;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
+import org.hibernate.type.descriptor.sql.BitTypeDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +42,8 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein 
            Date: 10/15/2014
  */
-public class BitIntegrityCheckTaskProcessor implements
-                                           TaskProcessor {
+public class BitIntegrityCheckTaskProcessor extends
+                                           TaskProcessorBase {
 
     private static final Logger log = LoggerFactory
             .getLogger(BitIntegrityCheckTaskProcessor.class);
@@ -70,6 +72,7 @@ public class BitIntegrityCheckTaskProcessor implements
                                           TaskQueue bitErrorQueue,
                                           TaskQueue auditTaskQueue,
                                           ContentChecksumHelper checksumHelper) {
+        super(bitTask);
         this.bitTask = bitTask;
         this.store = store;
         this.storageProviderType = storageProviderType;
@@ -100,7 +103,7 @@ public class BitIntegrityCheckTaskProcessor implements
     }
 
     @Override
-    public void execute() throws TaskExecutionFailedException {
+    protected void executeImpl() throws TaskExecutionFailedException {
 
         BitCheckExecutionState state = new BitCheckExecutionState(bitTask,
                                                                   storageProviderType,

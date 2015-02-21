@@ -32,6 +32,8 @@ public class TaskWorkerImplTest {
     @Before
     public void setUp() throws Exception {
         task = EasyMock.createMock(Task.class);
+        expect(task.getType()).andReturn(Task.Type.NOOP);
+        
         processor = EasyMock.createMock(TaskProcessor.class);
         queue = EasyMock.createMock(TaskQueue.class);
         deadLetterQueue = EasyMock.createMock(TaskQueue.class);
@@ -64,10 +66,12 @@ public class TaskWorkerImplTest {
             }
         });
 
+        
         queue.extendVisibilityTimeout(EasyMock.isA(Task.class));
         EasyMock.expectLastCall().times(2, 4);
         queue.deleteTask(EasyMock.isA(Task.class));
         EasyMock.expectLastCall();
+        expect(task.getAttempts()).andReturn(1);
 
         replay();
         TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue, deadLetterQueue);
@@ -90,7 +94,7 @@ public class TaskWorkerImplTest {
 
     @Test
     public void testRunWithProcessorExceptionFirstAttempt() throws Exception {
-        EasyMock.expect(task.getAttempts()).andReturn(0);
+        EasyMock.expect(task.getAttempts()).andReturn(0).times(1);
         queue.requeue(EasyMock.isA(Task.class));
         EasyMock.expectLastCall();
         runWithProcessorException();
@@ -98,8 +102,10 @@ public class TaskWorkerImplTest {
 
     @Test
     public void testRunWithProcessorExceptionLastAttempt() throws Exception {
-        expect(task.getAttempts()).andReturn(4);
+        expect(task.getAttempts()).andReturn(4).times(1);
         queue.deleteTask(EasyMock.isA(Task.class));
+        expect(deadLetterQueue.getName()).andReturn("queue");
+
         expectLastCall();
         deadLetterQueue.put(EasyMock.isA(Task.class));
         expectLastCall();

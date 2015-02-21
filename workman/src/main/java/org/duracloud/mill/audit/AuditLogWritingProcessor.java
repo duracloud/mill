@@ -13,7 +13,7 @@ import java.util.Map;
 import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
-import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.mill.workman.TaskProcessorBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.TransactionSystemException;
@@ -25,7 +25,7 @@ import org.springframework.transaction.TransactionSystemException;
  * @author Daniel Bernstein 
  *         Date: Mar 20, 2014
  */
-public class AuditLogWritingProcessor implements TaskProcessor {
+public class AuditLogWritingProcessor extends TaskProcessorBase {
     private final Logger       log = LoggerFactory
                                            .getLogger(AuditLogWritingProcessor.class);
 
@@ -34,17 +34,16 @@ public class AuditLogWritingProcessor implements TaskProcessor {
 
     public AuditLogWritingProcessor(AuditTask task,
             AuditLogStore auditLogStore) {
+        super(task);
         this.auditLogStore = auditLogStore;
         this.task = task;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.duracloud.mill.workman.TaskProcessor#execute()
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.workman.TaskProcessorBase#executeImpl()
      */
     @Override
-    public void execute() throws TaskExecutionFailedException {
+    protected void executeImpl() throws TaskExecutionFailedException {
 
 
 

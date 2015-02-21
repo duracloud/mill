@@ -12,7 +12,7 @@ import java.util.Date;
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
-import org.duracloud.mill.workman.TaskProcessor;
+import org.duracloud.mill.workman.TaskProcessorBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Bernstein
  *         Date: Sep 3, 2014
  */
-public class ManifestWritingProcessor implements
-                                     TaskProcessor {
+public class ManifestWritingProcessor extends
+                                     TaskProcessorBase {
     private static Logger log = LoggerFactory.getLogger(ManifestWritingProcessor.class);
     private AuditTask task;
     private ManifestStore manifestStore;
@@ -30,15 +30,16 @@ public class ManifestWritingProcessor implements
      * @param manifestStore 
      */
     public ManifestWritingProcessor(AuditTask task, ManifestStore manifestStore) {
+        super(task);
         this.task = task;
         this.manifestStore = manifestStore;
     }
 
     /* (non-Javadoc)
-     * @see org.duracloud.mill.workman.TaskProcessor#execute()
+     * @see org.duracloud.mill.workman.TaskProcessorBase#executeImpl()
      */
     @Override
-    public void execute() throws TaskExecutionFailedException {
+    protected void executeImpl() throws TaskExecutionFailedException {
         try {
             String account = task.getAccount();
             String storeId = task.getStoreId();

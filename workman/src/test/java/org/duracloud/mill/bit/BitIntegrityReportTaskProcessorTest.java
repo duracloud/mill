@@ -84,9 +84,11 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
     }
 
     private void setupTask() {
-        expect(task.getAccount()).andReturn(account);
-        expect(task.getStoreId()).andReturn(storeId);
-        expect(task.getSpaceId()).andReturn(spaceId);
+        expect(task.getAccount()).andReturn(account).times(2);
+        expect(task.getStoreId()).andReturn(storeId).times(2);
+        expect(task.getSpaceId()).andReturn(spaceId).times(2);
+        expect(task.getAttempts()).andReturn(2);
+
     }
 
     @Test

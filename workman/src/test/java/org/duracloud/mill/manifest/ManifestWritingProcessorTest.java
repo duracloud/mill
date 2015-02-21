@@ -39,6 +39,7 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
     private String contentSize = "content-size";
     private String contentMimetype = "content-mimetype";
     private Long dateTime = System.currentTimeMillis();
+    private int attempts = 2;
     
     @Test
     public void testAddContentTask() throws TaskExecutionFailedException, ManifestItemWriteException {
@@ -72,12 +73,13 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
     }
 
     private void setupTask(ActionType action) {
-        expect(task.getAccount()).andReturn(account);
-        expect(task.getStoreId()).andReturn(storeId);
-        expect(task.getSpaceId()).andReturn(spaceId);
+        expect(task.getAccount()).andReturn(account).times(2);
+        expect(task.getStoreId()).andReturn(storeId).times(2);
+        expect(task.getSpaceId()).andReturn(spaceId).times(2);
         expect(task.getContentId()).andReturn(contentId);
         expect(task.getAction()).andReturn(action.name());
         expect(task.getDateTime()).andReturn(dateTime+"");
+        expect(task.getAttempts()).andReturn(attempts);
     }
     
     @Test
