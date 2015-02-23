@@ -111,8 +111,9 @@ public class TaskWorkerImpl implements TaskWorker {
 
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
+
         log.debug("taskworker run starting...", this);
-        
         if(!initialized) {
             String error = "The taskworker must be initialized before it can be run";
             log.error(error);
@@ -134,17 +135,20 @@ public class TaskWorkerImpl implements TaskWorker {
             processor.execute();
             this.queue.deleteTask(task);
             
-            log.info("completed task:  task_type={} task_class{} attempts={} result={}",
+            log.info("completed task:  task_type={} task_class{} attempts={} result={} elapsed_time={}",
                      task.getType(),
                      task.getClass().getSimpleName(),
                      task.getAttempts(),
-                     "success");
+                     "success",
+                     System.currentTimeMillis()-startTime);
 
         }  catch (TaskExecutionFailedException e) {
             int attempts = task.getAttempts();
 
-            log.error("failed to complete:  task_type=" + task.getType() + " attempts=" + attempts
-                    + " message=\"" + e.getMessage() + "\" "+ ":  result=failure", e);
+            log.error("failed to complete:  task_type=" + task.getType()
+                    + " attempts=" + attempts + " result=failure elapsed_time="
+                    + (System.currentTimeMillis() - startTime) + " message=\""
+                    + e.getMessage() + "\"", e);
             
             if(attempts < TaskWorker.MAX_ATTEMPTS){
                 this.queue.requeue(task);

@@ -33,23 +33,35 @@ public abstract class TaskProcessorBase implements
      */
     @Override
     public final void execute() throws TaskExecutionFailedException {
-        String message = MessageFormat.format("processor completed: processor_class={0} account={1} store_id={2} space_id={3} attempts={4} result=",
-                this.getClass().getSimpleName(),
-                task.getAccount(),
-                task.getStoreId(),
-                task.getSpaceId(),
-                task.getAttempts());
+        long startTime = System.currentTimeMillis();
+                
         try {
             
             executeImpl();
-            log.info(message + "{}", 
-                    "success");
+            log.info(createMessage("success", System.currentTimeMillis()-startTime));
 
         }catch(TaskExecutionFailedException ex){
-            log.error(message + "{}", 
-                     "failure");
+            log.error(createMessage("failure", System.currentTimeMillis()-startTime));
             throw ex;
         }
+    }
+
+    /**
+     * @param string
+     * @param l
+     * @return
+     */
+    private String createMessage(String result, long elapsedTime) {
+        return MessageFormat
+                .format("processor completed: processor_class={0} account={1} store_id={2} space_id={3} attempts={4} result={5} elapsed_time={6}",
+                        this.getClass().getSimpleName(),
+                        task.getAccount(),
+                        task.getStoreId(),
+                        task.getSpaceId(),
+                        task.getAttempts(),
+                        result,
+                        elapsedTime);
+
     }
 
     /**
