@@ -107,7 +107,7 @@ public class TaskWorkerManager {
         
         
 
-        timer.schedule(new TimerTask() {
+        timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 
@@ -118,8 +118,6 @@ public class TaskWorkerManager {
                 }
                 
                 queueStats.add(formatQueueStat(deadLetterQueue));
-                
-                
                 
                 log.info(
                         "Status: max_workers={} running_workers={}" +
@@ -136,7 +134,7 @@ public class TaskWorkerManager {
                  return queue.getName() + "_q_size=" + queue.size();
             }
 
-        }, new Date(), 5 * 60 * 1000);
+        }, new Date(), 1 * 60 * 1000);
     }
     
     private void runManager() {
