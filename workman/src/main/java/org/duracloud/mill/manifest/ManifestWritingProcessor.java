@@ -51,8 +51,15 @@ public class ManifestWritingProcessor extends
             if(ActionType.ADD_CONTENT.name().equals(action) || 
                     ActionType.COPY_CONTENT.name().equals(action) ){
                 String mimetype = task.getContentMimetype();
+                if(mimetype == null){
+                    mimetype = "application/octet-stream";
+                }
+                
                 String size = task.getContentSize();
-
+                if(size == null){
+                    size = "0";
+                }
+                
                 this.manifestStore.addUpdate(account, 
                                     storeId, 
                                     spaceId, 
