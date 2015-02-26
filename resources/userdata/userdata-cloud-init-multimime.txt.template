@@ -79,6 +79,7 @@ runcmd:
  # Install AWS CLI
  - pip install awscli
  # Install librarian-puppet for retrieving dependent puppet modules from github (>1.0.3 requires >=Ruby 1.9)
+ - gem install highline --version 1.6.1
  - gem install librarian-puppet  --version 1.0.3
  # Get the github ssh key out of s3 so we can clone from our private github projects
  - aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/duracloud-prod-rsa-key /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
