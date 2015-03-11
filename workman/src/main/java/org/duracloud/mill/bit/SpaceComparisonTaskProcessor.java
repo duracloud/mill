@@ -72,6 +72,10 @@ public class SpaceComparisonTaskProcessor implements
         String account = bitTask.getAccount();
         String storeId = bitTask.getStoreId();
         String spaceId = bitTask.getSpaceId();
+        log.info("starting space comparison where account={} storeId={} spaceId={}",
+                 account,
+                 storeId,
+                 spaceId);
         try {
             // iterate through all content items in the storage provider
             Iterator<String> it = this.store.getSpaceContents(spaceId, null);

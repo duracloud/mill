@@ -10,6 +10,7 @@ package org.duracloud.mill.workman;
 import java.text.MessageFormat;
 
 import org.duracloud.common.queue.task.SpaceCentricTypedTask;
+import org.duracloud.common.queue.task.TypedTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,16 +53,21 @@ public abstract class TaskProcessorBase implements
      * @return
      */
     private String createMessage(String result, long elapsedTime) {
-        return MessageFormat
-                .format("processor completed: processor_class={0} account={1} store_id={2} space_id={3} attempts={4} result={5} elapsed_time={6}",
-                        this.getClass().getSimpleName(),
-                        task.getAccount(),
-                        task.getStoreId(),
-                        task.getSpaceId(),
-                        task.getAttempts(),
-                        result,
-                        elapsedTime);
+        String contentId = null;
+        if (task instanceof TypedTask) {
+            contentId = ((TypedTask) task).getContentId();
+        }
 
+            return MessageFormat
+                    .format("processor completed: processor_class={0} account={1} store_id={2} space_id={3} {4} attempts={5} result={6} elapsed_time={7}",
+                            this.getClass().getSimpleName(),
+                            task.getAccount(),
+                            task.getStoreId(),
+                            task.getSpaceId(),
+                            contentId == null ? "": "content_id="+contentId,
+                            task.getAttempts(),
+                            result,
+                            elapsedTime + "");
     }
 
     /**

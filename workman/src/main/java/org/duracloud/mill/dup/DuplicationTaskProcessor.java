@@ -576,8 +576,8 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                 buildFailureMessage(msg), e);
         }
 
-        log.info("Successfully deleted content item " + contentId +
-                 " in dest space " + spaceId + " in account " +
+        log.info("Successfully deleted content item (content_id=" + contentId +
+                 ") in dest space (space_id=" + spaceId + ") where account_id=" +
                  dupTask.getAccount());
     }
 
