@@ -8,7 +8,7 @@
 package org.duracloud.mill.noop;
 
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 
@@ -49,7 +49,7 @@ public class NoopTaskProcessorFactory extends TaskProcessorFactoryBase {
      * .mill.domain.Task)
      */
     @Override
-    protected boolean isSupported(Task task) {
+    public boolean isSupported(Task task) {
         return task.getType().equals(Task.Type.NOOP);
     }
 }

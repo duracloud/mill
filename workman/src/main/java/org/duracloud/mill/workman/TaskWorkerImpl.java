@@ -7,9 +7,9 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
-import org.duracloud.mill.queue.TaskNotFoundException;
-import org.duracloud.mill.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.queue.TaskNotFoundException;
+import org.duracloud.common.queue.TaskQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,6 @@ import java.util.TimerTask;
  * 
  */
 public class TaskWorkerImpl implements TaskWorker {
-    private static final int MAX_ATTEMPTS = 3;
     private static Logger log = LoggerFactory.getLogger(TaskWorkerImpl.class);
     private static final Timer TIMER;
 
@@ -112,8 +111,9 @@ public class TaskWorkerImpl implements TaskWorker {
 
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
+
         log.debug("taskworker run starting...", this);
-        
         if(!initialized) {
             String error = "The taskworker must be initialized before it can be run";
             log.error(error);
@@ -134,14 +134,26 @@ public class TaskWorkerImpl implements TaskWorker {
             TaskProcessor processor = this.processorFactory.create(task);
             processor.execute();
             this.queue.deleteTask(task);
+            
+            log.info("completed task:  task_type={} task_class{} attempts={} result={} elapsed_time={}",
+                     task.getType(),
+                     task.getClass().getSimpleName(),
+                     task.getAttempts(),
+                     "success",
+                     System.currentTimeMillis()-startTime);
+
         }  catch (TaskExecutionFailedException e) {
             int attempts = task.getAttempts();
-            log.error("failed to complete " + task + " after " + attempts
-                    + " attempts: " + e.getMessage(), e);
 
-            if(attempts < MAX_ATTEMPTS){
+            log.error("failed to complete:  task_type=" + task.getType()
+                    + " attempts=" + attempts + " result=failure elapsed_time="
+                    + (System.currentTimeMillis() - startTime) + " message=\""
+                    + e.getMessage() + "\"", e);
+            
+            if(attempts < TaskWorker.MAX_ATTEMPTS){
                 this.queue.requeue(task);
             }else{
+                task.addProperty("error", e.getMessage());
                 sendToDeadLetterQueue(task);
             }
             
@@ -162,7 +174,7 @@ public class TaskWorkerImpl implements TaskWorker {
      * @param task
      */
     private void sendToDeadLetterQueue(Task task) {
-        log.debug("putting {} on dead letter queue", task);
+        log.info("putting {} on dead letter queue", task);
 
         try {
             log.debug("deleting {} from {}", task, this.queue);
@@ -172,7 +184,7 @@ public class TaskWorkerImpl implements TaskWorker {
         }
 
         this.deadLetterQueue.put(task);
-        log.info("sent {} to dead letter queue {}", task, deadLetterQueue);
+        log.info("sent {} to dead-letter-queue={}", task, deadLetterQueue.getName());
         
     }
 }

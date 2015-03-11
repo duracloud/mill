@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,15 +20,16 @@ public class RootTaskProcessorFactoryTest {
 
 
     /**
-     * Test method for {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.mill.domain.Task)}.
+     * Test method for {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.common.queue.task.Task)}.
      * @throws TaskProcessorCreationFailedException 
      */
     @Test
     public void test() throws TaskProcessorCreationFailedException {
         TaskProcessor taskProcessor = EasyMock.createMock(TaskProcessor.class);
         TaskProcessorFactory bad = EasyMock.createMock(TaskProcessorFactory.class);
-        EasyMock.expect(bad.create(EasyMock.isA(Task.class))).andThrow(new TaskProcessorCreationFailedException("test"));
+        EasyMock.expect(bad.isSupported(EasyMock.isA(Task.class))).andReturn(false);
         TaskProcessorFactory good = EasyMock.createMock(TaskProcessorFactory.class);
+        EasyMock.expect(good.isSupported(EasyMock.isA(Task.class))).andReturn(true);
         EasyMock.expect(good.create(EasyMock.isA(Task.class))).andReturn(taskProcessor);
         EasyMock.replay(taskProcessor, bad, good);
         RootTaskProcessorFactory taskProcessorFactory = new RootTaskProcessorFactory();

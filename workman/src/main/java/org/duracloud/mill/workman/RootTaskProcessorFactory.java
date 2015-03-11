@@ -10,7 +10,7 @@ package org.duracloud.mill.workman;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,28 +30,38 @@ public class RootTaskProcessorFactory implements TaskProcessorFactory {
         log.debug("creating new...");
         this.factories = new LinkedList<TaskProcessorFactory>();
     }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.workman.TaskProcessorFactory#isSupported(org.duracloud.common.queue.task.Task)
+     */
+    @Override
+    public boolean isSupported(Task task) {
+        for(TaskProcessorFactory factory : factories){
+            if(factory.isSupported(task)){
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     @Override
     public TaskProcessor create(Task task) throws TaskProcessorCreationFailedException {
         TaskProcessor p = null;
         for (TaskProcessorFactory factory : factories) {
-            try {
+            if(factory.isSupported(task)){
                 p = factory.create(task);
                 break;
-            } catch (TaskProcessorCreationFailedException e) {
-                if(log.isDebugEnabled()){
-                    log.debug("task processor failed, moving on to the next...");
-                    log.warn(e.getMessage(), e);
-                    e.printStackTrace();
-                }
-                continue;
+            }else{
+                log.debug(
+                        "task processor {} does not support {}, trying next processor...",
+                        p, task);
             }
         }
 
         if (p == null) {
             throw new TaskProcessorCreationFailedException(
-                    task
-                            + " is not supported: no compatible TaskProcessorFactory found.");
+                    task + " is not supported: no compatible TaskProcessorFactory found.");
         }
         return p;
     }

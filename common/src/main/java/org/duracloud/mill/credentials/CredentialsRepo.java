@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.credentials;
 
+import java.util.List;
+
 
 /**
  * This interface mediates all interaction with the credential-providing subsystem.
@@ -15,14 +17,28 @@ package org.duracloud.mill.credentials;
  */
 public interface CredentialsRepo {
     /**
-     * Returns a set of credentials associated with a subdomain.
+     * Returns a set of credentials associated with an account.
      * 
-     * @param subdomain The subdomain of the DuraCloud account.
+     * @param account The id of the DuraCloud account - maps directly to the subdomain.
      * @param storeId The storage provider id
      * @return
      * @throws CredentialsRepoException
      */
-    StorageProviderCredentials getStorageProviderCredentials(String subdomain,
+    StorageProviderCredentials getStorageProviderCredentials(String account,
             String storeId) throws CredentialsRepoException;
     
+    /**
+     * Returns a list of accounts
+     * @return
+     * @throws CredentialsRepoException
+     */
+    public List<String> getAccounts() throws CredentialsRepoException;
+
+    /**
+     * Returns a list of storage provider  associated with an account
+     * @param account
+     * @return
+     * @throws CredentialsRepoException
+     */
+    public AccountCredentials getAccountCredentials(String account) throws AccountCredentialsNotFoundException;
 }

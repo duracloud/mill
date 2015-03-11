@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 
 /**
  * The TaskProcessResolver resolves a <code>TaskProcessor</code> for a given
@@ -17,5 +17,5 @@ import org.duracloud.mill.domain.Task;
  */
 public interface TaskProcessorFactory {
     TaskProcessor create(Task task) throws TaskProcessorCreationFailedException;
-
+    boolean isSupported(Task task);
 }

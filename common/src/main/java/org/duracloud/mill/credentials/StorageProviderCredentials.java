@@ -19,6 +19,7 @@ public class StorageProviderCredentials {
     private String accessKey;
     private String secretKey;
     private StorageProviderType providerType;
+    private boolean primary;
 
     public StorageProviderCredentials(){
         
@@ -28,14 +29,16 @@ public class StorageProviderCredentials {
      * @param accessKey
      * @param secretKey
      * @param providerType
+     * @param primary 
      */
     public StorageProviderCredentials(String providerId, String accessKey,
-            String secretKey, StorageProviderType providerType) {
+            String secretKey, StorageProviderType providerType, boolean primary) {
         super();
         this.providerId = providerId;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.providerType = providerType;
+        this.setPrimary(primary);
     }
 
     public String getProviderId() {
@@ -68,5 +71,11 @@ public class StorageProviderCredentials {
 
     public void setProviderType(StorageProviderType providerType) {
         this.providerType = providerType;
+    }
+    public boolean isPrimary() {
+        return primary;
+    }
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 }

@@ -1,0 +1,13 @@
+#####################################
+# This is a sample inclusions file
+####################################
+
+# To include an entire account 
+/accountname(/.*)?
+# To include all spaces in a storage provider 
+/accountname(/store-id(/spacename)?)?
+# To include a single space 
+/accountname(/[^/]*(/spacename)?)?
+# To include all spaces across accounts with a common name
+/[^/]*(/[^/]*(/spacename)?)?
+

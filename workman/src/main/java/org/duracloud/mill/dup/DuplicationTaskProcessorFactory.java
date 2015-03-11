@@ -7,12 +7,13 @@
  */
 package org.duracloud.mill.dup;
 
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
-import org.duracloud.mill.domain.DuplicationTask;
-import org.duracloud.mill.domain.Task;
+import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
@@ -30,17 +31,23 @@ import java.io.File;
  * 
  */
 public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
-    private StorageProviderFactory storageProviderFactory;
     private static Logger log =
         LoggerFactory.getLogger(DuplicationTaskProcessorFactory.class);
 
-    public DuplicationTaskProcessorFactory(CredentialsRepo repo, File workDir){
+    private TaskQueue auditTaskQueue;
+    private StorageProviderFactory storageProviderFactory;
+
+    public DuplicationTaskProcessorFactory(CredentialsRepo repo,
+                                           StorageProviderFactory storageProviderFactory,
+                                           File workDir,
+                                           TaskQueue auditTaskQueue){
         super(repo, workDir);
-        this.storageProviderFactory = new StorageProviderFactory();
+        this.auditTaskQueue = auditTaskQueue;
+        this.storageProviderFactory = storageProviderFactory;
     }
     
     @Override
-    protected boolean isSupported(Task task) {
+    public boolean isSupported(Task task) {
         return task.getType().equals(Task.Type.DUP);
     }
 
@@ -54,9 +61,13 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
 
         try {
             StorageProvider sourceStore =
-                createStorageProvider(dtask.getSourceStoreId(), subdomain);
+                createStorageProvider(dtask.getSourceStoreId(),
+                                      subdomain,
+                                      auditTaskQueue);
             StorageProvider destStore =
-                createStorageProvider(dtask.getDestStoreId(), subdomain);
+                createStorageProvider(dtask.getDestStoreId(),
+                                      subdomain,
+                                      auditTaskQueue);
             return new DuplicationTaskProcessor(dtask, sourceStore, destStore,
                                                 getWorkDir());
         } catch (Exception e) {
@@ -69,19 +80,20 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     }
 
     /**
-     * @param providerId
+     * @param storeId
      * @param subdomain
      * @return
      */
-    public StorageProvider createStorageProvider(String providerId,
-            String subdomain) {
-        
-        StorageProviderCredentials c;
+    private StorageProvider createStorageProvider(String storeId,
+                                                 String subdomain,
+                                                 TaskQueue auditTaskQueue) {
         try {
-            c = getCredentialRepo().getStorageProviderCredentials(subdomain,
-                    providerId);
-
-            return this.storageProviderFactory.create(c);
+            StorageProviderCredentials credentials =
+                getCredentialRepo().getStorageProviderCredentials(subdomain,
+                                                                  storeId);
+            return this.storageProviderFactory.createWithAudit(credentials,
+                                                               subdomain,
+                                                               auditTaskQueue);
         } catch (CredentialsRepoException e) {
             throw new RuntimeException(e);
         }

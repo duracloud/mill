@@ -102,7 +102,8 @@ App.DuraStoreClient = Ember.Object.create({
 	    	url: url,
 			type : 'PUT',
 			data : JSON.stringify(accounts),
-			dataType: "text"
+		        contentType:"application/json;charset=utf-8",
+		        dataType: "text"
 		});
 
 	    return $.ajax(options);		
@@ -111,10 +112,12 @@ App.DuraStoreClient = Ember.Object.create({
 	savePolicy: function(subdomain, policy){
 		var url =  this._formatDuplicationPolicyUrl(subdomain);
 		var options = this._createOptions({
-								url: url , 
-								type:'PUT', 
-								data: JSON.stringify(policy), 
-								dataType:"text"});
+				                 	url: url , 
+							type:'PUT', 
+							data: JSON.stringify(policy), 
+		                                        contentType:"application/json;charset=utf-8", 
+		                                        dataType:"text"});
+		                 
 		return $.ajax(options);
 	},
 	

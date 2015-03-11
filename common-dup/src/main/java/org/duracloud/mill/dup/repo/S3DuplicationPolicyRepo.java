@@ -47,7 +47,11 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
      * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client.html#AmazonS3Client%28%29
      */
     public S3DuplicationPolicyRepo(String policyRepoBucketSuffix) {
-        this.s3Client = new AmazonS3Client();
+        this(new AmazonS3Client(), policyRepoBucketSuffix);
+    }
+
+    public S3DuplicationPolicyRepo(AmazonS3Client s3Client, String policyRepoBucketSuffix) {
+        this.s3Client = s3Client;
         this.policyRepoBucketSuffix = policyRepoBucketSuffix;
         init();
     }
@@ -55,10 +59,8 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
     /**
      * Intended for testing
      */
-    protected S3DuplicationPolicyRepo(AmazonS3Client s3Client) {
-        this.s3Client = s3Client;
-        this.policyRepoBucketSuffix = DUP_POLICY_REPO_BUCKET_SUFFIX;
-        init();
+    public S3DuplicationPolicyRepo(AmazonS3Client s3Client) {
+        this(s3Client, DUP_POLICY_REPO_BUCKET_SUFFIX);
     }
 
     private void init() {

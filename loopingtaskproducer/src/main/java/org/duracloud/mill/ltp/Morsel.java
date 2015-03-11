@@ -10,7 +10,6 @@ package org.duracloud.mill.ltp;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.duracloud.mill.dup.DuplicationStorePolicy;
 
 /**
  * A definition of a bite-sized swath of content ids that can be nibbled by the
@@ -20,11 +19,10 @@ import org.duracloud.mill.dup.DuplicationStorePolicy;
  *         Date: Nov 7, 2013
  */
 public class Morsel {
-    private static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
-    private String subdomain;
+    protected static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
+    private String account;
     private String spaceId;
     private String marker;
-    private DuplicationStorePolicy storePolicy;
     private boolean deletePerformed = false;
     
     public Morsel() {
@@ -32,27 +30,25 @@ public class Morsel {
     }
     
     /**
-     * @param subdomain
+     * @param account
      * @param spaceId
      * @param marker
      * @param storePolicy
      * @param inprocess
      */
-    public Morsel(String subdomain, String spaceId, String marker,
-            DuplicationStorePolicy storePolicy) {
+    public Morsel(String account, String spaceId, String marker) {
         super();
-        this.subdomain = subdomain;
+        this.account = account;
         this.spaceId = spaceId;
         this.marker = marker;
-        this.storePolicy = storePolicy;
     }
 
 
     /**
      * @return the subdomain
      */
-    public String getSubdomain() {
-        return subdomain;
+    public String getAccount() {
+        return account;
     }
     
     /* (non-Javadoc)
@@ -60,7 +56,14 @@ public class Morsel {
      */
     @Override
     public boolean equals(Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj, EXCLUSIONS);
+        return EqualsBuilder.reflectionEquals(this, obj, getExclusions());
+    }
+
+    /**
+     * @return
+     */
+    private String[] getExclusions() {
+        return EXCLUSIONS;
     }
     
     /* (non-Javadoc)
@@ -68,7 +71,7 @@ public class Morsel {
      */
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this, EXCLUSIONS);
+        return HashCodeBuilder.reflectionHashCode(this, getExclusions());
     }
 
     /* (non-Javadoc)
@@ -99,13 +102,6 @@ public class Morsel {
      */
     public void setMarker(String marker) {
         this.marker = marker;
-    }
-
-    /**
-     * @return the storePolicy
-     */
-    public DuplicationStorePolicy getStorePolicy() {
-        return storePolicy;
     }
 
     /**

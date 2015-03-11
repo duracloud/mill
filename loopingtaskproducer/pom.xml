@@ -4,58 +4,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>loopingtaskproducer</artifactId>
-  <version>1.0.5</version>
+  <version>2.0.0</version>
   <name>DuraCloud Mill Looping Task Producer</name>
 
   <parent>
-    <artifactId>duplication</artifactId>
+    <artifactId>mill</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>1.0.5</version>
+    <version>2.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-              <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.duracloud.mill.ltp.AppDriver</mainClass>
-                </transformer>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/spring.handlers</resource>
-                </transformer>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                  <resource>META-INF/spring.schemas</resource>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>      
-    </plugins>
-  </build>
   <dependencies>
 
     <dependency>
@@ -73,6 +31,12 @@
     <dependency>
       <groupId>org.duracloud.mill</groupId>
       <artifactId>credentialsrepo-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>common-bit</artifactId>
       <version>${project.version}</version>
     </dependency>
 

@@ -7,14 +7,14 @@
  */
 package org.duracloud.mill.workman;
 
-import junit.framework.Assert;
 
-import org.duracloud.mill.domain.NoopTask;
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.NoopTask;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.noop.NoopTaskProcessor;
-import org.duracloud.mill.queue.TaskQueue;
 import org.duracloud.mill.workman.spring.AppConfig;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -37,7 +37,7 @@ public class TestNoopProcessorRoundTripWithSQS {
     @Before
     public void setUp() throws Exception {
         context = new AnnotationConfigApplicationContext(AppConfig.class);
-        queue = (TaskQueue)context.getBean("taskQueue");
+        queue = (TaskQueue)context.getBean("auditQueue");
     }
 
     /**

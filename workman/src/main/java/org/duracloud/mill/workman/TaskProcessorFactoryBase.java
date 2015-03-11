@@ -8,7 +8,7 @@
 package org.duracloud.mill.workman;
 
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.domain.Task;
+import org.duracloud.common.queue.task.Task;
 
 import java.io.File;
 
@@ -24,6 +24,10 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
     private CredentialsRepo credentialRepo;
     private File workDir;
 
+    public TaskProcessorFactoryBase(CredentialsRepo credentialRepo) {
+        this(credentialRepo, null);
+    }
+
     public TaskProcessorFactoryBase(CredentialsRepo credentialRepo,
                                     File workDir) {
         this.credentialRepo = credentialRepo;
@@ -34,7 +38,7 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
     public final TaskProcessor create(Task task)
             throws TaskProcessorCreationFailedException {
         if (!isSupported(task)) {
-            throw new TaskProcessorCreationFailedException(task + " is not supported");
+            throw new TaskProcessorCreationFailedException(task + " is not supported by this factory:" + getClass().getSimpleName());
         }
 
         return createImpl(task);
@@ -48,7 +52,7 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
         return workDir;
     }
 
-    protected abstract boolean isSupported(Task task);
+    public abstract boolean isSupported(Task task);
 
     protected abstract TaskProcessor createImpl(Task task) throws TaskProcessorCreationFailedException;
 }

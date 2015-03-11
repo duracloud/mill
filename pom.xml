@@ -3,10 +3,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
-  <artifactId>duplication</artifactId>
+  <artifactId>mill</artifactId>
   <packaging>pom</packaging>
-  <version>1.0.5</version>
-  <name>DuraCloud Duplication Mill</name>
+  <version>2.0.0</version>
+  <name>DuraCloud Mill</name>
+  <description>Task processing system which supports DuraCloud</description>
   <url>http://duracloud.org</url>
 
   <prerequisites>
@@ -16,19 +17,17 @@
   <inceptionYear>2013</inceptionYear>
 
   <developers>
+
     <developer>
       <name>Bernstein, Danny</name>
       <email>dbernstein@duraspace.org</email>
+      <organization>DuraSpace</organization>
     </developer>
 
     <developer>
       <name>Branan, Bill</name>
       <email>bbranan@duraspace.org</email>
-    </developer>
-
-    <developer>
-      <name>Paulsson, Erik</name>
-      <email>epaulsson@duraspace.org</email>
+      <organization>DuraSpace</organization>
     </developer>
 
   </developers>
@@ -45,14 +44,27 @@
     <url>http://www.duraspace.org</url>
   </organization>
 
+  <scm>
+ 	  <connection>scm:git:git@github.com:duracloud/mill.git</connection>
+ 	  <url>scm:git:git@github.com:duracloud/mill.git</url>
+ 	  <developerConnection>scm:git:git@github.com:duracloud/mill.git</developerConnection>
+  </scm>
+
   <modules>
     <module>common</module>
     <module>common-dup</module>
+    <module>common-bit</module>
+    <module>bitlog</module>
     <module>common-taskproducer</module>
     <module>common-storageprovider</module>
     <module>credentialsrepo-impl</module>
     <module>loopingtaskproducer</module>
+    <module>loopingduptaskproducer</module>
+    <module>loopingbittaskproducer</module>
     <module>workman</module>
+    <module>auditlog-generator</module>
+    <module>manifest-cleaner</module>
+    <module>manifest-builder</module>
     <module>taskproducertool</module>
     <module>taskreadertool</module>
     <module>policy-editor</module>
@@ -72,34 +84,81 @@
       <properties>
         <log.level>${log.level.default}</log.level>
       </properties>
-
-      <build>
-        <plugins>
-
-          <!-- For Coveralls code coverage -->
-          <plugin>
-            <groupId>org.eluder.coveralls</groupId>
-            <artifactId>coveralls-maven-plugin</artifactId>
-            <version>2.0.1</version>
-          </plugin>
-
-          <plugin>
-              <groupId>org.jacoco</groupId>
-              <artifactId>jacoco-maven-plugin</artifactId>
-              <version>0.6.3.201306030806</version>
-              <executions>
-                  <execution>
-                      <id>prepare-agent</id>
-                      <goals>
-                          <goal>prepare-agent</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
-
-        </plugins>
-      </build>
     </profile>
+
+    <profile>
+      <id>java8-disable-strict-javadoc</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <properties>
+        <javadoc.opts>-Xdoclint:none</javadoc.opts>
+      </properties>
+    </profile>
+
+    <profile>
+        <id>profile-generate-docs-source-signature</id>
+        <activation>
+            <activeByDefault>false</activeByDefault>
+            <property>
+                <name>releaseBuild</name>
+            </property>
+        </activation>
+        <build>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.3</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.9.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                            <configuration>
+                              <additionalparam>${javadoc.opts}</additionalparam>
+                            </configuration>
+                        </execution>
+                     </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.5</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </build>
+    </profile>
+
   </profiles>
 
   <properties>
@@ -110,51 +169,34 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
-    <duracloud.version>3.1.1</duracloud.version>
+    <powermock.version>1.5.4</powermock.version>
+    <spring.framework.data.jpa.version>1.6.0.RELEASE</spring.framework.data.jpa.version>
+    <hibernate.version>4.3.2.Final</hibernate.version>
+    <mysql.driver.version>5.1.28</mysql.driver.version>
+    <skipUTs>false</skipUTs>
+    <duracloud.version>3.2.3</duracloud.version>
     <skipITs>true</skipITs>
-    <powermock.version>1.5.2</powermock.version>
+    <slf4j.version>1.7.6</slf4j.version>
   </properties>
 
   <distributionManagement>
 
     <repository>
-      <id>duraspace-releases</id>
-      <name>DuraSpace Release Maven Repository</name>
-      <url>https://m2.duraspace.org/content/repositories/releases</url>
+      <id>sonatype-releases</id>
+      <name>Sonatype Release Staging Maven Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
     </repository>
 
     <snapshotRepository>
-      <id>duraspace-snapshots</id>
-      <name>DuraSpace Snapshots Maven Repository</name>
-      <url>https://m2.duraspace.org/content/repositories/snapshots</url>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Maven Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
 
   </distributionManagement>
 
   <repositories>
-    <repository>
-      <id>duraspace-production</id>
-      <name>DuraSpace Production</name>
-      <url>https://m2.duraspace.org/content/repositories/releases</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
 
-    <repository>
-      <id>duraspace-thirdparty</id>
-      <name>DuraSpace Thirdparty</name>
-      <url>https://m2.duraspace.org/content/repositories/thirdparty</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
     <repository>
       <id>central</id>
       <name>Maven Repository Switchboard</name>
@@ -163,38 +205,13 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+
     <repository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-      <layout>default</layout>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Maven Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
       <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>maven-repository.dev.java.net</id>
-      <name>Java.net Maven 1 Repository (legacy)</name>
-      <url>http://download.java.net/maven/1</url>
-      <layout>legacy</layout>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>com.springsource.repository.bundles.release</id>
-      <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
-      <url>http://repository.springsource.com/maven/bundles/release</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>com.springsource.repository.bundles.external</id>
-      <name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
-      <url>http://repository.springsource.com/maven/bundles/external</url>
-      <snapshots>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </snapshots>
     </repository>
 
@@ -203,10 +220,8 @@
   <pluginRepositories>
 
     <pluginRepository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-      <layout>default</layout>
+      <id>oss.sonatype.org</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
     </pluginRepository>
 
   </pluginRepositories>
@@ -224,21 +239,62 @@
         <filtering>true</filtering>
       </testResource>
     </testResources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.2</version>
+          <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <filters>
+                  <filter>
+                    <artifact>*:*</artifact>
+                    <excludes>
+                      <exclude>META-INF/*.SF</exclude>
+                      <exclude>META-INF/*.DSA</exclude>
+                      <exclude>META-INF/*.RSA</exclude>
+                    </excludes>
+                  </filter>
+                </filters>
+                <transformers>
+                  <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>${mainClass}</mainClass>
+                  </transformer>
+                  <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                    <resource>META-INF/spring.handlers</resource>
+                  </transformer>
+                  <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                    <resource>META-INF/spring.schemas</resource>
+                  </transformer>
+                </transformers>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.8</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-4</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/dep.xml</descriptor>
-          </descriptors>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
@@ -273,18 +329,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
         <configuration>
-          <skipTests>${skipTests}</skipTests>
+          <skipTests>${skipUTs}</skipTests>
           <trimStackTrace>false</trimStackTrace>
           <systemProperties>
-            <property>
-              <name>unit.database.home</name>
-              <value>${unit.database.home.default}</value>
-            </property>
-            <property>
-              <name>unit.database.password</name>
-              <value>${unit.database.password.default}</value>
-            </property>
             <property>
               <name>PROJECT_VERSION</name>
               <value>${project.version}</value>
@@ -299,39 +348,26 @@
             <include>${unitTests}</include>
           </includes>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.16</version>
+        <configuration>
+          <skipTests>${skipITs}</skipTests>
+          <systemPropertyVariables>
+          </systemPropertyVariables>
+          <includes>
+            <!-- include>%regex[Test.*.class]</include-->
+            <include>${integrationTests}</include>
+          </includes>
+        </configuration>
         <executions>
           <execution>
-            <id>integrationtest</id>
-            <phase>integration-test</phase>
             <goals>
-              <goal>test</goal>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
-            <configuration>
-              <skipTests>${skipITs}</skipTests>
-              <trimStackTrace>false</trimStackTrace>
-              <systemProperties>
-                <property>
-                  <name>unit.database.home</name>
-                  <value>${unit.database.home.default}</value>
-                </property>
-                <property>
-                  <name>unit.database.password</name>
-                  <value>${unit.database.password.default}</value>
-                </property>
-                <property>
-                  <name>PROJECT_VERSION</name>
-                  <value>${project.version}</value>
-                </property>
-              </systemProperties>
-              <excludes>
-                <exclude>${unitTests}</exclude>
-                <exclude>${instrumentedTests}</exclude>
-                <exclude>${innerClasses}</exclude>
-              </excludes>
-              <includes>
-                <include>${integrationTests}</include>
-              </includes>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -371,6 +407,7 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.11</version>
+        <scope>test</scope>
         <exclusions>
           <exclusion>
             <groupId>log4j</groupId>
@@ -383,6 +420,7 @@
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
         <version>3.2</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.powermock</groupId>
@@ -400,25 +438,25 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.5</version>
+        <version>${slf4j.version}</version>
       </dependency>
 
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>0.9.21</version>
+        <version>1.1.2</version>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
-        <version>1.7.5</version>
+        <version>${slf4j.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>log4j-over-slf4j</artifactId>
-        <version>1.7.5</version>
+        <version>${slf4j.version}</version>
       </dependency>
 
       <dependency>
@@ -440,9 +478,15 @@
       </dependency>
 
       <dependency>
+        <groupId>commons-dbcp</groupId>
+        <artifactId>commons-dbcp</artifactId>
+        <version>1.4</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk</artifactId>
-        <version>1.6.2</version>
+        <version>1.7.3</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -469,6 +513,17 @@
         <version>1.9.5</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-context</artifactId>
@@ -506,18 +561,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>${spring.framework.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>common</artifactId>
         <version>${duracloud.version}</version>
@@ -528,9 +571,67 @@
           </exclusion>
         </exclusions>
       </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>common-test</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>mill-jpa-repo</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>reportdata</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>account-management-db-model</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>account-management-db-repo</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <version>${spring.framework.data.jpa.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-dbcp</groupId>
+        <artifactId>commons-dbcp</artifactId>
+        <version>1.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>common-queue</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>common-json</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>storageprovider</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>auditor</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
       <dependency>
@@ -559,10 +660,34 @@
         <version>${duracloud.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-entitymanager</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.driver.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>common-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
