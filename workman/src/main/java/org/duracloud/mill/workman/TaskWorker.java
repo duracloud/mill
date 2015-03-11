@@ -14,6 +14,6 @@ package org.duracloud.mill.workman;
  */
 public interface TaskWorker extends Runnable {
 
-    public static final int MAX_ATTEMPTS = 3;
+    public static final int MAX_ATTEMPTS = 4;
 
 }

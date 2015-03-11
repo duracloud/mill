@@ -24,6 +24,7 @@ import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestItemWriteException;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.duracloud.mill.workman.TaskWorker;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -278,7 +279,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testFailedStorageProviderChecksumFinalAttempt() throws Exception {
-        this.task = createBitIntegrityCheckTask(3);
+        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS);
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockInvalidChecksum();
         mockManifestValidChecksum();
@@ -293,7 +294,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testFailedManifestChecksumFinalAttempt() throws Exception {
-        this.task = createBitIntegrityCheckTask(3);
+        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS);
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum();
         mockManifestInvalidChecksum();
@@ -327,7 +328,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testFailedManifestChecksumPenultimateAttempt() throws Exception {
-        this.task = createBitIntegrityCheckTask(2);
+        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS-1);
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum();
         mockManifestInvalidChecksum();
@@ -339,7 +340,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testFailedManifestChecksumDueToNullChecksumUltimateAttempt() throws Exception {
-        this.task = createBitIntegrityCheckTask(3);
+        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS);
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum();
         mockGetContentChecksum(checksum);
@@ -355,7 +356,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testIgnoreFailedManifestChecksumUltimateAttempt() throws Exception {
-        this.task = createBitIntegrityCheckTask(3);
+        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS);
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum(new Date());
         mockManifestChecksumNull();
@@ -369,7 +370,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     @Test
     public void testAllChecksumsMismatchedUltimateAttempt() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
-        int attempt = 3;
+        int attempt = TaskWorker.MAX_ATTEMPTS;
         this.task = createBitIntegrityCheckTask(attempt);
         storeMockInvalidChecksum();
         mockManifestValidChecksum();
@@ -386,7 +387,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     @Test
     public void testAllChecksumsMismatchedUltimateAttemptGlacier() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_GLACIER;
-        int attempt = 3;
+        int attempt = TaskWorker.MAX_ATTEMPTS;
         this.task = createBitIntegrityCheckTask(attempt);
         storeMockInvalidChecksum();
         mockManifestValidChecksum();
@@ -402,7 +403,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     @Test
     public void testContentNotFound() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
-        int attempt = 3;
+        int attempt = TaskWorker.MAX_ATTEMPTS;
         this.task = createBitIntegrityCheckTask(attempt);
         storeMockNotFound();
         mockManifestValidChecksum();
@@ -441,11 +442,6 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      */
     private void mockBitErrorTaskPut() {
         this.bitErrorQueue.put(isA(Task.class));
-        EasyMock.expectLastCall();
-    }
-
-    private void mockAuditTaskPut() {
-        this.auditQueue.put(isA(Task.class));
         EasyMock.expectLastCall();
     }
 

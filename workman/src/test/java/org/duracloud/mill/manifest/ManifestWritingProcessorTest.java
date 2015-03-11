@@ -76,7 +76,7 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
         expect(task.getAccount()).andReturn(account).times(2);
         expect(task.getStoreId()).andReturn(storeId).times(2);
         expect(task.getSpaceId()).andReturn(spaceId).times(2);
-        expect(task.getContentId()).andReturn(contentId);
+        expect(task.getContentId()).andReturn(contentId).times(2);
         expect(task.getAction()).andReturn(action.name());
         expect(task.getDateTime()).andReturn(dateTime+"");
         expect(task.getAttempts()).andReturn(attempts);

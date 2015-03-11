@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.duracloud.audit.task.AuditTask;
+import org.duracloud.common.queue.TaskException;
 import org.duracloud.common.queue.TaskNotFoundException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
@@ -194,5 +195,14 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
         /* (non-Javadoc)
          * @see org.duracloud.common.queue.TaskQueue#deleteTasks(java.util.Set)
          */
+        @Override
+        public void deleteTasks(Set<Task> tasks) throws TaskException {}
+        /* (non-Javadoc)
+         * @see org.duracloud.common.queue.TaskQueue#take(int)
+         */
+        @Override
+        public Set<Task> take(int maxTasks) throws TimeoutException {
+            throw new NotImplementedException();
+        }
     }
 }
