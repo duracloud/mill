@@ -36,12 +36,12 @@ public class AuditLogGenerator {
 
     public void execute() {
         log.info("executing generator...");
+        long itemsWritten = 0;
         try {
             // Reads the Audit table, writes each item it finds to a
             // space-specific file
             while (true) {
-
-                List<JpaAuditLogItem> items = auditLogItemRepo.findByWrittenFalseOrderByTimestampAsc();
+                List<JpaAuditLogItem> items = auditLogItemRepo.findTop10000ByWrittenFalseOrderByTimestampAsc();
                 if (CollectionUtils.isEmpty(items)) {
                     log.info("No audit items found for processing: nowhere to go, nothing to do.", items.size());
                     break;
@@ -53,9 +53,15 @@ public class AuditLogGenerator {
                     write(item);
                 }
                 
+                itemsWritten += items.size();
                 log.info("{} audit items written.", items.size());
                 
+                if(itemsWritten >= 1000000){
+                    break;
+                }
             }
+            
+            log.info("{} total audit items written in this run.", itemsWritten);
             
             this.logManager.purgeExpired();
         } catch (Exception ex) {

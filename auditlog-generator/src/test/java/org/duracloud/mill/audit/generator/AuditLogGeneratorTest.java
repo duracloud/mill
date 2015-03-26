@@ -34,10 +34,10 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
     public void test() {
         List<JpaAuditLogItem> list = new ArrayList<>();
         list.add(createAuditLogItem(new Date(System.currentTimeMillis()), "account1"));
-        expect(repo.findByWrittenFalseOrderByTimestampAsc())
+        expect(repo.findTop10000ByWrittenFalseOrderByTimestampAsc())
                 .andReturn(list);
 
-        expect(repo.findByWrittenFalseOrderByTimestampAsc())
+        expect(repo.findTop10000ByWrittenFalseOrderByTimestampAsc())
                 .andReturn(new ArrayList<JpaAuditLogItem>());
 
         logManager.purgeExpired();
