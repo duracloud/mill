@@ -16,6 +16,7 @@ import org.duracloud.mill.db.repo.JpaAuditLogItemRepo;
 import org.duracloud.mill.test.AbstractTestBase;
 import org.easymock.Mock;
 import org.junit.Test;
+import org.springframework.data.domain.Pageable;
 
 import static org.easymock.EasyMock.*;
 
@@ -34,10 +35,10 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
     public void test() {
         List<JpaAuditLogItem> list = new ArrayList<>();
         list.add(createAuditLogItem(new Date(System.currentTimeMillis()), "account1"));
-        expect(repo.findTop10000ByWrittenFalseOrderByTimestampAsc())
+        expect(repo.findByWrittenFalseOrderByTimestampAsc(isA(Pageable.class)))
                 .andReturn(list);
 
-        expect(repo.findTop10000ByWrittenFalseOrderByTimestampAsc())
+        expect(repo.findByWrittenFalseOrderByTimestampAsc(isA(Pageable.class)))
                 .andReturn(new ArrayList<JpaAuditLogItem>());
 
         logManager.purgeExpired();
