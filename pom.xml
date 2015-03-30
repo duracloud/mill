@@ -5,7 +5,7 @@
   <groupId>org.duracloud.mill</groupId>
   <artifactId>mill</artifactId>
   <packaging>pom</packaging>
-  <version>2.0.1</version>
+  <version>2.0.2</version>
   <name>DuraCloud Mill</name>
   <description>Task processing system which supports DuraCloud</description>
   <url>http://duracloud.org</url>
@@ -174,7 +174,7 @@
     <hibernate.version>4.3.2.Final</hibernate.version>
     <mysql.driver.version>5.1.28</mysql.driver.version>
     <skipUTs>false</skipUTs>
-    <duracloud.version>3.2.4</duracloud.version>
+    <duracloud.version>3.2.5</duracloud.version>
     <skipITs>true</skipITs>
     <slf4j.version>1.7.6</slf4j.version>
   </properties>
