@@ -140,8 +140,10 @@ public class Driver {
             TaskQueue taskQueue = new SQSTaskQueue(queue);
 
             int readCount = 0;
+            int taskQueueSize = taskQueue.size();
             log.warn("TaskQueue size: " + taskQueue.size());
-            for(int i=0; i<taskQueue.size(); i++) {
+
+            for(int i=0; i< taskQueueSize; i++) {
                 try {
                     Task task = taskQueue.take();
                     writeTask(writer, task);

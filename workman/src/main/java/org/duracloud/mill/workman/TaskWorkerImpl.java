@@ -142,7 +142,7 @@ public class TaskWorkerImpl implements TaskWorker {
                      "success",
                      System.currentTimeMillis()-startTime);
 
-        }  catch (TaskExecutionFailedException e) {
+        }  catch (Exception e) {
             int attempts = task.getAttempts();
 
             log.error("failed to complete:  task_type=" + task.getType()
@@ -157,9 +157,6 @@ public class TaskWorkerImpl implements TaskWorker {
                 sendToDeadLetterQueue(task);
             }
             
-        } catch (Exception e) {
-            log.error("unexpected error: " + e.getMessage(), e);
-            e.printStackTrace();
         } finally {
             done = true;
             if (currentTimerTask != null) {
