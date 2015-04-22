@@ -149,20 +149,20 @@ public class SpaceLogTest extends AbstractTestBase{
      * 
      */
     private void setupAuditItem() {
-        expect(item.getAccount()).andReturn(accountId);
-        expect(item.getStoreId()).andReturn(storeId);
-        expect(item.getSpaceId()).andReturn(spaceId);
-        expect(item.getContentId()).andReturn(contentId);
-        expect(item.getContentMd5()).andReturn(checksum);
-        expect(item.getContentProperties()).andReturn("props");
-        expect(item.getContentSize()).andReturn("size");
-        expect(item.getMimetype()).andReturn("mime");
-        expect(item.getSourceContentId()).andReturn(sourceContentId);
-        expect(item.getSourceSpaceId()).andReturn(sourceSpaceId);
-        expect(item.getAction()).andReturn("action");
-        expect(item.getUsername()).andReturn("username");
-        expect(item.getSpaceAcls()).andReturn("{\n\r \"acl\": \"write\" \t\n\r}");
-        expect(item.getTimestamp()).andReturn(timestamp.getTime());
+        expect(item.getAccount()).andReturn(accountId).atLeastOnce();
+        expect(item.getStoreId()).andReturn(storeId).atLeastOnce();
+        expect(item.getSpaceId()).andReturn(spaceId).atLeastOnce();
+        expect(item.getContentId()).andReturn(contentId).atLeastOnce();
+        expect(item.getContentMd5()).andReturn(checksum).atLeastOnce();
+        expect(item.getContentProperties()).andReturn("props").atLeastOnce();
+        expect(item.getContentSize()).andReturn("size").atLeastOnce();
+        expect(item.getMimetype()).andReturn("mime").atLeastOnce();
+        expect(item.getSourceContentId()).andReturn(sourceContentId).atLeastOnce();
+        expect(item.getSourceSpaceId()).andReturn(sourceSpaceId).atLeastOnce();
+        expect(item.getAction()).andReturn("action").atLeastOnce();
+        expect(item.getUsername()).andReturn("username").atLeastOnce();
+        expect(item.getSpaceAcls()).andReturn("{\n\r \"acl\": \"write\" \t\n\r}").atLeastOnce();
+        expect(item.getTimestamp()).andReturn(timestamp.getTime()).atLeastOnce();
         
     }
 
@@ -176,11 +176,32 @@ public class SpaceLogTest extends AbstractTestBase{
         setupAuditItem();
         replayAll();
         createTestSubject();
-        File file = this.spaceLog.createNewLogFile();
+        File file = createNewLogFile();
         FileUtils.touch(file);
         this.spaceLog.write(item);
         this.spaceLog.close();
         verifyFileContents();
+    }
+
+    private File createNewLogFile() {
+        File file =  this.spaceLog.createNewLogFile();
+        file.deleteOnExit();
+        return file;
+    }
+
+
+    @Test
+    public void testLogRollingBreaksAfterFileIsClosed() throws Exception {
+        setupAuditItem();
+        replayAll();
+        createTestSubject();
+        File file = createNewLogFile();
+        FileUtils.touch(file);
+        while(file.length() <= SpaceLog.MAX_FILE_SIZE){
+            this.spaceLog.write(item);
+        }
+        this.spaceLog.close();
+        this.spaceLog.write(item);
     }
 
     
@@ -189,10 +210,10 @@ public class SpaceLogTest extends AbstractTestBase{
         setupAuditItem();
         replayAll();
         createTestSubject();
-        File leastRecent = this.spaceLog.createNewLogFile();
+        File leastRecent = createNewLogFile();
         FileUtils.touch(leastRecent);
         Thread.sleep(1000);
-        File mostRecent = this.spaceLog.createNewLogFile();
+        File mostRecent = createNewLogFile();
         FileUtils.touch(mostRecent);
 
         this.spaceLog.write(item);
