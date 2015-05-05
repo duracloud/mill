@@ -34,7 +34,7 @@ public class SpaceLog {
     private static SimpleDateFormat LOG_DATE_FORMAT = new SimpleDateFormat(DateFormat.LONG_FORMAT
             .getPattern());
 
-    public static long MAX_FILE_SIZE = 10*1024*1024; 
+    public final static long MAX_FILE_SIZE = 10*1024*1024; 
     private LogKey key;
     private File logDir;
     private Writer writer;
@@ -67,6 +67,7 @@ public class SpaceLog {
 
             try {
                 this.writer.close();
+                this.writer = null;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
