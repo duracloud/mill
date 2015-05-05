@@ -232,13 +232,19 @@ public class ManifestBuilder {
                 timeStamp = new Date();
             }
 
+            //some items are missing content size information.
+	    String contentSize = props.get(StorageProvider.PROPERTIES_CONTENT_SIZE);
+            if(contentSize == null){
+                contentSize = "0";
+            }
+            
             manifestStore.addUpdate(account, 
                                     storeId, 
                                     spaceId, 
                                     contentId, 
                                     props.get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM), 
                                     props.get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE), 
-                                    props.get(StorageProvider.PROPERTIES_CONTENT_SIZE), 
+                                    contentSize,
                                     timeStamp);
 
             log.info(message);
