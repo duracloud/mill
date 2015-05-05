@@ -7,3 +7,4 @@ notifications:
       - cibuilds@duracloud.org
     on_success: change
     on_failure: always
+  slack: duraspace:vOBySuKUwM95j2kfbwh0SNxq
