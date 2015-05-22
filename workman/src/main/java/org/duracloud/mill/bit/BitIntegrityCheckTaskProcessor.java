@@ -260,7 +260,7 @@ public class BitIntegrityCheckTaskProcessor extends
                             c.add(Calendar.DATE, -1);
                             Date oneDayAgo = c.getTime();
                             if(modifiedDate.after(oneDayAgo)){
-                                String message = "The manifest entry's checksum did not match the others: " + 
+                                String message = "The manifest entry's checksum ("+manifestChecksum+") did not match the others: " + 
                                         "The content item is less than 1 day old. It is most likely that " +
                                         "the item has not yet been processed by the mill. Therefore we are " + 
                                         "ignorning this content item for now.";
@@ -274,7 +274,7 @@ public class BitIntegrityCheckTaskProcessor extends
                                                                                 e);
                         }
                         
-                        String message = "The manifest entry's checksum did not match the others: " + 
+                        String message = "The manifest entry's checksum("+manifestChecksum+") did not match the others: " + 
                                 "the last update to the manifest must have failed or has " +
                                 "not yet been processed by the audit system in the last 24 hours " + 
                                 "due to major downtime for the mill or a fantastically backed-up audit queue.";

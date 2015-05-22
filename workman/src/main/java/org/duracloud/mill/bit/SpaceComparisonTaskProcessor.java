@@ -7,11 +7,19 @@
  */
 package org.duracloud.mill.bit;
 
-import org.duracloud.common.util.DateUtil;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.Date;
+import java.util.Iterator;
+
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
+import org.duracloud.mill.util.WriteOnlyStringSet;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.storage.domain.StorageProviderType;
@@ -20,13 +28,9 @@ import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-
 /**
+ * This task processor loops through all the items in the manifest and makes sure that 
+ * they exist in storage provider.
  * @author Daniel Bernstein Date: Oct 21, 2014
  */
 public class SpaceComparisonTaskProcessor implements
@@ -40,8 +44,6 @@ public class SpaceComparisonTaskProcessor implements
     private ManifestStore manifestStore;
     private StorageProvider store;
     private StorageProviderType storageProviderType;
-    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DateUtil.DateFormat.DEFAULT_FORMAT
-            .getPattern());
 
     /**
      * @param bitTask
@@ -76,68 +78,46 @@ public class SpaceComparisonTaskProcessor implements
                  account,
                  storeId,
                  spaceId);
+
+        
+        File spaceListing = null;
         try {
-            // iterate through all content items in the storage provider
-            Iterator<String> it = this.store.getSpaceContents(spaceId, null);
-
-            while (it.hasNext()) {
-                String contentId = it.next();
-                ManifestItem item;
-                try{
-                    item = this.manifestStore.getItem(account,
-                                                      storeId,
-                                                      spaceId,
-                                                      contentId);
-                }catch(org.duracloud.error.NotFoundException ex){
-                    item = null;
+            
+            //write out space listing to file, counting all the items in the process.
+            spaceListing = File.createTempFile("spaces", ".txt");
+            int count = 0;
+            try(BufferedWriter writer = new BufferedWriter(new FileWriter(spaceListing))){
+                Iterator<String> it = store.getSpaceContents(spaceId, null);
+                while(it.hasNext()){
+                    if(count > 0){
+                        writer.write("\n");
+                    }
+                    writer.write(it.next());
+                    count++;
                 }
-                
-                if (item == null || item.isDeleted()) {
-                    // if there is no non-deleted item in the manifest
-                    // if storage provider content is less than a day old
-                    Map<String, String> props = store
-                            .getContentProperties(spaceId, contentId);
-                    String modified = props
-                            .get(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
-                    String checksum = props
-                            .get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
-                    Date modifiedDate = null;
-                    if (modified != null) {
-                        modifiedDate = DATE_FORMAT.parse(modified);
-                    }
-
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.add(Calendar.DATE, -1);
-                    Date oneDayAgo = calendar.getTime();
-                    if (modified == null || modifiedDate.before(oneDayAgo)) {
-                        this.bitLogStore
-                                .write(account,
-                                       storeId,
-                                       spaceId,
-                                       contentId,
-                                       new Date(),
-                                       storageProviderType,
-                                       BitIntegrityResult.ERROR,
-                                       null,
-                                       checksum,
-                                       null,
-                                       "Content item is in the storage provider but not in the manifest and the content is more than a day old.");
-
-                    }
+                writer.close();
+            }
+            
+            //load the set of content ids
+            WriteOnlyStringSet set = new WriteOnlyStringSet(count);
+            try(BufferedReader reader = new BufferedReader(new FileReader(spaceListing))){
+                String contentId = null;
+                while((contentId = reader.readLine()) != null){
+                    set.add(contentId);
                 }
             }
-
+                
+              
             // iterate current non-deleted manifest items
             Iterator<ManifestItem> manifestIterator = this.manifestStore
                     .getItems(account, storeId, spaceId);
-
+            
             while (manifestIterator.hasNext()) {
                 // if not in storage provider
                 ManifestItem item = manifestIterator.next();
+                
                 String contentId = item.getContentId();
-
-                try {
-                    store.getContentProperties(spaceId, contentId);
+                if(set.contains(contentId)){
                     // reset missingInStorageProvider flag to false if true.
                     if (item.isMissingFromStorageProvider()) {
                         manifestStore
@@ -147,7 +127,7 @@ public class SpaceComparisonTaskProcessor implements
                                                                       contentId,
                                                                       false);
                     }
-                } catch (NotFoundException ex) {
+                }else{
                     log.debug("no content found in storage provider for manifest item: {}",
                               item);
                     if (!item.isDeleted()) {
@@ -167,6 +147,7 @@ public class SpaceComparisonTaskProcessor implements
                                            "Content item is in the manifest "
                                                    + "but not in the storage provider in "
                                                    + "the course of the last two bit integrity runs.");
+                            
                         } else {
                             manifestStore
                                     .updateMissingFromStorageProviderFlag(account,
@@ -176,14 +157,18 @@ public class SpaceComparisonTaskProcessor implements
                                                                           true);
                         }
                     }
+                    
                 }
             }
 
         } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
             throw new TaskExecutionFailedException("failed to complete task: "
                     + ex.getMessage(), ex);
+        } finally {
+            if(spaceListing != null && spaceListing.exists()){
+                spaceListing.delete();
+            }
         }
-
     }
-
 }
