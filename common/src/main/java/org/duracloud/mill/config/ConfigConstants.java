@@ -17,6 +17,7 @@ public class ConfigConstants {
      * QUEUES
      */
     public static final String QUEUE_NAME_BIT_ERROR = "queue.name.bit-error";
+    public static final String QUEUE_NAME_BIT_REPORT = "queue.name.bit-report";
     public static final String QUEUE_NAME_BIT_INTEGRITY = "queue.name.bit-integrity";
     public static final String QUEUE_NAME_DUP_LOW_PRIORITY = "queue.name.dup-low-priority";
     public static final String QUEUE_NAME_DUP_HIGH_PRIORITY = "queue.name.dup-high-priority";

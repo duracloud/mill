@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
@@ -83,6 +84,7 @@ public class AppDriver extends DriverSupport {
                                                                             .addAuditQueue()
                                                                             .addBitIntegrityQueue()
                                                                             .addBitIntegrityErrorQueue()
+                                                                            .addBitIntegrityReportQueue()
                                                                             .addNotificationRecipients()
                                                                             .addWorkDir()
                                                                             .addTaskQueueOrder()
@@ -96,7 +98,7 @@ public class AppDriver extends DriverSupport {
         verifier.verify(System.getProperties());
 
         
-        WorkmanConfigurationManager config = new WorkmanConfigurationManager();
+        TaskProducerConfigurationManager config = new WorkmanConfigurationManager();
 
         String workDirPath = config.getWorkDirectoryPath();
         

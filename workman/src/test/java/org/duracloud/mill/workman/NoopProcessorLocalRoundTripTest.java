@@ -14,6 +14,7 @@ import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.Task;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
@@ -75,7 +76,7 @@ public class NoopProcessorLocalRoundTripTest {
 
         @Bean
         public File workDir() {
-            WorkmanConfigurationManager configurationManager = new WorkmanConfigurationManager();
+            TaskProducerConfigurationManager configurationManager = new WorkmanConfigurationManager();
             return new File(configurationManager.getWorkDirectoryPath());
         }
     }

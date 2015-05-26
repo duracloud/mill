@@ -10,6 +10,7 @@ package org.duracloud.mill.bit;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
@@ -17,7 +18,6 @@ import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
-import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +34,12 @@ public class BitIntegrityReportTaskProcessorFactory
 
     private BitLogStore bitLogStore;
     private StorageProviderFactory storageProviderFactory;
-    private WorkmanConfigurationManager workmanConfigurationManager;
+    private TaskProducerConfigurationManager workmanConfigurationManager;
     private NotificationManager notificationManager;
     
     public BitIntegrityReportTaskProcessorFactory(CredentialsRepo repo,
                                                  BitLogStore bitLogStore, StorageProviderFactory storageProviderFactory,
-                                                 WorkmanConfigurationManager workmanConfigurationManager, 
+                                                 TaskProducerConfigurationManager workmanConfigurationManager, 
                                                  NotificationManager notificationManager) {
         super(repo);
         this.bitLogStore = bitLogStore;

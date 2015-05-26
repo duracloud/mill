@@ -39,4 +39,11 @@ public class TaskProducerConfigurationManager extends ConfigurationManager {
             return recipients.split(",");
         }
     }
+
+    /**
+     * @return
+     */
+    public String getBitReportQueueName() {
+        return System.getProperty(ConfigConstants.QUEUE_NAME_BIT_REPORT);
+    }
 }
