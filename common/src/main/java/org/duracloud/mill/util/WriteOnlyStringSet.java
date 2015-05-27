@@ -14,6 +14,16 @@ import java.security.MessageDigest;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
+ * This class gives you an efficient way to write to an in memory set-like structure of tens of 
+ * millions of strings.   The catch is that once you write the strings to the set, 
+ * you can't retrieve them. However you can ask if the set contains any string. Additionally
+ * you can remove strings from the set as well as determine the set's size.  
+ * 
+ * An example use case:  You're comparing two large sets (A and B) of objects both of which won't fit in memory.
+ * You want to be able to load A (each element of which can be reduced to a string value) into memory 
+ * and then iterate over B, checking for existence in A (probably of a single property of each B element) before 
+ * performing some further logic on that B element.
+ * 
  * @author Daniel Bernstein
  *         Date: May 22, 2015
  */
