@@ -28,10 +28,8 @@ import org.slf4j.LoggerFactory;
 public class SpaceComparisonTaskProcessorFactory extends
         TaskProcessorFactoryBase {
 
-    private CredentialsRepo credentialsRepo;
     private BitLogStore bitLogStore;
     private ManifestStore manifestStore;
-    private TaskQueue bitErrorQueue;
     private StorageProviderFactory storageProviderFactory;
 
     private static final Logger log = LoggerFactory
@@ -44,7 +42,6 @@ public class SpaceComparisonTaskProcessorFactory extends
                                                ManifestStore manifestStore) {
         super(repo);
         this.bitLogStore = bitLogStore;
-        this.bitErrorQueue = bitErrorQueue;
         this.manifestStore = manifestStore;
         this.storageProviderFactory = storageProviderFactory;
     }

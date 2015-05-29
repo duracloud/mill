@@ -23,7 +23,6 @@ import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.ltp.Frequency;
-import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
@@ -62,10 +61,12 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     
     private StateManager<BitIntegrityMorsel> stateManager;
 
-    private TaskQueue taskQueue;
+    private TaskQueue bitQueue;
     
     @Mock
     private LoopingBitTaskProducerConfigurationManager config;
+
+    private TaskQueue bitReportQueue;
 
 
     /**
@@ -77,7 +78,8 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         File stateFile = File.createTempFile("state", "json");
         stateFile.deleteOnExit();
         stateManager = new StateManager<>(stateFile.getAbsolutePath(), BitIntegrityMorsel.class);
-        taskQueue = new LocalTaskQueue();
+        bitQueue = new LocalTaskQueue();
+        bitReportQueue = new LocalTaskQueue();
     }
 
     /**
@@ -115,32 +117,35 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         ltp.run();
 
         //after first run, queue should be loaded with the first morsel.
-        Assert.assertEquals(sourceCount, taskQueue.size().intValue());
+        Assert.assertEquals(sourceCount, bitQueue.size().intValue());
         
         //running ltp again should result in no change to the taskqueue.
         ltp.run();
        
-        Assert.assertEquals(sourceCount, taskQueue.size().intValue());
+        Assert.assertEquals(sourceCount, bitQueue.size().intValue());
         
         //drain queue and run again
-        int tasksProcessed = drainQueue(0);
+        int tasksProcessed = drainQueue(bitQueue);
         
-        Assert.assertEquals(0, taskQueue.size().intValue());
+        Assert.assertEquals(0, bitQueue.size().intValue());
         
         ltp.run();
         //now we now expect a single report task to appear on the queue + all of the next spaces items sans report task.
-        Assert.assertEquals(sourceCount+1, taskQueue.size().intValue());
+        Assert.assertEquals(sourceCount, bitQueue.size().intValue());
+        Assert.assertEquals(1, bitReportQueue.size().intValue());
 
-        tasksProcessed = drainQueue(tasksProcessed);
+        tasksProcessed += drainQueue(bitQueue);
 
         //process second morsel
         ltp.run();
-        Assert.assertEquals(1, taskQueue.size().intValue());
-        tasksProcessed = drainQueue(tasksProcessed);
+        Assert.assertEquals(0, bitQueue.size().intValue());
+        tasksProcessed += drainQueue(bitQueue);
 
         //verify that the total number of tasks processed equals the sum of all bit integrity
         //and report tasks.
-        Assert.assertEquals(tasksProcessed, maxTaskQueueSize+morselCount);
+        Assert.assertEquals(tasksProcessed, maxTaskQueueSize);
+        
+        Assert.assertEquals(morselCount, bitReportQueue.size().intValue());
     }
     
     private void setupLoopingTaskProducerConfig(int times) {
@@ -164,17 +169,16 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         setupCredentialsRepo();
         setupNotificationManager();
         
-        EasyMock.expectLastCall().times(morselCount);
         setupLoopingTaskProducerConfig(2);
 
-        
-        int maxQueueSize = 1;
         replayAll();
 
-        runLoopingTaskProducer(maxQueueSize);
-        Assert.assertEquals(maxQueueSize, taskQueue.size().intValue());
+        runLoopingTaskProducer(1);
+        Assert.assertEquals(0, bitQueue.size().intValue());
+        Assert.assertEquals(1, bitReportQueue.size().intValue());
+
     }
-     
+
     /**
      * 
      */
@@ -192,10 +196,11 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
      * @param tasksProcessed
      * @return
      */
-    private int drainQueue(int tasksProcessed) {
-        while(taskQueue.size() > 0){
+    private int drainQueue(TaskQueue queue) {
+        int tasksProcessed = 0;
+        while(queue.size() > 0){
             try {
-                taskQueue.take();
+                queue.take();
                 tasksProcessed++;
             } catch (TimeoutException e) {
                 throw new RuntimeException(e);
@@ -222,7 +227,8 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
             throws ParseException {
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo, 
                                                                storageProviderFactory, 
-                                                               taskQueue, 
+                                                               bitQueue, 
+                                                               bitReportQueue,
                                                                stateManager, 
                                                                maxQueueSize,
                                                                new Frequency("1s"),

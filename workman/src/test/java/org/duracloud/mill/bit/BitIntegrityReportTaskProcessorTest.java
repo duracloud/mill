@@ -19,9 +19,9 @@ import java.util.Map;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.duracloud.mill.notification.NotificationManager;
-import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
@@ -63,7 +63,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
     private StorageProvider store;
 
     @Mock
-    private WorkmanConfigurationManager config;
+    private TaskProducerConfigurationManager config;
     
     @Mock
     private NotificationManager notificiationManager;

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -87,12 +88,6 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
     @Test
     public void testNoErrors() throws Exception {
         setupTask();
-
-        setupSpaceContentsIterator();
-        setupGetManifestItem(false);
-
-        expect(manifestItem.isDeleted()).andReturn(false);
-
         setupNoMissingContent();
         replayAll();
         createTestSubject();
@@ -101,27 +96,27 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
 
     private void setupNoMissingContent() {
         ManifestItem manifestItem2 = setupManifestIterator();
-
-        Map<String,String> map = createMock(Map.class);
-        expect(store.getContentProperties(eq(spaceId), eq(contentId))).andReturn(map);
-
+        store = setStorageProvider(contentId);
+        
         expect(manifestItem2.isMissingFromStorageProvider()).andReturn(false);
     }
     
+    /**
+     * @return
+     */
+    private StorageProvider setStorageProvider(String... contentIds) {
+        expect(store.getSpaceContents(spaceId, null)).andReturn(Arrays.asList(contentIds).iterator());
+        return store;
+    }
+
     @Test
     public void testNoErrorsAndResetManifestMissingStorageProviderFlag() throws Exception {
         setupTask();
 
-        setupSpaceContentsIterator();
-        setupGetManifestItem(false);
 
-        expect(manifestItem.isDeleted()).andReturn(false);
 
         ManifestItem manifestItem2 = setupManifestIterator();
-
-        Map<String,String> map = createMock(Map.class);
-        expect(store.getContentProperties(eq(spaceId), eq(contentId))).andReturn(map);
-
+        store = setStorageProvider(contentId);
         expect(manifestItem2.isMissingFromStorageProvider()).andReturn(true);
         manifestStore.updateMissingFromStorageProviderFlag(eq(account), eq(storeId), eq(spaceId), eq(contentId), eq(false));
         expectLastCall();
@@ -132,42 +127,19 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void
-            testMissingManifestItemAndMissingAndMissingContent() throws Exception {
+            testMissingContent() throws Exception {
         setupTask();
-
-        setupSpaceContentsIterator();
-        setupGetManifestItem(false);
-        expect(manifestItem.isDeleted()).andReturn(true);
-        int daysAgo = 2;
-        setupGetContentProperties(daysAgo);
-        setupMissingManifestBitLogWrite();
+        store = setStorageProvider("notthecontentidimlookingfor");
         ManifestItem manifestItem2 = setupManifestIterator();
         expect(manifestItem2.getContentChecksum()).andReturn(checksum);
         expect(manifestItem2.isDeleted()).andReturn(false);
         expect(manifestItem2.isMissingFromStorageProvider()).andReturn(true);
-        expect(store.getContentProperties(eq(spaceId), eq(contentId)))
-                .andThrow(new NotFoundException(""));
         setupMissingContentBitLogWrite();
         replayAll();
         createTestSubject();
         taskProcessor.execute();
     }
 
-    @Test
-    public void
-            testNullManifestItemLessThanADayOld() throws Exception {
-        setupTask();
-        setupSpaceContentsIterator();
-        setupGetManifestItem(true);
-        int daysAgo = 0;
-        setupGetContentProperties(daysAgo);
-        setupNoMissingContent();
-        replayAll();
-        createTestSubject();
-        taskProcessor.execute();
-    }
-
-    
     private void setupMissingContentBitLogWrite() {
         expect(bitLogStore.write(eq(account),
                                  eq(storeId),
@@ -195,17 +167,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
         return manifestItem2;
     }
 
-    private void setupGetContentProperties(int daysAgo) {
-        Map<String, String> map = createMock(Map.class);
-        expect(map.get(eq(StorageProvider.PROPERTIES_CONTENT_CHECKSUM)))
-                .andReturn(checksum);
-        expect(map.get(eq(StorageProvider.PROPERTIES_CONTENT_MODIFIED)))
-                .andReturn(new SimpleDateFormat(DateUtil.DateFormat.DEFAULT_FORMAT
-                        .getPattern()).format(getDayFromXDaysAgo(daysAgo)));
-        expect(store.getContentProperties(eq(spaceId), eq(contentId)))
-                .andReturn(map);
-    }
-
+ 
     private void setupMissingManifestBitLogWrite() {
         expect(bitLogStore.write(eq(account),
                                  eq(storeId),
@@ -227,25 +189,6 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
                                           eq(spaceId),
                                           eq(contentId)))
                 .andReturn(returnNull ? null : manifestItem);
-    }
-
-    private void setupSpaceContentsIterator() {
-        Iterator<String> it = createMock(Iterator.class);
-        expect(it.hasNext()).andReturn(true);
-        expect(it.next()).andReturn(contentId);
-        expect(it.hasNext()).andReturn(false);
-        expect(this.store.getSpaceContents(eq(spaceId), isNull(String.class)))
-                .andReturn(it);
-    }
-
-    /**
-     * @param days
-     * @return
-     */
-    private Date getDayFromXDaysAgo(int days) {
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, -1 * days);
-        return c.getTime();
     }
 
 }

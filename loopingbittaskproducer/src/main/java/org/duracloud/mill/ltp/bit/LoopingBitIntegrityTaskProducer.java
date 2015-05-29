@@ -43,10 +43,12 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     private static Logger log = LoggerFactory.getLogger(LoopingBitIntegrityTaskProducer.class);
     private PathFilterManager exclusionManager;
     private int waitTimeInMsBeforeQueueSizeCheck = 10000;
+    private TaskQueue bitReportTaskQueue;
     
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
             StorageProviderFactory storageProviderFactory,
-            TaskQueue taskQueue,
+            TaskQueue bitTaskQueue,
+            TaskQueue bitReportTaskQueue,
             StateManager<BitIntegrityMorsel> state,
             int maxTaskQueueSize, 
             Frequency frequency,
@@ -55,14 +57,14 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             LoopingBitTaskProducerConfigurationManager config) {
         super(credentialsRepo,
               storageProviderFactory,
-              taskQueue,
+              bitTaskQueue,
               state,
               maxTaskQueueSize,
               frequency,
               notificationManager,
               config);
         this.exclusionManager = exclusionManager;
-       
+        this.bitReportTaskQueue = bitReportTaskQueue;
     }
     
 
@@ -199,8 +201,8 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
         task.setStoreId(morsel.getStoreId());
         task.setSpaceId(morsel.getSpaceId());
         Task t = task.writeTask();
-        getTaskQueue().put(t);
-        log.info("added report task: {}", t);
+        this.bitReportTaskQueue.put(t);
+        log.info("added report task {} to {}", t, this.bitReportTaskQueue);
     }
 
     /**

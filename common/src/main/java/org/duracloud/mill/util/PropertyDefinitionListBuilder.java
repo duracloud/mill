@@ -161,4 +161,12 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.QUEUE_TASK_ORDERED, true);
         return this;
     }
+
+    /**
+     * @return
+     */
+    public PropertyDefinitionListBuilder addBitIntegrityReportQueue() {
+        add(ConfigConstants.QUEUE_NAME_BIT_REPORT, true);
+        return this;
+    }
 }

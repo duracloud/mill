@@ -26,6 +26,7 @@ import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.bitlog.jpa.JpaBitLogItemRepo;
 import org.duracloud.mill.bitlog.jpa.JpaBitLogStore;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.impl.DefaultCredentialsRepoImpl;
@@ -76,7 +77,7 @@ public class AppConfig {
                                          MultiStepTaskProcessorFactory bitReportTaskProcessorFactory,
                                      @Qualifier("auditTaskProcessorFactory") 
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
-                                     WorkmanConfigurationManager configurationManager) {
+                                     TaskProducerConfigurationManager configurationManager) {
 
         RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(new DuplicationTaskProcessorFactory(repo,
@@ -116,7 +117,7 @@ public class AppConfig {
                                       StorageProviderFactory storageProviderFactory,
                                       BitLogStore bitLogStore,
                                       TaskQueue bitErrorQueue,
-                                      WorkmanConfigurationManager config,
+                                      TaskProducerConfigurationManager config,
                                       NotificationManager notificationManager) {
 
         MultiStepTaskProcessorFactory factory = new MultiStepTaskProcessorFactory();
@@ -178,7 +179,7 @@ public class AppConfig {
     }
 
     @Bean
-    public File workDir(WorkmanConfigurationManager configurationManager) {
+    public File workDir(TaskProducerConfigurationManager configurationManager) {
         log.info("creating work dir for path: "
                 + configurationManager.getWorkDirectoryPath());
         return new File(configurationManager.getWorkDirectoryPath());
@@ -211,7 +212,7 @@ public class AppConfig {
 
     @Bean
     public TaskQueue
-            auditQueue(WorkmanConfigurationManager configurationManager) {
+            auditQueue(TaskProducerConfigurationManager configurationManager) {
         TaskQueue queue = new SQSTaskQueue(configurationManager.getAuditQueueName());
         log.info("created audit queue {}", queue);
         return queue;
@@ -222,6 +223,14 @@ public class AppConfig {
             bitErrorQueue(WorkmanConfigurationManager configurationManager) {
         TaskQueue queue = new SQSTaskQueue(configurationManager.getBitErrorQueueName());
         log.info("created bit error queue {}", queue);
+        return queue;
+    }
+
+    @Bean
+    public TaskQueue
+            bitReportQueue(TaskProducerConfigurationManager configurationManager) {
+        TaskQueue queue = new SQSTaskQueue(configurationManager.getBitReportQueueName());
+        log.info("created bit report queue {}", queue);
         return queue;
     }
 
@@ -242,7 +251,7 @@ public class AppConfig {
     }
 
     @Bean
-    public WorkmanConfigurationManager configurationManager() {
+    public TaskProducerConfigurationManager configurationManager() {
         log.info("creating the workman configuration manager...");
         return new WorkmanConfigurationManager();
     }
@@ -280,7 +289,7 @@ public class AppConfig {
 
     @Bean
     public NotificationManager
-            notificationManager(WorkmanConfigurationManager configurationManager) {
+            notificationManager(TaskProducerConfigurationManager configurationManager) {
         String[] recipients = configurationManager.getNotificationRecipients();
         SESNotificationManager manager = new SESNotificationManager(recipients);
         return manager;

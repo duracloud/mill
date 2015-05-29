@@ -25,11 +25,11 @@ import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
+import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessorBase;
-import org.duracloud.mill.workman.spring.WorkmanConfigurationManager;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class BitIntegrityReportTaskProcessor extends
     private BitIntegrityCheckReportTask task;
     private BitLogStore bitLogStore;
     private StorageProvider store;
-    private WorkmanConfigurationManager config;
+    private TaskProducerConfigurationManager config;
 
     private NotificationManager notificationManager;
     /**
@@ -55,7 +55,7 @@ public class BitIntegrityReportTaskProcessor extends
     public BitIntegrityReportTaskProcessor(BitIntegrityCheckReportTask task,
                                            BitLogStore bitLogStore,
                                            StorageProvider store,
-                                           WorkmanConfigurationManager config,
+                                           TaskProducerConfigurationManager config,
                                            NotificationManager notificationManager) {
         super(task);
         this.task = task;

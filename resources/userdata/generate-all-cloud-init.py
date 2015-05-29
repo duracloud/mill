@@ -34,7 +34,7 @@ output_dir = args.output_dir
 if not os.path.exists(os.path.dirname(output_dir)):
 	os.makedirs(output_dir)
 
-for i in ["audit-worker", "bit-worker", "dup-worker", "dup-producer", "bit-producer", "sentinel"]:
+for i in ["audit-worker", "bit-worker", "bit-report-worker", "dup-worker", "dup-producer", "bit-producer", "sentinel"]:
         node_type = i
         output = os.path.join(output_dir, "cloud-init-%s.txt" % node_type)
         gen_script = os.path.join(script_dir, "generate-cloud-init.py")

@@ -87,6 +87,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 .addBitIntegrityQueue()
                 .addLoopingBitFrequency()
                 .addLoopingBitMaxQueueSize()
+                .addBitIntegrityReportQueue()
                 .addWorkDir()
                 .build();
         PropertyVerifier verifier = new PropertyVerifier(defintions);
@@ -104,8 +105,11 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         NotificationManager notificationMananger = 
                 new SESNotificationManager(config.getNotificationRecipients());
-        TaskQueue taskQueue = new SQSTaskQueue(
+        TaskQueue bitTaskQueue = new SQSTaskQueue(
                 config.getBitIntegrityQueue());
+
+        TaskQueue bitReportQueue = new SQSTaskQueue(
+                                               config.getBitReportQueueName());
 
         String stateFilePath = new File(config.getWorkDirectoryPath(), 
                                         "bit-producer-state.json").getAbsolutePath();
@@ -115,7 +119,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo,
                                                                                        storageProviderFactory,
-                                                                                       taskQueue,
+                                                                                       bitTaskQueue,
+                                                                                       bitReportQueue,
                                                                                        stateManager,
                                                                                        getMaxQueueSize(ConfigConstants.LOOPING_BIT_MAX_TASK_QUEUE_SIZE),
                                                                                        getFrequency(ConfigConstants.LOOPING_BIT_FREQUENCY),
