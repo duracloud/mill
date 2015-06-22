@@ -183,7 +183,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
     }
 
     private void
-            setupGetManifestItem(boolean returnNull) throws org.duracloud.error.NotFoundException {
+            setupGetManifestItem(boolean returnNull) throws org.duracloud.common.db.error.NotFoundException {
         expect(this.manifestStore.getItem(eq(account),
                                           eq(storeId),
                                           eq(spaceId),

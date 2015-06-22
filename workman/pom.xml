@@ -68,8 +68,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.duracloud</groupId>
-      <artifactId>mill-jpa-repo</artifactId>
+      <groupId>org.duracloud.db</groupId>
+      <artifactId>mill-db-repo</artifactId>
     </dependency>
 
     <dependency>

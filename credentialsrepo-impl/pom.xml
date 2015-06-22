@@ -40,39 +40,35 @@
   </dependency>
 
   <dependency>
-    <groupId>org.duracloud</groupId>
+    <groupId>org.duracloud.db</groupId>
     <artifactId>account-management-db-repo</artifactId>
-    <version>${duracloud.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-beans</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-core</artifactId>
-        </exclusion>
-
-      </exclusions>
-
+    <exclusions>
+      <exclusion>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+      </exclusion>
+      <exclusion>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+      </exclusion>
+    </exclusions>
   </dependency>
 
   <dependency>
-    <groupId>org.duracloud</groupId>
+    <groupId>org.duracloud.db</groupId>
     <artifactId>account-management-db-model</artifactId>
-    <version>${duracloud.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-beans</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-core</artifactId>
-        </exclusion>
-
-      </exclusions>
+    <exclusions>
+      <exclusion>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+      </exclusion>
+      <exclusion>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+      </exclusion>
+    </exclusions>
   </dependency>
+
   <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-core</artifactId>

@@ -7,17 +7,13 @@
  */
 package org.duracloud.mill.workman.spring;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
+import org.duracloud.mill.auditor.AuditLogStore;
 import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
@@ -55,6 +51,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 

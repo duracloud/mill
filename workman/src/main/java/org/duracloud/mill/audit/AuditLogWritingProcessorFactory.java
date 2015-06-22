@@ -7,8 +7,8 @@
  */
 package org.duracloud.mill.audit;
 
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
+import org.duracloud.mill.auditor.AuditLogStore;
 import org.duracloud.mill.workman.TaskProcessor;
 
 /**
@@ -17,7 +17,7 @@ import org.duracloud.mill.workman.TaskProcessor;
  */
 public class AuditLogWritingProcessorFactory extends AuditTaskProcessorFactory{
 
-    private AuditLogStore      auditLogStore;
+    private AuditLogStore auditLogStore;
 
     public AuditLogWritingProcessorFactory(AuditLogStore auditLogStore) {
         super();
