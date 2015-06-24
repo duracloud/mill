@@ -44,11 +44,9 @@ public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
      * @param spaceId
      */
      @Modifying
-     @Query("delete from JpaBitLogItem b where b.account = ?1 and b.storeId = ?2 and b.spaceId = ?3")
-     public void deleteByAccountAndStoreIdAndSpaceId(String account,
-                                                    String storeId,
-                                                    String spaceId);
-
+    public Long deleteFirst5000ByAccountAndStoreIdAndSpaceId(String account,
+                                                             String storeId,
+                                                             String spaceId);
 
     /**
      * @param account
