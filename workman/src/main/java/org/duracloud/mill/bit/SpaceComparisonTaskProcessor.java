@@ -78,7 +78,6 @@ public class SpaceComparisonTaskProcessor implements
                  account,
                  storeId,
                  spaceId);
-
         
         File spaceListing = null;
         try {
@@ -106,8 +105,7 @@ public class SpaceComparisonTaskProcessor implements
                     set.add(contentId);
                 }
             }
-                
-              
+
             // iterate current non-deleted manifest items
             Iterator<ManifestItem> manifestIterator = this.manifestStore
                     .getItems(account, storeId, spaceId);

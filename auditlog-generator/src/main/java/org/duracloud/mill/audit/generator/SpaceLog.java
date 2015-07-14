@@ -19,9 +19,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogUtil;
 import org.duracloud.common.util.DateUtil.DateFormat;
+import org.duracloud.mill.auditor.AuditLogItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

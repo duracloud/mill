@@ -487,17 +487,17 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     }
 
     private void
-            mockManifestValidChecksum() throws org.duracloud.error.NotFoundException {
+            mockManifestValidChecksum() throws org.duracloud.common.db.error.NotFoundException {
         mockManifestChecksum(checksum);
     }
 
     private void
-            mockManifestInvalidChecksum() throws org.duracloud.error.NotFoundException {
+            mockManifestInvalidChecksum() throws org.duracloud.common.db.error.NotFoundException {
         mockManifestChecksum(badChecksum);
     }
 
     private void
-            mockManifestChecksum(String checksum) throws org.duracloud.error.NotFoundException {
+            mockManifestChecksum(String checksum) throws org.duracloud.common.db.error.NotFoundException {
         expect(manifestStore.getItem(eq(account),
                                      eq(storeId),
                                      eq(spaceId),
@@ -507,14 +507,14 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     }
     
     private void
-            mockManifestChecksumNull() throws org.duracloud.error.NotFoundException {
+            mockManifestChecksumNull() throws org.duracloud.common.db.error.NotFoundException {
         expect(manifestStore.getItem(eq(account),
                                      eq(storeId),
                                      eq(spaceId),
-                                     eq(contentId))).andThrow(new org.duracloud.error.NotFoundException("test"));
+                                     eq(contentId))).andThrow(new org.duracloud.common.db.error.NotFoundException("test"));
     }
     
-    private void mockManifestUpdateNotNullManifest(String checksum) throws org.duracloud.error.NotFoundException, ManifestItemWriteException{
+    private void mockManifestUpdateNotNullManifest(String checksum) throws org.duracloud.common.db.error.NotFoundException, ManifestItemWriteException{
         expect(manifestStore.getItem(eq(account),
                                      eq(storeId),
                                      eq(spaceId),

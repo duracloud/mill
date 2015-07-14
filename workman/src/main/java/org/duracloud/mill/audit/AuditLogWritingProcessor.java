@@ -10,8 +10,8 @@ package org.duracloud.mill.audit;
 import java.util.Date;
 import java.util.Map;
 
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.audit.task.AuditTask;
+import org.duracloud.mill.auditor.AuditLogStore;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessorBase;
 import org.slf4j.Logger;
@@ -26,11 +26,10 @@ import org.springframework.transaction.TransactionSystemException;
  *         Date: Mar 20, 2014
  */
 public class AuditLogWritingProcessor extends TaskProcessorBase {
-    private final Logger       log = LoggerFactory
-                                           .getLogger(AuditLogWritingProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(AuditLogWritingProcessor.class);
 
-    private AuditLogStore      auditLogStore;
-    private AuditTask          task;
+    private AuditLogStore auditLogStore;
+    private AuditTask task;
 
     public AuditLogWritingProcessor(AuditTask task,
             AuditLogStore auditLogStore) {

@@ -7,14 +7,6 @@
  */
 package org.duracloud.mill.bit;
 
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
@@ -25,14 +17,20 @@ import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
-import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorBase;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
-import org.hibernate.type.descriptor.sql.BitTypeDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class processes bit integrity check tasks. The logic for this block of
@@ -148,7 +146,7 @@ public class BitIntegrityCheckTaskProcessor extends
                     .getAccount(), this.bitTask.getStoreId(), this.bitTask
                     .getSpaceId(), this.bitTask.getContentId());
             return item.getContentChecksum();
-        } catch (org.duracloud.error.NotFoundException e) {
+        } catch (org.duracloud.common.db.error.NotFoundException e) {
             return null;
         }
 
@@ -341,7 +339,7 @@ public class BitIntegrityCheckTaskProcessor extends
                     contentMimetype = item.getContentMimetype();;
                     contentSize = item.getContentSize();
 
-                }catch(org.duracloud.error.NotFoundException ex ){
+                } catch (org.duracloud.common.db.error.NotFoundException e) {
                     Map<String, String> props = state.getContentProperties();
                     contentMimetype = props
                             .get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
@@ -464,7 +462,7 @@ public class BitIntegrityCheckTaskProcessor extends
      * Sets the number of milliseconds that the processor should wait before
      * abandoning the task. Default is 5 minutes.
      * 
-     * @param penultimateWaitMS
+     * @param milliseconds to wait
      */
     public static void setPenultimateWaitMS(long milliseconds) {
         penultimateAttemptWaitMS = milliseconds;

@@ -12,12 +12,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
-import org.duracloud.audit.AuditLogStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
+import org.duracloud.mill.auditor.AuditLogStore;
 import org.duracloud.mill.auditor.jpa.JpaAuditLogStore;
 import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessorFactory;
 import org.duracloud.mill.bit.BitIntegrityReportTaskProcessorFactory;
@@ -47,6 +47,7 @@ import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
 import org.duracloud.mill.workman.MultiStepTaskProcessorFactory;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
+import org.duracloud.mill.workman.TaskWorkerFactory;
 import org.duracloud.mill.workman.TaskWorkerFactoryImpl;
 import org.duracloud.mill.workman.TaskWorkerManager;
 import org.slf4j.Logger;
@@ -189,13 +190,21 @@ public class AppConfig {
     public TaskWorkerManager
             taskWorkerManager(WorkmanConfigurationManager config,
                               RootTaskProcessorFactory factory,
-                              TaskQueue deadLetterQueue) {
+                              TaskQueue deadLetterQueue,
+                              TaskWorkerFactory taskWorkerFactory) {
+        
         return new TaskWorkerManager(createTaskQueues(config),
                                      deadLetterQueue,
-                                     new TaskWorkerFactoryImpl(factory,
-                                                               deadLetterQueue));
+                                     taskWorkerFactory);
     }
 
+    @Bean(destroyMethod= "destroy")
+    public TaskWorkerFactory taskWorkerFactory(RootTaskProcessorFactory factory,
+                                               TaskQueue deadLetterQueue
+                                               ){
+        return new TaskWorkerFactoryImpl(factory, deadLetterQueue);
+    }
+    
     protected List<TaskQueue>
             createTaskQueues(WorkmanConfigurationManager configurationManager) {
         List<String> taskQueuesNames = configurationManager.getTaskQueueNames();

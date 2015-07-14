@@ -9,7 +9,6 @@ package org.duracloud.mill.bitlog.jpa;
 
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import org.duracloud.common.collection.StreamingIterator;
 import org.duracloud.mill.bitlog.BitIntegrityResult;
@@ -22,10 +21,11 @@ import org.duracloud.mill.db.repo.MillJpaRepoConfig;
 import org.duracloud.mill.db.util.JpaIteratorSource;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author Daniel Bernstein Date: Oct 17, 2014
@@ -34,6 +34,7 @@ import org.springframework.util.CollectionUtils;
 public class JpaBitLogStore implements
                            BitLogStore {
 
+    private static Logger log = LoggerFactory.getLogger(JpaBitLogStore.class);
     private JpaBitLogItemRepo bitLogItemRepo;
     private JpaBitIntegrityReportRepo bitReportRepo;
 
@@ -121,9 +122,18 @@ public class JpaBitLogStore implements
      */
     @Override
     public void delete(String account, String storeId, String spaceId) {
-        bitLogItemRepo.deleteByAccountAndStoreIdAndSpaceId(account,
+        Long deleted = 0l;
+        while((deleted = bitLogItemRepo.deleteFirst5000ByAccountAndStoreIdAndSpaceId(account,
                                                            storeId,
-                                                           spaceId);
+                                                           spaceId)) > 0){
+            log.info("deleted {} bit log items where account = {}, store_id = {}, space_id = {}",
+                     deleted,
+                     account,
+                     storeId,
+                     spaceId);
+            
+            this.bitLogItemRepo.flush();
+        }
     }
     
     

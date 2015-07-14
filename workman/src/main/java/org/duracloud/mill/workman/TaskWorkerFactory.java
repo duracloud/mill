@@ -25,4 +25,8 @@ public interface TaskWorkerFactory {
      */
     TaskWorker create(Task task, TaskQueue taskQueue);
 
+    /**
+     * Handles the destruction of the factory
+     */
+    public void destroy();
 }

@@ -21,8 +21,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.duracloud.audit.AuditLogItem;
 import org.duracloud.audit.AuditLogUtil;
+import org.duracloud.mill.auditor.AuditLogItem;
 import org.duracloud.mill.test.AbstractTestBase;
 import org.easymock.Mock;
 import org.junit.After;

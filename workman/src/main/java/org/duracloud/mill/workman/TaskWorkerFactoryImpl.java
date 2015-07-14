@@ -7,8 +7,10 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.common.queue.task.Task;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
 
 /**
  * 
@@ -18,6 +20,8 @@ import org.duracloud.common.queue.TaskQueue;
 public class TaskWorkerFactoryImpl implements TaskWorkerFactory {
     private TaskProcessorFactory processorFactory;
     private TaskQueue deadLetterQueue;
+    private ScheduledThreadPoolExecutor timer;
+    
     public TaskWorkerFactoryImpl(TaskProcessorFactory factory, TaskQueue deadLetterQueue) {
         if (factory == null)
             throw new IllegalArgumentException(
@@ -28,14 +32,28 @@ public class TaskWorkerFactoryImpl implements TaskWorkerFactory {
             throw new IllegalArgumentException(
                     "deadLetterQueue must be non-null");
         this.deadLetterQueue = deadLetterQueue;
+        
+        this.timer = new ScheduledThreadPoolExecutor(5);
 
     }
 
     @Override
     public TaskWorkerImpl create(Task task, TaskQueue queue) {
-        TaskWorkerImpl taskWorker = new TaskWorkerImpl(task, processorFactory, queue, deadLetterQueue);
+        TaskWorkerImpl taskWorker = new TaskWorkerImpl(task,
+                                                       processorFactory,
+                                                       queue,
+                                                       deadLetterQueue,
+                                                       this.timer);
         taskWorker.init();
         return taskWorker;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.workman.TaskWorkerFactory#destroy()
+     */
+    @Override
+    public void destroy() {
+        this.timer.shutdown();
     }
 
 }

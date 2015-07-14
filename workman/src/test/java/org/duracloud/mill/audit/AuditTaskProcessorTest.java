@@ -9,9 +9,9 @@ package org.duracloud.mill.audit;
 
 import java.util.Date;
 
-import org.duracloud.audit.AuditLogStore;
-import org.duracloud.audit.AuditLogWriteFailedException;
 import org.duracloud.audit.task.AuditTask;
+import org.duracloud.mill.auditor.AuditLogStore;
+import org.duracloud.mill.auditor.AuditLogWriteFailedException;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
@@ -51,8 +51,7 @@ public class AuditTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void test() throws TaskExecutionFailedException, AuditLogWriteFailedException {
-        
-        
+
         logStore.write(
                 EasyMock.isA(String.class),
                 EasyMock.isA(String.class), 

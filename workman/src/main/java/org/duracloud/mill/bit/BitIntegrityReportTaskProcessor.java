@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -134,14 +135,30 @@ public class BitIntegrityReportTaskProcessor extends
                 notifyManagerOfBitIntegrityErrors(report, errors);
             }
 
-            // delete all bit integrity log items for space.
-            bitLogStore.delete(account, storeId, spaceId);
-            bitLog.delete();
-            
-            
+            try{
+                // delete all bit integrity log items for space.
+                bitLogStore.delete(account, storeId, spaceId);
+                log.info(
+                         "Deleted Bit Log Items for account: {}, storeId: {}, spaceId: {}: ",
+                         account, storeId, spaceId);
+                
+            }catch(Exception ex){
+                log.warn(MessageFormat.format("failed to delete bit log items where account={0}, store_id = {1}, space_id = {2} due to: {3}",
+                         account,
+                         storeId,
+                         spaceId,
+                         ex.getMessage()), ex);
+            }
+
         } catch (Exception ex) {
             throw new TaskExecutionFailedException("task processing failed: "
                     + ex.getMessage(), ex);
+        } finally {
+            try {
+                bitLog.delete();
+            }catch(Exception ex){
+                log.warn("failed to delete bit log: " + bitLog.getAbsolutePath(), ex);
+            }
         }
 
     }
