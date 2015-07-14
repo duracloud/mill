@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.workman;
 
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.easymock.EasyMock;
@@ -74,22 +79,37 @@ public class TaskWorkerImplTest {
         expect(task.getAttempts()).andReturn(1);
 
         replay();
-        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue, deadLetterQueue);
+        TaskWorkerImpl w = createTaskWorkerImpl();
         w.init();
         w.run();
         // sleep to make sure that the internal timer task is being cancelled.
         Thread.sleep(2000);
     }
 
+    private ScheduledThreadPoolExecutor createScheduledThreadPool() {
+        return new ScheduledThreadPoolExecutor(5);
+    }
+
     private void runWithProcessorException() throws Exception {
         processor.execute();
         EasyMock.expectLastCall().andThrow(new TaskExecutionFailedException());
+        EasyMock.expect(task.getProperties())
+                .andReturn(new HashMap<String, String>());
         replay();
-        TaskWorkerImpl w = new TaskWorkerImpl(task, factory, queue, deadLetterQueue);
+        TaskWorkerImpl w = createTaskWorkerImpl();
         w.init();
         w.run();
         // sleep to make sure that the internal timer task is being cancelled.
         Thread.sleep(3000);
+    }
+
+    private TaskWorkerImpl createTaskWorkerImpl() {
+        TaskWorkerImpl w = new TaskWorkerImpl(task,
+                                              factory,
+                                              queue,
+                                              deadLetterQueue,
+                                              createScheduledThreadPool());
+        return w;
     }
 
     @Test

@@ -7,15 +7,18 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.common.queue.task.Task;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.duracloud.common.queue.TaskNotFoundException;
 import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * It is responsible for executing a single <code>TaskProcessor</code>. During
@@ -27,26 +30,28 @@ import java.util.TimerTask;
  */
 public class TaskWorkerImpl implements TaskWorker {
     private static Logger log = LoggerFactory.getLogger(TaskWorkerImpl.class);
-    private static final Timer TIMER;
+    private ScheduledThreadPoolExecutor timer;
 
     private TaskProcessorFactory processorFactory;
     private TaskQueue queue;
     private TaskQueue deadLetterQueue;
     private boolean done = false;
     private boolean started = false;
-    private TimerTask currentTimerTask;
+    private Runnable currentTimerTask;
     private Task task;
     private boolean initialized = false;
 
-    static {
-        TIMER = new Timer();
-    }
+
     /**
      * @param task
      * @param processorFactory
      * @param queue
      */
-    public TaskWorkerImpl(Task task, TaskProcessorFactory processorFactory, TaskQueue queue, TaskQueue deadLetterQueue) {
+    public TaskWorkerImpl(Task task,
+                          TaskProcessorFactory processorFactory,
+                          TaskQueue queue,
+                          TaskQueue deadLetterQueue,
+                          ScheduledThreadPoolExecutor timer) {
         if (task == null)
             throw new IllegalArgumentException("task must be non-null");
         if (queue == null)
@@ -56,10 +61,15 @@ public class TaskWorkerImpl implements TaskWorker {
 
         if (processorFactory == null)
             throw new IllegalArgumentException("processor must be non-null");
+
+        if (timer == null)
+            throw new IllegalArgumentException("timer must be non-null");
+
         this.task = task;
         this.processorFactory = processorFactory;
         this.queue = queue;
         this.deadLetterQueue = deadLetterQueue;
+        this.timer = timer;
         log.debug("new worker created {}", this);
 
     }
@@ -67,11 +77,10 @@ public class TaskWorkerImpl implements TaskWorker {
     private void scheduleVisibilityTimeoutExtender(final Task task,
                                                    Date timeFrom,
                                                    final Integer visibilityTimeout) {
-        // schedule task to run two seconds before the expiration of the task
-        // lest the timer task execute late for any reason.
-        Date executionTime =
-            new Date(timeFrom.getTime() + ((long)(visibilityTimeout*1000*0.5)));
-        TimerTask timerTask = new TimerTask() {
+        // schedule task to run in half the visibility timeout to help ensure that the time runs
+        //before the visibility timeout expires.
+        long delay = ((long)(visibilityTimeout*1000*0.5));
+        Runnable timerTask = new Runnable() {
             @Override
             public void run() {
                 if (!done) {
@@ -91,7 +100,7 @@ public class TaskWorkerImpl implements TaskWorker {
         };
 
         this.currentTimerTask = timerTask;
-        TIMER.schedule(currentTimerTask, executionTime);
+        timer.schedule(currentTimerTask, delay, TimeUnit.MILLISECONDS);
     }
     
     /**
@@ -135,7 +144,7 @@ public class TaskWorkerImpl implements TaskWorker {
             processor.execute();
             this.queue.deleteTask(task);
             
-            log.info("completed task:  task_type={} task_class{} attempts={} result={} elapsed_time={}",
+            log.info("completed task:  task_type={} task_class={} attempts={} result={} elapsed_time={}",
                      task.getType(),
                      task.getClass().getSimpleName(),
                      task.getAttempts(),
@@ -144,11 +153,14 @@ public class TaskWorkerImpl implements TaskWorker {
 
         }  catch (Exception e) {
             int attempts = task.getAttempts();
-
-            log.error("failed to complete:  task_type=" + task.getType()
-                    + " attempts=" + attempts + " result=failure elapsed_time="
-                    + (System.currentTimeMillis() - startTime) + " message=\""
-                    + e.getMessage() + "\"", e);
+            log.error(MessageFormat.format("failed to complete:  task_type={0} attempts={1} "
+                                            + "result=failure elapsed_time={2} properties=\"{3}\" "
+                                            + "message=\"{4}\"",
+                     task.getType().name(), 
+                     attempts,
+                     System.currentTimeMillis() - startTime,
+                     task.getProperties(),
+                     e.getMessage()));
             
             if(attempts < TaskWorker.MAX_ATTEMPTS){
                 this.queue.requeue(task);
@@ -159,8 +171,8 @@ public class TaskWorkerImpl implements TaskWorker {
             
         } finally {
             done = true;
-            if (currentTimerTask != null) {
-                currentTimerTask.cancel();
+            if (this.currentTimerTask != null) {
+                this.timer.remove(this.currentTimerTask);
             }
             
             log.debug("task worker finished {}", this.task);
