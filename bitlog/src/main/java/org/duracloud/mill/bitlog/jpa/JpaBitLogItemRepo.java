@@ -31,12 +31,11 @@ public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
      * @param pageable
      * @return
      */
-     public Page<JpaBitLogItem>
-            findByAccountAndStoreIdAndSpaceIdOrderByContentIdAsc(String account,
-                                                                 String storeId,
-                                                                 String spaceId,
-                                                                 Pageable pageable);
-
+    public Page<JpaBitLogItem>
+           findByAccountAndStoreIdAndSpaceId(String account,
+                                             String storeId,
+                                             String spaceId,
+                                             Pageable pageable);
 
     /**
      * @param account
@@ -44,7 +43,8 @@ public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
      * @param spaceId
      */
      @Modifying
-    public Long deleteFirst5000ByAccountAndStoreIdAndSpaceId(String account,
+     @Query(nativeQuery=true, value="delete from bit_log_item where account=?1 and store_id=?2 and space_id=?3 limit 50000")
+    public int deleteFirst50000ByAccountAndStoreIdAndSpaceId(String account,
                                                              String storeId,
                                                              String spaceId);
 
