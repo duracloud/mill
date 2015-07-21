@@ -13,10 +13,8 @@ import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.duracloud.mill.config.ConfigConstants;
-import org.duracloud.mill.config.ConfigurationManager;
-import org.duracloud.mill.util.PropertyFileHelper;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,6 +27,7 @@ import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * 
@@ -39,6 +38,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @EnableJpaRepositories(basePackages = { "org.duracloud.account.db" },
                        entityManagerFactoryRef = CredentialsRepoConfig.ENTITY_MANAGER_FACTORY_BEAN,
                        transactionManagerRef = CredentialsRepoConfig.TRANSACTION_MANAGER_BEAN)
+@EnableTransactionManagement
 public class CredentialsRepoConfig {
     public static final String ENTITY_MANAGER_FACTORY_BEAN = "credentialsRepoEntityManagerFactory";
     public static final String CREDENTIALS_REPO_DATA_SOURCE_BEAN = "credentialsRepoDataSource";
@@ -60,6 +60,11 @@ public class CredentialsRepoConfig {
                         System.getProperty(ConfigConstants.MC_DB_NAME, "mill")));
         dataSource.setUsername(System.getProperty(ConfigConstants.MC_DB_USER, "mill"));
         dataSource.setPassword(System.getProperty(ConfigConstants.MC_DB_PASS, "password"));
+        dataSource.setInitialSize(5);
+        dataSource.setMaxIdle(5);
+        dataSource.setMaxTotal(50);
+        dataSource.setMaxConnLifetimeMillis(14400);
+        dataSource.setTimeBetweenEvictionRunsMillis(60*1000*15);
         return dataSource;
     }
 
@@ -78,7 +83,7 @@ public class CredentialsRepoConfig {
         emf.setDataSource(dataSource);
         emf.setPersistenceUnitName("credentials-repo-pu");
         emf.setPackagesToScan("org.duracloud.account.db.model");
-
+        
         HibernateJpaVendorAdapter va = new HibernateJpaVendorAdapter();
         va.setDatabase(Database.MYSQL);
         emf.setJpaVendorAdapter(va);
@@ -93,8 +98,8 @@ public class CredentialsRepoConfig {
                           "org.hibernate.cache.HashtableCacheProvider");
         props.setProperty("jadira.usertype.autoRegisterUserTypes", "true");
         props.setProperty("jadira.usertype.databaseZone", "jvm");
-        props.setProperty("hibernate.show_sql", "false");
-        props.setProperty("hibernate.format_sql", "false");
+        props.setProperty("hibernate.show_sql", System.getProperty("hibernate.show_sql", "false"));
+        props.setProperty("hibernate.format_sql",System.getProperty("hibernate.format_sql", "false"));
         props.setProperty("hibernate.show_comments", "false");
         emf.setJpaProperties(props);
         return emf;

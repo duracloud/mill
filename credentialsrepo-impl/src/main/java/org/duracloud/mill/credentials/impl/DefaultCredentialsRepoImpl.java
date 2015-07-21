@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author Daniel Bernstein Date: Oct 29, 2013
  */
-@Transactional(CredentialsRepoConfig.TRANSACTION_MANAGER_BEAN)
 @Component
 public class DefaultCredentialsRepoImpl implements CredentialsRepo {
     
