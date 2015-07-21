@@ -27,9 +27,12 @@ import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
+import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.Task.Type;
 import org.duracloud.common.queue.task.TypedTask;
+import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
+import org.duracloud.mill.bit.BitIntegrityCheckTask;
 import org.duracloud.mill.task.DuplicationTask;
 
 /**
@@ -90,7 +93,7 @@ public class Driver {
         options.addOption(password);
 
         Option type = new Option("t", "type", true,
-                "The type of operation: NOOP, DUP, BIT, AUDIT");
+                "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT");
         type.setArgs(1);
         type.setArgName("type");
         type.setRequired(true);
@@ -184,11 +187,12 @@ public class Driver {
             TaskQueue taskQueue = new SQSTaskQueue(queue);
             
             for(String content : contentIds){
-                TypedTask typedTask;
+                SpaceCentricTypedTask typedTask;
                 if(taskType.equals(Type.DUP)) {
                     DuplicationTask dupTask = new DuplicationTask();
                     dupTask.setSourceStoreId(sourceStoreId);
                     dupTask.setDestStoreId(destStoreId);
+                    dupTask.setContentId(contentId);
                     typedTask = dupTask;
                 } else if(taskType.equals(Type.NOOP)) {
                     NoopTask noopTask = new NoopTask();
@@ -199,14 +203,21 @@ public class Driver {
                     auditTask.setAction(ActionType.ADD_CONTENT.name());
                     auditTask.setContentSize("0");
                     auditTask.setContentMimetype("application/octet-stream");
+                    auditTask.setContentId(content);
                     typedTask = auditTask;
+                } else if(taskType.equals(Type.BIT_REPORT)) {
+                    BitIntegrityCheckReportTask task = new BitIntegrityCheckReportTask();
+                    typedTask = task;
+                } else if(taskType.equals(Type.BIT)) {
+                    BitIntegrityCheckTask task = new BitIntegrityCheckTask();
+                    task.setContentId(contentId);
+                    typedTask = task;
                 } else {
                    throw new RuntimeException("taskType " + taskType + " not supported.");
                 }
 
                 typedTask.setAccount(subdomain);
                 typedTask.setSpaceId(spaceId);
-                typedTask.setContentId(content);
                 typedTask.setStoreId(sourceStoreId);
                 taskQueue.put(typedTask.writeTask());
             }

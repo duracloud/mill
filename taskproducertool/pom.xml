@@ -37,6 +37,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud.mill</groupId>
+      <artifactId>common-bit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.duracloud</groupId>
       <artifactId>auditor</artifactId>
     </dependency>
