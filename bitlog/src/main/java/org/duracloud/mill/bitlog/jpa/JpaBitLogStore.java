@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @author Daniel Bernstein Date: Oct 17, 2014
  */
-@Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
 public class JpaBitLogStore implements
                            BitLogStore {
 
@@ -55,6 +54,7 @@ public class JpaBitLogStore implements
      * org.duracloud.mill.bitlog.BitIntegrityResult, java.lang.String,
      * java.lang.String, java.lang.String, java.lang.String)
      */
+    @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
     @Override
     public BitLogItem write(String accountId,
                             String storeId,
@@ -100,15 +100,14 @@ public class JpaBitLogStore implements
                                                final String storeId,
                                                final String spaceId) {
 
-        return (Iterator) new StreamingIterator<JpaBitLogItem>(new JpaIteratorSource<JpaBitLogItemRepo, JpaBitLogItem>(bitLogItemRepo) {
+        return (Iterator) new StreamingIterator<JpaBitLogItem>(new JpaIteratorSource<JpaBitLogItemRepo, JpaBitLogItem>(bitLogItemRepo, 50000) {
             @Override
             protected Page<JpaBitLogItem> getNextPage(Pageable pageable,
                                                       JpaBitLogItemRepo repo) {
-                return repo
-                        .findByAccountAndStoreIdAndSpaceIdOrderByContentIdAsc(account,
-                                                                              storeId,
-                                                                              spaceId,
-                                                                              pageable);
+                return repo.findByAccountAndStoreIdAndSpaceId(account,
+                                                              storeId,
+                                                              spaceId,
+                                                              pageable);
             }
         });
 
@@ -121,9 +120,10 @@ public class JpaBitLogStore implements
      * java.lang.String, java.lang.String)
      */
     @Override
+    @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
     public void delete(String account, String storeId, String spaceId) {
-        Long deleted = 0l;
-        while((deleted = bitLogItemRepo.deleteFirst5000ByAccountAndStoreIdAndSpaceId(account,
+        int deleted = 0;
+        while((deleted = bitLogItemRepo.deleteFirst50000ByAccountAndStoreIdAndSpaceId(account,
                                                            storeId,
                                                            spaceId)) > 0){
             log.info("deleted {} bit log items where account = {}, store_id = {}, space_id = {}",
@@ -141,6 +141,7 @@ public class JpaBitLogStore implements
     /* (non-Javadoc)
      * @see org.duracloud.mill.bitlog.BitLogStore#addReport(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, org.duracloud.mill.bitlog.BitIntegrityResult, java.util.Date)
      */
+    @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
     @Override
     public BitIntegrityReport addReport(String account,
                           String storeId,

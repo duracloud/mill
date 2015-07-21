@@ -162,7 +162,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
         expect(manifestItem2.getContentId()).andReturn(contentId);
 
         expect(manifestIt.hasNext()).andReturn(false);
-        expect(manifestStore.getItems(eq(account), eq(storeId), eq(spaceId)))
+        expect(manifestStore.getItems(eq(account), eq(storeId), eq(spaceId), eq(false)))
                 .andReturn(manifestIt);
         return manifestItem2;
     }

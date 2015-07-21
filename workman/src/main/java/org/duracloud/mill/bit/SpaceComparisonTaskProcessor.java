@@ -108,7 +108,7 @@ public class SpaceComparisonTaskProcessor implements
 
             // iterate current non-deleted manifest items
             Iterator<ManifestItem> manifestIterator = this.manifestStore
-                    .getItems(account, storeId, spaceId);
+                    .getItems(account, storeId, spaceId, false);
             
             while (manifestIterator.hasNext()) {
                 // if not in storage provider
