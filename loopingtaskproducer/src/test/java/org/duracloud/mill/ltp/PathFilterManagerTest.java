@@ -41,7 +41,7 @@ public class PathFilterManagerTest {
     }
 
     @Test
-    public void testAllExclused() {
+    public void testAllExcluded() {
 
         StringBuilder exclusions = new StringBuilder();
         exclusions.append("/*/*/*\n");
@@ -51,6 +51,17 @@ public class PathFilterManagerTest {
         Assert.assertTrue(this.pathFilterManager.isExcluded("/account1"));
         Assert.assertTrue(this.pathFilterManager.isExcluded("/account1/store1"));
         Assert.assertTrue(this.pathFilterManager.isExcluded("/account1/store1/space1"));
+    }
+
+    @Test
+    public void testSpaceNameWithPeriodExcluded() {
+
+        StringBuilder exclusions = new StringBuilder();
+        exclusions.append("/test/1000/test.space\n");
+
+        setupPathFilterManager("", exclusions.toString());
+        
+        Assert.assertTrue(this.pathFilterManager.isExcluded("/test/1000/test.space"));
     }
 
     @Test
