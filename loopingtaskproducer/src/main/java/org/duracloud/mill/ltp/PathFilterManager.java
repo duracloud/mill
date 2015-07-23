@@ -84,7 +84,7 @@ public class PathFilterManager {
      * @param pattern
      */
     private String validateAndScrubPattern(String pattern) {
-        String regex = "(/([*]|[A-Za-z0-9_-]+[*]?)){3}";
+        String regex = "(/([*]|[A-Za-z0-9_.-]+[*]?)){3}";
         if(!StringUtils.isEmpty(pattern)){
             if(pattern.matches(regex)){
                 return pattern.trim();
@@ -92,7 +92,7 @@ public class PathFilterManager {
         }
         
         throw new DuraCloudRuntimeException(
-                                            "pattern "+pattern+" is invalid.  " +
+                                            "pattern \""+pattern+"\" is invalid.  " +
                                             "Must be start with a forward slash, contain three slashes, " +
                                             "and after each slash must be at least one alpha numeric charactor or * character.");
     }
