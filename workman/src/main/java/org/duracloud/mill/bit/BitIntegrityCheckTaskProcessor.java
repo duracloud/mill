@@ -272,10 +272,8 @@ public class BitIntegrityCheckTaskProcessor extends
                                                                                 e);
                         }
                         
-                        String message = "The manifest entry's checksum("+manifestChecksum+") did not match the others: " + 
-                                "the last update to the manifest must have failed or has " +
-                                "not yet been processed by the audit system in the last 24 hours " + 
-                                "due to major downtime for the mill or a fantastically backed-up audit queue.";
+                        String message = "The manifest checksum (" + manifestChecksum +
+                                         ") did not match the others.";
 
                         if(!isContentChecksumOkay(state,storeChecksum)){
                                 message = MessageFormat
