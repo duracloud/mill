@@ -19,7 +19,7 @@ import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
-import org.duracloud.mill.util.WriteOnlyStringSet;
+import org.duracloud.common.collection.WriteOnlyStringSet;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.storage.domain.StorageProviderType;
