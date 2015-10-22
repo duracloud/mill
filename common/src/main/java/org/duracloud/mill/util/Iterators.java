@@ -10,12 +10,6 @@ package org.duracloud.mill.util;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.Configuration;
-import net.sf.ehcache.config.Searchable;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
-import org.duracloud.common.collection.StreamingIterator;
 
 import java.io.File;
 import java.io.FileWriter;

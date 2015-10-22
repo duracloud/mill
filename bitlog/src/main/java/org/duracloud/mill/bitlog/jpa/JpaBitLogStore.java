@@ -18,7 +18,7 @@ import org.duracloud.mill.bitlog.ItemWriteFailedException;
 import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.db.repo.MillJpaRepoConfig;
-import org.duracloud.mill.db.util.JpaIteratorSource;
+import org.duracloud.common.collection.jpa.JpaIteratorSource;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.slf4j.Logger;

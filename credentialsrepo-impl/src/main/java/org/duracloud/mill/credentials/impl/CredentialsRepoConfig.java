@@ -54,7 +54,7 @@ public class CredentialsRepoConfig {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl(MessageFormat
-                .format("jdbc:mysql://{0}:{1}/{2}?autoReconnect=true",
+                .format("jdbc:mysql://{0}:{1}/{2}",
                         System.getProperty(ConfigConstants.MC_DB_HOST, "localhost"),
                         System.getProperty(ConfigConstants.MC_DB_PORT, "3306"),
                         System.getProperty(ConfigConstants.MC_DB_NAME, "mill")));
@@ -65,6 +65,8 @@ public class CredentialsRepoConfig {
         dataSource.setMaxTotal(50);
         dataSource.setMaxConnLifetimeMillis(14400);
         dataSource.setTimeBetweenEvictionRunsMillis(60*1000*15);
+        dataSource.setTestOnBorrow(true);
+        dataSource.setValidationQuery("SELECT 1");
         return dataSource;
     }
 
