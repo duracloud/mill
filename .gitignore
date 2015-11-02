@@ -2,6 +2,7 @@
 .idea
 .project
 .settings
+target
 */target
 *.iml
 *.ipr
