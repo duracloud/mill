@@ -55,6 +55,11 @@
 
     <dependency>
       <groupId>org.duracloud</groupId>
+      <artifactId>snapshotstorageprovider</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.duracloud</groupId>
       <artifactId>auditor</artifactId>
     </dependency>
 

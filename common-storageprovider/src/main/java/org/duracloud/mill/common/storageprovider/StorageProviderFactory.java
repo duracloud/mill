@@ -16,6 +16,7 @@ import org.duracloud.mill.util.SimpleUserUtil;
 import org.duracloud.rackspacestorage.RackspaceStorageProvider;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.sdscstorage.SDSCStorageProvider;
+import org.duracloud.snapshotstorage.SnapshotStorageProvider;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 
@@ -72,6 +73,9 @@ public class StorageProviderFactory {
         } else if (storageProviderType.equals(StorageProviderType.RACKSPACE)) {
             return new RackspaceStorageProvider(credentials.getAccessKey(),
                     credentials.getSecretKey());
+        } else if (storageProviderType.equals(StorageProviderType.SNAPSHOT)) {
+            return new SnapshotStorageProvider(credentials.getAccessKey(),
+                                         credentials.getSecretKey());
         }
         throw new RuntimeException(storageProviderType
                 + " is not a supported storage provider type");

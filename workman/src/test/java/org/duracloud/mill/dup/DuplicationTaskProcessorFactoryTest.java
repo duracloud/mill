@@ -42,6 +42,8 @@ public class DuplicationTaskProcessorFactoryTest {
                 StorageProviderType.RACKSPACE });
         successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.RACKSPACE });
+        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
+                StorageProviderType.SNAPSHOT });
         
         //successes
         for(StorageProviderType[] a : successfulProviderList){
@@ -52,8 +54,6 @@ public class DuplicationTaskProcessorFactoryTest {
         List<StorageProviderType[]> failedProviderList = new LinkedList<>();
         failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.IRODS });
-        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.SNAPSHOT });
         failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
                 StorageProviderType.UNKNOWN });
         for(StorageProviderType[] a : failedProviderList){

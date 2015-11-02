@@ -664,6 +664,12 @@
       </dependency>
       <dependency>
         <groupId>org.duracloud</groupId>
+        <artifactId>snapshotstorageprovider</artifactId>
+        <version>${duracloud.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
         <artifactId>storeclient</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
