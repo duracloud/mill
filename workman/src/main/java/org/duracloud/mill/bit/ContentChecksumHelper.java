@@ -66,15 +66,6 @@ public class ContentChecksumHelper {
             return contentChecksum;
         }
 
-        // if (!isContentChecksumCalculated()) {
-        // throw new DuraCloudRuntimeException(
-        // BitIntegrityMessageUtil
-        // .buildFailureMessage("Could not compute checksum: " +
-        // "this storage provider does not provide access to content.",
-        // bitTask,
-        // storageProviderType));
-        // }
-
         try {
             new Retrier().execute(new Retriable() {
                 @Override
@@ -87,10 +78,12 @@ public class ContentChecksumHelper {
                         contentChecksum = checksum;
 
                         if (!correctChecksum.equals(checksum)) {
-                            throw new ChecksumsDoNotMatchException(BitIntegrityHelper
+                            String message = BitIntegrityHelper
                                     .buildFailureMessage("The content checksum does not match specified checksum: ",
                                                          bitTask,
-                                                         storageProviderType));
+                                                         storageProviderType);
+                            log.warn(message);
+                            throw new ChecksumsDoNotMatchException(message);
                         } else {
                             log.debug("success - content checksum matches specified checksum: {}",
                                       correctChecksum);
