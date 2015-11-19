@@ -109,7 +109,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         setupStorageProviderFactory(morselCount*2);
         setupCredentialsRepo();
         setupNotificationManager();
-        setupLoopingTaskProducerConfig(5);
+        setupLoopingTaskProducerConfig(1);
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount);
         replayAll();
         LoopingBitIntegrityTaskProducer ltp = createTaskProducer(maxTaskQueueSize);
@@ -169,7 +169,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         setupCredentialsRepo();
         setupNotificationManager();
         
-        setupLoopingTaskProducerConfig(2);
+        setupLoopingTaskProducerConfig(1);
 
         replayAll();
 

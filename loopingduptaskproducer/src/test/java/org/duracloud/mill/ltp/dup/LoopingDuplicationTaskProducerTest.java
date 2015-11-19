@@ -116,7 +116,6 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         setupCredentialsRepo(4*morselCount);
         setupPolicyManager(morselCount);
         setupStateManager(morselCount, sourceCount);
-        setupLoopingTaskProducerConfig();
         setupCache();
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount, destCount);
         replayAll();
@@ -141,7 +140,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         setupNotificationManager();
 
         expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(),1);
-        setupLoopingTaskProducerConfig(2);
+        setupLoopingTaskProducerConfig(1);
 
         stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
         EasyMock.expectLastCall().times(morselCount);
@@ -160,10 +159,6 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     
     private void setupLoopingTaskProducerConfig(int times) {
         expect(this.config.getWorkDirectoryPath()).andReturn("java.io.tmpdir").times(times);
-    }
-
-    private void setupLoopingTaskProducerConfig() {
-        setupLoopingTaskProducerConfig(1);
     }
 
     
@@ -222,7 +217,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         
         expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(), 1);
         expectGetMorsels(morsels, 1);
-        setupLoopingTaskProducerConfig(3);
+        setupLoopingTaskProducerConfig(1);
         stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
         StateManager<DuplicationMorsel> stateManagerDelegate = new StateManager<DuplicationMorsel>("fakepath", DuplicationMorsel.class) {
             @Override
