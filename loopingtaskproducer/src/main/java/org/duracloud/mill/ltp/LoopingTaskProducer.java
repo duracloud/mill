@@ -108,7 +108,6 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     
     public void run(){
         
-        deleteCompletionFileIfExists();
         
         Timer timer = new Timer();
         try {
@@ -124,7 +123,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             if(runLater()){
                 return;
             }
-            
+
             log.info("Starting run...");
             Queue<T> morselQueue = loadMorselQueue();
             
@@ -275,6 +274,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         if(nextRun != null){
             Date now = new Date();
             if(now.after(nextRun)){
+                deleteCompletionFileIfExists();
                 this.stateManager.setCurrentRunStartDate(now);
                 this.stateManager.setNextRunStartDate(null);
                 runLater = false;
