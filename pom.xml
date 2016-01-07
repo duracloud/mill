@@ -173,7 +173,7 @@
     <duracloud.db.version>3.4.0</duracloud.db.version>
     <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
-    <spring.framework.data.jpa.version>1.8.0.RELEASE</spring.framework.data.jpa.version>
+    <spring.framework.data.jpa.version>1.6.0.RELEASE</spring.framework.data.jpa.version>
     <hibernate.version>4.3.2.Final</hibernate.version>
     <mysql.driver.version>5.1.28</mysql.driver.version>
     <skipUTs>false</skipUTs>
