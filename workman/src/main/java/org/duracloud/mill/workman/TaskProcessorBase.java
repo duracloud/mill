@@ -35,12 +35,10 @@ public abstract class TaskProcessorBase implements
     @Override
     public final void execute() throws TaskExecutionFailedException {
         long startTime = System.currentTimeMillis();
-                
+
         try {
-            
             executeImpl();
             log.info(createMessage("success", System.currentTimeMillis()-startTime));
-
         }catch(TaskExecutionFailedException ex){
             log.error(createMessage("failure", System.currentTimeMillis()-startTime));
             throw ex;

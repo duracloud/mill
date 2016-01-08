@@ -9,6 +9,7 @@ package org.duracloud.mill.manifest;
 
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 
 import java.util.Date;
 
@@ -60,14 +61,14 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
         expect(task.getContentSize()).andReturn(contentSize);
         expect(task.getContentChecksum()).andReturn(contentChecksum);
         
-        this.store.addUpdate(eq(account),
+        expect(this.store.addUpdate(eq(account),
                              eq(storeId),
                              eq(spaceId),
                              eq(contentId),
                              eq(contentChecksum),
                              eq(contentMimetype),
                              eq(contentSize),
-                             eq(new Date(dateTime)));
+                             eq(new Date(dateTime)))).andReturn(true);
         replayAll();
         executeProcessor();
     }
@@ -85,11 +86,11 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
     @Test
     public void testDeleteContent() throws TaskExecutionFailedException, ManifestItemWriteException {
         setupTask(ActionType.DELETE_CONTENT);
-        this.store.flagAsDeleted(eq(account),
+        expect(this.store.flagAsDeleted(eq(account),
                              eq(storeId),
                              eq(spaceId),
                              eq(contentId),
-                             eq(new Date(dateTime)));
+                             eq(new Date(dateTime)))).andReturn(true);
         replayAll();
         executeProcessor();
     }

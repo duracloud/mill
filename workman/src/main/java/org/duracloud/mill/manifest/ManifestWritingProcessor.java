@@ -13,6 +13,7 @@ import org.duracloud.audit.task.AuditTask;
 import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessorBase;
+import org.duracloud.mill.workman.TransProcessorState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,21 +61,31 @@ public class ManifestWritingProcessor extends
                     size = "0";
                 }
                 
-                this.manifestStore.addUpdate(account, 
+                if(!this.manifestStore.addUpdate(account, 
                                     storeId, 
                                     spaceId, 
                                     contentId,
                                     task.getContentChecksum(),
                                     mimetype,
                                     size,
-                                    timeStamp);
+                                    timeStamp)){
+                    //since no update occurred
+                    //tell any downstream task processors to ignore
+                    //this task
+                    TransProcessorState.ignore();
+                };
                 
             }else if(ActionType.DELETE_CONTENT.name().equals(action)){
-                this.manifestStore.flagAsDeleted(account,
+                if(!this.manifestStore.flagAsDeleted(account,
                                                  storeId,
                                                  spaceId,
                                                  contentId,
-                                                 timeStamp);
+                                                 timeStamp)){
+                    //since no update occurred
+                    //tell any downstream task processors to ignore
+                    //this task
+                    TransProcessorState.ignore();
+                };
             }else{
                 log.debug("action {} not handled by this processor: task={}", action,task);
             }
