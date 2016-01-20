@@ -170,7 +170,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <duracloud.version>3.7.0-SNAPSHOT</duracloud.version>
-    <duracloud.db.version>3.5.0</duracloud.db.version>
+    <duracloud.db.version>3.5.1</duracloud.db.version>
     <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <spring.framework.data.jpa.version>1.6.0.RELEASE</spring.framework.data.jpa.version>
