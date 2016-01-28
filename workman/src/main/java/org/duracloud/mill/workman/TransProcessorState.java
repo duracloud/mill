@@ -28,4 +28,8 @@ public class TransProcessorState {
     public static void ignore(){
         IGNORE.set(true);
     }
+    
+    public static void reset(){
+        IGNORE.set(false);
+    }
 }

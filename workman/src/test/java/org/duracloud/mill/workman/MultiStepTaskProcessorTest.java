@@ -39,7 +39,13 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
     
     @Mock
     private TaskProcessor step2;
+
+    @Mock
+    private TaskProcessor step1a;
     
+    @Mock
+    private TaskProcessor step2a;
+
     private MultiStepTaskProcessor processor;
     
     /**
@@ -112,6 +118,47 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
         assertTrue(result1.get(1000, TimeUnit.MILLISECONDS));
         assertTrue(result2.get(1000, TimeUnit.MILLISECONDS));
 
+    }
+
+    
+    @Test
+    public void testExecuteWithIgoreInSameThread() throws Exception{
+        
+        //execute the two processors successively in one thread.  First time around
+        //ignore after the first step; in the second time around do not ignore
+        step1.execute();
+        EasyMock.expectLastCall().andStubAnswer(new IAnswer<Object>() {
+            /* (non-Javadoc)
+             * @see org.easymock.IAnswer#answer()
+             */
+            @Override
+            public Object answer() throws Throwable {
+                TransProcessorState.ignore();
+                return null;
+            }
+        });
+
+        step1a.execute();
+        EasyMock.expectLastCall();
+
+
+        step2a.execute();
+        EasyMock.expectLastCall();
+
+        replayAll();
+
+        processor.addTaskProcessor(step1);
+        processor.addTaskProcessor(step2);
+
+        processor.execute();
+
+        processor = new MultiStepTaskProcessor();
+        processor.addTaskProcessor(step1a);
+        processor.addTaskProcessor(step2a);
+        
+        processor.execute();
+
+        
     }
 
     private Future<Boolean> executeProcessorInThread() {

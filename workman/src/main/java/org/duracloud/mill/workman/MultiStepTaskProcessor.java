@@ -32,6 +32,7 @@ public class MultiStepTaskProcessor implements TaskProcessor{
      */
     @Override
     public void execute() throws TaskExecutionFailedException {
+        TransProcessorState.reset();
         for(TaskProcessor processor : processors){
             if(!TransProcessorState.isIgnore()){
                 processor.execute();
