@@ -19,6 +19,7 @@ public class MultiStepTaskProcessor implements TaskProcessor{
     
     private List<TaskProcessor> processors = new ArrayList<>();
 
+    
     /**
      * @param processor
      */
@@ -31,8 +32,11 @@ public class MultiStepTaskProcessor implements TaskProcessor{
      */
     @Override
     public void execute() throws TaskExecutionFailedException {
+        TransProcessorState.reset();
         for(TaskProcessor processor : processors){
-            processor.execute();
+            if(!TransProcessorState.isIgnore()){
+                processor.execute();
+            }
         }
     }
 }

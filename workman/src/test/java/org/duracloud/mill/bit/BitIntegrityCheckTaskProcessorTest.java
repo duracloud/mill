@@ -287,6 +287,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
         bitLogStoreMockInvalid(storeType, checksum, badChecksum, checksum);
         mockBitErrorTaskPut();
+
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         this.taskProcessor.execute();
@@ -305,8 +306,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         String size = "1000";
         expect(manifestItem.getContentMimetype()).andReturn(mimetype);
         expect(manifestItem.getContentSize()).andReturn(size);
-        manifestStore.addUpdate(eq(account),eq(storeId),eq(spaceId),eq(contentId), eq(checksum), eq(mimetype), eq(size), isA(Date.class));
-        expectLastCall();
+        expect(manifestStore.addUpdate(eq(account),eq(storeId),eq(spaceId),eq(contentId), eq(checksum), eq(mimetype), eq(size), isA(Date.class))).andReturn(true);
         
         bitLogStoreMockInvalid(storeType, checksum, checksum, badChecksum);
         mockBitErrorTaskPut();
@@ -464,10 +464,12 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         }
 
         bitLogStoreMockValid(storeType, checkContent ? checksum : null, checksum);
+
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         this.taskProcessor.execute();
     }
+
 
     /**
      * @param storeType
@@ -527,13 +529,13 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     private void
             mockManifestStoreUpdate(String checksum) throws ManifestItemWriteException {
-        manifestStore.addUpdate(eq(account),
+        expect(manifestStore.addUpdate(eq(account),
                                 eq(storeId),
                                 eq(spaceId),
                                 eq(contentId),
                                 eq(checksum),
                                 eq(mimetype),
                                 eq(contentSize),
-                                isA(Date.class));
+                                isA(Date.class))).andReturn(true);
     }
 }
