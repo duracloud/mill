@@ -69,11 +69,22 @@ public class ManifestCleanerDriver extends DriverSupport {
             ApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill");
             log.info("spring context initialized.");
             ManifestStore store = context.getBean(ManifestStore.class);
-            Long deleted = store.purgeDeletedItemsBefore(expirationDate);
-            log.info("Deleted {} items that were flagged as deleted before {}",
-                     deleted,
-                     expirationDate);
+            log.info("beginning purge of deleted items");
 
+            long deleted = 0l;
+            long total = 0l;
+            while((deleted = store.purgeDeletedItemsBefore(expirationDate)) > 0){
+                total+=deleted;
+                log.info("Deleted {} items that were flagged as deleted before {}",
+                         deleted,
+                         expirationDate);
+            }
+
+            log.info("Purge completed: Deleted a grand total of {} items that were flagged as deleted before {}",
+                     total,
+                     expirationDate);
+        
+            
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
