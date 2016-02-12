@@ -19,7 +19,9 @@ public class CredentialsRepoLocator {
     private static ApplicationContext ctx;
     
     static {
-       ctx = new AnnotationConfigApplicationContext("org.duracloud.mill.credentials.impl");
+        ctx = new AnnotationConfigApplicationContext("org.duracloud.account.db.repo",
+                                                     "org.duracloud.account.db.config",
+                                                     "org.duracloud.mill.credentials.impl");
         
     }
     public static CredentialsRepo get(){
