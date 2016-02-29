@@ -78,6 +78,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             for(String account :  getAccountsList()){
                 String accountPath = "/"+account;
                 
+                log.debug("loading {}", account);
                 
                 if(exclusionManager.isExcluded(accountPath)){
                     continue;
@@ -89,6 +90,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                     if(exclusionManager.isExcluded(storePath)){
                         continue;
                     }
+                    
                     StorageProvider store = getStorageProvider(cred);
                     
                     Iterator<String> spaces = store.getSpaces();
@@ -103,6 +105,9 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                                                            spaceId));
                         }
                     }
+                    
+                    log.info("loaded {} into morsel queue.", account);
+
                 }
             }
         } catch (Exception e) { 
