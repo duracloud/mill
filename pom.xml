@@ -61,6 +61,7 @@
     <module>loopingtaskproducer</module>
     <module>loopingduptaskproducer</module>
     <module>loopingbittaskproducer</module>
+    <module>looping-storagestats-taskproducer</module>
     <module>workman</module>
     <module>auditlog-generator</module>
     <module>manifest-cleaner</module>
@@ -170,7 +171,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <duracloud.version>4.0.0-SNAPSHOT</duracloud.version>
-    <duracloud.db.version>3.6.0-SNAPSHOT</duracloud.db.version>
+    <duracloud.db.version>3.7.0-SNAPSHOT</duracloud.db.version>
     <aws.sdk.version>1.10.20</aws.sdk.version>
     <spring.framework.version>4.0.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>

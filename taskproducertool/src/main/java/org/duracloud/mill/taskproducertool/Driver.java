@@ -93,7 +93,7 @@ public class Driver {
         options.addOption(password);
 
         Option type = new Option("t", "type", true,
-                "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT");
+                "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT, STORAGE_STATS");
         type.setArgs(1);
         type.setArgName("type");
         type.setRequired(true);
@@ -211,6 +211,9 @@ public class Driver {
                 } else if(taskType.equals(Type.BIT)) {
                     BitIntegrityCheckTask task = new BitIntegrityCheckTask();
                     task.setContentId(contentId);
+                    typedTask = task;
+                } else if(taskType.equals(Type.STORAGE_STATS)) {
+                    BitIntegrityCheckTask task = new BitIntegrityCheckTask();
                     typedTask = task;
                 } else {
                    throw new RuntimeException("taskType " + taskType + " not supported.");

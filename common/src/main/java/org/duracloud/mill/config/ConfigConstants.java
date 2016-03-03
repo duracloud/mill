@@ -22,6 +22,8 @@ public class ConfigConstants {
     public static final String QUEUE_NAME_DUP_LOW_PRIORITY = "queue.name.dup-low-priority";
     public static final String QUEUE_NAME_DUP_HIGH_PRIORITY = "queue.name.dup-high-priority";
     public static final String QUEUE_NAME_AUDIT = "queue.name.audit";
+    public static final String QUEUE_NAME_STORAGE_STATS = "queue.name.storagestats";
+
     public static final String QUEUE_NAME_DEAD_LETTER = "queue.name.dead-letter";
 
     /*
@@ -69,6 +71,14 @@ public class ConfigConstants {
      */
     public static final String LOOPING_DUP_FREQUENCY = "looping.dup.frequency";
     public static final String LOOPING_DUP_MAX_TASK_QUEUE_SIZE = "looping.dup.max-task-queue-size";
+
+
+    /*
+     * LOOPING DUPLICATION
+     */
+    public static final String LOOPING_STORAGE_STATS_FREQUENCY = "looping.storagestats.frequency";
+    public static final String LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE = "looping.storagestats.max-task-queue-size";
+
 
     /*
      * MC DATABASE
