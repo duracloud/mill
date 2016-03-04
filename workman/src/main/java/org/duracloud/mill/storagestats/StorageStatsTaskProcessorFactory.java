@@ -50,6 +50,7 @@ public class StorageStatsTaskProcessorFactory
                                                  SpaceStatsManager spaceStatsManager) {
         super(repo);
         this.storageProviderFactory = storageProviderFactory;
+        this.spaceStatsManager = spaceStatsManager;
     }
 
     @Override

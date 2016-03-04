@@ -30,9 +30,9 @@ import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.Task.Type;
-import org.duracloud.common.queue.task.TypedTask;
 import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
 import org.duracloud.mill.bit.BitIntegrityCheckTask;
+import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.task.DuplicationTask;
 
 /**
@@ -213,8 +213,7 @@ public class Driver {
                     task.setContentId(contentId);
                     typedTask = task;
                 } else if(taskType.equals(Type.STORAGE_STATS)) {
-                    BitIntegrityCheckTask task = new BitIntegrityCheckTask();
-                    typedTask = task;
+                     typedTask = new StorageStatsTask();
                 } else {
                    throw new RuntimeException("taskType " + taskType + " not supported.");
                 }

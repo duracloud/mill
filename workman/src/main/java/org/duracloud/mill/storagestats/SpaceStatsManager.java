@@ -12,6 +12,7 @@ import java.util.Date;
 import org.duracloud.mill.db.model.SpaceStats;
 import org.duracloud.mill.db.repo.JpaSpaceStatsRepo;
 import org.duracloud.mill.db.repo.MillJpaRepoConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SpaceStatsManager {
     private JpaSpaceStatsRepo repo;
+    @Autowired
     public SpaceStatsManager(JpaSpaceStatsRepo repo){
         this.repo = repo;
     }
