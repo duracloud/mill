@@ -21,12 +21,12 @@ public class LoopingStorageStatsTaskProducerConfigurationManager extends Looping
     public PathFilterManager getPathFilterManager(){
         PathFilterManager pathFilterManager = new PathFilterManager();
         
-        String exclusions = System.getProperty(ConfigConstants.EXCLUSION_LIST_KEY);
+        String exclusions = System.getProperty(ConfigConstants.LOOPING_STORAGE_STATS_EXCLUSION_LIST_KEY);
         if(exclusions != null){
             pathFilterManager.setExclusions(new File(exclusions));
         }
 
-        String inclusions = System.getProperty(ConfigConstants.INCLUSION_LIST_KEY);
+        String inclusions = System.getProperty(ConfigConstants.LOOPING_STORAGE_STATS_INCLUSION_LIST_KEY);
         if(inclusions != null){
             pathFilterManager.setInclusions(new File(inclusions));
         }

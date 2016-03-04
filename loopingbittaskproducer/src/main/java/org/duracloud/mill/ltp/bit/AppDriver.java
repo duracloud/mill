@@ -54,7 +54,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      * @param cmd
      */
     private void processExclusionListOption() {
-        String exclusionList = System.getProperty(ConfigConstants.EXCLUSION_LIST_KEY);
+        String exclusionList = System.getProperty(ConfigConstants.LOOPING_BIT_EXCLUSION_LIST_KEY);
         if (exclusionList != null) {
             File list = new File(exclusionList);
             if(!list.exists()){
@@ -68,7 +68,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
      * @param cmd
      */
     private void processInclusionListOption() {
-        String inclusionList = System.getProperty(ConfigConstants.INCLUSION_LIST_KEY);
+        String inclusionList = System.getProperty(ConfigConstants.LOOPING_BIT_INCLUSION_LIST_KEY);
         if (inclusionList != null) {
             File list = new File(inclusionList);
             if(!list.exists()){

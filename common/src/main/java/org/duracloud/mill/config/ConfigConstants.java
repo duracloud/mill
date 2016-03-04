@@ -55,8 +55,9 @@ public class ConfigConstants {
      */
     public static final String LOOPING_BIT_MAX_TASK_QUEUE_SIZE = "looping.bit.max-task-queue-size";
     public static final String LOOPING_BIT_FREQUENCY = "looping.bit.frequency";
-    public static final String EXCLUSION_LIST_KEY = "looping.bit.exclusion-list-file";
-    public static final String INCLUSION_LIST_KEY = "looping.bit.inclusion-list-file";
+    
+    public static final String LOOPING_BIT_EXCLUSION_LIST_KEY = "looping.bit.exclusion-list-file";
+    public static final String LOOPING_BIT_INCLUSION_LIST_KEY = "looping.bit.inclusion-list-file";
 
     
     /*
@@ -74,11 +75,13 @@ public class ConfigConstants {
 
 
     /*
-     * LOOPING DUPLICATION
+     * LOOPING STORAGE STATS
      */
     public static final String LOOPING_STORAGE_STATS_FREQUENCY = "looping.storagestats.frequency";
     public static final String LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE = "looping.storagestats.max-task-queue-size";
 
+    public static final String LOOPING_STORAGE_STATS_EXCLUSION_LIST_KEY = "looping.storagestats.exclusion-list-file";
+    public static final String LOOPING_STORAGE_STATS_INCLUSION_LIST_KEY = "looping.storagestats.inclusion-list-file";
 
     /*
      * MC DATABASE
