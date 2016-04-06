@@ -117,7 +117,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         StateManager<BitIntegrityMorsel> stateManager = new StateManager<BitIntegrityMorsel>(
                 stateFilePath, BitIntegrityMorsel.class);
 
-        LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo,
+        LoopingTaskProducer<BitIntegrityMorsel> producer = new LoopingBitIntegrityTaskProducer(credentialsRepo,
                                                                                        storageProviderFactory,
                                                                                        bitTaskQueue,
                                                                                        bitReportQueue,

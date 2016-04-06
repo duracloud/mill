@@ -364,6 +364,11 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
                 credentialsRepo.getStorageProviderCredentials(
                         EasyMock.isA(String.class), EasyMock.isA(String.class)))
                 .andReturn(new StorageProviderCredentials()).times(count);
+
+        EasyMock.expect(
+                        credentialsRepo.isAccountActive(EasyMock.isA(String.class)))
+                        .andReturn(true).atLeastOnce();
+
     }
 
     /**
