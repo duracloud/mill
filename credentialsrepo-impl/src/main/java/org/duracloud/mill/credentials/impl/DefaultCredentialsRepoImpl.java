@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.duracloud.account.db.model.AccountInfo;
+import org.duracloud.account.db.model.AccountInfo.AccountStatus;
 import org.duracloud.account.db.model.ServerDetails;
 import org.duracloud.account.db.model.StorageProviderAccount;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.common.db.error.NotFoundException;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -70,8 +72,8 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
     }
     
     @Override
-    public List<String> getAccounts() throws CredentialsRepoException {
-        List<AccountInfo> accountInfos = accountRepo.findAll();
+    public List<String> getActiveAccounts() throws CredentialsRepoException {
+        List<AccountInfo> accountInfos = accountRepo.findByStatus(AccountStatus.ACTIVE);
         List<String> subdomains = new ArrayList<>();
         
         for(int i = accountInfos.size()-1; i > -1 ; i--){
@@ -129,5 +131,17 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
                 primary);
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.duracloud.mill.credentials.CredentialsRepo#isAccountActive(java.lang.String)
+     */
+    @Override
+    public boolean isAccountActive(String account) throws AccountCredentialsNotFoundException {
+        AccountInfo info = this.accountRepo.findBySubdomain(account);
+        if(info == null){
+            throw new AccountCredentialsNotFoundException("no account found where accountId =  " + account);
+        }
+        return info.getStatus().equals(AccountStatus.ACTIVE);
+    }
 
 }

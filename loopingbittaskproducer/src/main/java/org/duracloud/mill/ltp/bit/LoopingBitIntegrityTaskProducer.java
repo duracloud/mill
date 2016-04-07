@@ -8,6 +8,7 @@
 package org.duracloud.mill.ltp.bit;
 
 import java.util.Date;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +19,8 @@ import java.util.Set;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.retry.Retriable;
+import org.duracloud.common.retry.Retrier;
 import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
 import org.duracloud.mill.bit.BitIntegrityCheckTask;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -49,6 +52,8 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     private int waitTimeInMsBeforeQueueSizeCheck = 10000;
     private TaskQueue bitReportTaskQueue;
     private JpaBitIntegrityReportRepo bitReportRepo;
+    private int waitBetweenRetriesMs = 5000;
+    
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
             JpaBitIntegrityReportRepo bitReportRepo,
             StorageProviderFactory storageProviderFactory,
@@ -141,7 +146,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
      * @throws CredentialsRepoException 
      */
     private List<String> getAccountsList() throws CredentialsRepoException {
-        return getCredentialsRepo().getAccounts();
+        return getCredentialsRepo().getActiveAccounts();
     }
 
     /* (non-Javadoc)
@@ -237,21 +242,31 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
      * @return
      */
     private boolean addTasks(BitIntegrityMorsel morsel,
-            StorageProvider store,
-            int biteSize) {
-        String account = morsel.getAccount();
-        String storeId = morsel.getStoreId();
-        String spaceId = morsel.getSpaceId();
-        String marker = morsel.getMarker();
+            final StorageProvider store,
+            final int biteSize) {
+        final String account = morsel.getAccount();
+        final String storeId = morsel.getStoreId();
+        final String spaceId = morsel.getSpaceId();
+        final String marker = morsel.getMarker();
         
         //load in next maxContentIdsToAdd or however many remain 
         List<String> contentIds = null;
         
         try {
-            contentIds = store.getSpaceContentsChunked(spaceId, 
-                                                     null, 
-                                                     biteSize, 
-                                                     marker);
+            
+            contentIds = (List<String>) new Retrier(3, waitBetweenRetriesMs, 2).execute(new Retriable(){
+                /* (non-Javadoc)
+                 * @see org.duracloud.common.retry.Retriable#retry()
+                 */
+                @Override
+                public Object retry() throws Exception {
+                    return store.getSpaceContentsChunked(spaceId, 
+                                                               null, 
+                                                               biteSize, 
+                                                               marker);
+                }
+            });
+            
             int added = addToTaskQueue(account, 
                                        storeId, 
                                        spaceId,
@@ -263,16 +278,19 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             if(added == 0){
                 return true;
             }else{
-                marker = contentIds.get(contentIds.size()-1);
-                morsel.setMarker(marker);
+                String newMarker = contentIds.get(contentIds.size()-1);
+                morsel.setMarker(newMarker);
                 return false;
             }
 
-        }catch(NotFoundException ex){
-            log.info("space not found on storage provider: " +
-                    "subdomain={}, spaceId={}, storeId={}",
-                    account, spaceId, storeId);
-           return true;
+        }catch(Exception ex){
+            String message = MessageFormat.format("Bit integrity producer failure on  " +
+                    "subdomain={0}, spaceId={1}, storeId={2} due to: {3}",
+                    account, spaceId, storeId,ex.getMessage());
+            log.error(message, ex);
+
+            sendEmail(message, ex);
+            return true;
         }
     }
 
@@ -354,4 +372,15 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     protected String getLoopingProducerTypePrefix() {
         return "bit";
     }
+    
+    /**
+     * Modify the wait between retries
+     * @param waitBetweenRetriesMs
+     */
+    public void setWaitBetweenRetriesMs(int waitBetweenRetriesMs) {
+        this.waitBetweenRetriesMs = waitBetweenRetriesMs;
+    }
+
+
+
 }
