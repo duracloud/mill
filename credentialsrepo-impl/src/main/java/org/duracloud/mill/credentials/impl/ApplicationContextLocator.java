@@ -15,17 +15,24 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @author Daniel Bernstein
  *
  */
-public class CredentialsRepoLocator {
+public class ApplicationContextLocator {
     private static ApplicationContext ctx;
     
     static {
-        ctx = new AnnotationConfigApplicationContext("org.duracloud.account.db.repo",
+        ctx = new AnnotationConfigApplicationContext("org.duracloud.mill.db.repo",
+                                                     "org.duracloud.account.db.repo",
                                                      "org.duracloud.account.db.config",
                                                      "org.duracloud.mill.credentials.impl");
         
     }
-    public static CredentialsRepo get(){
+    public static CredentialsRepo getCredentialsRepo(){
         return ctx.getBean(CredentialsRepo.class);
 
     }
+
+    public static ApplicationContext get(){
+        return ctx;
+
+    }
+
 }

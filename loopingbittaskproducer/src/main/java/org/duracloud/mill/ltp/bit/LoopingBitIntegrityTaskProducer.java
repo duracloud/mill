@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.ltp.bit;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,12 +25,15 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
+import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
@@ -44,8 +48,9 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     private PathFilterManager exclusionManager;
     private int waitTimeInMsBeforeQueueSizeCheck = 10000;
     private TaskQueue bitReportTaskQueue;
-    
+    private JpaBitIntegrityReportRepo bitReportRepo;
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
+            JpaBitIntegrityReportRepo bitReportRepo,
             StorageProviderFactory storageProviderFactory,
             TaskQueue bitTaskQueue,
             TaskQueue bitReportTaskQueue,
@@ -65,6 +70,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
               config);
         this.exclusionManager = exclusionManager;
         this.bitReportTaskQueue = bitReportTaskQueue;
+        this.bitReportRepo = bitReportRepo;
     }
     
 
@@ -86,7 +92,8 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                 
                 AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
                 for(StorageProviderCredentials cred : accountCreds.getProviderCredentials()){
-                    String storePath = accountPath + "/"+cred.getProviderId();
+                    String storeId = cred.getProviderId();
+                    String storePath = accountPath + "/"+storeId;
                     if(exclusionManager.isExcluded(storePath)){
                         continue;
                     }
@@ -98,11 +105,24 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                         String spaceId = spaces.next();
                         String spacePath = storePath + "/" + spaceId;
                         if(!exclusionManager.isExcluded(spacePath)){
+                            
+                            //check if most recent 
+                            BitIntegrityReport report = bitReportRepo.findFirstByAccountAndStoreIdAndSpaceIdOrderByCompletionDateDesc(account, storeId, spaceId);                            
+                            if(report != null){
+                                //skip if last report was a success that completed less than 60 days ago
+                                long oneDayInMs = 24*60*60*1000;
+                                if(report.getCompletionDate().after(new Date(System.currentTimeMillis()-(60*oneDayInMs))) 
+                                        && report.getResult().equals(BitIntegrityReportResult.SUCCESS)){
+                                    continue;
+                                }
+                            }
+                            
                             morselQueue.add(
-                                    new BitIntegrityMorsel(account,
-                                                           cred.getProviderId(), 
-                                                           cred.getProviderType().name(), 
-                                                           spaceId));
+                                            new BitIntegrityMorsel(account,
+                                                                   cred.getProviderId(), 
+                                                                   cred.getProviderType().name(), 
+                                                                   spaceId));
+
                         }
                     }
                     
