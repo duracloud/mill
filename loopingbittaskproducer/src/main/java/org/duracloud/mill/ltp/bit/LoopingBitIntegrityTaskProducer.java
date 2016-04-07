@@ -7,8 +7,8 @@
  */
 package org.duracloud.mill.ltp.bit;
 
-import java.util.Date;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +37,6 @@ import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
-import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,9 +155,29 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     protected void nibble(Queue<BitIntegrityMorsel> queue) {
         BitIntegrityMorsel morsel = queue.peek();
         String storeId = morsel.getStoreId();
+        String  account = morsel.getAccount();
+        StorageProvider store;
         
-        StorageProvider store = 
-                getStorageProvider(morsel.getAccount(),storeId);
+        try {
+            store = getStorageProvider(account,storeId);
+        }catch(Exception ex){
+            if(morsel.getMarker() != null){
+                throw new DuraCloudRuntimeException("Failed to get storage provider for " +  morsel + ". Morsel has already been nibbled. " + 
+                                           "Likely cause:  a storage provider was removed in the middle of processing the morsel. " + 
+                                           "Further investigation and clean up recommended before restarting the run." + 
+                                           "In most cases you should be able to remove the state file and restart the run.", ex);
+            }else{
+                //remove morsel.
+                queue.poll();
+                String message = MessageFormat.format("Failed to get storage provider for {0}. "
+                        + "Likely cause:  a storage provider was removed after the bit integrity run was started.  "
+                        + "Since no tasks have been added yet for this morsel, we will simply skip it.  "
+                        + "No further action required.", morsel);
+                log.warn(message, morsel);
+                sendEmail("Failed to get storage provider for " + morsel, message);
+                return;
+            }
+        }
         
         int maxTaskQueueSize = getMaxTaskQueueSize();
         int taskQueueSize = getTaskQueue().size();
