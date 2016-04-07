@@ -22,7 +22,9 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.ltp.Frequency;
+import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
@@ -66,6 +68,9 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     @Mock
     private LoopingBitTaskProducerConfigurationManager config;
 
+    @Mock 
+    private JpaBitIntegrityReportRepo bitReportRepo;
+
     private TaskQueue bitReportQueue;
 
 
@@ -108,11 +113,12 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         setupStore(morselCount, sourceCount);
         setupStorageProviderFactory(morselCount*2);
         setupCredentialsRepo();
-        setupNotificationManager();
+        setupNotificationManager(1);
         setupLoopingTaskProducerConfig(1);
+        setupBitReportRepo(2);
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount);
         replayAll();
-        LoopingBitIntegrityTaskProducer ltp = createTaskProducer(maxTaskQueueSize);
+        LoopingTaskProducer<BitIntegrityMorsel> ltp = createTaskProducer(maxTaskQueueSize);
         
         ltp.run();
 
@@ -147,15 +153,22 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         
         Assert.assertEquals(morselCount, bitReportQueue.size().intValue());
     }
+
+    private void setupBitReportRepo(int times) {
+        expect(bitReportRepo
+                .findFirstByAccountAndStoreIdAndSpaceIdOrderByCompletionDateDesc(EasyMock
+                        .isA(String.class), EasyMock.isA(String.class), EasyMock
+                                .isA(String.class))).andReturn(null).times(times);
+    }
     
     private void setupLoopingTaskProducerConfig(int times) {
         expect(this.config.getWorkDirectoryPath()).andReturn("java.io.tmpdir").times(times);
     }
 
 
-    private void setupNotificationManager() {
+    private void setupNotificationManager(int times) {
         notificationManager.sendEmail(isA(String.class), isA(String.class));
-        expectLastCall();
+        expectLastCall().times(times);
     }
     
     @SuppressWarnings("unchecked")  
@@ -163,11 +176,12 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     public void testNonExistentSpace() throws CredentialsRepoException, ParseException {
         int morselCount = 1;
         expectNotFoundOnGetSpaceContentsChunked(store);
-
+        setupBitReportRepo(1);
+        
          expectGetSpaces(morselCount);
         setupStorageProviderFactory(morselCount);
         setupCredentialsRepo();
-        setupNotificationManager();
+        setupNotificationManager(2);
         
         setupLoopingTaskProducerConfig(1);
 
@@ -215,9 +229,11 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     private void runLoopingTaskProducer(int maxQueueSize) throws ParseException {
 
         LoopingBitIntegrityTaskProducer producer = createTaskProducer(maxQueueSize);
+        producer.setWaitBetweenRetriesMs(1);
         producer.run();
     }
 
+ 
     /**
      * @param maxQueueSize
      * @return
@@ -226,6 +242,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     private LoopingBitIntegrityTaskProducer createTaskProducer(int maxQueueSize)
             throws ParseException {
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo, 
+                                                               bitReportRepo,
                                                                storageProviderFactory, 
                                                                bitQueue, 
                                                                bitReportQueue,
@@ -266,7 +283,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
                                             EasyMock.isNull(String.class), 
                                             EasyMock.anyInt(),
                                             EasyMock.isNull(String.class)))
-                .andThrow(new NotFoundException("test"));
+                .andThrow(new NotFoundException("test")).times(4);
     }
 
 
@@ -307,8 +324,11 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
                         EasyMock.isA(String.class)))
                 .andReturn(creds).atLeastOnce();
         
-        EasyMock.expect(credentialsRepo.getAccounts()).andReturn(accounts);
-        
+        EasyMock.expect(credentialsRepo.getActiveAccounts()).andReturn(accounts);
+
+        EasyMock.expect(credentialsRepo
+                .isAccountActive(EasyMock.isA(String.class))).andReturn(true).atLeastOnce();
+
     }
 
     /**

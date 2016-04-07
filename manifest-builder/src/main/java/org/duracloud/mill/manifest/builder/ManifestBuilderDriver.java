@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.manifest.builder;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -15,7 +20,6 @@ import org.duracloud.client.ContentStore;
 import org.duracloud.client.ContentStoreManager;
 import org.duracloud.client.ContentStoreManagerImpl;
 import org.duracloud.common.model.Credential;
-import org.duracloud.mill.db.util.MillJpaPropertiesVerifier;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.PropertyDefinition;
@@ -25,11 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 
@@ -104,7 +103,6 @@ public class ManifestBuilderDriver extends DriverSupport {
                                                        .build();
             PropertyVerifier verifier = new PropertyVerifier(defintions);
             verifier.verify(System.getProperties());
-            new MillJpaPropertiesVerifier().verify();
             ApplicationContext context = 
                     new AnnotationConfigApplicationContext("org.duracloud.mill.db", 
                                                            "org.duracloud.mill.manifest.builder");

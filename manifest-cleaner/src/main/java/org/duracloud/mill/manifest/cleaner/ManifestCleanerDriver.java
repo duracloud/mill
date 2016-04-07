@@ -14,7 +14,6 @@ import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.duracloud.mill.config.ConfigConstants;
-import org.duracloud.mill.db.util.MillJpaPropertiesVerifier;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
@@ -64,7 +63,6 @@ public class ManifestCleanerDriver extends DriverSupport {
             String time = System.getProperty(ConfigConstants.MANIFEST_EXPIRATION_TIME);
             Date expirationDate;
             expirationDate = parseExpirationDate(time);
-            new MillJpaPropertiesVerifier().verify();
 
             ApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill");
             log.info("spring context initialized.");

@@ -9,7 +9,6 @@ package org.duracloud.mill.credentials;
 
 import java.util.List;
 
-
 /**
  * This interface mediates all interaction with the credential-providing subsystem.
  * @author Daniel Bernstein
@@ -32,7 +31,7 @@ public interface CredentialsRepo {
      * @return
      * @throws CredentialsRepoException
      */
-    public List<String> getAccounts() throws CredentialsRepoException;
+    public List<String> getActiveAccounts() throws CredentialsRepoException;
 
     /**
      * Returns a list of storage provider  associated with an account
@@ -41,4 +40,12 @@ public interface CredentialsRepo {
      * @throws CredentialsRepoException
      */
     public AccountCredentials getAccountCredentials(String account) throws AccountCredentialsNotFoundException;
+    
+    /**
+     * Returns true if the account is active.
+     * @param account
+     * @return
+     * @throws AccountCredentialsNotFoundException if no account  found. 
+     */
+    public boolean isAccountActive(String account) throws AccountCredentialsNotFoundException;
 }

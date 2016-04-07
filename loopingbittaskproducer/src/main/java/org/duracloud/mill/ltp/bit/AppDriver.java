@@ -16,7 +16,8 @@ import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
+import org.duracloud.mill.credentials.impl.ApplicationContextLocator;
+import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
@@ -28,6 +29,7 @@ import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * A main class responsible for parsing command line arguments and launching the
@@ -99,8 +101,9 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         
         LoopingBitTaskProducerConfigurationManager config = new LoopingBitTaskProducerConfigurationManager();
 
-        CredentialsRepo  credentialsRepo = CredentialsRepoLocator.get();
-
+        ApplicationContext ctx = ApplicationContextLocator.get();
+        CredentialsRepo  credentialsRepo = ctx.getBean(CredentialsRepo.class);
+        JpaBitIntegrityReportRepo bitReportRepo = ctx.getBean(JpaBitIntegrityReportRepo.class);
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
         NotificationManager notificationMananger = 
@@ -118,6 +121,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 stateFilePath, BitIntegrityMorsel.class);
 
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo,
+                                                                                       bitReportRepo,
                                                                                        storageProviderFactory,
                                                                                        bitTaskQueue,
                                                                                        bitReportQueue,

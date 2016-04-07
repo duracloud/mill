@@ -21,7 +21,7 @@ import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.mill.credentials.impl.CredentialsRepoLocator;
+import org.duracloud.mill.credentials.impl.ApplicationContextLocator;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
@@ -79,7 +79,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
         processLocalDuplicationDirOption(config);
 
-        CredentialsRepo credentialsRepo = CredentialsRepoLocator.get();
+        CredentialsRepo credentialsRepo = ApplicationContextLocator.get().getBean(CredentialsRepo.class);
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 

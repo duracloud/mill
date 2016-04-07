@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.ltp.bit;
 
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.Set;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
+import org.duracloud.common.retry.Retriable;
+import org.duracloud.common.retry.Retrier;
 import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
 import org.duracloud.mill.bit.BitIntegrityCheckTask;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -24,13 +28,15 @@ import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.db.model.BitIntegrityReport;
+import org.duracloud.mill.db.repo.JpaBitIntegrityReportRepo;
 import org.duracloud.mill.ltp.Frequency;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.PathFilterManager;
 import org.duracloud.mill.ltp.RunStats;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
-import org.duracloud.storage.error.NotFoundException;
+import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +50,11 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     private PathFilterManager exclusionManager;
     private int waitTimeInMsBeforeQueueSizeCheck = 10000;
     private TaskQueue bitReportTaskQueue;
+    private JpaBitIntegrityReportRepo bitReportRepo;
+    private int waitBetweenRetriesMs = 5000;
     
     public LoopingBitIntegrityTaskProducer(CredentialsRepo credentialsRepo,
+            JpaBitIntegrityReportRepo bitReportRepo,
             StorageProviderFactory storageProviderFactory,
             TaskQueue bitTaskQueue,
             TaskQueue bitReportTaskQueue,
@@ -65,6 +74,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
               config);
         this.exclusionManager = exclusionManager;
         this.bitReportTaskQueue = bitReportTaskQueue;
+        this.bitReportRepo = bitReportRepo;
     }
     
 
@@ -78,6 +88,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             for(String account :  getAccountsList()){
                 String accountPath = "/"+account;
                 
+                log.debug("loading {}", account);
                 
                 if(exclusionManager.isExcluded(accountPath)){
                     continue;
@@ -85,10 +96,12 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                 
                 AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
                 for(StorageProviderCredentials cred : accountCreds.getProviderCredentials()){
-                    String storePath = accountPath + "/"+cred.getProviderId();
+                    String storeId = cred.getProviderId();
+                    String storePath = accountPath + "/"+storeId;
                     if(exclusionManager.isExcluded(storePath)){
                         continue;
                     }
+                    
                     StorageProvider store = getStorageProvider(cred);
                     
                     Iterator<String> spaces = store.getSpaces();
@@ -96,13 +109,29 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
                         String spaceId = spaces.next();
                         String spacePath = storePath + "/" + spaceId;
                         if(!exclusionManager.isExcluded(spacePath)){
+                            
+                            //check if most recent 
+                            BitIntegrityReport report = bitReportRepo.findFirstByAccountAndStoreIdAndSpaceIdOrderByCompletionDateDesc(account, storeId, spaceId);                            
+                            if(report != null){
+                                //skip if last report was a success that completed less than 60 days ago
+                                long oneDayInMs = 24*60*60*1000;
+                                if(report.getCompletionDate().after(new Date(System.currentTimeMillis()-(60*oneDayInMs))) 
+                                        && report.getResult().equals(BitIntegrityReportResult.SUCCESS)){
+                                    continue;
+                                }
+                            }
+                            
                             morselQueue.add(
-                                    new BitIntegrityMorsel(account,
-                                                           cred.getProviderId(), 
-                                                           cred.getProviderType().name(), 
-                                                           spaceId));
+                                            new BitIntegrityMorsel(account,
+                                                                   cred.getProviderId(), 
+                                                                   cred.getProviderType().name(), 
+                                                                   spaceId));
+
                         }
                     }
+                    
+                    log.info("loaded {} into morsel queue.", account);
+
                 }
             }
         } catch (Exception e) { 
@@ -116,7 +145,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
      * @throws CredentialsRepoException 
      */
     private List<String> getAccountsList() throws CredentialsRepoException {
-        return getCredentialsRepo().getAccounts();
+        return getCredentialsRepo().getActiveAccounts();
     }
 
     /* (non-Javadoc)
@@ -126,9 +155,29 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     protected void nibble(Queue<BitIntegrityMorsel> queue) {
         BitIntegrityMorsel morsel = queue.peek();
         String storeId = morsel.getStoreId();
+        String  account = morsel.getAccount();
+        StorageProvider store;
         
-        StorageProvider store = 
-                getStorageProvider(morsel.getAccount(),storeId);
+        try {
+            store = getStorageProvider(account,storeId);
+        }catch(Exception ex){
+            if(morsel.getMarker() != null){
+                throw new DuraCloudRuntimeException("Failed to get storage provider for " +  morsel + ". Morsel has already been nibbled. " + 
+                                           "Likely cause:  a storage provider was removed in the middle of processing the morsel. " + 
+                                           "Further investigation and clean up recommended before restarting the run." + 
+                                           "In most cases you should be able to remove the state file and restart the run.", ex);
+            }else{
+                //remove morsel.
+                queue.poll();
+                String message = MessageFormat.format("Failed to get storage provider for {0}. "
+                        + "Likely cause:  a storage provider was removed after the bit integrity run was started.  "
+                        + "Since no tasks have been added yet for this morsel, we will simply skip it.  "
+                        + "No further action required.", morsel);
+                log.warn(message, morsel);
+                sendEmail("Failed to get storage provider for " + morsel, message);
+                return;
+            }
+        }
         
         int maxTaskQueueSize = getMaxTaskQueueSize();
         int taskQueueSize = getTaskQueue().size();
@@ -212,21 +261,31 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
      * @return
      */
     private boolean addTasks(BitIntegrityMorsel morsel,
-            StorageProvider store,
-            int biteSize) {
-        String account = morsel.getAccount();
-        String storeId = morsel.getStoreId();
-        String spaceId = morsel.getSpaceId();
-        String marker = morsel.getMarker();
+            final StorageProvider store,
+            final int biteSize) {
+        final String account = morsel.getAccount();
+        final String storeId = morsel.getStoreId();
+        final String spaceId = morsel.getSpaceId();
+        final String marker = morsel.getMarker();
         
         //load in next maxContentIdsToAdd or however many remain 
         List<String> contentIds = null;
         
         try {
-            contentIds = store.getSpaceContentsChunked(spaceId, 
-                                                     null, 
-                                                     biteSize, 
-                                                     marker);
+            
+            contentIds = (List<String>) new Retrier(3, waitBetweenRetriesMs, 2).execute(new Retriable(){
+                /* (non-Javadoc)
+                 * @see org.duracloud.common.retry.Retriable#retry()
+                 */
+                @Override
+                public Object retry() throws Exception {
+                    return store.getSpaceContentsChunked(spaceId, 
+                                                               null, 
+                                                               biteSize, 
+                                                               marker);
+                }
+            });
+            
             int added = addToTaskQueue(account, 
                                        storeId, 
                                        spaceId,
@@ -238,16 +297,19 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
             if(added == 0){
                 return true;
             }else{
-                marker = contentIds.get(contentIds.size()-1);
-                morsel.setMarker(marker);
+                String newMarker = contentIds.get(contentIds.size()-1);
+                morsel.setMarker(newMarker);
                 return false;
             }
 
-        }catch(NotFoundException ex){
-            log.info("space not found on storage provider: " +
-                    "subdomain={}, spaceId={}, storeId={}",
-                    account, spaceId, storeId);
-           return true;
+        }catch(Exception ex){
+            String message = MessageFormat.format("Bit integrity producer failure on  " +
+                    "subdomain={0}, spaceId={1}, storeId={2} due to: {3}",
+                    account, spaceId, storeId,ex.getMessage());
+            log.error(message, ex);
+
+            sendEmail(message, ex);
+            return true;
         }
     }
 
@@ -329,4 +391,15 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
     protected String getLoopingProducerTypePrefix() {
         return "bit";
     }
+    
+    /**
+     * Modify the wait between retries
+     * @param waitBetweenRetriesMs
+     */
+    public void setWaitBetweenRetriesMs(int waitBetweenRetriesMs) {
+        this.waitBetweenRetriesMs = waitBetweenRetriesMs;
+    }
+
+
+
 }

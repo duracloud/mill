@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,6 +26,8 @@ import java.util.TimerTask;
 
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.credentials.AccountCredentials;
+import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
@@ -129,6 +132,35 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             
             while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
                 T morsel = morselQueue.peek();
+                
+                if(morsel != null){
+                    //check that account is still active
+                    //if not remove from list, but only if
+                    //it has not yet been started.  If an account becomes
+                    //inactive in the middle of processing a morsel,  then 
+                    //allow to finish even if it results in errors. 
+                    String account = morsel.getAccount();
+                    try {
+                        if(!this.credentialsRepo.isAccountActive(account)){
+                            if(morsel.getMarker() == null){
+                                log.info("account {} has become inactive.  Abandonning morsel {}.", account, morsel);
+                                morselQueue.poll();
+                                continue;
+                            }else{
+                                String message = MessageFormat.format("account {0} has become inactive in the middle of processing {1}. "
+                                        + "  Allowing this morsel to continue but failure is likely.  "
+                                        + "\nExpect items to appear in the dead letter queue shortly.", account, morsel);
+                                log.warn(message);
+                                sendEmail(getSimpleName() + " attempting into account after start of morsel processing.", message);
+                            }
+                        }
+                    }catch(AccountCredentialsNotFoundException ex){
+                        String message = MessageFormat.format("account {0} does not exist.  Abandonning morsel {1}.", account, morsel);
+                        log.warn(message);
+                        sendEmail(getSimpleName() + " attempted to access into non-existent account", message);
+
+                    }
+                }
                 nibble(morselQueue);
                 persistMorsels(morselQueue, morselsToReload);
                
@@ -154,9 +186,16 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             
             logSessionStats();
             log.info("Session ended.");
+        }catch(Exception ex){
+            log.error("failed to complete run: " + ex.getMessage(), ex);
+            sendEmail("failed to complete bit producer run" , ex.getMessage());
         }finally {
             timer.cancel();
         }
+    }
+
+    private String getSimpleName() {
+        return getClass().getSimpleName();
     }
 
     /**
@@ -262,7 +301,11 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         builder.append(this.cumulativeTotals.toString() + "\n");
         builder.append("Scheduling the next run for " + nextRun + "\n");
         log.info(subject + ": next run will start " + nextRun);
-        notificationManager.sendEmail(subject, builder.toString());
+        sendEmail(subject, builder.toString());
+    }
+    
+    protected void sendEmail(String subject, String body){
+        this.notificationManager.sendEmail(subject, body);
     }
 
     /**
@@ -431,5 +474,18 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * @return
      */
     protected abstract String getLoopingProducerTypePrefix();
+
+    /**
+     * @param message
+     * @param ex
+     */
+    protected void sendEmail(String message, Exception ex) {
+        StackTraceElement[] stackTrace = ex.getStackTrace();
+        StringBuilder builder = new StringBuilder();
+        for(StackTraceElement ste : stackTrace){
+            builder.append(ste.toString() + "\n");
+        }
+        sendEmail(message,builder.toString());
+    }
 
 }
