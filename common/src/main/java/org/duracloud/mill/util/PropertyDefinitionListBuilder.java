@@ -89,7 +89,7 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.DUPLICATION_POLICY_REFRESH_FREQUENCY, false);
         return this;
     }
-    
+
     public PropertyDefinitionListBuilder addBitIntegrityQueue(){
         add(ConfigConstants.QUEUE_NAME_BIT_INTEGRITY, true);
         return this;
@@ -102,6 +102,21 @@ public class PropertyDefinitionListBuilder {
 
     public PropertyDefinitionListBuilder addNotificationRecipients() {
         add(ConfigConstants.NOTIFICATION_RECIPIENTS, true);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addStorageStatsQueue(){
+        add(ConfigConstants.QUEUE_NAME_STORAGE_STATS, true);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addLoopingStorageStatsFrequency() {
+        add(ConfigConstants.LOOPING_STORAGE_STATS_FREQUENCY,false);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addLoopingStorageStatsMaxQueueSize() {
+        add(ConfigConstants.LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE,false);
         return this;
     }
 

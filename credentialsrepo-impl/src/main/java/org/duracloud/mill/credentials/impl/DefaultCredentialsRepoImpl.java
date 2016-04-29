@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.duracloud.account.db.model.AccountInfo;
 import org.duracloud.account.db.model.AccountInfo.AccountStatus;
-import org.duracloud.account.db.model.ServerDetails;
 import org.duracloud.account.db.model.StorageProviderAccount;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.common.db.error.NotFoundException;
@@ -24,7 +23,6 @@ import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.credentials.StorageProviderCredentialsNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * A jpa-based implementation of the <code>CredentialsRepo</code>.
@@ -54,12 +52,9 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
         if(accountInfo == null){
             throw new AccountCredentialsNotFoundException("no account found for subdomain " + account);
         } else {
-            ServerDetails details =  accountInfo.getServerDetails();
-            if(details != null){
-                creds.add(createStorageProviderCredentials(details.getPrimaryStorageProviderAccount(), true));
-                for(StorageProviderAccount sp : details.getSecondaryStorageProviderAccounts()){
-                    creds.add(createStorageProviderCredentials(sp, false));
-                }
+            creds.add(createStorageProviderCredentials(accountInfo.getPrimaryStorageProviderAccount(), true));
+            for(StorageProviderAccount sp : accountInfo.getSecondaryStorageProviderAccounts()){
+                creds.add(createStorageProviderCredentials(sp, false));
             }
         }
         AccountCredentials accountCreds = new AccountCredentials(account, creds);
@@ -103,19 +98,16 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
         if(account == null){
             throw new AccountCredentialsNotFoundException("no account found for subdomain " + subdomain);
         }else {
-            ServerDetails details =  account.getServerDetails();
-            if(details != null){
-                StorageProviderAccount provider = details.getPrimaryStorageProviderAccount();
+                StorageProviderAccount provider = account.getPrimaryStorageProviderAccount();
                 if(provider.getId().equals(id)){
                     return createStorageProviderCredentials(storeId, provider, true);
                 }else{
-                    for(StorageProviderAccount sp : details.getSecondaryStorageProviderAccounts()){
+                    for(StorageProviderAccount sp : account.getSecondaryStorageProviderAccounts()){
                         if(sp.getId().equals(id)){
                             return createStorageProviderCredentials(storeId, sp, false);
                         }
                     }
                 }
-            }
         }
         
         throw new StorageProviderCredentialsNotFoundException(

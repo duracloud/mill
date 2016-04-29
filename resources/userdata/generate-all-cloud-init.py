@@ -23,8 +23,10 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--mill_props', required=True, help='A mill properties file path')
 parser.add_argument('-e', '--extended_props', nargs="+", required=True, help='A space separated list of one or more properties files')
-parser.add_argument('-x', '--bit_exclusions',  default=None, required=False, help='The path to an exclusion file')
-parser.add_argument('-i', '--bit_inclusions',  default=None, required=False, help='The path to an inclusion file')
+parser.add_argument('-bx', '--bit_exclusions',  default=None, required=False, help='The path to an exclusion file')
+parser.add_argument('-bi', '--bit_inclusions',  default=None, required=False, help='The path to an inclusion file')
+parser.add_argument('-sx', '--storagestats_exclusions',  default=None, required=False, help='The path to a storage stats  exclusion file')
+parser.add_argument('-si', '--storagestats_inclusions',  default=None, required=False, help='The path to a storage stats inclusion file')
 parser.add_argument('-o', '--output_dir',  required=True, help='The destination directory for the generated cloud init files')
 args = parser.parse_args()
 
@@ -34,7 +36,7 @@ output_dir = args.output_dir
 if not os.path.exists(os.path.dirname(output_dir)):
 	os.makedirs(output_dir)
 
-for i in ["audit-worker", "bit-worker", "bit-report-worker", "dup-worker", "dup-producer", "bit-producer", "sentinel"]:
+for i in ["audit-worker", "bit-worker", "bit-report-worker", "dup-worker", "dup-producer", "bit-producer", "storage-stats-worker","sentinel"]:
         node_type = i
         output = os.path.join(output_dir, "cloud-init-%s.txt" % node_type)
         gen_script = os.path.join(script_dir, "generate-cloud-init.py")

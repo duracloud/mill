@@ -30,9 +30,9 @@ import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.Task.Type;
-import org.duracloud.common.queue.task.TypedTask;
 import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
 import org.duracloud.mill.bit.BitIntegrityCheckTask;
+import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.task.DuplicationTask;
 
 /**
@@ -93,7 +93,7 @@ public class Driver {
         options.addOption(password);
 
         Option type = new Option("t", "type", true,
-                "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT");
+                "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT, STORAGE_STATS");
         type.setArgs(1);
         type.setArgName("type");
         type.setRequired(true);
@@ -212,6 +212,8 @@ public class Driver {
                     BitIntegrityCheckTask task = new BitIntegrityCheckTask();
                     task.setContentId(contentId);
                     typedTask = task;
+                } else if(taskType.equals(Type.STORAGE_STATS)) {
+                     typedTask = new StorageStatsTask();
                 } else {
                    throw new RuntimeException("taskType " + taskType + " not supported.");
                 }

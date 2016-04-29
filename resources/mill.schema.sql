@@ -42,7 +42,7 @@ CREATE TABLE `audit_log_item` (
   `username` varchar(255) NOT NULL,
   `written` bit(1) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_f6pwvtcuobqi6eq5gg9w6886v` (`unique_key`),
+  UNIQUE KEY `idx_unique_key_audit` (`unique_key`),
   KEY `idx_content_id` (`account`,`store_id`,`space_id`,`content_id`(150))
 ) ENGINE=InnoDB AUTO_INCREMENT=957036 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -117,10 +117,27 @@ CREATE TABLE `manifest_item` (
   `store_id` varchar(255)  NOT NULL,
   `unique_key` char(32)  NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_o01i0408x5vgq8qwy4mfsgcs4` (`unique_key`),
+  UNIQUE KEY `idx_unique_manifest_item` (`unique_key`),
   KEY `idx_content_id` (`account`(191),`store_id`(191),`space_id`(191),`content_id`(150)),
   KEY `idx_space_id` (`account`(191),`store_id`(191),`space_id`(191))
 ) ENGINE=InnoDB AUTO_INCREMENT=2428720 DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `space_stats`;
+CREATE TABLE `space_stats` (
+	  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+	  `modified` datetime NOT NULL,
+	  `account_id` varchar(65) NOT NULL,
+	  `space_id` varchar(65) NOT NULL,
+	  `store_id` varchar(10) NOT NULL,
+	  `byte_count` bigint(20) NOT NULL DEFAULT 0,
+	  `object_count` bigint(20) NOT NULL DEFAULT 0,
+	  PRIMARY KEY (`id`),
+	  UNIQUE KEY `idx_space_stat_unique` (`account_id`,`store_id`,`space_id`,`modified`),
+	  KEY `idx_space_stat_space` (`account_id`,`store_id`,`space_id`),
+	  KEY `idx_space_stat_store` (`account_id`,`store_id`),
+	  KEY `idx_space_stat_account_id` (`account_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

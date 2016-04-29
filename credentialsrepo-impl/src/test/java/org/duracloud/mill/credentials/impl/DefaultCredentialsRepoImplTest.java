@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.duracloud.account.db.model.AccountInfo;
-import org.duracloud.account.db.model.ServerDetails;
 import org.duracloud.account.db.model.StorageProviderAccount;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
@@ -55,10 +54,6 @@ public class DefaultCredentialsRepoImplTest extends EasyMockSupport{
     @Mock 
     private StorageProviderAccount secondary;
 
-    @Mock 
-    private ServerDetails serverDetails;
-
-    
     @Before
     public void setup() {
         
@@ -101,7 +96,7 @@ public class DefaultCredentialsRepoImplTest extends EasyMockSupport{
         setupStorageProviderAccount(secondary,testStoreId, true);
         Set<StorageProviderAccount> secondaries = new HashSet<>();
         secondaries.add(secondary);
-        EasyMock.expect(serverDetails.getSecondaryStorageProviderAccounts()).andReturn(secondaries);
+        EasyMock.expect(accountInfo.getSecondaryStorageProviderAccounts()).andReturn(secondaries);
         
         replayAll();
         StorageProviderCredentials creds = repo
@@ -111,8 +106,7 @@ public class DefaultCredentialsRepoImplTest extends EasyMockSupport{
 
     private void setupPrimary(String storeId, boolean target) {
         setupStorageProviderAccount(primary,storeId, target);
-        EasyMock.expect(accountInfo.getServerDetails()).andReturn(serverDetails);
-        EasyMock.expect(serverDetails.getPrimaryStorageProviderAccount()).andReturn(primary);
+        EasyMock.expect(accountInfo.getPrimaryStorageProviderAccount()).andReturn(primary);
         EasyMock.expect(accountRepo.findBySubdomain(testSubdomain)).andReturn(accountInfo);
     }
 
@@ -136,7 +130,7 @@ public class DefaultCredentialsRepoImplTest extends EasyMockSupport{
         
         setupPrimary("2", false);
         Set<StorageProviderAccount> secondaries = new HashSet<>();
-        EasyMock.expect(serverDetails.getSecondaryStorageProviderAccounts()).andReturn(secondaries);
+        EasyMock.expect(accountInfo.getSecondaryStorageProviderAccounts()).andReturn(secondaries);
         replayAll();
         
         try {
