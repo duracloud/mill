@@ -7,24 +7,25 @@
  */
 package org.duracloud.mill.dup;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.duracloud.common.queue.TaskQueue;
+import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
-import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * @author Daniel Bernstein Date: Oct 25, 2013
@@ -68,6 +69,7 @@ public class DuplicationTaskProcessorFactoryTest {
 
         CredentialsRepo repo = EasyMock.createMock(CredentialsRepo.class);
         TaskQueue auditQueue = EasyMock.createMock(TaskQueue.class);
+        ManifestStore manifestStore = EasyMock.createMock(ManifestStore.class);
 
         AccountCredentials a = new AccountCredentials("test", Arrays.asList(new StorageProviderCredentials[] {
                 new StorageProviderCredentials("0", "test", "test", source, true),
@@ -83,14 +85,15 @@ public class DuplicationTaskProcessorFactoryTest {
                         new StorageProviderCredentials("1", "test", "test",
                                 destination, false));
 
-        EasyMock.replay(repo, auditQueue);
+        EasyMock.replay(repo, auditQueue, manifestStore);
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
         DuplicationTaskProcessorFactory f =
             new DuplicationTaskProcessorFactory(repo,
                                                 storageProviderFactory,
                                                 new File("workdir"),
-                                                auditQueue);
+                                                auditQueue,
+                                                manifestStore);
 
         DuplicationTask dupTask = new DuplicationTask();
         dupTask.setAccount("account");
@@ -115,7 +118,7 @@ public class DuplicationTaskProcessorFactoryTest {
                     processor.getClass());
         }
 
-        EasyMock.verify(repo, auditQueue);
+        EasyMock.verify(repo, auditQueue,manifestStore);
     }
 
 }

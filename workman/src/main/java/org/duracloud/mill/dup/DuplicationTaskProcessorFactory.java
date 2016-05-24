@@ -13,6 +13,7 @@ import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
@@ -36,14 +37,17 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
 
     private TaskQueue auditTaskQueue;
     private StorageProviderFactory storageProviderFactory;
+    private ManifestStore manifestStore;
 
     public DuplicationTaskProcessorFactory(CredentialsRepo repo,
                                            StorageProviderFactory storageProviderFactory,
                                            File workDir,
-                                           TaskQueue auditTaskQueue){
+                                           TaskQueue auditTaskQueue,
+                                           ManifestStore manifestStore){
         super(repo, workDir);
         this.auditTaskQueue = auditTaskQueue;
         this.storageProviderFactory = storageProviderFactory;
+        this.manifestStore = manifestStore;
     }
     
     @Override
@@ -69,7 +73,7 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
                                       subdomain,
                                       auditTaskQueue);
             return new DuplicationTaskProcessor(dtask, sourceStore, destStore,
-                                                getWorkDir());
+                                                getWorkDir(), manifestStore);
         } catch (Exception e) {
             log.error("failed to create task: unable to locate credentials " +
                       "for subdomain: " + e.getMessage(), e);

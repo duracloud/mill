@@ -89,13 +89,15 @@ public class AppConfig {
                                      @Qualifier("auditTaskProcessorFactory") 
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
                                      StorageStatsTaskProcessorFactory storageStatsTaskProcessorFactory,
-                                     TaskProducerConfigurationManager configurationManager) {
+                                     TaskProducerConfigurationManager configurationManager,
+                                     ManifestStore manifestStore) {
 
         RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
         factory.addTaskProcessorFactory(new DuplicationTaskProcessorFactory(repo,
                                                                             storageProviderFactory,
                                                                             workDir,
-                                                                            auditQueue(configurationManager)));
+                                                                            auditQueue(configurationManager),
+                                                                            manifestStore));
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
         factory.addTaskProcessorFactory(bitCheckTaskProcessorFactory);
         factory.addTaskProcessorFactory(bitReportTaskProcessorFactory);

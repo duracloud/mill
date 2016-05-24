@@ -9,7 +9,10 @@ package org.duracloud.mill.dup;
 
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.common.util.IOUtil;
+import org.duracloud.mill.db.model.ManifestItem;
+import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
+import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.error.StorageStateException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -18,6 +21,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import junit.framework.Assert;
+
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +32,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Bill Branan
@@ -42,6 +47,7 @@ public class DuplicationTaskProcessorTest {
 
     private StorageProvider srcStore;
     private StorageProvider destStore;
+    private ManifestStore manifestStore;
     private DuplicationTaskProcessor taskProcessor;
     private File workDir;
 
@@ -49,7 +55,7 @@ public class DuplicationTaskProcessorTest {
     public void setup() throws IOException {
         srcStore = EasyMock.createMock(StorageProvider.class);
         destStore = EasyMock.createMock(StorageProvider.class);
-
+        manifestStore = EasyMock.createMock(ManifestStore.class);
         DuplicationTask dupTask = new DuplicationTask();
         dupTask.setAccount(account);
         dupTask.setSourceStoreId(srcStoreId);
@@ -61,19 +67,20 @@ public class DuplicationTaskProcessorTest {
         workDir.mkdirs();
         workDir.deleteOnExit();
 
-        taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
+        taskProcessor = new DuplicationTaskProcessor(dupTask,
                                                      srcStore,
                                                      destStore,
-                                                     workDir);
+                                                     workDir,
+                                                     manifestStore);
     }
 
     private void replayMocks() {
-        EasyMock.replay(srcStore, destStore);
+        EasyMock.replay(srcStore, destStore,manifestStore);
     }
 
     @After
     public void teardown() {
-        EasyMock.verify(srcStore, destStore);
+        EasyMock.verify(srcStore, destStore,manifestStore);
         workDir.delete();
     }
 
@@ -228,10 +235,11 @@ public class DuplicationTaskProcessorTest {
         dupTask.setSpaceId(spaceId);
         dupTask.setContentId(null);
 
-        taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
+        taskProcessor = new DuplicationTaskProcessor(dupTask,
                                                      srcStore,
                                                      destStore,
-                                                     workDir);
+                                                     workDir,
+                                                     manifestStore);
 
         taskProcessor.execute();
     }
@@ -255,10 +263,11 @@ public class DuplicationTaskProcessorTest {
         dupTask.setSpaceId(null);
         dupTask.setContentId(null);
 
-        taskProcessor = new DuplicationTaskProcessor(dupTask.writeTask(),
+        taskProcessor = new DuplicationTaskProcessor(dupTask,
                                                      srcStore,
                                                      destStore,
-                                                     workDir);
+                                                     workDir,
+                                                     manifestStore);
 
         try {
             taskProcessor.execute();
@@ -387,6 +396,7 @@ public class DuplicationTaskProcessorTest {
 
         taskProcessor.execute();
     }
+    
     /**
      * Verifies the flow of actions that occur when a content item is not
      * available in the source store, but is available in the destination store.
@@ -400,6 +410,10 @@ public class DuplicationTaskProcessorTest {
         destStore.createSpace(spaceId);
         EasyMock.expectLastCall();
 
+        setupManifestStore(true);
+
+        
+        
         // Missing source content
         EasyMock.expect(srcStore.getContentProperties(spaceId, contentId))
                 .andThrow(new NotFoundException("")).anyTimes();
@@ -417,6 +431,52 @@ public class DuplicationTaskProcessorTest {
         replayMocks();
 
         taskProcessor.execute();
+    }
+
+    /**
+     * Verifies the flow of actions that occur when a content item is not
+     * available in the source store, but is available in the destination store.
+     * The content should be removed from the destination store.
+     *
+     * @throws Exception on error
+     */
+    @Test
+    public void testExecuteMissingInSourceButManifestEntryExists() throws Exception {
+        // Check space
+        destStore.createSpace(spaceId);
+        EasyMock.expectLastCall();
+
+        setupManifestStore(false);
+        
+        
+        // Missing source content
+        EasyMock.expect(srcStore.getContentProperties(spaceId, contentId))
+                .andThrow(new NotFoundException("")).anyTimes();
+
+        final String checksum = "checksum";
+        Map<String, String> destProps = new HashMap<>();
+        destProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, checksum);
+        EasyMock.expect(destStore.getContentProperties(spaceId, contentId))
+                .andReturn(destProps);
+
+
+        replayMocks();
+        
+        try{
+            taskProcessor.execute();
+            fail("unexpected success.");
+        }catch(TaskExecutionFailedException ex){
+            assertTrue("expected failure", true);
+        }
+    }
+
+    private void
+            setupManifestStore(boolean deleted) throws org.duracloud.common.db.error.NotFoundException {
+        ManifestItem item = new ManifestItem();
+        item.setDeleted(deleted);
+        // Missing source content
+        EasyMock.expect(manifestStore.getItem(account, srcStoreId, spaceId, contentId))
+                .andReturn(item);
     }
 
     /**
