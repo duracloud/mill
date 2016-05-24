@@ -13,6 +13,8 @@ import org.duracloud.common.retry.ExceptionHandler;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
+import org.duracloud.mill.db.model.ManifestItem;
+import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
@@ -27,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response.Status.Family;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,33 +54,22 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     private StorageProvider sourceStore;
     private StorageProvider destStore;
     private File workDir;
+    private ManifestStore manifestStore;
 
     private final Logger log =
         LoggerFactory.getLogger(DuplicationTaskProcessor.class);
 
-    public DuplicationTaskProcessor(Task task,
-                                    StorageProvider sourceStore,
-                                    StorageProvider destStore,
-                                    File workDir) {
-        super(new DuplicationTask());
-
-        this.dupTask = ((DuplicationTask)getTask());
-
-        this.dupTask.readTask(task);
-        this.sourceStore = sourceStore;
-        this.destStore = destStore;
-        this.workDir = workDir;
-    }
-
-    protected DuplicationTaskProcessor(DuplicationTask dupTask,
+    public DuplicationTaskProcessor(DuplicationTask dupTask,
                                        StorageProvider sourceStore,
                                        StorageProvider destStore,
-                                       File workDir) {
+                                       File workDir,
+                                       ManifestStore manifestStore) {
         super(dupTask);
         this.dupTask = dupTask;
         this.sourceStore = sourceStore;
         this.destStore = destStore;
         this.workDir = workDir;
+        this.manifestStore = manifestStore;
     }
 
     @Override
@@ -550,7 +543,8 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     }
 
     /**
-     * Deletes a content item in the destination space
+     * Deletes a content item in the destination space, but only if it does not exists in the 
+     * source manifest.
      *
      * @param spaceId
      * @param contentId
@@ -558,6 +552,16 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     private void duplicateDeletion(final String spaceId,
                                    final String contentId)
         throws TaskExecutionFailedException {
+        
+        if(existsInSourceManifest(spaceId, contentId)){
+            throw new TaskExecutionFailedException(MessageFormat
+                                                   .format("item exists in source manifest and thus appears to be missing content.  account={0}, storeId={1}, spaceId={2}, contentId={3}",
+                                                           this.dupTask.getAccount(),
+                                                           this.dupTask.getSourceStoreId(),
+                                                           spaceId,
+                                                           contentId));
+        }
+        
         log.info("Duplicating deletion of " + contentId + " in dest space " +
                  spaceId + " in account " + dupTask.getAccount());
         try {
@@ -581,6 +585,30 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                  dupTask.getAccount());
     }
 
+    /**
+     * @param spaceId
+     * @param contentId
+     */
+    private boolean existsInSourceManifest(String spaceId, String contentId) {
+        //if the source store's manifest contains an entry for this item
+        // it indicates that the content item is missing from the provider
+        // and thus the copy should not be deleted and an error should be raised.
+        // If there is a temporary backup in the audit log, then this issue should
+        // be resolved by the automatic retry mechanism.
+        String sourceStoreId = this.dupTask.getSourceStoreId();
+        String account = this.dupTask.getAccount();
+        
+        try {
+            ManifestItem item = this.manifestStore.getItem(account, sourceStoreId, spaceId, contentId);
+            if(!item.isDeleted()){
+                return true;
+            }
+        } catch (org.duracloud.common.db.error.NotFoundException e1) {}
+        
+        return false;
+        
+    }
+
     private String buildFailureMessage(String message) {
         StringBuilder builder = new StringBuilder();
         builder.append("Failure to duplicate content item due to:");
@@ -597,51 +625,4 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         builder.append(dupTask.getContentId());
         return builder.toString();
     }
-
-    /**
-     * Allows for some simple testing of this class
-     */
-    public static void main(String[] args) throws Exception {
-        if(args.length != 6) {
-            throw new RuntimeException("6 arguments expected:\n " +
-                "spaceId\n contentId\n sourceProviderUsername\n " +
-                "sourceProviderPassword\n destProviderUsername\n " +
-                "destProviderPassword");
-        }
-
-        String spaceId = args[0];
-        String contentId = args[1];
-        String srcProvCredUser = args[2];
-        String srcProvCredPass = args[3];
-        String destProvCredUser = args[4];
-        String destProvCredPass = args[5];
-
-        System.out.println("Performing duplication check for content item " +
-                           contentId + " in space " + spaceId);
-
-        DuplicationTask task = new DuplicationTask();
-        task.setAccount("Dup Testing");
-        task.setSpaceId(spaceId);
-        task.setContentId(contentId);
-
-        StorageProvider srcProvider =
-            new S3StorageProvider(srcProvCredUser, srcProvCredPass);
-        // Making an assumption here that the secondary provider is SDSC
-        StorageProvider destProvider =
-            new SDSCStorageProvider(destProvCredUser, destProvCredPass);
-
-        File workDir = Files.createTempDirectory("dup-work", null).toFile();
-        workDir.deleteOnExit();
-
-        DuplicationTaskProcessor dupProcessor =
-            new DuplicationTaskProcessor(task,
-                                         srcProvider,
-                                         destProvider,
-                                         workDir);
-        dupProcessor.execute();
-
-        System.out.println("Duplication check completed successfully!");
-        System.exit(0);
-    }
-
 }
