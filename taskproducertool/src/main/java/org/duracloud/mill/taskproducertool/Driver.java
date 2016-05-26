@@ -30,6 +30,7 @@ import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.Task.Type;
+import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
 import org.duracloud.mill.bit.BitIntegrityCheckTask;
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
@@ -129,6 +130,25 @@ public class Driver {
         contentIdFile.setArgName("content-id-file");
         options.addOption(contentIdFile);
 
+        Option action = new Option("n", "action", true,
+                "An action field for audit task (ADDED_CONTENT, DELETED_CONTENT) ");
+        action.setArgs(1);
+        action.setArgName("action");
+        options.addOption(action);
+
+        Option contentSize = new Option("z", "content-size", true,
+                "A content size for audit tasks ( in bytes)");
+        contentSize.setArgs(1);
+        contentSize.setArgName("content-size");
+        
+        options.addOption(contentSize);
+
+        Option checksum = new Option("k", "checksum", true,
+                "a checksum field");
+        checksum.setArgs(1);
+        checksum.setArgName("checksum");
+        options.addOption(checksum);
+
         return options;
     }
 
@@ -146,6 +166,9 @@ public class Driver {
             String destStoreId = cmd.getOptionValue("b");
             String spaceId = cmd.getOptionValue("d");
             String contentId = cmd.getOptionValue("c");
+            String action = cmd.getOptionValue("n");
+            String contentSize = cmd.getOptionValue("z");
+            String checksum = cmd.getOptionValue("k");
 
             List<String> contentIds = new ArrayList<>();
             
@@ -199,10 +222,15 @@ public class Driver {
                     typedTask = noopTask;
                 } else if(taskType.equals(Type.AUDIT)) {
                     AuditTask auditTask = new AuditTask();
-                    auditTask.setContentChecksum("checksum");
-                    auditTask.setAction(ActionType.ADD_CONTENT.name());
-                    auditTask.setContentSize("0");
-                    auditTask.setContentMimetype("application/octet-stream");
+                    auditTask.setContentChecksum(checksum != null ? checksum : "no-checksum-provided");
+                    auditTask.setAction(action != null ? ActionType.valueOf(action).name() : ActionType.ADD_CONTENT.name());
+                    auditTask.setContentSize(contentSize !=null ?  contentSize : "0");
+                    if(!ActionType.DELETE_CONTENT.name().equals(action)){
+                        auditTask.setContentMimetype("application/octet-stream");
+                    }
+
+                    auditTask.setDateTime(System.currentTimeMillis()+"");
+                    auditTask.setUserId("root");
                     auditTask.setContentId(content);
                     typedTask = auditTask;
                 } else if(taskType.equals(Type.BIT_REPORT)) {
