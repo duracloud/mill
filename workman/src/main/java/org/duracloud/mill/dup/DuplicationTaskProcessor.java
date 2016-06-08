@@ -484,6 +484,11 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
             }
             inStream.close();
         } catch(IOException e) {
+            
+            if(localFile != null){
+                cleanup(localFile);
+            }
+
             String msg = "Unable to cache content file due to: " +
                          e.getMessage();
             throw new DuplicationTaskExecutionFailedException(
