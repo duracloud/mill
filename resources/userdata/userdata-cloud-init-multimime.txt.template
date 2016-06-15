@@ -125,6 +125,7 @@ data = {
     "dc_mill_config_file":"${workdir}/mill-config.properties",
     "dc_mill_version":"${jarVersion}",
     "dc_workman_tmpdir":"${workdir}",
+    "release_mode":"${release_mode}",
     "sumo_access_id":"${sumo_access_id}",
     "sumo_access_key":"${sumo_access_key}",
     "sumo_collector_name":"${sumo_collector_name}"
