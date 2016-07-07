@@ -45,6 +45,8 @@ import org.duracloud.mill.manifest.jpa.JpaManifestStore;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.storagestats.SpaceStatsManager;
+import org.duracloud.mill.storagestats.StorageStatsTaskProcessorFactory;
 import org.duracloud.mill.workman.MultiStepTaskProcessorFactory;
 import org.duracloud.mill.workman.RootTaskProcessorFactory;
 import org.duracloud.mill.workman.TaskWorkerFactory;
@@ -86,6 +88,7 @@ public class AppConfig {
                                          MultiStepTaskProcessorFactory bitReportTaskProcessorFactory,
                                      @Qualifier("auditTaskProcessorFactory") 
                                          MultiStepTaskProcessorFactory auditTaskProcessorFactory,
+                                     StorageStatsTaskProcessorFactory storageStatsTaskProcessorFactory,
                                      TaskProducerConfigurationManager configurationManager,
                                      ManifestStore manifestStore) {
 
@@ -98,6 +101,7 @@ public class AppConfig {
         factory.addTaskProcessorFactory(auditTaskProcessorFactory);
         factory.addTaskProcessorFactory(bitCheckTaskProcessorFactory);
         factory.addTaskProcessorFactory(bitReportTaskProcessorFactory);
+        factory.addTaskProcessorFactory(storageStatsTaskProcessorFactory);
         factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(repo,
                                                                      workDir));
         log.info("RootTaskProcessorFactory created.");
@@ -119,6 +123,17 @@ public class AppConfig {
                                                          bitErrorQueue,
                                                          auditQueue,
                                                          manifestStore);
+    }
+    
+    @Bean
+    public StorageStatsTaskProcessorFactory
+            storageStatsTaskProcessorFactory(@Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
+                                                  StorageProviderFactory storageProviderFactory,
+                                                  SpaceStatsManager spaceStatsManager) {
+
+        return new StorageStatsTaskProcessorFactory(credentialRepo,
+                                                         storageProviderFactory,
+                                                         spaceStatsManager);
     }
 
     @Bean(name="bitReportProcessorFactory")

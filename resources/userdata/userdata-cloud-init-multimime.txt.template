@@ -120,11 +120,12 @@ mkdir -p /etc/facter/facts.d
 cat << 'EOF' > /etc/facter/facts.d/duracloud-mill
 #!/usr/bin/env python
 data = {
-    "dc_mill_node_type":"${nodeType}", # 'dup-producer', 'bit-producer' ,'worker', or 'sentinel'
+    "dc_mill_node_type":"${nodeType}", # 'dup-producer', 'bit-producer' ,'worker', 'storage-stats', or 'sentinel'
     "dc_mill_log_level":"INFO",
     "dc_mill_config_file":"${workdir}/mill-config.properties",
     "dc_mill_version":"${jarVersion}",
     "dc_workman_tmpdir":"${workdir}",
+    "release_mode":"${release_mode}",
     "sumo_access_id":"${sumo_access_id}",
     "sumo_access_key":"${sumo_access_key}",
     "sumo_collector_name":"${sumo_collector_name}"
@@ -145,19 +146,36 @@ EOF
 
 
 # create bit inclusion list
-inclusionDir="$(dirname ${looping.bit.inclusion-list-file})"
-mkdir -p $inclusionDir
+bitInclusionDir="$(dirname ${looping.bit.inclusion-list-file})"
+mkdir -p $bitInclusionDir
 
 cat << 'EOF' > ${looping.bit.inclusion-list-file}
-#BIT_INCLUSIONS
+#BIT INCLUSIONS
 EOF
 
 #create bit exclusion list
-exclusionDir="$(dirname ${looping.bit.exclusion-list-file})"
-mkdir -p $exclusionDir
+bitExclusionDir="$(dirname ${looping.bit.exclusion-list-file})"
+mkdir -p $bitExclusionDir
 
 cat << 'EOF' > ${looping.bit.exclusion-list-file}
-#BIT_EXCLUSIONS
+#BIT EXCLUSIONS
+EOF
+
+
+# create storagestats inclusion list
+storageStatsInclusionDir="$(dirname ${looping.storagestats.inclusion-list-file})"
+mkdir -p $storageStatsInclusionDir
+
+cat << 'EOF' > ${looping.storagestats.inclusion-list-file}
+#STORAGE STATS INCLUSIONS
+EOF
+
+#create storagestats  exclusion list
+storageStatsExclusionDir="$(dirname ${looping.storagestats.exclusion-list-file})"
+mkdir -p $storageStatsExclusionDir
+
+cat << 'EOF' > ${looping.storagestats.exclusion-list-file}
+#STORAGE STATS EXCLUSIONS
 EOF
 
 #copy sumo.json.erb file into place
@@ -171,8 +189,10 @@ puppet apply /etc/puppet/manifests/site.pp
 
 #apply permissions after puppet to ensure no conflict
 chown -R duracloud:duracloud $millConfigDir
-chown -R duracloud:duracloud $inclusionDir
-chown -R duracloud:duracloud $exclusionDir
+chown -R duracloud:duracloud $bitInclusionDir
+chown -R duracloud:duracloud $bitExclusionDir
+chown -R duracloud:duracloud $storageStatsInclusionDir
+chown -R duracloud:duracloud $storageStatsExclusionDir
 
 
 --===============2205584129673038508==--
