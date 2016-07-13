@@ -187,8 +187,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             logSessionStats();
             log.info("Session ended.");
         }catch(Exception ex){
-            log.error("failed to complete run: " + ex.getMessage(), ex);
-            sendEmail("failed to complete bit producer run" , ex.getMessage());
+            log.error("failed to complete run on " + getSimpleName() + ": " + ex.getMessage(), ex);
+            sendEmail("failed to complete run on " + getSimpleName() , ex.getMessage());
         }finally {
             timer.cancel();
         }
