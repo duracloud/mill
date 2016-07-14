@@ -65,8 +65,9 @@ public class StorageStatsTaskProcessor extends
     protected void executeImpl() throws TaskExecutionFailedException {
         String spaceId = this.storageStatsTask.getSpaceId();
         if(storageProviderType.equals(StorageProviderType.AMAZON_S3) || 
-            storageProviderType.equals(StorageProviderType.AMAZON_GLACIER) || 
-                storageProviderType.equals(StorageProviderType.SNAPSHOT)){
+           storageProviderType.equals(StorageProviderType.AMAZON_GLACIER) ||
+           storageProviderType.equals(StorageProviderType.DPN) ||
+           storageProviderType.equals(StorageProviderType.CHRONOPOLIS)){
             
             BucketStats stats = this.storageStatsGatherer.getBucketStats(spaceId);
             addSpaceStats(spaceId, stats.getTotalBytes(), stats.getTotalItems());

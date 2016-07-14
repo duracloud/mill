@@ -244,10 +244,15 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      }
     
      @Test
-     public void testSuccessWithOutContentCheckSnapshot() throws Exception {
-        testSuccess(StorageProviderType.SNAPSHOT, false);
+     public void testSuccessWithOutContentCheckDpn() throws Exception {
+        testSuccess(StorageProviderType.DPN, false);
      }
-    
+
+     @Test
+     public void testSuccessWithOutContentCheckChronopolis() throws Exception {
+         testSuccess(StorageProviderType.CHRONOPOLIS, false);
+     }
+
      @Test
      public void testSuccessWithOutContentCheckIRODS() throws Exception {
      testSuccess(StorageProviderType.IRODS, false);
