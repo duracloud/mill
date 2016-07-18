@@ -129,11 +129,13 @@ public class AppConfig {
     public StorageStatsTaskProcessorFactory
             storageStatsTaskProcessorFactory(@Qualifier("credentialsRepo") CredentialsRepo credentialRepo,
                                                   StorageProviderFactory storageProviderFactory,
-                                                  SpaceStatsManager spaceStatsManager) {
+                                                  SpaceStatsManager spaceStatsManager,
+                                                  JpaManifestItemRepo manifestItemRepo) {
 
         return new StorageStatsTaskProcessorFactory(credentialRepo,
                                                          storageProviderFactory,
-                                                         spaceStatsManager);
+                                                         spaceStatsManager,
+                                                         manifestItemRepo);
     }
 
     @Bean(name="bitReportProcessorFactory")
