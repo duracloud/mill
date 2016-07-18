@@ -17,6 +17,7 @@ import java.util.List;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.common.queue.local.LocalTaskQueue;
+import org.duracloud.common.util.WaitUtil;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -153,6 +154,22 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         
         Assert.assertEquals(morselCount, bitReportQueue.size().intValue());
     }
+    
+    @Test
+    public void testRunWithZeroFrequency() throws CredentialsRepoException, ParseException {
+        
+        replayAll();
+        LoopingTaskProducer<BitIntegrityMorsel> ltp = createTaskProducer(100,"0s");
+        
+        ltp.run();
+        WaitUtil.wait(2);
+
+        //after first run, queue should be loaded with the first morsel.
+        Assert.assertEquals(0, bitQueue.size().intValue());
+        Assert.assertNull(this.stateManager.getCurrentRunStartDate());
+        Assert.assertNull(this.stateManager.getNextRunStartDate());
+
+    }
 
     private void setupBitReportRepo(int times) {
         expect(bitReportRepo
@@ -241,6 +258,11 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
      */
     private LoopingBitIntegrityTaskProducer createTaskProducer(int maxQueueSize)
             throws ParseException {
+        return createTaskProducer(maxQueueSize, "1s");
+    }
+
+    private LoopingBitIntegrityTaskProducer createTaskProducer(int maxQueueSize, String frequency)
+            throws ParseException {
         LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo, 
                                                                bitReportRepo,
                                                                storageProviderFactory, 
@@ -248,7 +270,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
                                                                bitReportQueue,
                                                                stateManager, 
                                                                maxQueueSize,
-                                                               new Frequency("1s"),
+                                                               new Frequency(frequency),
                                                                notificationManager,
                                                                new PathFilterManager(),
                                                                this.config);

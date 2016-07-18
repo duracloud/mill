@@ -74,8 +74,13 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
     }
 
     @Test
-    public void testSnapshot() throws Exception{
-        testS3Based(StorageProviderType.SNAPSHOT);
+    public void testDpn() throws Exception{
+        testS3Based(StorageProviderType.DPN);
+    }
+
+    @Test
+    public void testChronopolis() throws Exception{
+        testS3Based(StorageProviderType.CHRONOPOLIS);
     }
 
     private void testS3Based(StorageProviderType storageProviderType) throws Exception {

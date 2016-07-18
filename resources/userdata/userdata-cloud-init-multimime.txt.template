@@ -80,6 +80,7 @@ runcmd:
  - pip install awscli
  # Install librarian-puppet for retrieving dependent puppet modules from github (>1.0.3 requires >=Ruby 1.9)
  - gem install highline --version 1.6.1
+ - gem install json --version 1.8.3
  - gem install librarian-puppet  --version 1.0.3
  # Get the github ssh key out of s3 so we can clone from our private github projects
  - aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/duracloud-prod-rsa-2 /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
@@ -150,7 +151,7 @@ bitInclusionDir="$(dirname ${looping.bit.inclusion-list-file})"
 mkdir -p $bitInclusionDir
 
 cat << 'EOF' > ${looping.bit.inclusion-list-file}
-#BIT INCLUSIONS
+#BIT_INCLUSIONS
 EOF
 
 #create bit exclusion list
@@ -158,7 +159,7 @@ bitExclusionDir="$(dirname ${looping.bit.exclusion-list-file})"
 mkdir -p $bitExclusionDir
 
 cat << 'EOF' > ${looping.bit.exclusion-list-file}
-#BIT EXCLUSIONS
+#BIT_EXCLUSIONS
 EOF
 
 
@@ -167,7 +168,7 @@ storageStatsInclusionDir="$(dirname ${looping.storagestats.inclusion-list-file})
 mkdir -p $storageStatsInclusionDir
 
 cat << 'EOF' > ${looping.storagestats.inclusion-list-file}
-#STORAGE STATS INCLUSIONS
+#STORAGE_STATS_INCLUSIONS
 EOF
 
 #create storagestats  exclusion list
@@ -175,7 +176,7 @@ storageStatsExclusionDir="$(dirname ${looping.storagestats.exclusion-list-file})
 mkdir -p $storageStatsExclusionDir
 
 cat << 'EOF' > ${looping.storagestats.exclusion-list-file}
-#STORAGE STATS EXCLUSIONS
+#STORAGE_STATS_EXCLUSIONS
 EOF
 
 #copy sumo.json.erb file into place

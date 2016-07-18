@@ -41,7 +41,7 @@ public class Frequency {
      * @param frequency
      */
     private void parse(String frequency) throws ParseException {
-        Pattern p = Pattern.compile("([1-9][0-9]*)([sMhdm])");
+        Pattern p = Pattern.compile("([0]|[1-9][0-9]*)([sMhdm])");
         Matcher m = p.matcher(frequency);
         if(!m.matches()){
             throw new ParseException(frequency + " is not a valid frequency",0);
@@ -67,5 +67,13 @@ public class Frequency {
     
     public String getTimeUnitAsString() {
         return this.timeUnit;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return getValue() + this.timeUnit;
     }
 }

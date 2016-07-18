@@ -29,6 +29,9 @@ public class FrequencyTest {
         test("7d", true);
         test("1m",true);
         test("1x",false);
+        test("0s",true);
+        test("01s",false);
+        
     }
 
     /**

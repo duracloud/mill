@@ -26,7 +26,6 @@ import java.util.TimerTask;
 
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
-import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
@@ -187,8 +186,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             logSessionStats();
             log.info("Session ended.");
         }catch(Exception ex){
-            log.error("failed to complete run: " + ex.getMessage(), ex);
-            sendEmail("failed to complete bit producer run" , ex.getMessage());
+            log.error("failed to complete run on " + getSimpleName() + ": " + ex.getMessage(), ex);
+            sendEmail("failed to complete run on " + getSimpleName() , ex.getMessage());
         }finally {
             timer.cancel();
         }
@@ -285,6 +284,10 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         c.setTimeInMillis(currentStartDate.getTime());
         c.add(this.frequency.getTimeUnit(), this.frequency.getValue());
         Date nextRun = c.getTime();
+
+        if(this.frequency.getValue() <= 0){
+            nextRun = null;
+        }
         this.stateManager.setNextRunStartDate(nextRun);
         this.stateManager.setCurrentRunStartDate(null);
         
@@ -299,8 +302,12 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         StringBuilder builder = new StringBuilder();
         builder.append(subject + "\n");
         builder.append(this.cumulativeTotals.toString() + "\n");
-        builder.append("Scheduling the next run for " + nextRun + "\n");
-        log.info(subject + ": next run will start " + nextRun);
+
+        if(nextRun != null){
+            builder.append("Scheduling the next run for " + nextRun + "\n");
+            log.info(subject + ": next run will start " + nextRun);
+        }
+
         sendEmail(subject, builder.toString());
     }
     
@@ -314,9 +321,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private boolean runLater() {
         boolean runLater = true;
         Date nextRun = this.stateManager.getNextRunStartDate();
+        
         if(nextRun != null){
             Date now = new Date();
-            if(now.after(nextRun)){
+            if(getFrequency().getValue() <= 0){
+                log.info("The frequency is set to {}: all scheduled runs will be cancelled.",
+                         getFrequency());
+                this.stateManager.setNextRunStartDate(null);
+            }else if(now.after(nextRun)){
                 deleteCompletionFileIfExists();
                 this.stateManager.setCurrentRunStartDate(now);
                 this.stateManager.setNextRunStartDate(null);
@@ -327,14 +339,17 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             }
         }else{
             Date currentRunStartDate = this.stateManager.getCurrentRunStartDate();
-            if(currentRunStartDate == null){
-                this.stateManager.setCurrentRunStartDate(new Date());
-                log.info("We're starting the first run on this machine");
-            }else{
-                log.info("We're continuing the current run which was started on {}", currentRunStartDate);
+            if(currentRunStartDate == null && getFrequency().getValue() <= 0){
+                log.info("The frequency is set to {}: no future runs will be scheduled.", getFrequency());
+            } else {
+                if(currentRunStartDate == null){
+                    this.stateManager.setCurrentRunStartDate(new Date());
+                    log.info("We're starting the first run on this machine");
+                }else{
+                    log.info("We're continuing the current run which was started on {}", currentRunStartDate);
+                }
+                runLater = false;
             }
-            
-            runLater = false;
         }
         
         return runLater;
