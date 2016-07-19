@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.db.model.SpaceStats;
+import org.duracloud.mill.db.repo.JpaManifestItemRepo;
 import org.duracloud.mill.storagestats.aws.BucketStats;
 import org.duracloud.mill.storagestats.aws.CloudWatchStorageStatsGatherer;
 import org.duracloud.storage.domain.StorageProviderType;
@@ -32,8 +33,6 @@ import static org.easymock.EasyMock.*;
  */
 @RunWith(EasyMockRunner.class)
 public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
-
-
     
     @Mock
     private StorageProvider storageProvider;
@@ -46,6 +45,9 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
 
     @Mock 
     private StorageStatsTask task;
+    
+    @Mock
+    private JpaManifestItemRepo manifestItemRepo;
     /**
      * @throws java.lang.Exception
      */
@@ -70,7 +72,45 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
 
     @Test
     public void testGlacier() throws Exception{
-        testS3Based(StorageProviderType.AMAZON_GLACIER);
+        String spaceId = "space-id";
+        String storeId = "store-id";
+        String account = "account";
+        long byteCount = 100l;
+        long objectCount = 101l;
+        
+        expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
+        expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
+        expect(task.getAccount()).andReturn(account).atLeastOnce();
+        expect(task.getAttempts()).andReturn(0);
+
+      
+        expect(this.manifestItemRepo
+                .getStorageStatsByAccountAndStoreIdAndSpaceId(account,
+                                                              storeId,
+                                                              spaceId))
+                                                                      .andReturn(new Object[]{new Object[] {
+                                                                              new Long(objectCount),
+                                                                              new Long(byteCount) }});
+        expect(spaceStatsManager
+               .addSpaceStats(isA(Date.class),
+                              eq(account),
+                              eq(storeId),
+                              eq(spaceId),
+                              eq(byteCount),
+                              eq(objectCount))).andReturn(new SpaceStats());
+
+        replayAll();
+        
+        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
+                                                                            storageProvider,
+                                                                            StorageProviderType.AMAZON_GLACIER,
+                                                                            spaceStatsManager,
+                                                                            storageStatsGatherer,
+                                                                            manifestItemRepo);
+
+        processor.execute();    
+        
+    
     }
 
     @Test
@@ -113,7 +153,8 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
                                                                             storageProvider,
                                                                             storageProviderType,
                                                                             spaceStatsManager,
-                                                                            storageStatsGatherer);
+                                                                            storageStatsGatherer,
+                                                                            manifestItemRepo);
         processor.execute();
     }
 
@@ -149,7 +190,8 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
                                                                             storageProvider,
                                                                             storageProviderType,
                                                                             spaceStatsManager,
-                                                                            storageStatsGatherer);
+                                                                            storageStatsGatherer,
+                                                                            manifestItemRepo);
         processor.execute();
     }
 

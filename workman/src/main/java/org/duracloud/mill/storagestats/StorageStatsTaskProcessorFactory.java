@@ -8,15 +8,11 @@
 package org.duracloud.mill.storagestats;
 
 import org.duracloud.common.queue.task.Task;
-import org.duracloud.common.util.ChecksumUtil;
-import org.duracloud.common.util.ChecksumUtil.Algorithm;
-import org.duracloud.mill.bit.BitIntegrityCheckTask;
-import org.duracloud.mill.bit.BitIntegrityCheckTaskProcessor;
-import org.duracloud.mill.bit.ContentChecksumHelper;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
+import org.duracloud.mill.db.repo.JpaManifestItemRepo;
 import org.duracloud.mill.storagestats.aws.CloudWatchStorageStatsGatherer;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
@@ -45,12 +41,23 @@ public class StorageStatsTaskProcessorFactory
     
     private StorageProviderFactory storageProviderFactory;
     private SpaceStatsManager spaceStatsManager;
-        public StorageStatsTaskProcessorFactory(CredentialsRepo repo,
+    private JpaManifestItemRepo manifestItemRepo;
+
+    /**
+     * 
+     * @param repo
+     * @param storageProviderFactory
+     * @param spaceStatsManager
+     * @param manifestItemRepo
+     */
+    public StorageStatsTaskProcessorFactory(CredentialsRepo repo,
                                                  StorageProviderFactory storageProviderFactory,
-                                                 SpaceStatsManager spaceStatsManager) {
+                                                 SpaceStatsManager spaceStatsManager,
+                                                 JpaManifestItemRepo manifestItemRepo) {
         super(repo);
         this.storageProviderFactory = storageProviderFactory;
         this.spaceStatsManager = spaceStatsManager;
+        this.manifestItemRepo = manifestItemRepo;
     }
 
     @Override
@@ -86,7 +93,8 @@ public class StorageStatsTaskProcessorFactory
                                                       store,
                                                       storageProviderType,
                                                       spaceStatsManager,
-                                                      gatherer);
+                                                      gatherer, 
+                                                      manifestItemRepo);
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: unable to locate" +
                           " credentials for subdomain: " + e.getMessage(), e);
