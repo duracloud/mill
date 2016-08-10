@@ -177,13 +177,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                 
                
             }
-    
+
+            logSessionStats();
+
             if(morselQueue.isEmpty()){
                 scheduleNextRun();
                 writeCompletionFile();
             }
             
-            logSessionStats();
             log.info("Session ended.");
         }catch(Exception ex){
             log.error("failed to complete run on " + getSimpleName() + ": " + ex.getMessage(), ex);
