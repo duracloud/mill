@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.ltp.storagestats;
 
+import java.time.LocalTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class LoopingStorageStatsTaskProducer
                                            StateManager<StorageStatsMorsel> state,
                                            int maxTaskQueueSize,
                                            Frequency frequency,
+                                           LocalTime startTime,
                                            NotificationManager notificationManager,
                                            PathFilterManager exclusionManager,
                                            LoopingStorageStatsTaskProducerConfigurationManager config) {
@@ -56,6 +58,7 @@ public class LoopingStorageStatsTaskProducer
               state,
               maxTaskQueueSize,
               frequency,
+              startTime,
               notificationManager,
               config);
         this.exclusionManager = exclusionManager;

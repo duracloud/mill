@@ -67,6 +67,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
               state,
               maxTaskQueueSize,
               frequency,
+              null,
               notificationManager,
               config);
         this.cache = cache;

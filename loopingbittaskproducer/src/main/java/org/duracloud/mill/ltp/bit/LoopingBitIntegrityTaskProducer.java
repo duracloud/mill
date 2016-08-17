@@ -70,6 +70,7 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
               state,
               maxTaskQueueSize,
               frequency,
+              null,
               notificationManager,
               config);
         this.exclusionManager = exclusionManager;

@@ -7,13 +7,12 @@
  */
 package org.duracloud.mill.ltp;
 
-import java.io.File;
-import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 
 import org.apache.commons.cli.CommandLine;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
-import org.duracloud.mill.util.SystemPropertyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,4 +105,24 @@ public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
         return frequency;
     }
 
+    /**
+     * @param startTimeKey
+     * @return
+     */
+    protected LocalTime getStartTime(String startTimeKey) {
+        String startTimeStr = System.getProperty(startTimeKey);
+        if (startTimeStr == null) {
+            return null;
+        }
+
+        try {
+            LocalTime time = LocalTime.parse(startTimeStr);
+            log.info("start time key ({}) = {}", startTimeKey, time.toString());
+            return time;
+        } catch (DateTimeParseException ex) {
+            log.error(startTimeKey + " parameter value is invalid: "
+                    + startTimeStr + " Must follow the format HH:dd:ss", ex);
+            throw new RuntimeException(ex);
+        }
+    }
 }
