@@ -7,13 +7,9 @@
  */
 package org.duracloud.mill.ltp;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.commons.cli.CommandLine;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
-import org.duracloud.mill.util.SystemPropertyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
