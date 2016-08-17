@@ -7,7 +7,6 @@
  */
 package org.duracloud.mill.util;
 
-import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.LinkedList;

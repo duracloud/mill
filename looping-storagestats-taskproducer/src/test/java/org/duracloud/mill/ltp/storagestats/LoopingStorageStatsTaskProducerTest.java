@@ -9,6 +9,7 @@ package org.duracloud.mill.ltp.storagestats;
 
 import java.io.File;
 import java.text.ParseException;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -102,7 +103,7 @@ public class LoopingStorageStatsTaskProducerTest extends EasyMockSupport {
         setupLoopingTaskProducerConfig();
         int maxTaskQueueSize = 10000;
         replayAll();
-        LoopingStorageStatsTaskProducer ltp = createTaskProducer(maxTaskQueueSize);
+        LoopingStorageStatsTaskProducer ltp = createTaskProducer(maxTaskQueueSize, null);
         
         ltp.run();
 
@@ -115,7 +116,20 @@ public class LoopingStorageStatsTaskProducerTest extends EasyMockSupport {
         Assert.assertEquals(morselCount, queue.size().intValue());
         
      }
-    
+
+    @Test
+    public void testStartLaterInTheDay() throws CredentialsRepoException, ParseException {
+        
+        int maxTaskQueueSize = 10000;
+        replayAll();
+        LoopingStorageStatsTaskProducer ltp = createTaskProducer(maxTaskQueueSize, LocalTime.parse("23:59:59"));
+        
+        ltp.run();
+
+        //after first run, queue should be loaded with the first morsel.
+        Assert.assertEquals(0, queue.size().intValue());
+     }
+
     private void setupLoopingTaskProducerConfig() {
         expect(this.config.getWorkDirectoryPath()).andReturn(System.getProperty("java.io.tmpdir")).times(1);
     }
@@ -149,7 +163,7 @@ public class LoopingStorageStatsTaskProducerTest extends EasyMockSupport {
      * @return
      * @throws ParseException
      */
-    private LoopingStorageStatsTaskProducer createTaskProducer(int maxQueueSize)
+    private LoopingStorageStatsTaskProducer createTaskProducer(int maxQueueSize, LocalTime startTime)
             throws ParseException {
         LoopingStorageStatsTaskProducer producer = new LoopingStorageStatsTaskProducer(credentialsRepo, 
                                                                storageProviderFactory, 
@@ -157,6 +171,7 @@ public class LoopingStorageStatsTaskProducerTest extends EasyMockSupport {
                                                                stateManager, 
                                                                maxQueueSize,
                                                                new Frequency("1h"),
+                                                               startTime,
                                                                notificationManager,
                                                                new PathFilterManager(),
                                                                this.config);

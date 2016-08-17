@@ -82,6 +82,7 @@ public class ConfigConstants {
 
     public static final String LOOPING_STORAGE_STATS_EXCLUSION_LIST_KEY = "looping.storagestats.exclusion-list-file";
     public static final String LOOPING_STORAGE_STATS_INCLUSION_LIST_KEY = "looping.storagestats.inclusion-list-file";
+    public static final String LOOPING_STORAGE_STATS_START_TIME = "looping.storagestats.start-time";
 
     /*
      * MC DATABASE

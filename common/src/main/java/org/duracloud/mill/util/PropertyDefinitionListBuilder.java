@@ -120,7 +120,10 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
-
+    public PropertyDefinitionListBuilder addLoopingStorageStatsStartTime() {
+        add(ConfigConstants.LOOPING_STORAGE_STATS_START_TIME, false);
+        return this;
+    }
 
     public PropertyDefinitionListBuilder addWorkDir() {
         add(ConfigConstants.WORK_DIRECTORY_PATH,true);
@@ -184,4 +187,5 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.QUEUE_NAME_BIT_REPORT, true);
         return this;
     }
+
 }

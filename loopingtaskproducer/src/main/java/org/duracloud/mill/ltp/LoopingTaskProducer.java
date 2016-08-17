@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private StorageProviderFactory storageProviderFactory;
     private List<T> morselsToReload = new LinkedList<>();
     private Frequency frequency;
+    private LocalTime startTime;
     private RunStats cumulativeTotals;
     private NotificationManager notificationManager;
     private LoopingTaskProducerConfigurationManager config;
@@ -74,6 +76,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                                StateManager<T> state,
                                int maxTaskQueueSize, 
                                Frequency frequency,
+                               LocalTime startTime,
                                NotificationManager notificationManager, 
                                LoopingTaskProducerConfigurationManager config) {
         
@@ -84,6 +87,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         this.credentialsRepo = credentialsRepo;
         this.maxTaskQueueSize = maxTaskQueueSize;
         this.frequency = frequency;
+        this.startTime = startTime;
         this.cumulativeTotals = createRunStats();
         this.notificationManager = notificationManager;
         this.config = config;
@@ -281,14 +285,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      */
     private void scheduleNextRun() {
         Date currentStartDate = this.stateManager.getCurrentRunStartDate();
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(currentStartDate.getTime());
-        c.add(this.frequency.getTimeUnit(), this.frequency.getValue());
-        Date nextRun = c.getTime();
-
-        if(this.frequency.getValue() <= 0){
-            nextRun = null;
-        }
+        Date nextRun = calculateNextRunDate(currentStartDate);
         this.stateManager.setNextRunStartDate(nextRun);
         this.stateManager.setCurrentRunStartDate(null);
         
@@ -310,6 +307,45 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         }
 
         sendEmail(subject, builder.toString());
+    }
+
+    private Date calculateNextRunDate(Date previousDate) {
+        Date nextRun;
+        Calendar c = Calendar.getInstance();
+        //if the current start date is null calculate based on present moment.
+        if(previousDate == null){
+            //if a start time is defined
+            if(this.startTime != null){
+                //calculate based on start time.
+                c.set(Calendar.HOUR_OF_DAY, this.startTime.getHour());
+                c.set(Calendar.MINUTE, this.startTime.getMinute());
+                c.set(Calendar.SECOND, this.startTime.getSecond());
+                
+                //if the start time is before present moment
+                if(this.startTime.isBefore(LocalTime.now())){
+                    //move to the following day
+                    c.add(Calendar.DATE, 1);
+                }
+                nextRun = c.getTime();
+            }else{
+                //next run is now
+                nextRun = new Date();
+            }
+            
+         
+        }else{  //otherwise calculate based on previous  date
+            //add the frequency
+            c.setTimeInMillis(previousDate.getTime());
+            c.add(this.frequency.getTimeUnit(), this.frequency.getValue());
+            nextRun = c.getTime();
+        }
+        
+        //return null if the frequency is zero or less.
+        if(this.frequency.getValue() <= 0){
+            nextRun = null;
+        }
+        
+        return nextRun;
     }
     
     protected void sendEmail(String subject, String body){
@@ -344,8 +380,16 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                 log.info("The frequency is set to {}: no future runs will be scheduled.", getFrequency());
             } else {
                 if(currentRunStartDate == null){
-                    this.stateManager.setCurrentRunStartDate(new Date());
-                    log.info("We're starting the first run on this machine");
+                    Date startDate = calculateNextRunDate(null);
+                    
+                    if(startDate.getTime() <= System.currentTimeMillis()){
+                        this.stateManager.setCurrentRunStartDate(startDate);
+                        log.info("We're starting the first run on this machine");
+                    }else{
+                        this.stateManager.setNextRunStartDate(startDate);
+                        log.info("We will start the first run on this machine at {}", startDate);
+                        return true;
+                    }
                 }else{
                     log.info("We're continuing the current run which was started on {}", currentRunStartDate);
                 }

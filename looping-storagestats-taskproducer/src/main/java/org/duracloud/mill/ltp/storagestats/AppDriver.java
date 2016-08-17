@@ -87,6 +87,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                 .addMcDb()
                 .addLoopingStorageStatsFrequency()
                 .addLoopingStorageStatsMaxQueueSize()
+                .addLoopingStorageStatsStartTime()
                 .addStorageStatsQueue()
                 .addWorkDir()
                 .build();
@@ -120,12 +121,10 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                                                        stateManager,
                                                                                        getMaxQueueSize(ConfigConstants.LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE),
                                                                                        getFrequency(ConfigConstants.LOOPING_STORAGE_STATS_FREQUENCY),
+                                                                                       getStartTime(ConfigConstants.LOOPING_STORAGE_STATS_START_TIME),
                                                                                        notificationMananger,
                                                                                        config.getPathFilterManager(),
                                                                                        config);
         return producer;
     }
-    
- 
-
 }
