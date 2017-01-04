@@ -46,10 +46,10 @@ apt_sources:
  - source: deb-src http://archive.canonical.com/ubuntu $RELEASE partner
  # Enable PuppetLabs repos (for latest version of puppet)
  - source: deb http://apt.puppetlabs.com $RELEASE main dependencies
-   keyid: 4BD6EC30    # GPG key ID published on a key server
+   keyid: 7F438280EF8D349F # GPG key ID published on a key server
    filename: puppetlabs.list
  - source: deb-src http://apt.puppetlabs.com $RELEASE main dependencies
-   keyid: 4BD6EC30    # GPG key ID published on a key server
+   keyid: 7F438280EF8D349F # GPG key ID published on a key server
    filename: puppetlabs.list
 
 # Run 'apt-get update' on first boot

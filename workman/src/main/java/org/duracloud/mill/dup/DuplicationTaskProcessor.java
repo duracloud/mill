@@ -407,20 +407,17 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         File localFile = null;
         while (!localChecksumMatch && attempt < 3) {
             // Get content stream
-            InputStream sourceStream = getSourceContent(spaceId, contentId);
-
-            // Cache content locally
-            localFile = cacheContent(sourceStream);
-
-            // Check content
-            try {
+            try(InputStream sourceStream = getSourceContent(spaceId, contentId)){
+                // Cache content locally
+                localFile = cacheContent(sourceStream);
+                // Check content
                 String localChecksum = checksumUtil.generateChecksum(localFile);
                 if(sourceChecksum.equals(localChecksum)) {
                     localChecksumMatch = true;
                 } else {
                     cleanup(localFile);
                 }
-            } catch(IOException e) {
+            } catch(Exception e) {
                 log.warn("Error generating checksum for source content: " +
                          e.getMessage(), e);
             }
