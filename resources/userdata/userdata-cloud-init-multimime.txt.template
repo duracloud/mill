@@ -108,13 +108,10 @@ Content-Disposition: attachment; filename="user-script"
 #!/bin/bash
 
 rm -rf /etc/puppet
-git clone -b ${puppetDuracloudMillBranch} git@github.com:duraspace/puppet-duracloud-mill.git /etc/puppet/
+git clone -b ${puppetDuracloudMillBranch} git@github.com:${puppetDuracloudMillRepoOwner}/puppet-duracloud-mill.git /etc/puppet/
 
 # Run librarian-puppet
 cd /etc/puppet && HOME=/root librarian-puppet install
-
-# Get hiera data files for puppet
-mkdir -p /etc/puppet/hieradata && aws --region us-east-1 s3 cp s3://${bootstrapAccount}.mill-bootstrap/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 600 /etc/puppet/hieradata/*
 
 # set up custom Puppet Facter facts
 mkdir -p /etc/facter/facts.d
