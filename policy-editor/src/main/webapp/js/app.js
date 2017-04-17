@@ -21,6 +21,7 @@ window.App = Ember.Application.create();
 App.loginOptions = Ember.Object.create({
 	subdomain: null,
 	spacePrefix: null,
+	duracloudDomain: 'duracloud.org',
 });
 
 
@@ -33,12 +34,12 @@ App.AuthManager = Ember.Object.extend({
 		return this._authenticated;
 	},
 	
-	authenticate: function(username, password,subdomain){
+	authenticate: function(username, password,subdomain, duracloudDomain){
 		var that = this;
 		return new Ember.RSVP.Promise(function(resolve, reject){
 			that._token =  btoa(username + ":" + password);
 			App.loginOptions.subdomain = subdomain;
-			
+			App.loginOptions.duracloudDomain = duracloudDomain;
 			App.DuraStoreClient.listAccounts().then(function(){
 				that._authenticated = true;
 				resolve();
@@ -57,7 +58,7 @@ App.authManager = App.AuthManager.create();
 App.DuraStoreClient = Ember.Object.create({
 	
 	_formatDuraStoreUrl:function(subdomain){
-		return "https://"+subdomain + ".duracloud.org/durastore";
+		return "https://"+subdomain + "." + App.loginOptions.duracloudDomain + "/durastore";
 	},
 
 	_formatDuplicationPolicyRepoUrl:function(){

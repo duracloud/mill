@@ -232,18 +232,19 @@
     <div class="col-md-6">
       <form class="col-md-5">
 	  <div class="form-group">
-		<span data-toggle='tooltip' title='DuraCloud root username' data-placement='right'>
+		<span data-toggle='tooltip' title='DuraCloud username (User must have read/write access to duplication-policy-repo space.' data-placement='right'>
         {{input id="username" type="text" class="form-control" placeholder="Username" value=username}}
 		</span>
       </div>
       <div class="form-group">
-		<span data-toggle='tooltip' title='DuraCloud root password' data-placement='right'>
+		<span data-toggle='tooltip' title='DuraCloud user password' data-placement='right'>
         {{input id="password" type="password" class="form-control" placeholder="Password" value=password}}
 		</span>
       </div>
       <div class="form-group">
-       <span data-toggle="tooltip"  title="For example, if your DuraCloud hostname is myinstitution.duracloud.org, enter 'myinstitution'." data-placement='right' >  
+       <span data-toggle="tooltip"  title="The subdomain and domain of the duracloud account that contains the duplication-policy-repo space." data-placement='right' >  
 		{{input id="subdomain" type="text"  class="form-control" placeholder="DuraCloud Subdomain" value=subdomain  }}
+        {{input id="duracloudDomain" type="text"  class="form-control" placeholder="duracloud.org" value=App.loginOptions.duracloudDomain  }}
 		</span>
 	  </div>
       <div class="form-group">
