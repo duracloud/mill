@@ -52,4 +52,12 @@ for i in ["audit-worker", "bit-worker", "bit-report-worker", "dup-worker", "dup-
         if bit_inclusions != None:
         	command = (command + " -i %s" % bit_inclusions)
         
+        storagestats_inclusions = args.storagestats_inclusions
+        if storagestats_inclusions != None:
+        	command = (command + " -si %s" % storagestats_inclusions)
+
+        storagestats_exclusions = args.storagestats_exclusions
+        if storagestats_exclusions != None:
+        	command = (command + " -sx %s" % storagestats_exclusions)
+
         os.system(command)
