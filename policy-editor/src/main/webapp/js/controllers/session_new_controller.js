@@ -20,12 +20,12 @@ App.SessionsNewController = Ember.ObjectController.extend({
 		login: function(success, failure){
 			var self = this;
 			var router = this.get('target');
-			var data = this.getProperties('username', 'password', 'subdomain','spacePrefix');
+			var data = this.getProperties('username', 'password', 'subdomain','duracloudDomain','spacePrefix');
 			App.loginOptions.spacePrefix = data.spacePrefix;
 			var attemptedTrans = this.get('attemptedTransition');
 
 			App.authManager.authenticate(data.username, data.password,
-					data.subdomain).then(function() {
+					data.subdomain, data.duracloudDomain).then(function() {
 				success();
 				if (attemptedTrans) {
 					attemptedTrans.retry();

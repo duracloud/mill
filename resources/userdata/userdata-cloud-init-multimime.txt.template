@@ -19,7 +19,7 @@ manage_etc_hosts: false
 # dynamically set hostname using the instance's instanceid
 bootcmd:
  - cloud-init-per instance my_set_hostname sh -xc "echo ${instancePrefix}-${nodeType}-$INSTANCE_ID > /etc/hostname; hostname -F /etc/hostname"
- - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 ${instancePrefix}-${nodeType}-$INSTANCE_ID.duracloud.org ${instancePrefix}-${nodeType}-$INSTANCE_ID >> /etc/hosts"
+ - cloud-init-per instance my_etc_hosts sh -xc "sed -i -e '/^127.0.1.1/d' /etc/hosts; echo 127.0.1.1 ${instancePrefix}-${nodeType}-$INSTANCE_ID.${instanceDomain} ${instancePrefix}-${nodeType}-$INSTANCE_ID >> /etc/hosts"
 
 # make user-data scripts always run on boot
 cloud_final_modules:
@@ -48,9 +48,6 @@ apt_sources:
  - source: deb http://apt.puppetlabs.com $RELEASE main dependencies
    keyid: 7F438280EF8D349F # GPG key ID published on a key server
    filename: puppetlabs.list
- - source: deb-src http://apt.puppetlabs.com $RELEASE main dependencies
-   keyid: 7F438280EF8D349F # GPG key ID published on a key server
-   filename: puppetlabs.list
 
 # Run 'apt-get update' on first boot
 apt_update: true
@@ -64,10 +61,12 @@ apt_reboot_if_required: True
 # Install additional packages on first boot
 packages:
  - wget
+ - htop 
  - git
  - curl
  - puppet
- - rubygems # Used to install librarian-puppet
+ - ruby # Used to install librarian-puppet
+ - ruby-dev
  - python-pip # Used to install awscli
 
 # run commands
