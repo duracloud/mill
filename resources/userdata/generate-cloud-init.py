@@ -31,6 +31,8 @@ parser.add_argument('-t', '--template', type=argparse.FileType('r'), required=Tr
 parser.add_argument('-p', '--property-files', nargs="+", type=argparse.FileType('r'), required=True)
 parser.add_argument('-x', '--bit_exclusions',  type=argparse.FileType('r'), default=None, required=False)
 parser.add_argument('-i', '--bit_inclusions',  type=argparse.FileType('r'), default=None, required=False)
+parser.add_argument('-sx', '--storagestats_exclusions',  type=argparse.FileType('r'), default=None, required=False)
+parser.add_argument('-si', '--storagestats_inclusions',  type=argparse.FileType('r'), default=None, required=False)
 parser.add_argument('-o', '--output_file',  required=True)
 args = parser.parse_args()
 
@@ -44,6 +46,9 @@ output = open(output_file, "w+");
 template = args.template.readlines();
 bit_inclusions = args.bit_inclusions
 bit_exclusions = args.bit_exclusions
+storagestats_inclusions = args.storagestats_inclusions
+storagestats_exclusions = args.storagestats_exclusions
+
 
 props = {}
 
@@ -69,6 +74,16 @@ for line in template:
 	elif "BIT_EXCLUSIONS" in line and bit_exclusions != None: 
 		output.write(line)
 		for x in bit_exclusions.readlines():
+			output.write(x) 
+ 
+	elif "STORAGE_STATS_INCLUSIONS" in line and storagestats_inclusions != None:
+		output.write(line)
+		for x in storagestats_inclusions.readlines():
+			output.write(x) 
+		
+	elif "STORAGE_STATS_EXCLUSIONS" in line and storagestats_exclusions != None:
+		output.write(line)
+		for x in storagestats_exclusions.readlines():
 			output.write(x) 
 
 	elif not match: 
