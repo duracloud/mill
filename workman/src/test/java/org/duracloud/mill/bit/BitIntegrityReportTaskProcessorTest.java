@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -124,8 +125,12 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
                                                eq(storeId),
                                                eq(spaceId))).andReturn(it);
         final Capture<InputStream> capture = new Capture<>();
-
-        this.store.addContent(eq("x-duracloud-admin"),
+        String reportSpace = "x-duracloud-admin";
+        expect(this.store.getSpaces()).andReturn(Arrays.asList("aspace").iterator());
+        this.store.createSpace(reportSpace);
+        
+        
+        this.store.addContent(eq(reportSpace),
                               isA(String.class),
                               isA(String.class),
                               (Map<String, String>) isNull(),
