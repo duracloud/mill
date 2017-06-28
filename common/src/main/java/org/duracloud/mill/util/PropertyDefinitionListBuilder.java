@@ -100,8 +100,10 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
-    public PropertyDefinitionListBuilder addNotificationRecipients() {
+    public PropertyDefinitionListBuilder addNotifications() {
         add(ConfigConstants.NOTIFICATION_RECIPIENTS, true);
+        add(ConfigConstants.NOTIFICATION_SENDER, true);
+
         return this;
     }
 

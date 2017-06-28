@@ -85,7 +85,7 @@ public class AppDriver extends DriverSupport {
                                                                             .addBitIntegrityQueue()
                                                                             .addBitIntegrityErrorQueue()
                                                                             .addBitIntegrityReportQueue()
-                                                                            .addNotificationRecipients()
+                                                                            .addNotifications()
                                                                             .addWorkDir()
                                                                             .addTaskQueueOrder()
                                                                             .addDuplicationPolicyBucketSuffix()

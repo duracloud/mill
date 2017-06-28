@@ -70,7 +70,7 @@ public class SESNotificationManager implements NotificationManager {
             Destination destination = new Destination();
             destination.setToAddresses(Arrays.asList(this.recipientEmailAddresses));
             email.setDestination(destination);
-            email.setSource("notifications@duracloud.org");
+            email.setSource(System.getProperty("notification.sender", "no-sender-specified"));
             Message message = new Message(new Content(subject), new Body(new Content(body)));
             email.setMessage(message);
             client.sendEmail(email);
