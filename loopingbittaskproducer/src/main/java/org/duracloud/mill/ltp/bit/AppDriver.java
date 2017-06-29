@@ -84,7 +84,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
     protected LoopingTaskProducer buildTaskProducer() {
 
         List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
-                .addNotificationRecipients()
+                .addNotifications()
                 .addMcDb()
                 .addBitIntegrityQueue()
                 .addLoopingBitFrequency()
