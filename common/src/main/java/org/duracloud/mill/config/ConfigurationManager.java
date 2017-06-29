@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.config;
 
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Daniel Bernstein
@@ -24,5 +25,22 @@ public class ConfigurationManager {
 
     public String getWorkDirectoryPath() {
         return System.getProperty(ConfigConstants.WORK_DIRECTORY_PATH);
+    }
+    
+    public String[] getNotificationRecipients() {
+        return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS);
+    }
+
+    private String[] getCommaSeparatedListToArray(String prop) {
+        String values =  System.getProperty(prop);
+        if(StringUtils.isBlank(values)){
+            return new String[0];
+        }else{
+            return values.split(",");
+        }
+    }
+    
+    public String[] getNotificationRecipientsNonTech() {
+        return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS_NON_TECH);
     }
 }
