@@ -28,17 +28,6 @@ public class TaskProducerConfigurationManager extends ConfigurationManager {
         return System.getProperty(ConfigConstants.DUPLICATION_POLICY_BUCKET_SUFFIX);
     }
     
-    /**
-     * @return
-     */
-    public String[] getNotificationRecipients() {
-        String recipients =  System.getProperty(ConfigConstants.NOTIFICATION_RECIPIENTS);
-        if(StringUtils.isBlank(recipients)){
-            return null;
-        }else{
-            return recipients.split(",");
-        }
-    }
 
     /**
      * @return
