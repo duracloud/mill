@@ -3,9 +3,9 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
-  <artifactId>common-bit</artifactId>
+  <artifactId>storage-reporter</artifactId>
   <version>2.4.0-SNAPSHOT</version>
-  <name>DuraCloud Mill Common - Bit Integrity</name>
+  <name>DuraCloud Mill Storage Reporter</name>
 
   <parent>
     <artifactId>mill</artifactId>
@@ -13,6 +13,20 @@
     <version>2.4.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+
+  <properties>
+    <!-- see maven-shade-plugin in root pom.xml -->
+    <mainClass>org.duracloud.mill.storagereporter.AppDriver</mainClass>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
 
@@ -23,13 +37,20 @@
     </dependency>
 
     <dependency>
-      <groupId>org.duracloud</groupId>
-      <artifactId>common</artifactId>
+      <groupId>org.duracloud.db</groupId>
+      <artifactId>mill-db-repo</artifactId>
     </dependency>
+
     <dependency>
-      <groupId>org.duracloud</groupId>
-      <artifactId>common-queue</artifactId>
+      <groupId>org.duracloud.db</groupId>
+      <artifactId>account-management-db-repo</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
     </dependency>
 
   </dependencies>
+
 </project>
