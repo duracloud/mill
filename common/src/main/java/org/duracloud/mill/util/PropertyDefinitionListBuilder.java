@@ -107,6 +107,11 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
+    public PropertyDefinitionListBuilder addNotificationsNonTech() {
+        add(ConfigConstants.NOTIFICATION_RECIPIENTS_NON_TECH, false);
+        return this;
+    }
+
     public PropertyDefinitionListBuilder addStorageStatsQueue(){
         add(ConfigConstants.QUEUE_NAME_STORAGE_STATS, true);
         return this;
