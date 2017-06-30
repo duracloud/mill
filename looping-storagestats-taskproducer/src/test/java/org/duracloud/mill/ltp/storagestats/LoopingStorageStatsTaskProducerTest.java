@@ -137,7 +137,7 @@ public class LoopingStorageStatsTaskProducerTest extends EasyMockSupport {
 
     private void setupNotificationManager() {
         notificationManager.sendEmail(isA(String.class), isA(String.class));
-        expectLastCall();
+        expectLastCall().once();
     }
     
 

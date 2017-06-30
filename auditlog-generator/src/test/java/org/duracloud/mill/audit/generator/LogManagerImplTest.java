@@ -102,7 +102,7 @@ public class LogManagerImplTest extends AbstractTestBase {
         JpaAuditLogItem duplicateItem = createItem(itemId2,new Date(System.currentTimeMillis()));
 
         spaceLog.write(eq(item1));
-        expectLastCall();
+        expectLastCall().once();
 
         JpaAuditLogItem freshItem = createMock(JpaAuditLogItem.class);
         freshItem.setWritten(true);

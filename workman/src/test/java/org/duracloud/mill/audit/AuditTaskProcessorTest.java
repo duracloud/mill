@@ -67,7 +67,7 @@ public class AuditTaskProcessorTest extends EasyMockSupport {
                 EasyMock.isA(String.class),
                 EasyMock.isA(String.class),
                 EasyMock.isA(Date.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         
         
         AuditTask task = AuditTestHelper.createTestAuditTask();

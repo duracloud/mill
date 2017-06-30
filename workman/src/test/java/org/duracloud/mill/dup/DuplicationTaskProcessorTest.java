@@ -156,7 +156,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteAvailableInBoth() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Equal content properties
         final String checksum = "checksum";
@@ -185,7 +185,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteMissingInBoth() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Missing content
         EasyMock.expect(srcStore.getContentProperties(spaceId, contentId))
@@ -223,7 +223,7 @@ public class DuplicationTaskProcessorTest {
 
         // Delete space
         destStore.deleteSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         replayMocks();
 
@@ -293,7 +293,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteErrorCase() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Empty content properties
         Map<String, String> srcProps = new HashMap<>();
@@ -336,7 +336,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecutePropertiesMismatch() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Mismatched content properties
         final String checksum = "checksum";
@@ -355,7 +355,7 @@ public class DuplicationTaskProcessorTest {
 
         // Duplicate properties
         destStore.setContentProperties(spaceId, contentId, srcProps);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         replayMocks();
 
@@ -371,7 +371,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecutePropertiesUpdateNotAllowed() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Mismatched content properties
         final String checksum = "checksum";
@@ -408,7 +408,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteMissingInSource() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         setupManifestStore(true);
 
@@ -426,7 +426,7 @@ public class DuplicationTaskProcessorTest {
 
         // Delete content
         destStore.deleteContent(spaceId, contentId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         replayMocks();
 
@@ -444,7 +444,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteMissingInSourceButManifestEntryExists() throws Exception {
         // Check space
         destStore.createSpace(spaceId);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         setupManifestStore(false);
         
@@ -490,7 +490,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteMissingInDest() throws Exception {
         // Check space
         destStore.createSpace(EasyMock.eq(spaceId));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Prepare source content
         String content = "source-content";
@@ -547,7 +547,7 @@ public class DuplicationTaskProcessorTest {
     public void testExecuteChecksumMismatch() throws Exception {
         // Check space
         destStore.createSpace(EasyMock.eq(spaceId));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         // Prepare source content
         String content = "source-content";

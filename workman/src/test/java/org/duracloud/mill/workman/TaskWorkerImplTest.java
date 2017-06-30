@@ -75,7 +75,7 @@ public class TaskWorkerImplTest {
         queue.extendVisibilityTimeout(EasyMock.isA(Task.class));
         EasyMock.expectLastCall().times(2, 4);
         queue.deleteTask(EasyMock.isA(Task.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         expect(task.getAttempts()).andReturn(1);
 
         replay();
@@ -116,7 +116,7 @@ public class TaskWorkerImplTest {
     public void testRunWithProcessorExceptionFirstAttempt() throws Exception {
         EasyMock.expect(task.getAttempts()).andReturn(0).times(1);
         queue.requeue(EasyMock.isA(Task.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         runWithProcessorException();
     }
 
@@ -126,11 +126,11 @@ public class TaskWorkerImplTest {
         queue.deleteTask(EasyMock.isA(Task.class));
         expect(deadLetterQueue.getName()).andReturn("queue");
 
-        expectLastCall();
+        expectLastCall().once();
         deadLetterQueue.put(EasyMock.isA(Task.class));
-        expectLastCall();
+        expectLastCall().once();
         task.addProperty(eq("error"), isNull(String.class));
-        expectLastCall();
+        expectLastCall().once();
         runWithProcessorException();
     }
 
