@@ -7,7 +7,7 @@
  */
 package org.duracloud.mill.storagereporter;
 
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -21,7 +21,6 @@ import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -65,10 +64,15 @@ public class AppDriver extends DriverSupport {
 
         // setup notification client
         ConfigurationManager configManager = new ConfigurationManager();
-        List<String> recipients = Arrays
-                .asList(configManager.getNotificationRecipients());
-        recipients.addAll(Arrays
-                .asList(configManager.getNotificationRecipientsNonTech()));
+        List<String> recipients = new LinkedList<>();
+
+        for(String email : configManager.getNotificationRecipients()){
+            recipients.add(email);
+        }
+        for(String email : configManager.getNotificationRecipientsNonTech()){
+            recipients.add(email);
+        }
+
         NotificationManager notification = new SESNotificationManager(recipients
                 .toArray(new String[0]));
 
