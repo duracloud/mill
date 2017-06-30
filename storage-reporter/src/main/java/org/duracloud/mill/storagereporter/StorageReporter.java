@@ -124,8 +124,7 @@ public class StorageReporter {
         }
 
         // build subject
-        String subject = MessageFormat.format(
-                                              "Storage Report:  {0} Oversubscribed account(s)",
+        String subject = MessageFormat.format("DuraCloud Storage Report: {0} accounts over subscription limit",
                                               oversubscribedAccounts.size());
 
         StringBuilder body = new StringBuilder();
