@@ -69,6 +69,7 @@
     <module>taskproducertool</module>
     <module>taskreadertool</module>
     <module>policy-editor</module>
+    <module>storage-reporter</module>
   </modules>
 
   <profiles>
