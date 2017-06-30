@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import static java.math.RoundingMode.HALF_UP;
 
 import org.duracloud.account.db.model.AccountInfo;
 import org.duracloud.account.db.model.AccountInfo.AccountStatus;
@@ -44,6 +45,9 @@ public class StorageReporter {
     private JpaSpaceStatsRepo statsRepo;
     private DuracloudAccountRepo accountRepo;
     private NotificationManager notification;
+
+    private static final BigDecimal TB_BIG_DECIMAL = new BigDecimal(StorageProviderResult.TB);
+    private static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
 
     /**
      * @param statsRepo
@@ -98,8 +102,8 @@ public class StorageReporter {
             for (StorageProviderAccount storageProviderAccount : providers) {
                 List<Object[]> stats = statsRepo
                         .getByAccountIdAndStoreId(accountId,
-                                                  storageProviderAccount.getId()
-                                                          + "",
+                                                  String.valueOf(storageProviderAccount
+                                                          .getId()),
                                                   lastMonth,
                                                   now,
                                                   JpaSpaceStatsRepo.INTERVAL_DAY);
@@ -127,16 +131,16 @@ public class StorageReporter {
         StringBuilder body = new StringBuilder();
 
         if (oversubscribedAccounts.size() == 0) {
-            body.append("Presently there are no oversubscribed accounts.\n\n");
+            body.append("Presently there are no accounts over their subscription limits.\n\n");
         } else {
-            body.append("Oversubscribed Accounts: \n\n");
+            body.append("Accounts OVER their subscribed storage limit: \n\n");
         }
         // write oversubscribed in initial block
         for (AccountStorageReportResult result : oversubscribedAccounts) {
             appendResultToBody(result, body);
         }
 
-        body.append("\nAll other (ie undersubscribedAccounts) accounts: \n\n");
+        body.append("\nAccounts UNDER their subscribed storage limit: \n\n");
 
         // write undersubscribedAccounts in following block
         for (AccountStorageReportResult result : undersubscribedAccounts) {
@@ -148,7 +152,7 @@ public class StorageReporter {
         // send email
         notification.sendEmail(subject, body.toString());
 
-        LOGGER.info("Report complete: {} oversubscribed,  {} undersubscribedAccounts.",
+        LOGGER.info("Report complete: {} accounts over limit,  {} accounts under limit.",
                     oversubscribedAccounts.size(),
                     undersubscribedAccounts.size());
 
@@ -171,29 +175,27 @@ public class StorageReporter {
             StorageProviderAccount spa = presult.getStorageProviderAccount();
             int limit = spa.getStorageLimit();
             String total = new BigDecimal(presult.getTotalBytes())
-                    .divide(new BigDecimal(StorageProviderResult.TB),
-                            2,
-                            BigDecimal.ROUND_HALF_UP)
-                    .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+                    .divide(TB_BIG_DECIMAL, 2, HALF_UP).setScale(2, HALF_UP)
+                    .toString();
             String capacity = new BigDecimal(presult.getTotalBytes())
                     .divide(new BigDecimal(limit * StorageProviderResult.TB),
                             2,
-                            BigDecimal.ROUND_HALF_UP)
-                    .multiply(new BigDecimal(100))
-                    .setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+                            HALF_UP)
+                    .multiply(ONE_HUNDRED).setScale(2, HALF_UP).toString();
 
-            String line = MessageFormat.format(
-                                               "    provider={0}/{1}, current total: {2} TB, allocated storage: {3} TB, capacity: {4} %, status: {5}\n",
-                                               spa.getId() + "",
-                                               spa.getProviderType().name(),
-                                               total,
-                                               limit,
-                                               capacity,
-                                               presult.isOversubscribed()
-                                                       ? "OVERSUBSCRIBED"
-                                                       : "OK");
+            String line = MessageFormat
+                    .format("    provider={0}/{1}, current total: {2} TB, "
+                            + "allocated storage: {3} TB, capacity: {4} %, status: {5}\n",
+                            String.valueOf(spa.getId()),
+                            spa.getProviderType().name(),
+                            total,
+                            limit,
+                            capacity,
+                            presult.isOversubscribed() ? "OVER LIMIT" : "OK");
             body.append(line);
 
         }
+        
+        body.append("\n");
     }
 }
