@@ -447,7 +447,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      */
     private void mockBitErrorTaskPut() {
         this.bitErrorQueue.put(isA(Task.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
     }
 
     /**

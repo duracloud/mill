@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -123,27 +124,25 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         expect(this.bitLogStore.getBitLogItems(eq(account),
                                                eq(storeId),
                                                eq(spaceId))).andReturn(it);
-        final Capture<InputStream> capture = new Capture<>();
 
-        this.store.addContent(eq("x-duracloud-admin"),
+        final Capture<InputStream> capture = new Capture<>();
+        
+        String reportSpace = "x-duracloud-admin";
+        expect(this.store.getSpaces()).andReturn(Arrays.asList("aspace").iterator());
+        this.store.createSpace(reportSpace);
+        expectLastCall().once();
+        
+        expect(this.store.addContent(eq(reportSpace),
                               isA(String.class),
                               isA(String.class),
                               (Map<String, String>) isNull(),
                               anyLong(),
                               isA(String.class),
-                              capture(capture));
-        expectLastCall().andAnswer(new IAnswer<Object>() {
-            /*
-             * (non-Javadoc)
-             * 
-             * @see org.easymock.IAnswer#answer()
-             */
+                              capture(capture))).andAnswer(new IAnswer<String>() {
             @Override
-            public Object answer() throws Throwable {
+            public String answer() throws Throwable {
                 InputStream is = capture.getValue();
-
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
                 assertNotNull(reader.readLine());
                 assertNotNull(reader.readLine());
                 assertNull(reader.readLine());
@@ -152,7 +151,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         });
         
         bitLogStore.delete(account, storeId, spaceId);
-        expectLastCall();
+        expectLastCall().once();
         
 
         BitIntegrityReport report = createMock(BitIntegrityReport.class);
@@ -170,7 +169,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
                               isA(Date.class))).andReturn(report);
         
         notificiationManager.sendEmail(isA(String.class), isA(String.class));
-        expectLastCall();
+        expectLastCall().once();
         
         replayAll();
         taskProcessor.execute();

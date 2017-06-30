@@ -100,6 +100,22 @@ public class BitIntegrityReportTaskProcessor extends
                     + bitLog.getName();
 
             new Retrier().execute(new Retriable() {
+                @Override
+                public Object retry() throws Exception {
+                    Iterator<String> spaces = store.getSpaces();
+                    while(spaces.hasNext()){
+                        if(spaces.next().equals(reportSpaceId)){
+                            return null;
+                        }
+                    }
+
+                    store.createSpace(reportSpaceId);
+                    return null;
+                }
+            });
+            
+            
+            new Retrier().execute(new Retriable() {
 
                 @Override
                 public Object retry() throws Exception {

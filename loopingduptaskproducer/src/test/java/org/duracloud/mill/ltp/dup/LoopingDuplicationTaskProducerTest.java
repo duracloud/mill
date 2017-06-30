@@ -164,7 +164,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     
     private void setupNotificationManager() {
         notificationManager.sendEmail(isA(String.class), isA(String.class));
-        expectLastCall();
+        expectLastCall().once();
     }
 
     /**
@@ -173,9 +173,9 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     private void setupDatesOnRunCompletion() {
         EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(new Date());
         stateManager.setNextRunStartDate(EasyMock.isA(Date.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         stateManager.setCurrentRunStartDate(null);
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
     }
     
 
@@ -480,7 +480,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         EasyMock.expect(stateManager.getNextRunStartDate()).andReturn(null);
         EasyMock.expect(stateManager.getCurrentRunStartDate()).andReturn(null);
         stateManager.setCurrentRunStartDate(EasyMock.isA(Date.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
     }
 
     private void setupCheckDatesInProgressRun() {

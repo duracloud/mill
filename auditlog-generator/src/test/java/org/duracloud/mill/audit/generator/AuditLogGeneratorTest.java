@@ -42,13 +42,13 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
                 .andReturn(new ArrayList<JpaAuditLogItem>());
 
         logManager.purgeExpired();
-        expectLastCall();
+        expectLastCall().once();
         
         logManager.write(isA(JpaAuditLogItem.class));
-        expectLastCall();
+        expectLastCall().once();
 
         logManager.flushLogs();
-        expectLastCall();
+        expectLastCall().once();
 
         replayAll();
         AuditLogGenerator generator = new AuditLogGenerator(repo, logManager);

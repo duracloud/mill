@@ -52,7 +52,7 @@ public class SpaceCreatedNotificationGeneratingProcessorTest extends EasyMockSup
         task.setAction(AuditTask.ActionType.CREATE_SPACE.name());
 
         notificationManager.sendEmail(isA(String.class), isA(String.class));
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         replayAll();
         new SpaceCreatedNotifcationGeneratingProcessor(task,notificationManager).execute();
     }

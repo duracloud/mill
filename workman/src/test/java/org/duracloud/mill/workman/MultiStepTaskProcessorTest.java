@@ -71,9 +71,9 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
     @Test
     public void testExecute() throws TaskExecutionFailedException {
         step1.execute();
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         step2.execute();
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
         
         replayAll();
         
@@ -102,10 +102,10 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
         });
 
         step1.execute();
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         step2.execute();
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         replayAll();
 
@@ -139,11 +139,11 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
         });
 
         step1a.execute();
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
 
         step2a.execute();
-        EasyMock.expectLastCall();
+        EasyMock.expectLastCall().once();
 
         replayAll();
 

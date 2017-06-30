@@ -119,7 +119,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
         store = setStorageProvider(contentId);
         expect(manifestItem2.isMissingFromStorageProvider()).andReturn(true);
         manifestStore.updateMissingFromStorageProviderFlag(eq(account), eq(storeId), eq(spaceId), eq(contentId), eq(false));
-        expectLastCall();
+        expectLastCall().once();
         replayAll();
         createTestSubject();
         taskProcessor.execute();
