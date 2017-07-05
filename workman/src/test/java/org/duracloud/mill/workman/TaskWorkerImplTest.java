@@ -129,7 +129,7 @@ public class TaskWorkerImplTest {
         expectLastCall().once();
         deadLetterQueue.put(EasyMock.isA(Task.class));
         expectLastCall().once();
-        task.addProperty(eq("error"), isNull(String.class));
+        task.addProperty(eq("error"), isA(String.class));
         expectLastCall().once();
         runWithProcessorException();
     }
