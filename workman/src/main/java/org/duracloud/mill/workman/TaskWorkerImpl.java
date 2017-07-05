@@ -142,7 +142,7 @@ public class TaskWorkerImpl implements TaskWorker {
             log.debug("{} dequeued {}", this, this.task);
             TaskProcessor processor = this.processorFactory.create(task);
             processor.execute();
-            this.queue.deleteTask(task);
+            deleteTaskFromQueue(task);
             
             log.info("completed task:  task_type={} task_class={} attempts={} result={} elapsed_time={}",
                      task.getType(),
@@ -151,7 +151,7 @@ public class TaskWorkerImpl implements TaskWorker {
                      "success",
                      System.currentTimeMillis()-startTime);
 
-        }  catch (Exception e) {
+        }  catch (Throwable t) {
             int attempts = task.getAttempts();
             log.error(MessageFormat.format("failed to complete:  task_type={0} attempts={1} "
                                             + "result=failure elapsed_time={2} properties=\"{3}\" "
@@ -160,12 +160,12 @@ public class TaskWorkerImpl implements TaskWorker {
                      attempts,
                      System.currentTimeMillis() - startTime,
                      task.getProperties(),
-                     e.getMessage()));
+                     t.getMessage()), t);
             
             if(attempts < TaskWorker.MAX_ATTEMPTS){
-                this.queue.requeue(task);
+                requeueTask(this.task);
             }else{
-                task.addProperty("error", e.getMessage());
+                task.addProperty("error", t.getClass().getName() + ":" + t.getMessage());
                 sendToDeadLetterQueue(task);
             }
             
@@ -179,6 +179,19 @@ public class TaskWorkerImpl implements TaskWorker {
         }
     }
 
+    private void requeueTask(Task task) {
+        try {
+            this.queue.requeue(task);  
+        } catch(Throwable e){
+            log.error(MessageFormat.format("failed to requeue task: task_type={0} "
+                    + "properties=\"{1}\" "
+                    + "message=\"{2}\"",
+                     task.getType().name(), 
+                     task.getProperties(),
+                     e.getMessage()), e);
+        }
+    }
+
     /**
      * @param task
      */
@@ -186,14 +199,29 @@ public class TaskWorkerImpl implements TaskWorker {
         log.info("putting {} on dead letter queue", task);
 
         try {
+            deleteTaskFromQueue(task);
+
+            this.deadLetterQueue.put(task);
+            log.info("sent {} to dead-letter-queue={}", task, deadLetterQueue.getName());
+
+        } catch(Throwable e){
+            log.error(MessageFormat.format("failed to send to dead letter queue:  task_type={0} "
+                    + "properties=\"{1}\" "
+                    + "message=\"{2}\"",
+                     task.getType().name(), 
+                     task.getProperties(),
+                     e.getMessage()), e);
+        }
+
+         
+    }
+
+    private void deleteTaskFromQueue(Task task) {
+        try {
             log.debug("deleting {} from {}", task, this.queue);
             this.queue.deleteTask(task);
         } catch (TaskNotFoundException e) {
             log.error("Error deleting "+task+". This should never happen: "+ e.getMessage(), e);
         }
-
-        this.deadLetterQueue.put(task);
-        log.info("sent {} to dead-letter-queue={}", task, deadLetterQueue.getName());
-        
     }
 }
