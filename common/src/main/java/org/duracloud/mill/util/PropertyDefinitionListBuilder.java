@@ -137,6 +137,11 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
+    public PropertyDefinitionListBuilder addGlobalWorkDir() {
+        add(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH,false);
+        return this;
+    }
+
     public List<PropertyDefinition> build(){
         return new ArrayList<>(this.definitions);
     }

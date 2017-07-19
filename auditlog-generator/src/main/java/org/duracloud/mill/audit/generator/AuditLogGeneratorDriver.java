@@ -50,6 +50,7 @@ public class AuditLogGeneratorDriver extends DriverSupport{
                                                .addMillDb()
                                                .addDuracloudAuditSpace()
                                                .addWorkDir()
+                                               .addGlobalWorkDir()
                                                .build();
         
         new PropertyVerifier(list).verify(System.getProperties());
@@ -57,8 +58,14 @@ public class AuditLogGeneratorDriver extends DriverSupport{
         SystemConfig config = SystemConfig.instance();
         config.setAuditLogSpaceId(System
                 .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
-
-        String logRootDir = System.getProperty(ConfigConstants.WORK_DIRECTORY_PATH) + File.separator
+        
+        String workDir = System.getProperty(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH);
+        if(workDir == null){
+            //for backwards compatibility use old work directory if no global work dir configured.
+            workDir = System.getProperty(ConfigConstants.WORK_DIRECTORY_PATH);
+        }
+        
+        String logRootDir = workDir + File.separator
                 + "audit-logs";
         initializeLogRoot(logRootDir);
         ApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill");
