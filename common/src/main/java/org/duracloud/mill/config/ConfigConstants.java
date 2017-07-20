@@ -30,6 +30,8 @@ public class ConfigConstants {
      * SHARED
      */
     public static final String WORK_DIRECTORY_PATH = "workdir";
+    public static final String GLOBAL_WORK_DIRECTORY_PATH = "global.workdir";
+
     public static final String NOTIFICATION_RECIPIENTS = "notification.recipients";
     public static final String NOTIFICATION_RECIPIENTS_NON_TECH = "notification.recipients.non-tech";
     public static final String NOTIFICATION_SENDER = "notification.sender";

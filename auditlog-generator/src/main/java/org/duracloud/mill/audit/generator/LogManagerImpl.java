@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -67,13 +66,6 @@ public class LogManagerImpl implements LogManager {
                     + ") does not exist.");
         }
 
-    }
-
-    @PostConstruct
-    public void init() {
-        log.info("initializing...");
-        uploadLogs();
-        log.info("initialization complete");
     }
 
     /**
