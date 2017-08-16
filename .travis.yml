@@ -8,3 +8,25 @@ notifications:
     on_success: change
     on_failure: always
   slack: duraspace:vOBySuKUwM95j2kfbwh0SNxq
+before_install:
+  - chmod +x resources/travis/*.sh
+  - ./resources/travis/before-install.sh
+install:
+  - mvn install -DskipTests --batch-mode
+script:
+  - mvn test -DskipIntTests
+sudo: true
+env:
+  global:
+    - secure: "FUmdsx25YfJtTbuJhXD+Y5HF8bAQBeAtOaLexyPefLCY6BlqbwQ4kjGQ/lbAmeCrnFlB5UnnqNyXtkVTB8ANqpqe59Z2uQydGrJVmLiHuGjgHRucEvI45ojaLq0c6ViWZBj5VgTUtDmeNSlP4Ibk/cRtJHtmo3BRM9pPA1WwQvM="
+    - # ^^ SONATYPE_USERNAME
+    - secure: "Q0tQKOEJknPPgQTRX8bBbDz+vCwxoiV83XBAlq4S5qhG7KJnRmiNbNjhgjGwm8j0H6efQO34vwuCqtDcLA1sw6F7TRdd0RY908HaCEbwL/D1CNC+9Bgj0fWRbKqrJb9S/TRYouoGxStjcjbsfemSTk9wvWaSz13AdMnIB2ixHk4="
+    - # ^^ SONATYPE_PASSWORD
+    - secure: "MVAIuG3nn5Y7RCqamR6/YaZ6mIZ0ulgJDKFClfsocL6zf+Jd0S6n/asXJJZpYLh7NiFoFsOD2OiPCraHRlJNMlylqNgko6YCZ8WkiUOayYUweSUUVkzob1i7OMyG/s1GVrJUJQGJ1Ds3i+J9qoau30gsFffkrYv4iTe3If/8iSg="
+    - # ^^ GPG_KEY_NAME
+    - secure: "BSEN+HcXsDUQaqW5aq5Wdwqgvlp82IsofhkOdhDEmU4xyEIZnDYFE0xfRZx+GY/DjS1Iq3LGSqUqTUBh+KfQtUqp6xWl2XVS6QvVrQ/qCVA3YYlLUN2RPQmfka5x9Zh4xksI+8bFjvmnW4zImGIWG+j9/j/KrEJOEnNNYtGh2dw="
+    - # ^^ GPG_PASSPHRASE
+after_success:
+  - chmod +x resources/travis/*.sh
+  - ./resources/travis/before-deploy.sh
+  - ./resources/travis/deploy.sh
