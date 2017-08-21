@@ -8,9 +8,6 @@ notifications:
     on_success: change
     on_failure: always
   slack: duraspace:vOBySuKUwM95j2kfbwh0SNxq
-before_install:
-  - chmod +x resources/travis/*.sh
-  - ./resources/travis/before-install.sh
 install:
   - mvn install -DskipTests --batch-mode
 script:
