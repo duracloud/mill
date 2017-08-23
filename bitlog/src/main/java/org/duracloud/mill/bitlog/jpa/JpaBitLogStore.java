@@ -151,6 +151,7 @@ public class JpaBitLogStore implements
                           BitIntegrityReportResult result,
                           Date completionDate) {
         BitIntegrityReport report = new BitIntegrityReport();
+        report.setModified(new Date());
         report.setAccount(account);
         report.setStoreId(storeId);
         report.setSpaceId(spaceId);
