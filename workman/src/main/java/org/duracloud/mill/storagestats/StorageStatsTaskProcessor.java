@@ -8,8 +8,10 @@
 package org.duracloud.mill.storagestats;
 
 import java.math.BigInteger;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
@@ -42,6 +44,10 @@ public class StorageStatsTaskProcessor extends
     private SpaceStatsManager spaceStatsManager;
     private CloudWatchStorageStatsGatherer storageStatsGatherer;
     private JpaManifestItemRepo manifestRepo;
+    
+    //the current time is protected so that it can be overridden by unit tests.
+    protected Date currentTime = null;
+    
     public StorageStatsTaskProcessor(StorageStatsTask storageStatsTask,
                                           StorageProvider store,
                                           StorageProviderType storageProviderType, 
@@ -68,6 +74,33 @@ public class StorageStatsTaskProcessor extends
 
     @Override
     protected void executeImpl() throws TaskExecutionFailedException {
+        //check that this task is executing between 20:00 and 23:59 UTC
+        //in order to ensure that AWS  returns valid results.
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        if(currentTime == null){
+            currentTime = c.getTime();
+        }
+        c.set(Calendar.HOUR_OF_DAY, 20);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        Date eightPmUTC = c.getTime();
+        
+        //a few seconds before midnight in case this task executes too close to the wire.
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 45);
+        Date midnightUTC = c.getTime();
+        
+        
+        if(currentTime.before(eightPmUTC) || currentTime.after(midnightUTC)){
+            log.warn("Skipping processing of this task ({}):  current time ({}) is outside of valid processing window( ie between {} and {})",
+                     this.storageStatsTask,
+                     currentTime,
+                     eightPmUTC,
+                     midnightUTC);
+            return;
+        }
+        
         String spaceId = this.storageStatsTask.getSpaceId();
         if(storageProviderType.equals(StorageProviderType.AMAZON_S3) || 
            storageProviderType.equals(StorageProviderType.DPN) ||

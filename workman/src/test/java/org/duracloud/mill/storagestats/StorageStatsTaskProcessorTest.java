@@ -7,9 +7,11 @@
  */
 package org.duracloud.mill.storagestats;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.db.model.SpaceStats;
@@ -69,6 +71,28 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
     public void testS3() throws Exception{
         testS3Based(StorageProviderType.AMAZON_S3);
     }
+    
+    @Test
+    public void testOutOfTimeWindow() throws Exception{
+        String spaceId = "space-id";
+        String storeId = "store-id";
+        String account = "account";
+        expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
+        expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
+        expect(task.getAccount()).andReturn(account).atLeastOnce();
+        expect(task.getAttempts()).andReturn(0);
+        replayAll();
+        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
+                                                                            storageProvider,
+                                                                            StorageProviderType.AMAZON_S3,
+                                                                            spaceStatsManager,
+                                                                            storageStatsGatherer,
+                                                                            manifestItemRepo);
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        c.set(Calendar.HOUR_OF_DAY, 19);
+        processor.currentTime = c.getTime();        
+        processor.execute();    
+    }    
 
     @Test
     public void testGlacier() throws Exception{
@@ -101,16 +125,24 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
 
         replayAll();
         
-        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
-                                                                            storageProvider,
-                                                                            StorageProviderType.AMAZON_GLACIER,
-                                                                            spaceStatsManager,
-                                                                            storageStatsGatherer,
-                                                                            manifestItemRepo);
+        StorageStatsTaskProcessor processor = createProcessor(StorageProviderType.AMAZON_GLACIER);
 
         processor.execute();    
         
     
+    }
+
+    private StorageStatsTaskProcessor createProcessor(StorageProviderType providerType) {
+        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
+                                                                            storageProvider,
+                                                                            providerType,
+                                                                            spaceStatsManager,
+                                                                            storageStatsGatherer,
+                                                                            manifestItemRepo);
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        c.set(Calendar.HOUR_OF_DAY, 21);
+        processor.currentTime = c.getTime();
+        return processor;
     }
 
     @Test
@@ -149,12 +181,7 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
         expect(storageStatsGatherer.getBucketStats(spaceId)).andReturn(stats);
         replayAll();
         
-        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
-                                                                            storageProvider,
-                                                                            storageProviderType,
-                                                                            spaceStatsManager,
-                                                                            storageStatsGatherer,
-                                                                            manifestItemRepo);
+        StorageStatsTaskProcessor processor = createProcessor(storageProviderType);
         processor.execute();
     }
 
@@ -186,12 +213,7 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
                                eq(objectCount.longValue()))).andReturn(new SpaceStats());
         replayAll();
         
-        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
-                                                                            storageProvider,
-                                                                            storageProviderType,
-                                                                            spaceStatsManager,
-                                                                            storageStatsGatherer,
-                                                                            manifestItemRepo);
+        StorageStatsTaskProcessor processor = createProcessor(storageProviderType);
         processor.execute();
     }
 
