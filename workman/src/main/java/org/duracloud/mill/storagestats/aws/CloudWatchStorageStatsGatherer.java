@@ -12,6 +12,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.duracloud.account.db.model.StorageProviderAccount;
 import org.duracloud.s3storage.S3StorageProvider;
@@ -123,10 +124,11 @@ public class CloudWatchStorageStatsGatherer {
         request.setPeriod(360);
         request.setStatistics(Collections.singletonList("Maximum"));
 
-        Calendar cal = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Date currentTime = cal.getTime();
         cal.add(Calendar.DATE, -1);
         request.setStartTime(cal.getTime());
-        request.setEndTime(new Date());
+        request.setEndTime(currentTime);
 
         List<Dimension> dimensions = new ArrayList<>();
         dimensions.add(new Dimension().withName("BucketName")
