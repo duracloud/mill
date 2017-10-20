@@ -7,15 +7,17 @@
  */
 package org.duracloud.mill.dup;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.ObjectMapper;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * A set of data showing, for a single DuraCloud account, which spaces
@@ -35,6 +37,20 @@ public class DuplicationPolicy {
     private Map<String, LinkedHashSet<DuplicationStorePolicy>>
         spaceDuplicationStorePolicies = new HashMap<>();
 
+    private LinkedHashSet<DuplicationStorePolicy> defaultPolicies = new LinkedHashSet<>();
+    
+
+    private List<String> spacesToIgnore = new LinkedList<>();
+
+    public LinkedHashSet<DuplicationStorePolicy> getDefaultPolicies() {
+        return defaultPolicies;
+    }
+
+
+    public List<String> getSpacesToIgnore() {
+        return spacesToIgnore;
+    }
+
     public Map<String, LinkedHashSet<DuplicationStorePolicy>>
     getSpaceDuplicationStorePolicies() {
         return spaceDuplicationStorePolicies;
@@ -46,7 +62,11 @@ public class DuplicationPolicy {
     }
 
     public Set<DuplicationStorePolicy> getDuplicationStorePolicies(String spaceId) {
-        return spaceDuplicationStorePolicies.get(spaceId);
+        if(!spacesToIgnore.contains(spaceId)){
+            LinkedHashSet<DuplicationStorePolicy> policies = spaceDuplicationStorePolicies.get(spaceId);
+            return policies != null && !policies.isEmpty() ? policies : defaultPolicies;
+        }
+        return null;
     }
 
     /**

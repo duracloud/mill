@@ -23,7 +23,10 @@ import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
+import org.duracloud.mill.credentials.AccountCredentials;
+import org.duracloud.mill.credentials.AccountCredentialsNotFoundException;
 import org.duracloud.mill.credentials.CredentialsRepo;
+import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
@@ -90,12 +93,27 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         //generate set of morsels based on duplication policy
         for(String account : this.policyManager.getDuplicationAccounts()){
             DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
-            for(String spaceId : policy.getSpaces()){
-                Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
-                for(DuplicationStorePolicy storePolicy : storePolicies){
-                    morselQueue.add(new DuplicationMorsel(account, spaceId, null, storePolicy));
+            try {
+                AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
+                for(StorageProviderCredentials cred: accountCreds.getProviderCredentials()){
+                    if(cred.isPrimary()){
+                        StorageProvider provider = getStorageProvider(account, cred.getProviderId());
+                        Iterator<String> spaces = provider.getSpaces();
+                        while(spaces.hasNext()){
+                            String spaceId = spaces.next();
+                            Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
+                            for(DuplicationStorePolicy storePolicy : storePolicies){
+                                morselQueue.add(new DuplicationMorsel(account, spaceId, null, storePolicy));
+                            }
+                        }
+                    }
                 }
+            
+            } catch (AccountCredentialsNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
+
         }
     }
     

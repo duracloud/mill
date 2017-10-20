@@ -20,10 +20,17 @@ var BaseAdapter = DS.Adapter.extend({
 	_serializePolicy: function(policy){
 		var serialized = {};
 		var storePoliciesMap = {};
-			
+		var defaultPoliciesMap = {};
+		var spacesToIgnore = [];
+		
 		policy.get('spaces').forEach(function(space){
 			var storePolicies = []; 
-			storePoliciesMap[space.get('spaceId')] = storePolicies;
+			var spaceId = space.get('spaceId');
+			storePoliciesMap[spaceId] = storePolicies;
+			if(space.get('ignored')){
+				spacesToIgnore.push(spaceId);
+			}
+			
 			space.get('storePolicies').forEach(function(storePolicy){
 				storePolicies.push({
 					srcStoreId: storePolicy.get('source').get('id'),
@@ -32,9 +39,19 @@ var BaseAdapter = DS.Adapter.extend({
 				
 			});
 		});
+
+		var defaultPolicies = []; 
+
+		policy.get('defaultPolicies').forEach(function(storePolicy){
+			defaultPolicies.push({
+				srcStoreId: storePolicy.get('source').get('id'),
+				destStoreId: storePolicy.get('destination').get('id'),
+			});
+		});
 		
 		serialized.spaceDuplicationStorePolicies = storePoliciesMap;
-		
+		serialized.defaultPolicies = defaultPolicies;
+        serialized.spacesToIgnore = spacesToIgnore;
 		return serialized;
 	},
 	
@@ -44,15 +61,41 @@ var BaseAdapter = DS.Adapter.extend({
 	
 	_deserializePolicy: function(id, duplicationPolicy, store){
 		var that = this;
-		var deserialized = {id: id, spaces: []};
+		var deserialized = {id: id, spaces: [], defaultPolicies: []};
 		var policies = duplicationPolicy.spaceDuplicationStorePolicies;
+		var defaultPolicies = duplicationPolicy.defaultPolicies;
+		var spacesToIgnore = duplicationPolicy.spacesToIgnore;
+		
+		$(defaultPolicies).each(function(i,storePolicy){
+			var storePolicyKey = that.generateIdForRecord();
+			var emberStorePolicy = {
+			   id: storePolicyKey,
+			   source: storePolicy.srcStoreId,
+			   destination: storePolicy.destStoreId,
+			};
+
+			deserialized.defaultPolicies.push(storePolicyKey);
+			store.push(App.StorePolicy, emberStorePolicy);
+		});
+
 		if(policies){
 			for(spaceId in policies){
 				var spaceKey;
 				spaceKey = this.generateIdForRecord();
+				var ignored;
+				
+				ignored = false;
+				
+				$(spacesToIgnore).each(function(i,ignoredSpaceId){
+					if(spaceId == ignoredSpaceId ) {
+						ignored = true
+					}
+				});
+				
 				var emberSpace = {
 				         id: spaceKey,
 				         spaceId : spaceId,
+				         ignored : ignored,
 				         storePolicies: []
 				};
 
