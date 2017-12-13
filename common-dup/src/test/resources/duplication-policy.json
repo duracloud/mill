@@ -1,4 +1,13 @@
 {
+    "defaultPolicies": [
+    	{
+                "srcStoreId":"defaultSrc",
+                "destStoreId":"defaultDest"
+        }
+    ],
+    "spacesToIgnore": [
+    	"ignoredSpace"
+    ],
     "spaceDuplicationStorePolicies": {
         "testSpace1": [
             {

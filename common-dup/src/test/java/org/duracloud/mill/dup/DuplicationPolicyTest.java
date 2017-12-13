@@ -10,7 +10,9 @@ package org.duracloud.mill.dup;
 import org.junit.Test;
 
 import java.io.FileInputStream;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
@@ -36,6 +38,8 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         storePolicy13.setDestStoreId("3");
 
         DuplicationPolicy duplicationPolicy = new DuplicationPolicy();
+        duplicationPolicy.getSpacesToIgnore().add("testIgnore");
+        duplicationPolicy.getDefaultPolicies().add(new DuplicationStorePolicy("defaultSource", "defaultDest"));
         duplicationPolicy.addDuplicationStorePolicy("testSpace1", storePolicy12);
         duplicationPolicy.addDuplicationStorePolicy("testSpace1", storePolicy13);
         duplicationPolicy.addDuplicationStorePolicy("testSpace2", storePolicy12);
@@ -61,6 +65,9 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         assertThat(2, is(equalTo(space1DuplicationStorePolicies.size())));
         assertThat(1, is(equalTo(space2DuplicationStorePolicies.size())));
 
+        assertThat(1, is(equalTo(duplicationPolicy.getDefaultPolicies().size())));
+        assertThat(1, is(equalTo(duplicationPolicy.getSpacesToIgnore().size())));
+
         Iterator<DuplicationStorePolicy> space1Iter = space1DuplicationStorePolicies.iterator();
         DuplicationStorePolicy duplicationStorePolicy = space1Iter.next();
         assertThat("1", is(equalTo(duplicationStorePolicy.getSrcStoreId())));
@@ -75,5 +82,16 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         assertThat("1", is(equalTo(duplicationStorePolicy.getSrcStoreId())));
         assertThat("2", is(equalTo(duplicationStorePolicy.getDestStoreId())));
         assertFalse(space2Iter.hasNext());
+    }
+    
+    @Test
+    public void testDuplicationPolicyDefaults() throws Exception {
+        DuplicationPolicy duplicationPolicy =
+            DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
+        String spaceToIgnore = duplicationPolicy.getSpacesToIgnore().get(0);
+        String spaceNotToIgnore = "spaceNotToIgnore";
+        Set<DuplicationStorePolicy> defaultPolicies = duplicationPolicy.getDefaultPolicies();
+        assertThat(defaultPolicies, is(equalTo(duplicationPolicy.getDuplicationStorePolicies(spaceNotToIgnore))));
+        assertThat(duplicationPolicy.getDuplicationStorePolicies(spaceToIgnore), is(equalTo(null)));
     }
 }

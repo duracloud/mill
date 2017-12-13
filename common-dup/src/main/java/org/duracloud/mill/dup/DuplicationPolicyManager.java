@@ -33,9 +33,6 @@ public class DuplicationPolicyManager {
         this.policyRepo = policyRepo;
     }
 
-    /**
-     * @param policyRepo
-     */
     private void refreshPolicies() {
         dupAccounts = new HashMap<>();
 

@@ -9,14 +9,18 @@ App.StorePolicy = DS.Model.extend({
 
 App.Space = DS.Model.extend({
 	spaceId: DS.attr(),
+	ignored: DS.attr(),
 	storePolicies: DS.hasMany(App.StorePolicy),
 });
 
 
 App.Policy = DS.Model.extend({
 	spaces: DS.hasMany(App.Space),
-	storageProviders: DS.hasMany(App.StorageProviders)
+	storageProviders: DS.hasMany(App.StorageProviders),
+	defaultPolicies: DS.hasMany(App.StorePolicy)
 });
+
+
 
 App.Account = DS.Model.extend({
 	
