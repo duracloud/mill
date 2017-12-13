@@ -8,6 +8,8 @@
 package org.duracloud.mill.ltp.dup;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,6 +25,7 @@ import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.common.queue.local.LocalTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
+import org.duracloud.mill.credentials.AccountCredentials;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.credentials.CredentialsRepoException;
 import org.duracloud.mill.credentials.StorageProviderCredentials;
@@ -75,7 +78,11 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     private NotificationManager notificationManager;
 
     private TaskQueue taskQueue;
-    
+
+    private StorageProviderCredentials sourceCreds;
+    private StorageProviderCredentials destCreds;
+
+
     @Mock
     private LoopingTaskProducerConfigurationManager config;
 
@@ -86,6 +93,13 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     @Before
     public void setUp() throws Exception {
         taskQueue = new LocalTaskQueue();
+        sourceCreds = new StorageProviderCredentials();
+        sourceCreds.setPrimary(true);
+        sourceCreds.setProviderId("0");
+
+        destCreds = new StorageProviderCredentials();
+        destCreds.setPrimary(false);
+        destCreds.setProviderId("1");
 
     }
 
@@ -116,10 +130,13 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         setupCredentialsRepo(4*morselCount);
         setupPolicyManager(morselCount);
         setupStateManager(morselCount, sourceCount);
+        setupDatesOnRunCompletion();
+        setupLoopingTaskProducerConfig(1);
+        setupNotificationManager();
         setupCache();
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount, destCount);
         replayAll();
-        runLoopingTaskProducer(maxTaskQueueSize);
+        runLoopingTaskProducer(maxTaskQueueSize+1);
         Assert.assertEquals(maxTaskQueueSize, taskQueue.size().intValue());
     }
 
@@ -133,7 +150,8 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         expectNotFoundOnGetSpaceContents(sourceStore);
 
         expectEmptyListFromGetSpaceContents(destStore,morselCount);
-        
+
+        setupGetSpaces(morselCount);
         setupStorageProviderFactory(morselCount);
         setupCredentialsRepo(morselCount*2);
         setupPolicyManager(morselCount);
@@ -195,7 +213,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
      */
     @Test
     public void testSpaceLargerThanMaxQueueSizeWithDeletes() throws Exception{
-        testSpaceLargerThanMaxQueueSize(500,1000);
+        testSpaceLargerThanMaxQueueSize(1500,100);
     }
 
     /**
@@ -213,8 +231,6 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
 
         final LinkedHashSet<DuplicationMorsel> morsels = new LinkedHashSet<>();
         
-        setupEmptySourceSpacesGetChunked();
-        
         expectGetMorsels(new LinkedHashSet<DuplicationMorsel>(), 1);
         expectGetMorsels(morsels, 1);
         setupLoopingTaskProducerConfig(1);
@@ -226,10 +242,11 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
                 morsels.addAll(morsels2);
             }
         };
-        EasyMock.expectLastCall().andDelegateTo(stateManagerDelegate).times(3);
+        EasyMock.expectLastCall().andDelegateTo(stateManagerDelegate).times(2);
         
         setupDestStore(1, destCount);
-        setupStorageProviderFactory(3);
+        setupStorageProviderFactory(2);
+
         setupCredentialsRepo(6);
         setupPolicyManager(morselCount);
         setupCheckDatesFirstTimeRun();
@@ -354,31 +371,50 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         return (morselCount*sourceCount)+(morselCount*destCount);
     }
 
+
     /**
-     * @param morselCount
+     * @param morsel
      * @throws CredentialsRepoException
      */
-    private void setupCredentialsRepo(int count)
-            throws CredentialsRepoException {
-        EasyMock.expect(
-                credentialsRepo.getStorageProviderCredentials(
-                        EasyMock.isA(String.class), EasyMock.isA(String.class)))
-                .andReturn(new StorageProviderCredentials()).times(count);
+    private void setupCredentialsRepo(int morsel)
+        throws CredentialsRepoException {
 
         EasyMock.expect(
-                        credentialsRepo.isAccountActive(EasyMock.isA(String.class)))
-                        .andReturn(true).atLeastOnce();
+            credentialsRepo.isAccountActive(EasyMock.isA(String.class)))
+            .andReturn(true).atLeastOnce();
+
+        EasyMock.expect(
+            credentialsRepo.getStorageProviderCredentials(EasyMock.isA(String.class),EasyMock.eq("0")))
+            .andReturn(sourceCreds).atLeastOnce();
+
+        EasyMock.expect(
+            credentialsRepo.getStorageProviderCredentials(EasyMock.isA(String.class),EasyMock.eq("1")))
+            .andReturn(destCreds).atLeastOnce();
+
+        AccountCredentials accountCredentials = new AccountCredentials("subDomainA", Arrays.asList(sourceCreds, destCreds));
+        EasyMock.expect(
+            credentialsRepo.getAccountCredentials(
+                EasyMock.isA(String.class)))
+            .andReturn(accountCredentials).atLeastOnce();
 
     }
+
+
 
     /**
      * @param rounds
      */
     private void setupStorageProviderFactory(int rounds) {
-        for(int i = 0; i < (rounds); i++){
-            EasyMock.expect(storageProviderFactory.create(EasyMock.isA(StorageProviderCredentials.class)))
-            .andReturn(sourceStore)
-            .andReturn(destStore);
+        EasyMock.expect(storageProviderFactory.create(EasyMock.eq(sourceCreds)))
+            .andReturn(sourceStore);
+
+        if(rounds > 0){
+            EasyMock.expect(storageProviderFactory.create(EasyMock.eq(sourceCreds)))
+                .andReturn(sourceStore).times(rounds);
+
+            EasyMock.expect(storageProviderFactory.create(EasyMock.eq(destCreds)))
+                .andReturn(destStore).times(rounds);
+
         }
     }
 
@@ -393,51 +429,57 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
             destContentItems.add("tobedeleted"+i);
         }
 
-
         EasyMock.expect(
-                destStore.getSpaceContents(EasyMock.isA(String.class),
-                        EasyMock.isNull(String.class)))
-                .andAnswer(new IAnswer<Iterator<String>>() {
-                    /*
-                     * (non-Javadoc)
-                     * 
-                     * @see org.easymock.IAnswer#answer()
-                     */
-                    @Override
-                    public Iterator<String> answer() throws Throwable {
-                        return destContentItems.iterator();
-                    }
-                }).times(times);
+            destStore.getSpaceContents(EasyMock.isA(String.class),
+                EasyMock.isNull(String.class)))
+            .andAnswer(new IAnswer<Iterator<String>>() {
+                /*
+                 * (non-Javadoc)
+                 *
+                 * @see org.easymock.IAnswer#answer()
+                 */
+                @Override
+                public Iterator<String> answer() throws Throwable {
+                    return destContentItems.iterator();
+                }
+            }).times(times);
     }
 
-    /**
-     * @param morselCount
-     * @param sourceCount
-     */
+
+    private void setupGetSpaces(int morselCount) {
+        List<String> list = new ArrayList<>();
+
+        for (int i = 0; i < morselCount; i++) {
+            list.add("testspace" + i);
+        }
+
+        expect(sourceStore.getSpaces()).andReturn(list.iterator());
+    }
+
     private void setupSourceStore(int morselCount, int sourceCount) {
+        setupGetSpaces(morselCount);
+
         final List<String> sourceContentItems = new LinkedList<>();
 
         for(int i = 0; i < sourceCount; i++){
             sourceContentItems.add("item"+i);
         }
 
-        
-        EasyMock.expect(sourceStore.getSpaceContentsChunked(EasyMock.isA(String.class),
-                                            EasyMock.isNull(String.class), 
-                                            EasyMock.anyInt(),
-                                            EasyMock.isNull(String.class)))
-                .andReturn(sourceContentItems.subList(0, Math.min(1000,sourceCount))).times(morselCount);
 
-        if(sourceCount > 1000){
+        EasyMock.expect(sourceStore.getSpaceContentsChunked(EasyMock.isA(String.class),
+            EasyMock.isNull(String.class),
+            EasyMock.anyInt(),
+            EasyMock.isNull(String.class)))
+            .andReturn(sourceContentItems).times(morselCount);
+
         EasyMock.expect(
                 sourceStore.getSpaceContentsChunked(
                         EasyMock.isA(String.class),
-                        EasyMock.isNull(String.class), 
+                        EasyMock.isNull(String.class),
                         EasyMock.anyInt(),
                         EasyMock.isA(String.class)))
-                .andReturn(sourceContentItems.subList(1000, sourceCount)).times(morselCount);
-        }
-        
+                .andReturn(new ArrayList<String>()).times(morselCount);
+
         EasyMock.expect(sourceStore.getSpaceContents(EasyMock.isA(String.class), 
                                                      EasyMock.isNull(String.class)))
                 .andAnswer(new IAnswer<Iterator<String>>() {
@@ -496,8 +538,8 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         EasyMock.expect(policyManager.getDuplicationAccounts()).andReturn(accounts);
         DuplicationPolicy policy = new DuplicationPolicy();
         DuplicationStorePolicy dupStore = new DuplicationStorePolicy();
-        dupStore.setSrcStoreId("0");
-        dupStore.setDestStoreId("1");
+        dupStore.setSrcStoreId(sourceCreds.getProviderId());
+        dupStore.setDestStoreId(destCreds.getProviderId());
         
         for(int i = 0; i < morselCount; i++){
             policy.addDuplicationStorePolicy("testspace"+i, dupStore);

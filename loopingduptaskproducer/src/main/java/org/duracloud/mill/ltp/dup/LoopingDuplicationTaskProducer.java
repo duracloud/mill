@@ -94,29 +94,29 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         for(String account : this.policyManager.getDuplicationAccounts()){
             DuplicationPolicy policy = this.policyManager.getDuplicationPolicy(account);
             try {
-                AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
-                for(StorageProviderCredentials cred: accountCreds.getProviderCredentials()){
-                    if(cred.isPrimary()){
-                        StorageProvider provider = getStorageProvider(account, cred.getProviderId());
-                        Iterator<String> spaces = provider.getSpaces();
-                        while(spaces.hasNext()){
-                            String spaceId = spaces.next();
-                            Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
-                            for(DuplicationStorePolicy storePolicy : storePolicies){
-                                morselQueue.add(new DuplicationMorsel(account, spaceId, null, storePolicy));
+                final CredentialsRepo credRepo = getCredentialsRepo();
+                if(getCredentialsRepo().isAccountActive(account)) {
+                    AccountCredentials accountCreds = credRepo.getAccountCredentials(account);
+                    for (StorageProviderCredentials cred : accountCreds.getProviderCredentials()) {
+                        if (cred.isPrimary()) {
+                            StorageProvider provider = getStorageProvider(cred);
+                            Iterator<String> spaces = provider.getSpaces();
+                            while (spaces.hasNext()) {
+                                String spaceId = spaces.next();
+                                Set<DuplicationStorePolicy> storePolicies = policy.getDuplicationStorePolicies(spaceId);
+                                for (DuplicationStorePolicy storePolicy : storePolicies) {
+                                    morselQueue.add(new DuplicationMorsel(account, spaceId, null, storePolicy));
+                                }
                             }
                         }
                     }
                 }
-            
             } catch (AccountCredentialsNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
-
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.ltp.LoopingTaskProducer#nibble(org.duracloud.mill.ltp.Queue<T>)
      */
@@ -168,7 +168,12 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             
         }   
     }
-    
+
+    @Override
+    protected StorageProvider getStorageProvider(String account, String storeId) {
+        return super.getStorageProvider(account, storeId);
+    }
+
     /**
      * 
      * @param morsel
