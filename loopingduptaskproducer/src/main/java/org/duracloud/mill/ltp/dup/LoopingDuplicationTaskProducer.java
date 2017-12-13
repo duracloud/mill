@@ -84,7 +84,6 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         return cache;
     }
     
-
     /* (non-Javadoc)
      * @see org.duracloud.mill.ltp.LoopingTaskProducer#loadMorselQueueFromSource(java.util.Queue)
      */

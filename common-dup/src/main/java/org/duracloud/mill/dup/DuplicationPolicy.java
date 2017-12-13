@@ -39,14 +39,20 @@ public class DuplicationPolicy {
 
     private LinkedHashSet<DuplicationStorePolicy> defaultPolicies = new LinkedHashSet<>();
     
-
     private List<String> spacesToIgnore = new LinkedList<>();
 
+    /**
+     * A set of default policies.
+     * @return
+     */
     public LinkedHashSet<DuplicationStorePolicy> getDefaultPolicies() {
         return defaultPolicies;
     }
 
-
+    /**
+     * A list of spaces that should be ignored by the duplication task generator.
+     * @return
+     */
     public List<String> getSpacesToIgnore() {
         return spacesToIgnore;
     }
@@ -56,11 +62,21 @@ public class DuplicationPolicy {
         return spaceDuplicationStorePolicies;
     }
 
+    /**
+     * A set of spaces which have policies associated with them.
+     * @return
+     */
     @JsonIgnore
     public Set<String> getSpaces() {
         return spaceDuplicationStorePolicies.keySet();
     }
 
+    /**
+     * Retrieve the duplication store policies associated with a space.   If no policies are set
+     * explicitly for that space, the method returns the default store policies.
+     * @param spaceId
+     * @return
+     */
     public Set<DuplicationStorePolicy> getDuplicationStorePolicies(String spaceId) {
         if(!spacesToIgnore.contains(spaceId)){
             LinkedHashSet<DuplicationStorePolicy> policies = spaceDuplicationStorePolicies.get(spaceId);
@@ -88,11 +104,23 @@ public class DuplicationPolicy {
         return dupStores.add(dupStore);
     }
 
+    /**
+     * Marshals a json stream into a duplication policy object.
+     * @param policyStream
+     * @return
+     * @throws IOException
+     */
     public static DuplicationPolicy unmarshall(InputStream policyStream)
         throws IOException {
         return objMapper.readValue(policyStream, DuplicationPolicy.class);
     }
 
+    /**
+     * Unmarshals a duplication policy into a json string.
+     * @param duplicationPolicy
+     * @return
+     * @throws IOException
+     */
     public static String marshall(DuplicationPolicy duplicationPolicy)
             throws IOException {
         return objMapper.writeValueAsString(duplicationPolicy);
