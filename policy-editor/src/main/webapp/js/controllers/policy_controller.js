@@ -13,6 +13,9 @@
 App.PolicyController = Ember.ObjectController.extend({
  
 
+    srcStore: null,
+    destStore: null,
+
 	_getAllSpaces: function(){
 		return App.DuraStoreClient.getSpacesBySubdomain(this.get('model.id'));
     },
@@ -42,6 +45,10 @@ App.PolicyController = Ember.ObjectController.extend({
 	   return filtered;
 	   
    }.property('model.spaces'),
+   
+   storePolicies: function(){
+       return this.get('defaultPolicies');
+   }.property('model.storePolicies'),
    
    actions: {
 	   addSpace: function(spaceId){
@@ -82,6 +89,60 @@ App.PolicyController = Ember.ObjectController.extend({
 			});
 			
 		},
+		
+  	    addStorePolicy: function(srcStore,destStore){
+		   var that = this;
+		   console.log("addStore clicked: srcStoreId=" + srcStore.id + ", destStoreId="+destStore.id);
+
+		   if(srcStore.id == destStore.id){
+			   alert("The source and destination cannot be identical.");
+			   return;
+		   }
+		   
+		   var policy = that.get('model');
+
+		   var storePolicies = policy.get('defaultPolicies');
+
+		   //check for duplications
+		   var duplicate = false;
+		   storePolicies.forEach(function(element){
+			   if(element.srcStoreId == srcStore.id && element.destStoreId == destStore.id){
+				   duplicate = true;
+			   }
+		   });
+		   
+		   if(duplicate){
+			   alert("A default policy for the specified source and destination already exists.");
+			   return;
+		   }
+
+		   var record = this.store.push('storePolicy', {
+				id : App.generateUUID(),
+				source: srcStore,
+				destination: destStore,
+			});
+		   
+		   storePolicies.pushObject(record);
+		   policy.save(function(){
+			   console.log('saved ' + record  +' into ' + policy.id)
+		   }, function(text){ 
+			   alert("failed to save default store policy :" + text);
+		   });
+	    },
+	    
+ 	   deleteStorePolicy: function(storePolicy){
+		   var policy = this.get('model');
+
+		   policy.get('defaultPolicies').removeObject(storePolicy);
+		   storePolicy.deleteRecord();
+
+		   policy.save(function(){
+			   console.log('saved policy: ' + policy.id)
+		   }, function(){
+			   alert('failed to delete policy');
+		   });
+	   },
+		
    }
 });
 

@@ -61,7 +61,7 @@ App.LoadingRoute = Ember.Route.extend({
 		this._super();
 		var flickerAPI = "http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?";
 		  $.getJSON( flickerAPI, {
-		    tags: "twins",
+		    tags: "clouds",
 		    tagmode: "any",
 		    format: "json"
 		  }).done(function( data ) {
@@ -169,6 +169,11 @@ App.StorePolicyView = App.FadingView.extend({
 });
 
 App.SpaceRoute = BaseRoute.extend({
+
+  setupController: function(controller,model){
+      controller.set('model', model);
+  },
+
   model: function(params) {
 	  var spaces = this.modelFor('policy').get('spaces');
 	  var space = null;
@@ -183,7 +188,6 @@ App.SpaceRoute = BaseRoute.extend({
       return space;
   },
   
-
   renderTemplate: function(){
 		this.render({outlet:'right'});  
   },
@@ -196,53 +200,6 @@ App.SpaceRoute = BaseRoute.extend({
   
   actions: {
 	  
-	   deleteStorePolicy: function(storePolicy){
-		   this.modelFor('space').get('storePolicies').removeObject(storePolicy);
-		   storePolicy.deleteRecord();
-
-		   this.modelFor('policy').save(null, function(){
-			   alert('failed to delete policy');
-		   });
-	   },
-	   
-	   addStorePolicy: function(srcStore,destStore){
-		   var that = this;
-		   console.log("addStore clicked: srcStoreId=" + srcStore.id + ", destStoreId="+destStore.id);
-
-		   if(srcStore.id == destStore.id){
-			   alert("The source and destination cannot be identical.");
-			   return;
-		   }
-		   
-		   var storePolicies = this.modelFor('space').get('storePolicies');
-
-		   //check for duplications
-		   var duplicate = false;
-		   storePolicies.forEach(function(element){
-			   if(element.srcStoreId == srcStore.id && element.destStoreId == destStore.id){
-				   duplicate = true;
-			   }
-		   });
-		   
-		   if(duplicate){
-			   alert("A policy for the specified source and destination already exists.");
-			   return;
-		   }
-
-		   var record = this.store.push('storePolicy', {
-				id : App.generateUUID(),
-				source: srcStore,
-				destination: destStore,
-			});
-		   
-		   storePolicies.pushObject(record);
-		   var policy = this.modelFor('policy');
-		   policy.save(function(){
-			   console.log('saved ' + record  +' into ' + policy.id)
-		   }, function(text){ 
-			   alert("failed to save store policy :" + text);
-		   });
-	   }
   },
   
 });
