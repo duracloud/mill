@@ -71,6 +71,7 @@ public class DefaultCredentialsRepoImplTest extends EasyMockSupport{
                EasyMock.expect(account.getPassword()).andReturn("password");
                EasyMock.expect(account.getUsername()).andReturn("username");
                EasyMock.expect(account.getProviderType()).andReturn(StorageProviderType.AMAZON_S3);
+               EasyMock.expect(account.getProperties()).andReturn(null);
            }
     }
 
