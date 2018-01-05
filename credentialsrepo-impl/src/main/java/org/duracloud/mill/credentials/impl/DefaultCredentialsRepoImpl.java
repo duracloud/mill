@@ -120,6 +120,7 @@ public class DefaultCredentialsRepoImpl implements CredentialsRepo {
         return new StorageProviderCredentials(storeId,
                 provider.getUsername(), provider.getPassword(),
                 provider.getProviderType(),
+                provider.getProperties(),
                 primary);
     }
 

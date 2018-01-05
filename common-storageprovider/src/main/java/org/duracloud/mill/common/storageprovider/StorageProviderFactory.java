@@ -64,13 +64,14 @@ public class StorageProviderFactory {
         
         if (storageProviderType.equals(StorageProviderType.AMAZON_S3)) {
             return new S3StorageProvider(credentials.getAccessKey(),
-                                         credentials.getSecretKey());
+                                         credentials.getSecretKey(),
+                                         credentials.getOptions());
         } else if (storageProviderType.equals(StorageProviderType.SDSC)) {
             return new SDSCStorageProvider(credentials.getAccessKey(),
                     credentials.getSecretKey());
         } else if (storageProviderType.equals(StorageProviderType.AMAZON_GLACIER)) {
             return new GlacierStorageProvider(credentials.getAccessKey(),
-                    credentials.getSecretKey());
+                    credentials.getSecretKey(), credentials.getOptions());
         } else if (storageProviderType.equals(StorageProviderType.RACKSPACE)) {
             return new RackspaceStorageProvider(credentials.getAccessKey(),
                     credentials.getSecretKey());

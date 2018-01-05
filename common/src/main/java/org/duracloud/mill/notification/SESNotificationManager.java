@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsyncClientBuilder;
 import com.amazonaws.services.simpleemail.model.Body;
 import com.amazonaws.services.simpleemail.model.Content;
 import com.amazonaws.services.simpleemail.model.Destination;
@@ -31,7 +31,7 @@ public class SESNotificationManager implements NotificationManager {
     
     private String[] recipientEmailAddresses;
     private AmazonSimpleEmailService client; 
-    public SESNotificationManager(String[] recipientEmailAddresses, AmazonSimpleEmailServiceClient client) {
+    public SESNotificationManager(String[] recipientEmailAddresses, AmazonSimpleEmailService client) {
         this.recipientEmailAddresses = recipientEmailAddresses;
         
         if(ArrayUtils.isEmpty(this.recipientEmailAddresses)){
@@ -49,7 +49,7 @@ public class SESNotificationManager implements NotificationManager {
      * @param recipients
      */
     public SESNotificationManager(String[] recipients) {
-        this(recipients, new AmazonSimpleEmailServiceClient());
+    	this(recipients, AmazonSimpleEmailServiceAsyncClientBuilder.defaultClient());
     }
     
     
