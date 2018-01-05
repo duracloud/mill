@@ -79,12 +79,12 @@ public class StorageProviderCredentials {
     }
     
     public Map<String, String> getOptions() {
-		return options;
-	}
+        return options;
+    }
     
     public void setOptions(Map<String, String> options) {
-		this.options = options;
-	}
+        this.options = options;
+    }
     
     public boolean isPrimary() {
         return primary;
