@@ -14,11 +14,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.duracloud.account.db.model.StorageProviderAccount;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.Dimension;
@@ -32,9 +32,9 @@ public class CloudWatchStorageStatsGatherer {
     private Logger log = LoggerFactory
             .getLogger(CloudWatchStorageStatsGatherer.class);
 
-    private AmazonCloudWatchClient cloudWatchClient;
+    private AmazonCloudWatch cloudWatchClient;
     private S3StorageProvider s3StorageProvider;
-    public CloudWatchStorageStatsGatherer(AmazonCloudWatchClient cloudWatchClient, S3StorageProvider s3StorageProvider) {
+    public CloudWatchStorageStatsGatherer(AmazonCloudWatch cloudWatchClient, S3StorageProvider s3StorageProvider) {
         this.cloudWatchClient = cloudWatchClient;
         this.s3StorageProvider = s3StorageProvider;
     }
@@ -58,7 +58,7 @@ public class CloudWatchStorageStatsGatherer {
      * @return
      */
     private long getTotalItems(String bucketName,
-                               AmazonCloudWatchClient client) {
+                               AmazonCloudWatch client) {
         return getMetricData(bucketName,
                              "NumberOfObjects",
                              "AllStorageTypes",
@@ -73,7 +73,7 @@ public class CloudWatchStorageStatsGatherer {
      * @return
      */
     private long getTotalBytes(String bucketName,
-                               AmazonCloudWatchClient client) {
+                               AmazonCloudWatch client) {
         long totalBytes = 0;
         totalBytes += getMetricData(bucketName,
                                     "BucketSizeBytes",
@@ -93,7 +93,7 @@ public class CloudWatchStorageStatsGatherer {
     private long getMetricData(String bucketName,
                                String metricName,
                                String storageType,
-                               AmazonCloudWatchClient client) {
+                               AmazonCloudWatch client) {
         GetMetricStatisticsRequest request = buildRequest(bucketName,
                                                           metricName,
                                                           storageType);

@@ -7,7 +7,9 @@
  */
 package org.duracloud.mill.storagestats.aws;
 
-import static org.junit.Assert.*;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -23,12 +25,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
+import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
-
-import static org.easymock.EasyMock.*;
 
 /**
  * @author Daniel Bernstein
@@ -39,7 +39,7 @@ public class CloudWatchStorageStatsGathererTest  extends EasyMockSupport {
 
 
     @Mock
-    private AmazonCloudWatchClient client;
+    private AmazonCloudWatch client;
     
     @Mock
     private S3StorageProvider storageProvider;
