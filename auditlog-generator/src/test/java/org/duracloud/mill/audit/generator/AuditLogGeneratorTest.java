@@ -7,6 +7,10 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,10 +22,9 @@ import org.easymock.Mock;
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
 
-import static org.easymock.EasyMock.*;
-
 /**
- * @author Daniel Bernstein Date: Sep 9, 2014
+ * @author Daniel Bernstein
+ * Date: Sep 9, 2014
  */
 public class AuditLogGeneratorTest extends AbstractTestBase {
 
@@ -36,14 +39,14 @@ public class AuditLogGeneratorTest extends AbstractTestBase {
         List<JpaAuditLogItem> list = new ArrayList<>();
         list.add(createAuditLogItem(new Date(System.currentTimeMillis()), "account1"));
         expect(repo.findByWrittenFalseOrderByTimestampAsc(isA(Pageable.class)))
-                .andReturn(list);
+            .andReturn(list);
 
         expect(repo.findByWrittenFalseOrderByTimestampAsc(isA(Pageable.class)))
-                .andReturn(new ArrayList<JpaAuditLogItem>());
+            .andReturn(new ArrayList<JpaAuditLogItem>());
 
         logManager.purgeExpired();
         expectLastCall().once();
-        
+
         logManager.write(isA(JpaAuditLogItem.class));
         expectLastCall().once();
 

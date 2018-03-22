@@ -14,13 +14,14 @@ import org.duracloud.account.db.model.AccountInfo;
 import org.duracloud.account.db.model.StorageProviderAccount;
 
 /**
- * @author dbernstein 
+ * @author dbernstein
  * @since: Jun 28, 2017
  */
 public class AccountStorageReportResult {
 
     private List<StorageProviderResult> storageProviderResults = new LinkedList<>();
     private AccountInfo account;
+
     /**
      * @param account
      */
@@ -32,23 +33,21 @@ public class AccountStorageReportResult {
      * @param storageProviderAccount
      * @param total
      */
-    public void addStorageProviderResult(
-                                         StorageProviderAccount storageProviderAccount,
+    public void addStorageProviderResult(StorageProviderAccount storageProviderAccount,
                                          long total) {
         this.storageProviderResults.add(new StorageProviderResult(storageProviderAccount, total));
     }
 
-    
     /**
      * @return
      */
     public boolean isOversubscribed() {
-        for(StorageProviderResult r : this.storageProviderResults){
-            if(r.isOversubscribed()){
+        for (StorageProviderResult r : this.storageProviderResults) {
+            if (r.isOversubscribed()) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -58,7 +57,7 @@ public class AccountStorageReportResult {
     public AccountInfo getAccount() {
         return this.account;
     }
- 
+
     /**
      * @return the storageProviderResults
      */

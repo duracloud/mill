@@ -16,8 +16,9 @@ import org.duracloud.storage.domain.StorageProviderType;
 
 /**
  * The execution state that visits BitCheckHandlers.
+ *
  * @author Daniel Bernstein
- *	       Date: 10/15/2014
+ * Date: 10/15/2014
  */
 class BitCheckExecutionState {
     private BitIntegrityCheckTask task;
@@ -31,6 +32,7 @@ class BitCheckExecutionState {
     private String details;
     private ContentChecksumHelper helper;
     private ManifestStore manifestStore;
+
     /**
      * @param task
      * @param storageProviderType
@@ -42,12 +44,12 @@ class BitCheckExecutionState {
      * @param bitLogStore
      */
     public BitCheckExecutionState(BitIntegrityCheckTask task,
-            StorageProviderType storageProviderType,
-            BitLogStore bitLogStore,
-            TaskQueue bitErrorQueue,
-            TaskQueue auditTaskQueue, 
-            ContentChecksumHelper helper,
-            ManifestStore manifestStore){
+                                  StorageProviderType storageProviderType,
+                                  BitLogStore bitLogStore,
+                                  TaskQueue bitErrorQueue,
+                                  TaskQueue auditTaskQueue,
+                                  ContentChecksumHelper helper,
+                                  ManifestStore manifestStore) {
         this.task = task;
         this.storageProviderType = storageProviderType;
         this.bitLogStore = bitLogStore;
@@ -56,7 +58,7 @@ class BitCheckExecutionState {
         this.helper = helper;
         this.manifestStore = manifestStore;
     }
-    
+
     /**
      * @return the bitErrorQueue
      */
@@ -70,22 +72,21 @@ class BitCheckExecutionState {
     public BitIntegrityCheckTask getTask() {
         return task;
     }
-    
+
     /**
      * @return the storageProviderType
      */
     public StorageProviderType getStorageProviderType() {
         return storageProviderType;
     }
-    
-    
+
     /**
      * @return the contentProperties
      */
     public Map<String, String> getContentProperties() {
         return contentProperties;
     }
-    
+
     /**
      * @return the storeChecksum
      */
@@ -93,7 +94,6 @@ class BitCheckExecutionState {
         return storeChecksum;
     }
 
-    
     /**
      * @return the bitLogStore
      */
@@ -114,14 +114,14 @@ class BitCheckExecutionState {
     public String getDetails() {
         return details;
     }
-    
+
     /**
      * @param details the details to set
      */
     public void setDetails(String details) {
         this.details = details;
     }
-    
+
     public String getManifestChecksum() {
         return manifestChecksum;
     }
@@ -146,7 +146,7 @@ class BitCheckExecutionState {
     }
 
     /**
-     * 
+     *
      */
     public ManifestStore getManifestStore() {
         return this.manifestStore;

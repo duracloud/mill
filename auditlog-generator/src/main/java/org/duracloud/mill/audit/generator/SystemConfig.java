@@ -7,10 +7,9 @@
  */
 package org.duracloud.mill.audit.generator;
 
-
 /**
  * @author Daniel Bernstein
- *         Date: Sep 9, 2014
+ * Date: Sep 9, 2014
  */
 public class SystemConfig {
 
@@ -24,7 +23,7 @@ public class SystemConfig {
     private String duracloudPassword;
     private String auditLogSpaceId;
 
-    public static SystemConfig instance(){
+    public static SystemConfig instance() {
         return instance;
     }
 
@@ -47,8 +46,6 @@ public class SystemConfig {
     public String getDurastoreContext() {
         return durastoreContext;
     }
-
-
 
     public String getAuditLogSpaceId() {
         return auditLogSpaceId;

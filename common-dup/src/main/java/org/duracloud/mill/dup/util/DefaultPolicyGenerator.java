@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.dup.util;
 
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.duracloud.client.ContentStore;
 import org.duracloud.client.ContentStoreManager;
@@ -18,11 +23,6 @@ import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * The default policy generator will connect to a DuraCloud account and create
  * a default duplication policy by assuming that all spaces in the primary
@@ -30,7 +30,7 @@ import java.util.Map;
  * secondary stores.
  *
  * @author Bill Branan
- *         Date: 11/7/13
+ * Date: 11/7/13
  */
 public class DefaultPolicyGenerator {
 
@@ -48,17 +48,17 @@ public class DefaultPolicyGenerator {
         // Filter out the primary store from the stores list
         String primaryStoreId = primaryStore.getStoreId();
         List<String> secondaryStoreIds = new LinkedList<>();
-        for(ContentStore store : allStores.values()) {
+        for (ContentStore store : allStores.values()) {
             String storeId = store.getStoreId();
-            if(!primaryStoreId.equals(storeId)) {
+            if (!primaryStoreId.equals(storeId)) {
                 secondaryStoreIds.add(storeId);
             }
         }
 
         DuplicationPolicy defaultPolicy = new DuplicationPolicy();
-        for(String spaceId : primaryStore.getSpaces()) {
-            if(!Constants.SYSTEM_SPACES.contains(spaceId)) {
-                for(String storeId : secondaryStoreIds) {
+        for (String spaceId : primaryStore.getSpaces()) {
+            if (!Constants.SYSTEM_SPACES.contains(spaceId)) {
+                for (String storeId : secondaryStoreIds) {
                     DuplicationStorePolicy dupStorePolicy =
                         new DuplicationStorePolicy(primaryStoreId, storeId);
                     defaultPolicy.addDuplicationStorePolicy(spaceId, dupStorePolicy);
@@ -83,7 +83,7 @@ public class DefaultPolicyGenerator {
     }
 
     public static void main(String[] args) throws Exception {
-        if(!(args.length == 3)) {
+        if (!(args.length == 3)) {
             throw new RuntimeException("Default Policy Generator expects " +
                                        "three parameters:" +
                                        "\n  Account subdomain" +
@@ -96,7 +96,7 @@ public class DefaultPolicyGenerator {
         String dirPath = args[2];
 
         File outputDir = new File(dirPath);
-        if(!outputDir.isDirectory()) {
+        if (!outputDir.isDirectory()) {
             throw new RuntimeException("The path " + dirPath +
                                        " must point to a directory");
         }

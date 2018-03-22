@@ -13,14 +13,13 @@ import org.duracloud.mill.workman.TaskProcessor;
 
 /**
  * @author Daniel Bernstein
- *         Date: Sep 3, 2014
+ * Date: Sep 3, 2014
  */
-public class ManifestWritingProcessorFactory extends
-                                            AuditTaskProcessorFactory {
+public class ManifestWritingProcessorFactory extends AuditTaskProcessorFactory {
 
     private ManifestStore manifestStore;
-    
-    public ManifestWritingProcessorFactory(ManifestStore manifestStore){
+
+    public ManifestWritingProcessorFactory(ManifestStore manifestStore) {
         this.manifestStore = manifestStore;
     }
 

@@ -28,62 +28,59 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Daniel Bernstein Date: Oct 25, 2013
+ * @author Daniel Bernstein
+ * Date: Oct 25, 2013
  */
 public class DuplicationTaskProcessorFactoryTest {
 
     @Test
     public void test() throws CredentialsRepoException {
         List<StorageProviderType[]> successfulProviderList = new LinkedList<>();
-        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.AMAZON_GLACIER });
-        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.SDSC });
-        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.RACKSPACE });
-        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.CHRONOPOLIS });
-        successfulProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.DPN });
-        
+        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                              StorageProviderType.AMAZON_GLACIER});
+        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                              StorageProviderType.SDSC});
+        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                              StorageProviderType.RACKSPACE});
+        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                              StorageProviderType.CHRONOPOLIS});
+        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                              StorageProviderType.DPN});
+
         //successes
-        for(StorageProviderType[] a : successfulProviderList){
+        for (StorageProviderType[] a : successfulProviderList) {
             testDuplicationTaskProcessorFactory(a[0], a[1], true);
         }
-        
+
         //expected failures
         List<StorageProviderType[]> failedProviderList = new LinkedList<>();
-        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.IRODS });
-        failedProviderList.add(new StorageProviderType[] { StorageProviderType.AMAZON_S3,
-                StorageProviderType.UNKNOWN });
-        for(StorageProviderType[] a : failedProviderList){
+        failedProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                          StorageProviderType.IRODS});
+        failedProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
+                                                          StorageProviderType.UNKNOWN});
+        for (StorageProviderType[] a : failedProviderList) {
             testDuplicationTaskProcessorFactory(a[0], a[1], false);
         }
- 
+
     }
-    
-    private void testDuplicationTaskProcessorFactory(
-            StorageProviderType source, StorageProviderType destination,
-            boolean expectedOutcome) throws CredentialsRepoException {
+
+    private void testDuplicationTaskProcessorFactory(StorageProviderType source,
+                                                     StorageProviderType destination,
+                                                     boolean expectedOutcome) throws CredentialsRepoException {
 
         CredentialsRepo repo = EasyMock.createMock(CredentialsRepo.class);
         TaskQueue auditQueue = EasyMock.createMock(TaskQueue.class);
         ManifestStore manifestStore = EasyMock.createMock(ManifestStore.class);
 
         AccountCredentials a = new AccountCredentials("test", Arrays.asList(new StorageProviderCredentials[] {
-                new StorageProviderCredentials("0", "test", "test", source, null, true),
-                new StorageProviderCredentials("1", "test", "test", destination, null, false) }));
+            new StorageProviderCredentials("0", "test", "test", source, null, true),
+            new StorageProviderCredentials("1", "test", "test", destination, null, false)}));
 
-        EasyMock.expect(
-                repo.getStorageProviderCredentials(EasyMock.isA(String.class),
-                        EasyMock.isA(String.class)))
-                .andReturn(
-                        new StorageProviderCredentials("0", "test", "test",
-                                source, null, true))
-                .andReturn(
-                        new StorageProviderCredentials("1", "test", "test",
-                                destination, null, false));
+        EasyMock.expect(repo.getStorageProviderCredentials(EasyMock.isA(String.class), EasyMock.isA(String.class)))
+                .andReturn(new StorageProviderCredentials("0", "test", "test",
+                                                          source, null, true))
+                .andReturn(new StorageProviderCredentials("1", "test", "test",
+                                                          destination, null, false));
 
         EasyMock.replay(repo, auditQueue, manifestStore);
 
@@ -115,10 +112,10 @@ public class DuplicationTaskProcessorFactoryTest {
         if (expectedOutcome) {
             Assert.assertNotNull(processor);
             Assert.assertEquals(DuplicationTaskProcessor.class,
-                    processor.getClass());
+                                processor.getClass());
         }
 
-        EasyMock.verify(repo, auditQueue,manifestStore);
+        EasyMock.verify(repo, auditQueue, manifestStore);
     }
 
 }

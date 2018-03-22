@@ -3,8 +3,9 @@
          updateCheck="false" monitoring="off" dynamicConfig="true"
          maxBytesLocalHeap="150M" overflowToOffHeap="false">
 
-  <defaultCache maxEntriesLocalHeap="0" maxEntriesLocalDisk="0" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400">
-    <persistence strategy="localTempSwap" />
+  <defaultCache maxEntriesLocalHeap="0" maxEntriesLocalDisk="0" eternal="false" timeToIdleSeconds="86400"
+                timeToLiveSeconds="86400">
+    <persistence strategy="localTempSwap"/>
   </defaultCache>
 
 </ehcache>

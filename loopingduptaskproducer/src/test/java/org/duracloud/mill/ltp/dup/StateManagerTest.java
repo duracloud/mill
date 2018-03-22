@@ -8,7 +8,6 @@
 package org.duracloud.mill.ltp.dup;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -21,7 +20,7 @@ import org.junit.Test;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Nov 6, 2013
+ * Date: Nov 6, 2013
  */
 public class StateManagerTest {
     private StateManager<DuplicationMorsel> stateManager;
@@ -30,13 +29,14 @@ public class StateManagerTest {
     private String testspace = "testspace";
     private String testmarker = "testmarker";
     private DuplicationStorePolicy testpolicy;
+
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
-        file = new File(System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis()+".json");
-        testpolicy  = new DuplicationStorePolicy();
+        file = new File(System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis() + ".json");
+        testpolicy = new DuplicationStorePolicy();
         testpolicy.setDestStoreId("0");
         testpolicy.setSrcStoreId("1");
         stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath(), DuplicationMorsel.class);
@@ -58,9 +58,9 @@ public class StateManagerTest {
     public void testGetMorsels() {
         LinkedHashSet<DuplicationMorsel> morsels = stateManager.getMorsels();
         Assert.assertEquals(0, morsels.size());
-        morsels.add(new DuplicationMorsel(testdomain+"1", testspace, testmarker, testpolicy));
-        morsels.add(new DuplicationMorsel(testdomain+"2", testspace, testmarker, testpolicy));
-        
+        morsels.add(new DuplicationMorsel(testdomain + "1", testspace, testmarker, testpolicy));
+        morsels.add(new DuplicationMorsel(testdomain + "2", testspace, testmarker, testpolicy));
+
         stateManager.setMorsels(morsels);
 
         morsels = stateManager.getMorsels();
@@ -72,19 +72,16 @@ public class StateManagerTest {
 
         Iterator<DuplicationMorsel> it = morsels.iterator();
         Assert.assertTrue(it.hasNext());
-        Assert.assertEquals(testdomain+"1", it.next().getAccount());
+        Assert.assertEquals(testdomain + "1", it.next().getAccount());
         Assert.assertTrue(it.hasNext());
-        Assert.assertEquals(testdomain+"2", it.next().getAccount());
+        Assert.assertEquals(testdomain + "2", it.next().getAccount());
 
         stateManager.setMorsels(new LinkedHashSet<DuplicationMorsel>());
-        stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath(),  DuplicationMorsel.class);
+        stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath(), DuplicationMorsel.class);
         morsels = stateManager.getMorsels();
-        
 
         Assert.assertEquals(0, morsels.size());
-        
-    }
 
-  
+    }
 
 }

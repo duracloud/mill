@@ -11,7 +11,7 @@ import org.duracloud.mill.db.model.JpaAuditLogItem;
 
 /**
  * @author Daniel Bernstein
- *         Date: Sep 5, 2014
+ * Date: Sep 5, 2014
  */
 public interface LogManager {
 
@@ -21,12 +21,12 @@ public interface LogManager {
     void write(JpaAuditLogItem item);
 
     /**
-     * 
+     *
      */
     void flushLogs();
 
     /**
-     * 
+     *
      */
     void purgeExpired();
 

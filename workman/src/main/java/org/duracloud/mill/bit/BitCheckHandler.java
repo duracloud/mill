@@ -30,8 +30,9 @@ import org.slf4j.LoggerFactory;
 /**
  * A base class for building specific bit check handlers used in the
  * BitIntegrityCheckTaskProcessor.
- * 
- * @author Daniel Bernstein Date: May 15, 2014
+ *
+ * @author Daniel Bernstein
+ * Date: May 15, 2014
  */
 abstract class BitCheckHandler {
 
@@ -44,7 +45,6 @@ abstract class BitCheckHandler {
      * new storage providers come online, we'll need to add them to this set if
      * we want the content to be checked. TODO We should probably make them
      * configurable on the commandline.
-     * 
      */
     private static final Set<StorageProviderType> CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS = new HashSet<>();
 
@@ -53,30 +53,24 @@ abstract class BitCheckHandler {
     }
 
     /**
-     * 
+     *
      */
     private static void initializeContentChecksumCalculatingStorageProviders() {
-        CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS
-                .add(StorageProviderType.AMAZON_S3);
-        CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS
-                .add(StorageProviderType.SDSC);
+        CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS.add(StorageProviderType.AMAZON_S3);
+        CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS.add(StorageProviderType.SDSC);
 
     }
 
-    public final boolean
-            handle(BitCheckExecutionState bitCheckState) throws TaskExecutionFailedException {
+    public final boolean handle(BitCheckExecutionState bitCheckState) throws TaskExecutionFailedException {
         HandlerResult result = handleImpl(bitCheckState);
         if (result.isHandled()) {
             if (!result.getResult().equals(BitIntegrityResult.IGNORE)) {
 
                 String contentChecksum = null;
                 String storeChecksum = bitCheckState.getStoreChecksum();
-                
-                if (storeChecksum != null && isContentChecksumCalculated(bitCheckState
-                        .getStorageProviderType())) {
-                    contentChecksum = bitCheckState
-                            .getContentChecksumHelper()
-                            .getContentChecksum(storeChecksum);
+
+                if (storeChecksum != null && isContentChecksumCalculated(bitCheckState.getStorageProviderType())) {
+                    contentChecksum = bitCheckState.getContentChecksumHelper().getContentChecksum(storeChecksum);
                 }
 
                 writeResult(result.getResult(),
@@ -94,51 +88,47 @@ abstract class BitCheckHandler {
         }
     }
 
-    protected String
-            buildFailureMessage(String message,
-                                BitIntegrityCheckTask bitTask,
-                                StorageProviderType storageProviderType) {
+    protected String buildFailureMessage(String message,
+                                         BitIntegrityCheckTask bitTask,
+                                         StorageProviderType storageProviderType) {
         return BitIntegrityHelper.buildFailureMessage(message,
-                                                           bitTask,
-                                                           storageProviderType);
+                                                      bitTask,
+                                                      storageProviderType);
     }
 
-    protected boolean
-            isContentChecksumOkay(BitCheckExecutionState state,
-                                  String otherChecksum) throws TaskExecutionFailedException {
+    protected boolean isContentChecksumOkay(BitCheckExecutionState state,
+                                            String otherChecksum) throws TaskExecutionFailedException {
         if (isContentChecksumCalculated(state.getStorageProviderType())) {
             return otherChecksum.equals(state.getContentChecksumHelper()
-                    .getContentChecksum(otherChecksum));
+                                             .getContentChecksum(otherChecksum));
         } else {
             return true;
         }
     }
 
     /**
-     * @param parameters
+     * @param storageProviderType
      * @return
      */
-    protected boolean
-            isContentChecksumCalculated(StorageProviderType storageProviderType) {
-        return CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS
-                .contains(storageProviderType);
+    protected boolean isContentChecksumCalculated(StorageProviderType storageProviderType) {
+        return CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS.contains(storageProviderType);
     }
 
     /**
-     * 
      * @param parameters
      * @return
      * @throws TaskExecutionFailedException
      */
-    abstract protected HandlerResult
-            handleImpl(BitCheckExecutionState parameters) throws TaskExecutionFailedException;
+    abstract protected HandlerResult handleImpl(BitCheckExecutionState parameters)
+        throws TaskExecutionFailedException;
 
     /**
-     * @param bitTask
+     * @param state
      * @param message
      */
-    protected void
-            addErrorTask(BitCheckExecutionState state, String message) throws TaskExecutionFailedException {
+    protected void addErrorTask(BitCheckExecutionState state, String message)
+        throws TaskExecutionFailedException {
+
         String manifestChecksum = state.getManifestChecksum();
         BitIntegrityCheckTask bitTask = state.getTask();
         TaskQueue queue = state.getBitErrorQueue();
@@ -151,7 +141,7 @@ abstract class BitCheckHandler {
         task.setDescription(message);
         if (storeChecksum != null && isContentChecksumCalculated(state.getStorageProviderType())) {
             task.setContentChecksum(state.getContentChecksumHelper()
-                    .getContentChecksum(storeChecksum));
+                                         .getContentChecksum(storeChecksum));
         }
         task.setStoreType(state.getStorageProviderType());
         task.setStoreChecksum(storeChecksum);
@@ -159,16 +149,14 @@ abstract class BitCheckHandler {
         queue.put(task.writeTask());
     }
 
-    private void
-            writeResult(final BitIntegrityResult result,
-                        final String manifestChecksum,
-                        final String storeChecksum,
-                        final String contentChecksum,
-                        final BitLogStore bitLogStore,
-                        final StorageProviderType storageProviderType,
-                        final BitIntegrityCheckTask bitTask,
-                        final String details) throws TaskExecutionFailedException {
-       
+    private void writeResult(final BitIntegrityResult result,
+                             final String manifestChecksum,
+                             final String storeChecksum,
+                             final String contentChecksum,
+                             final BitLogStore bitLogStore,
+                             final StorageProviderType storageProviderType,
+                             final BitIntegrityCheckTask bitTask,
+                             final String details) throws TaskExecutionFailedException {
         try {
             new Retrier().execute(new Retriable() {
                 @Override
@@ -190,26 +178,27 @@ abstract class BitCheckHandler {
                 }
             });
         } catch (Exception e) {
-            throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("Could not write result to BitLogStore",
-                                                                                        bitTask,
-                                                                                        storageProviderType),
-                                                                    e);
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage("Could not write result to BitLogStore",
+                                    bitTask,
+                                    storageProviderType),
+                e);
         }
 
         String message = MessageFormat
-                .format("Checksum result={0} account={1} storeId={2} storeType={3} space={4}"
-                                + " contentId={5} manifestChecksum={6} storeChecksum={7}"
-                                + " contentChecksum={8}",
-                        result,
-                        bitTask.getAccount(),
-                        bitTask.getStoreId(),
-                        storageProviderType,
-                        bitTask.getSpaceId(),
-                        bitTask.getContentId(),
-                        manifestChecksum,
-                        storeChecksum,
-                        contentChecksum);
-        
+            .format("Checksum result={0} account={1} storeId={2} storeType={3} space={4}"
+                    + " contentId={5} manifestChecksum={6} storeChecksum={7}"
+                    + " contentChecksum={8}",
+                    result,
+                    bitTask.getAccount(),
+                    bitTask.getStoreId(),
+                    storageProviderType,
+                    bitTask.getSpaceId(),
+                    bitTask.getContentId(),
+                    manifestChecksum,
+                    storeChecksum,
+                    contentChecksum);
+
         if (result == BitIntegrityResult.SUCCESS) {
             log.info(message);
         } else {
@@ -225,10 +214,10 @@ abstract class BitCheckHandler {
 
         Map<String, String> properties = state.getContentProperties();
         String mimeType = properties
-                .get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
+            .get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
         String size = properties.get(StorageProvider.PROPERTIES_CONTENT_SIZE);
         String user = properties
-                .get(StorageProvider.PROPERTIES_CONTENT_CREATOR);
+            .get(StorageProvider.PROPERTIES_CONTENT_CREATOR);
 
         try {
             AuditTask task = new AuditTask();

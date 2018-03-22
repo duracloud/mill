@@ -10,24 +10,23 @@ package org.duracloud.mill.credentials;
 import java.util.List;
 
 /**
- * 
  * @author Daniel Bernstein
- *
  */
 public class AccountCredentials {
     private String account;
     private List<StorageProviderCredentials> providerCredentials;
 
-    public AccountCredentials(){
-        
+    public AccountCredentials() {
+
     }
+
     /**
      * @param account
-     * @param creds 
+     * @param creds
      */
     public AccountCredentials(String account, List<StorageProviderCredentials> creds) {
-      this.account = account;
-      this.providerCredentials = creds;
+        this.account = account;
+        this.providerCredentials = creds;
     }
 
     /**
@@ -36,7 +35,7 @@ public class AccountCredentials {
     public String getAccount() {
         return account;
     }
-    
+
     public List<StorageProviderCredentials> getProviderCredentials() {
         return providerCredentials;
     }

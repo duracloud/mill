@@ -24,9 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 public class TaskWorkerManager {
     private Logger log = LoggerFactory.getLogger(TaskWorkerManager.class);
@@ -34,8 +32,8 @@ public class TaskWorkerManager {
     public static final int DEFAULT_MAX_WORKERS = 5;
     public static final String MAX_WORKER_PROPERTY_KEY = "max-workers";
     public static final String MIN_WAIT_BEFORE_TAKE_KEY = "min-wait-before-take";
-    public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 15*1000;
-    private static final long DEFAULT_MAX_WAIT_BEFORE_TAKE = 8*60*1000;
+    public static final long DEFAULT_MIN_WAIT_BEFORE_TAKE = 15 * 1000;
+    private static final long DEFAULT_MAX_WAIT_BEFORE_TAKE = 8 * 60 * 1000;
     private Long defaultMinWaitTime = DEFAULT_MIN_WAIT_BEFORE_TAKE;
     private TaskWorkerFactory factory;
     private ThreadPoolExecutor executor;
@@ -48,15 +46,15 @@ public class TaskWorkerManager {
     public TaskWorkerManager(List<TaskQueue> taskQueues,
                              TaskQueue deadLetterQueue,
                              TaskWorkerFactory factory) {
-        if (factory == null){
+        if (factory == null) {
             throw new IllegalArgumentException("factory must be non-null");
         }
- 
-        if (taskQueues == null || taskQueues.isEmpty()){
+
+        if (taskQueues == null || taskQueues.isEmpty()) {
             throw new IllegalArgumentException("at least one taskQueue must be specified in the taskQueues list.");
         }
 
-        if (deadLetterQueue == null){
+        if (deadLetterQueue == null) {
             throw new IllegalArgumentException("deadLetterQueue must be non-null");
         }
 
@@ -64,120 +62,114 @@ public class TaskWorkerManager {
         this.taskQueues = taskQueues;
         int size = taskQueues.size();
         this.taskQueueExecutors = new ArrayList<TaskQueueExecutor>(size);
-        for(int i = 0; i < size; i++){
-            boolean lowestPriority =  i == size - 1; //last task queue in the list is lowest priority
-            long minWait = this.defaultMinWaitTime, 
-                 maxWait = DEFAULT_MAX_WAIT_BEFORE_TAKE;
-            
-            if(!lowestPriority){
+        for (int i = 0; i < size; i++) {
+            boolean lowestPriority = i == size - 1; //last task queue in the list is lowest priority
+            long minWait = this.defaultMinWaitTime;
+            long maxWait = DEFAULT_MAX_WAIT_BEFORE_TAKE;
+
+            if (!lowestPriority) {
                 minWait = 1000;
-                maxWait = 30*1000;
+                maxWait = 30 * 1000;
             }
-            
+
             this.taskQueueExecutors.add(new TaskQueueExecutor(
-                    taskQueues.get(i), minWait, maxWait));
-       }
+                taskQueues.get(i), minWait, maxWait));
+        }
         this.deadLetterQueue = deadLetterQueue;
 
     }
 
     public void init() {
-        
+
         this.defaultMinWaitTime = new Long(System.getProperty(MIN_WAIT_BEFORE_TAKE_KEY,
-                DEFAULT_MIN_WAIT_BEFORE_TAKE+""));
-        
-        Integer maxThreadCount = new Integer(System.getProperty(
-                MAX_WORKER_PROPERTY_KEY, String.valueOf(DEFAULT_MAX_WORKERS)));
+                                                              DEFAULT_MIN_WAIT_BEFORE_TAKE + ""));
+
+        Integer maxThreadCount = new Integer(System.getProperty(MAX_WORKER_PROPERTY_KEY,
+                                                                String.valueOf(DEFAULT_MAX_WORKERS)));
 
         //With a bound pool and unbounded queue, rejection should never occur.
-        this.executor = new ThreadPoolExecutor(maxThreadCount, 
+        this.executor = new ThreadPoolExecutor(maxThreadCount,
                                                maxThreadCount,
                                                0L, TimeUnit.MILLISECONDS,
                                                new LinkedBlockingQueue<Runnable>());
-                
-        this.executor
-                .setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-       
+
+        this.executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 runManager();
             }
         }).start();
-        
-        
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                
+
                 List<String> queueStats = new LinkedList<String>();
-                    
-                for(TaskQueue queue: taskQueues){
+
+                for (TaskQueue queue : taskQueues) {
                     queueStats.add(formatQueueStat(queue));
                 }
-                
+
                 queueStats.add(formatQueueStat(deadLetterQueue));
-                
-                log.info(
-                        "Status: max_workers={} running_workers={}" +
-                            " completed_workers={}" +
-                            queueStats,
-                        new Object[] { getMaxWorkers(),
-                            executor.getActiveCount(),
-                            executor.getCompletedTaskCount(),
-                            StringUtils.join(queueStats, " ")
-                        });
+
+                log.info("Status: max_workers={} running_workers={} completed_workers={}" +
+                         queueStats,
+                         new Object[] {getMaxWorkers(),
+                                       executor.getActiveCount(),
+                                       executor.getCompletedTaskCount(),
+                                       StringUtils.join(queueStats, " ")
+                         });
             }
 
             private String formatQueueStat(TaskQueue queue) {
-                 return queue.getName() + "_q_size=" + queue.size();
+                return queue.getName() + "_q_size=" + queue.size();
             }
 
         }, new Date(), 1 * 60 * 1000);
     }
-    
+
     private void runManager() {
-        
-        while(!stop){
+
+        while (!stop) {
             try {
-                if(isManagerTooBusy()){
+                if (isManagerTooBusy()) {
                     log.debug("manager is too busy, sleeping for 1 sec");
-                    //wait only a moment before trying again since 
+                    //wait only a moment before trying again since
                     //the worker pool is expected to move relatively quickly.
                     sleep(1000);
-                }else{
-                    //loop through queues attempting to 
+                } else {
+                    //loop through queues attempting to
                     //execute a task off the highest priority queue
                     boolean executedOne = false;
-                    for(TaskQueueExecutor taskQueueExecutor : this.taskQueueExecutors){
-                        if(taskQueueExecutor.execute()){
+                    for (TaskQueueExecutor taskQueueExecutor : this.taskQueueExecutors) {
+                        if (taskQueueExecutor.execute()) {
                             executedOne = true;
-                           break; 
+                            break;
                         }
                     }
-                    
-                    if(!executedOne){
+
+                    if (!executedOne) {
                         sleep(defaultMinWaitTime);
                     }
                 }
-            }catch(Exception ex){
-                log.error(
-                        "unexpected failure in outer run manager while loop: " 
-                        + ex.getMessage() + ". Ignoring...", ex);
+            } catch (Exception ex) {
+                log.error("unexpected failure in outer run manager while loop: "
+                          + ex.getMessage() + ". Ignoring...", ex);
             }
 
         }
     }
 
-    private  class TaskQueueExecutor {
+    private class TaskQueueExecutor {
         private TaskQueue taskQueue;
         private long currentWaitBeforeTaskMs;
         private Date nextAttempt = null;
         private long minWaitTime;
         private long maxWaitTime;
-        
-        public TaskQueueExecutor(TaskQueue taskQueue, long minWaitTime, long maxWaitTime){
+
+        public TaskQueueExecutor(TaskQueue taskQueue, long minWaitTime, long maxWaitTime) {
             this.taskQueue = taskQueue;
             this.minWaitTime = minWaitTime;
             this.maxWaitTime = maxWaitTime;
@@ -185,32 +177,28 @@ public class TaskWorkerManager {
         }
 
         /**
-         * @param taskQueue
          * @return true if a task was executed.
          */
         public boolean execute() {
-            if(nextAttempt != null && 
-                    nextAttempt.getTime() > System.currentTimeMillis()){
+            if (nextAttempt != null &&
+                nextAttempt.getTime() > System.currentTimeMillis()) {
                 return false;
             }
-            
-            try{
+
+            try {
                 TaskWorker worker = factory.create(taskQueue.take(), taskQueue);
                 executor.execute(worker);
                 nextAttempt = null;
                 currentWaitBeforeTaskMs = minWaitTime;
                 return true;
-            }catch(TimeoutException e){
+            } catch (TimeoutException e) {
                 log.debug("Timeout: {} queue is empty:  message={}", taskQueue.getName(), e.getMessage());
-                nextAttempt = new Date(
-                        System.currentTimeMillis()
-                                + currentWaitBeforeTaskMs);
-                currentWaitBeforeTaskMs = 
-                        Math.min(currentWaitBeforeTaskMs*2,maxWaitTime);
+                nextAttempt = new Date(System.currentTimeMillis() + currentWaitBeforeTaskMs);
+                currentWaitBeforeTaskMs = Math.min(currentWaitBeforeTaskMs * 2, maxWaitTime);
                 return false;
             }
         }
-    
+
     }
 
     /**
@@ -219,19 +207,17 @@ public class TaskWorkerManager {
     private boolean isManagerTooBusy() {
         int active = this.executor.getActiveCount();
         int maxPoolSize = this.executor.getMaximumPoolSize();
-        int queueSize =  this.executor.getQueue().size();
+        int queueSize = this.executor.getQueue().size();
 
-        boolean tooBusy =  active + queueSize >= maxPoolSize;
-        
-        if(tooBusy){
-            log.info(
-                    "manager is too busy: active worker count = {}; workers awaiting execution (thread pool queue size) =  {}",
-                    active, queueSize);
+        boolean tooBusy = active + queueSize >= maxPoolSize;
 
+        if (tooBusy) {
+            log.info("manager is too busy: active worker count = {}; " +
+                     "workers awaiting execution (thread pool queue size) = {}",
+                     active, queueSize);
         }
         return tooBusy;
     }
-
 
     public int getMaxWorkers() {
         return executor.getMaximumPoolSize();

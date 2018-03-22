@@ -7,6 +7,14 @@
  */
 package org.duracloud.mill.bit;
 
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
@@ -24,27 +32,17 @@ import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * This class processes bit integrity check tasks. The logic for this block of
  * code is specified here:
  * https://wiki.duraspace.org/display/DSPINT/Bit+Integrity+Check+Logic+Version+2
- * 
- * @author Daniel Bernstein 
-           Date: 10/15/2014
+ *
+ * @author Daniel Bernstein
+ * Date: 10/15/2014
  */
-public class BitIntegrityCheckTaskProcessor extends
-                                           TaskProcessorBase {
+public class BitIntegrityCheckTaskProcessor extends TaskProcessorBase {
 
-    private static final Logger log = LoggerFactory
-            .getLogger(BitIntegrityCheckTaskProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(BitIntegrityCheckTaskProcessor.class);
 
     private BitIntegrityCheckTask bitTask;
     private StorageProvider store;
@@ -82,7 +80,7 @@ public class BitIntegrityCheckTaskProcessor extends
     }
 
     /**
-     * 
+     *
      */
     private static void initializeHandlers() {
         HANDLERS.add(new SuccessfulCheckHandler());
@@ -97,6 +95,7 @@ public class BitIntegrityCheckTaskProcessor extends
         try {
             Thread.sleep(penultimateAttemptWaitMS);
         } catch (InterruptedException e) {
+            // Exit sleep on interruption
         }
     }
 
@@ -115,8 +114,7 @@ public class BitIntegrityCheckTaskProcessor extends
         state.setContentProperties(contentProperties);
         String storeChecksum = null;
         if (contentProperties != null) {
-            storeChecksum = contentProperties
-                    .get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+            storeChecksum = contentProperties.get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
         }
 
         state.setStoreChecksum(storeChecksum);
@@ -142,9 +140,11 @@ public class BitIntegrityCheckTaskProcessor extends
     private String getManifestChecksum() {
 
         try {
-            ManifestItem item = this.manifestStore.getItem(this.bitTask
-                    .getAccount(), this.bitTask.getStoreId(), this.bitTask
-                    .getSpaceId(), this.bitTask.getContentId());
+            ManifestItem item =
+                this.manifestStore.getItem(this.bitTask.getAccount(),
+                                           this.bitTask.getStoreId(),
+                                           this.bitTask.getSpaceId(),
+                                           this.bitTask.getContentId());
             return item.getContentChecksum();
         } catch (org.duracloud.common.db.error.NotFoundException e) {
             return null;
@@ -154,8 +154,7 @@ public class BitIntegrityCheckTaskProcessor extends
 
     private static class SuccessfulCheckHandler extends BitCheckHandler {
         @Override
-        protected HandlerResult
-                handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
+        protected HandlerResult handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
             String manifestChecksum = state.getManifestChecksum();
             String storeChecksum = state.getStoreChecksum();
 
@@ -172,22 +171,21 @@ public class BitIntegrityCheckTaskProcessor extends
 
     private static class SourContentHandler extends BitCheckHandler {
         @Override
-        protected HandlerResult
-                handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
+        protected HandlerResult handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
 
             String manifestChecksum = state.getManifestChecksum();
             String storeChecksum = state.getStoreChecksum();
             StorageProviderType storageProviderType = state
-                    .getStorageProviderType();
+                .getStorageProviderType();
 
             if (manifestChecksum != null
-                    && manifestChecksum.equals(storeChecksum)
-                    && isContentChecksumCalculated(storageProviderType)) {
+                && manifestChecksum.equals(storeChecksum)
+                && isContentChecksumCalculated(storageProviderType)) {
                 String contentChecksum = state.getContentChecksumHelper()
-                        .getContentChecksum(manifestChecksum);
+                                              .getContentChecksum(manifestChecksum);
                 if (!manifestChecksum.equals(contentChecksum)) {
                     String message = "Content appears to have gone sour: "
-                            + "content checksum does not match the manifest and store";
+                                     + "content checksum does not match the manifest and store";
                     addErrorTask(state, message);
 
                     return new HandlerResult(BitIntegrityResult.FAILURE,
@@ -200,27 +198,24 @@ public class BitIntegrityCheckTaskProcessor extends
         }
     }
 
-    private static class FailedStorageProviderChecksumHandler extends
-            BitCheckHandler {
+    private static class FailedStorageProviderChecksumHandler extends BitCheckHandler {
         @Override
-        protected HandlerResult
-                handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
+        protected HandlerResult handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
             String manifestChecksum = state.getManifestChecksum();
             String storeChecksum = state.getStoreChecksum();
-            StorageProviderType storageProviderType = state
-                    .getStorageProviderType();
+            StorageProviderType storageProviderType = state.getStorageProviderType();
 
             if (manifestChecksum != null && storeChecksum != null
-                    && !manifestChecksum.equals(storeChecksum)
-                    && isContentChecksumCalculated(storageProviderType)) {
+                && !manifestChecksum.equals(storeChecksum)
+                && isContentChecksumCalculated(storageProviderType)) {
                 String contentChecksum = state.getContentChecksumHelper()
-                        .getContentChecksum(manifestChecksum);
+                                              .getContentChecksum(manifestChecksum);
 
                 if (manifestChecksum.equals(contentChecksum)) {
 
                     if (isLastAttempt(state.getTask())) {
                         String message = "The storage provider's checksum did not match the others: "
-                                + "the storage provider's checksumming process appears to have failed.";
+                                         + "the storage provider's checksumming process appears to have failed.";
 
                         addErrorTask(state, message);
 
@@ -239,75 +234,74 @@ public class BitIntegrityCheckTaskProcessor extends
 
     private static class FailedManifestAndNoMatchesChecksumHandler extends BitCheckHandler {
         @Override
-        protected HandlerResult
-                handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
+        protected HandlerResult handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
             String manifestChecksum = state.getManifestChecksum();
             String storeChecksum = state.getStoreChecksum();
             BitIntegrityCheckTask task = state.getTask();
             if (storeChecksum != null
-                    && !storeChecksum.equals(manifestChecksum)) {
-                
-                    if (isLastAttempt(task)) {
-                        //if content item is less than a day old, then assume mill hasn't processed and ignore.
-                        Map<String,String> props = state.getContentProperties();
-                        
-                        String modified = props.get(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
-                        try {
-                            Date modifiedDate = DateUtil.convertToDate(modified, DateFormat.DEFAULT_FORMAT);
-                            Calendar c = Calendar.getInstance();
-                            c.add(Calendar.DATE, -1);
-                            Date oneDayAgo = c.getTime();
-                            if(modifiedDate.after(oneDayAgo)){
-                                String message = "The manifest entry's checksum ("+manifestChecksum+") did not match the others: " + 
-                                        "The content item is less than 1 day old. It is most likely that " +
-                                        "the item has not yet been processed by the mill. Therefore we are " + 
-                                        "ignorning this content item for now.";
-                                return new HandlerResult(BitIntegrityResult.IGNORE,
-                                                         message);
-                            }
-                            
-                        } catch (ParseException e) {
-                            throw new BitIntegrityCheckTaskExecutionFailedException("failed to parse date using DateFormat.DEFAULT_FORMAT: "
-                                                                                        + modified,
-                                                                                e);
-                        }
-                        
-                        String message = "The manifest checksum (" + manifestChecksum +
-                                         ") did not match the others.";
+                && !storeChecksum.equals(manifestChecksum)) {
 
-                        if(!isContentChecksumOkay(state,storeChecksum)){
-                                message = MessageFormat
-                                        .format("Neither the content checksum ({0}) nor the manifest checksum " +
-                                    		"({1})  match the store checksum ({2}).",
-                                                state.getContentChecksumHelper()
-                                                     .getContentChecksum(storeChecksum),
-                                                manifestChecksum,
-                                                storeChecksum);
-                                log.error(message + ": storeId = {}, spaceId = {}, contentId = {}",
-                                          task.getStoreId(),
-                                          task.getSpaceId(),
-                                          task.getContentId());
-                        }else{
-                            log.error(message + "{}", task);
+                if (isLastAttempt(task)) {
+                    //if content item is less than a day old, then assume mill hasn't processed and ignore.
+                    Map<String, String> props = state.getContentProperties();
+
+                    String modified = props.get(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
+                    try {
+                        Date modifiedDate = DateUtil.convertToDate(modified, DateFormat.DEFAULT_FORMAT);
+                        Calendar c = Calendar.getInstance();
+                        c.add(Calendar.DATE, -1);
+                        Date oneDayAgo = c.getTime();
+                        if (modifiedDate.after(oneDayAgo)) {
+                            String message =
+                                "The manifest entry's checksum (" + manifestChecksum + ") did not match the others: " +
+                                "The content item is less than 1 day old. It is most likely that " +
+                                "the item has not yet been processed by the mill. Therefore we are " +
+                                "ignorning this content item for now.";
+                            return new HandlerResult(BitIntegrityResult.IGNORE, message);
                         }
 
-                        updateManifestChecksum(state, storeChecksum);
-                        addErrorTask(state, message);
-                        return new HandlerResult(BitIntegrityResult.FAILURE,
-                                                 message);
-                    } else if (isPenultimateAttempt(state.getTask())) {
-                        sleep();
+                    } catch (ParseException e) {
+                        throw new BitIntegrityCheckTaskExecutionFailedException(
+                            "failed to parse date using DateFormat.DEFAULT_FORMAT: "
+                            + modified,
+                            e);
                     }
+
+                    String message = "The manifest checksum (" + manifestChecksum +
+                                     ") did not match the others.";
+
+                    if (!isContentChecksumOkay(state, storeChecksum)) {
+                        message = MessageFormat
+                            .format("Neither the content checksum ({0}) nor the manifest checksum " +
+                                    "({1})  match the store checksum ({2}).",
+                                    state.getContentChecksumHelper()
+                                         .getContentChecksum(storeChecksum),
+                                    manifestChecksum,
+                                    storeChecksum);
+                        log.error(message + ": storeId = {}, spaceId = {}, contentId = {}",
+                                  task.getStoreId(),
+                                  task.getSpaceId(),
+                                  task.getContentId());
+                    } else {
+                        log.error(message + "{}", task);
+                    }
+
+                    updateManifestChecksum(state, storeChecksum);
+                    addErrorTask(state, message);
+                    return new HandlerResult(BitIntegrityResult.FAILURE,
+                                             message);
+                } else if (isPenultimateAttempt(state.getTask())) {
+                    sleep();
+                }
             }
 
             return new HandlerResult();
         }
 
-
         /**
          * @param state
          * @param checksum
-         * @throws BitIntegrityCheckTaskExecutionFailedException 
+         * @throws BitIntegrityCheckTaskExecutionFailedException
          */
         private void updateManifestChecksum(BitCheckExecutionState state,
                                             String checksum) throws BitIntegrityCheckTaskExecutionFailedException {
@@ -319,30 +313,30 @@ public class BitIntegrityCheckTaskProcessor extends
             String spaceId = task.getSpaceId();
             String contentId = task.getContentId();
             try {
-                
-                
+
                 ManifestItem item;
 
-                //if the item doesn't exist, we must get the content mimetype and size 
+                //if the item doesn't exist, we must get the content mimetype and size
                 //from the storage provider
                 String contentMimetype;
                 String contentSize;
 
-                try{ 
+                try {
                     item = manifestStore.getItem(account,
                                                  storeId,
                                                  spaceId,
                                                  contentId);
 
-                    contentMimetype = item.getContentMimetype();;
+                    contentMimetype = item.getContentMimetype();
+                    ;
                     contentSize = item.getContentSize();
 
                 } catch (org.duracloud.common.db.error.NotFoundException e) {
                     Map<String, String> props = state.getContentProperties();
                     contentMimetype = props
-                            .get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
+                        .get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
                     contentSize = props
-                            .get(StorageProvider.PROPERTIES_CONTENT_SIZE);
+                        .get(StorageProvider.PROPERTIES_CONTENT_SIZE);
                 }
 
                 manifestStore.addUpdate(account,
@@ -353,38 +347,34 @@ public class BitIntegrityCheckTaskProcessor extends
                                         contentMimetype,
                                         contentSize,
                                         new Date());
-                
+
             } catch (Exception ex) {
-                throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("failed to update manifest: "
-                        + ex.getMessage(), task, state.getStorageProviderType()));
-                
+                throw new BitIntegrityCheckTaskExecutionFailedException(
+                    buildFailureMessage("failed to update manifest: "
+                                        + ex.getMessage(), task, state.getStorageProviderType()));
+
             }
         }
     }
 
     private static class ContentNotFoundHandler extends BitCheckHandler {
         @Override
-        protected HandlerResult
-                handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
+        protected HandlerResult handleImpl(BitCheckExecutionState state) throws TaskExecutionFailedException {
             String storeChecksum = state.getStoreChecksum();
             String manifestChecksum = state.getManifestChecksum();
 
-            StorageProviderType storageProviderType = state
-                    .getStorageProviderType();
+            StorageProviderType storageProviderType = state.getStorageProviderType();
             BitIntegrityCheckTask task = state.getTask();
 
             if (storeChecksum == null && manifestChecksum != null) {
-                String message = "The item is not in the Storage Provider, "
-                        + "but is in the manifest. ";
+                String message = "The item is not in the Storage Provider, but is in the manifest. ";
 
                 if (!isLastAttempt(task)) {
                     if (isPenultimateAttempt(task)) {
-                        log.warn(buildFailureMessage(message
-                                                             + "It is possible that "
-                                                             + "content added audit tasks have not propagated through the mill.  "
-                                                             + "Waiting a few minutes before making final attempt.",
-                                                     task,
-                                                     storageProviderType));
+                        log.warn(buildFailureMessage(message + "It is possible that content added audit " +
+                                                     "tasks have not propagated through the mill. Waiting a few " +
+                                                     "minutes before making final attempt.",
+                                                     task, storageProviderType));
                         sleep();
                     }
                 } else {
@@ -405,13 +395,13 @@ public class BitIntegrityCheckTaskProcessor extends
             String manifestChecksum = state.getManifestChecksum();
 
             StorageProviderType storageProviderType = state
-                    .getStorageProviderType();
+                .getStorageProviderType();
 
             if (storeChecksum == null && manifestChecksum == null) {
 
                 String message = "No matching checksums for this content item could be found.  "
-                        + "This bit integrity task is likely being processed after a deletion"
-                        + " has been fully processed by duracloud. Ignoring...";
+                                 + "This bit integrity task is likely being processed after a deletion"
+                                 + " has been fully processed by duracloud. Ignoring...";
                 log.warn(buildFailureMessage(message,
                                              state.getTask(),
                                              storageProviderType));
@@ -428,8 +418,7 @@ public class BitIntegrityCheckTaskProcessor extends
         return HANDLERS;
     }
 
-    private Map<String, String>
-            getContentProperties() throws TaskExecutionFailedException {
+    private Map<String, String> getContentProperties() throws TaskExecutionFailedException {
         try {
             return new Retrier().execute(new Retriable() {
                 @Override
@@ -441,10 +430,11 @@ public class BitIntegrityCheckTaskProcessor extends
         } catch (NotFoundException e) {
             return null;
         } catch (Exception e) {
-            throw new BitIntegrityCheckTaskExecutionFailedException(buildFailureMessage("Could not retrieve checksum from storage provider",
-                                                                                        bitTask,
-                                                                                        storageProviderType),
-                                                                    e);
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                buildFailureMessage("Could not retrieve checksum from storage provider",
+                                    bitTask,
+                                    storageProviderType),
+                e);
         }
     }
 
@@ -452,17 +442,18 @@ public class BitIntegrityCheckTaskProcessor extends
                                        BitIntegrityCheckTask bitTask,
                                        StorageProviderType storageProviderType) {
         return BitIntegrityHelper.buildFailureMessage(message,
-                                                           bitTask,
-                                                           storageProviderType);
+                                                      bitTask,
+                                                      storageProviderType);
     }
 
     /**
      * Sets the number of milliseconds that the processor should wait before
      * abandoning the task. Default is 5 minutes.
-     * 
+     *
      * @param milliseconds to wait
      */
     public static void setPenultimateWaitMS(long milliseconds) {
         penultimateAttemptWaitMS = milliseconds;
     }
+
 }

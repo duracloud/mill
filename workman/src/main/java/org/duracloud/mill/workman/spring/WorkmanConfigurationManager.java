@@ -17,13 +17,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Dec 6, 2013
+ * Date: Dec 6, 2013
  */
-public class WorkmanConfigurationManager 
-                extends TaskProducerConfigurationManager {
-    
+public class WorkmanConfigurationManager extends TaskProducerConfigurationManager {
+
     private static Logger log = LoggerFactory.getLogger(WorkmanConfigurationManager.class);
-    
+
     public String getDeadLetterQueueName() {
         return System.getProperty(ConfigConstants.QUEUE_NAME_DEAD_LETTER);
     }
@@ -33,13 +32,13 @@ public class WorkmanConfigurationManager
      */
     public List<String> getTaskQueueNames() {
         List<String> queueNames = Arrays.asList(System.getProperty(ConfigConstants.QUEUE_TASK_ORDERED).split(","));
-        for(int i = 0; i < queueNames.size(); i++){
+        for (int i = 0; i < queueNames.size(); i++) {
             String key = queueNames.get(i);
             String value = System.getProperty(key.trim());
             log.info("Resolved concrete queue name from key : {}={}", key, value);
             queueNames.set(i, value);
         }
-        
+
         return queueNames;
     }
 
@@ -50,15 +49,14 @@ public class WorkmanConfigurationManager
         return System.getProperty(ConfigConstants.DUPLICATION_POLICY_BUCKET_SUFFIX);
     }
 
-    public Long getPolicyManagerRefreshFrequencyMs(){
+    public Long getPolicyManagerRefreshFrequencyMs() {
         String refresh = System.getProperty(ConfigConstants.DUPLICATION_POLICY_REFRESH_FREQUENCY);
-        if(refresh != null){
+        if (refresh != null) {
             return new Long(refresh);
-        }else{
-            return 5*60*1000l;
+        } else {
+            return 5 * 60 * 1000l;
         }
     }
-
 
     /**
      * @return
@@ -66,8 +64,8 @@ public class WorkmanConfigurationManager
     public String getHighPriorityDuplicationQueueName() {
         return System.getProperty(ConfigConstants.QUEUE_NAME_DUP_HIGH_PRIORITY);
     }
-    
-    public String getBitErrorQueueName(){
+
+    public String getBitErrorQueueName() {
         return System.getProperty(ConfigConstants.QUEUE_NAME_BIT_ERROR);
     }
 

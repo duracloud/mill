@@ -12,10 +12,9 @@ import org.duracloud.mill.util.CommonCommandLineOptions;
 
 /**
  * @author Daniel Bernstein
- *	       Date: May 5, 2014
+ * Date: May 5, 2014
  */
-public class LoopingStorageStatsTaskProducerCommandLineOptions extends
-        CommonCommandLineOptions {
+public class LoopingStorageStatsTaskProducerCommandLineOptions extends CommonCommandLineOptions {
     private static final long serialVersionUID = 1L;
 
     public static final String EXCLUSION_LIST_OPTION = "x";
@@ -23,23 +22,25 @@ public class LoopingStorageStatsTaskProducerCommandLineOptions extends
     public static final String INCLUSION_LIST_OPTION = "i";
 
     /**
-     * 
+     *
      */
     public LoopingStorageStatsTaskProducerCommandLineOptions() {
         super();
         Option exlucsionsList = new Option(EXCLUSION_LIST_OPTION, "exclusion-list", true,
-                "A file containing exclusions as regular expressions, one expression per line." +
-                "Expressions will be matched against the following path: /{account}/{storeId}/{spaceId}");
+                                           "A file containing exclusions as regular expressions, " +
+                                           "one expression per line. Expressions will be matched against the " +
+                                           "following path: /{account}/{storeId}/{spaceId}");
         exlucsionsList.setArgs(1);
         exlucsionsList.setArgName("file");
         addOption(exlucsionsList);
 
         Option inclusionList = new Option(INCLUSION_LIST_OPTION, "inclusion-list", true,
-                                       "A file containing inclusions as regular expressions, one expression per line." +
-                                       "Expressions will be matched against the following path: /{account}/{storeId}/{spaceId}");
-                               inclusionList.setArgs(1);
-                               inclusionList.setArgName("file");
-                               addOption(inclusionList);
+                                          "A file containing inclusions as regular expressions, " +
+                                          "one expression per line. Expressions will be matched against the " +
+                                          "following path: /{account}/{storeId}/{spaceId}");
+        inclusionList.setArgs(1);
+        inclusionList.setArgName("file");
+        addOption(inclusionList);
 
     }
 }

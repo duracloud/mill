@@ -15,12 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Daniel Bernstein Date: Feb 20, 2015
+ * @author Daniel Bernstein
+ * Date: Feb 20, 2015
  */
-public abstract class TaskProcessorBase implements
-                                       TaskProcessor {
-    private static Logger log = LoggerFactory
-            .getLogger(TaskProcessorBase.class);
+public abstract class TaskProcessorBase implements TaskProcessor {
+
+    private static Logger log = LoggerFactory.getLogger(TaskProcessorBase.class);
     private SpaceCentricTypedTask task;
 
     public TaskProcessorBase(SpaceCentricTypedTask task) {
@@ -29,7 +29,7 @@ public abstract class TaskProcessorBase implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.duracloud.mill.workman.TaskProcessor#execute()
      */
     @Override
@@ -38,16 +38,14 @@ public abstract class TaskProcessorBase implements
 
         try {
             executeImpl();
-            log.info(createMessage("success", System.currentTimeMillis()-startTime));
-        }catch(TaskExecutionFailedException ex){
-            log.error(createMessage("failure", System.currentTimeMillis()-startTime));
+            log.info(createMessage("success", System.currentTimeMillis() - startTime));
+        } catch (TaskExecutionFailedException ex) {
+            log.error(createMessage("failure", System.currentTimeMillis() - startTime));
             throw ex;
         }
     }
 
     /**
-     * @param string
-     * @param l
      * @return
      */
     private String createMessage(String result, long elapsedTime) {
@@ -56,16 +54,17 @@ public abstract class TaskProcessorBase implements
             contentId = ((TypedTask) task).getContentId();
         }
 
-            return MessageFormat
-                    .format("processor completed: processor_class={0} account={1} store_id={2} space_id={3} {4} attempts={5} result={6} elapsed_time={7}",
-                            this.getClass().getSimpleName(),
-                            task.getAccount(),
-                            task.getStoreId(),
-                            task.getSpaceId(),
-                            contentId == null ? "": "content_id="+contentId,
-                            task.getAttempts(),
-                            result,
-                            elapsedTime + "");
+        return MessageFormat
+            .format("processor completed: processor_class={0} account={1} store_id={2} " +
+                    "space_id={3} {4} attempts={5} result={6} elapsed_time={7}",
+                    this.getClass().getSimpleName(),
+                    task.getAccount(),
+                    task.getStoreId(),
+                    task.getSpaceId(),
+                    contentId == null ? "" : "content_id=" + contentId,
+                    task.getAttempts(),
+                    result,
+                    elapsedTime + "");
     }
 
     /**
@@ -74,8 +73,9 @@ public abstract class TaskProcessorBase implements
     protected SpaceCentricTypedTask getTask() {
         return task;
     }
+
     /**
-     * 
+     *
      */
     protected abstract void executeImpl() throws TaskExecutionFailedException;
 }

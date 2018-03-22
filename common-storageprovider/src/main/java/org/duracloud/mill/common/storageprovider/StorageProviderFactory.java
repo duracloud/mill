@@ -16,15 +16,16 @@ import org.duracloud.mill.util.SimpleUserUtil;
 import org.duracloud.rackspacestorage.RackspaceStorageProvider;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.sdscstorage.SDSCStorageProvider;
-import org.duracloud.snapshotstorage.DpnStorageProvider;
 import org.duracloud.snapshotstorage.ChronopolisStorageProvider;
+import org.duracloud.snapshotstorage.DpnStorageProvider;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 
 /**
  * The class knows how to create a <code>StorageProvider</code> based on a set of credentials.
+ *
  * @author Daniel Bernstein
- *	       Date: Nov 6, 2013
+ * Date: Nov 6, 2013
  */
 public class StorageProviderFactory {
 
@@ -32,9 +33,9 @@ public class StorageProviderFactory {
      * Creates a StorageProvider which captures events and passes them to the
      * audit queue.
      *
-     * @param credentials needed to connect to storage provider
+     * @param credentials      needed to connect to storage provider
      * @param accountSubdomain subdomain of the storage provider account
-     * @param auditQueue used to capture changes to stored content
+     * @param auditQueue       used to capture changes to stored content
      * @return
      */
     public StorageProvider createWithAudit(StorageProviderCredentials credentials,
@@ -59,31 +60,32 @@ public class StorageProviderFactory {
      * @return
      */
     public StorageProvider create(StorageProviderCredentials credentials) {
-        
+
         StorageProviderType storageProviderType = credentials.getProviderType();
-        
+
         if (storageProviderType.equals(StorageProviderType.AMAZON_S3)) {
             return new S3StorageProvider(credentials.getAccessKey(),
                                          credentials.getSecretKey(),
                                          credentials.getOptions());
         } else if (storageProviderType.equals(StorageProviderType.SDSC)) {
             return new SDSCStorageProvider(credentials.getAccessKey(),
-                    credentials.getSecretKey());
+                                           credentials.getSecretKey());
         } else if (storageProviderType.equals(StorageProviderType.AMAZON_GLACIER)) {
             return new GlacierStorageProvider(credentials.getAccessKey(),
-                    credentials.getSecretKey(), credentials.getOptions());
+                                              credentials.getSecretKey(),
+                                              credentials.getOptions());
         } else if (storageProviderType.equals(StorageProviderType.RACKSPACE)) {
             return new RackspaceStorageProvider(credentials.getAccessKey(),
-                    credentials.getSecretKey());
+                                                credentials.getSecretKey());
         } else if (storageProviderType.equals(StorageProviderType.DPN)) {
             return new DpnStorageProvider(credentials.getAccessKey(),
-                                               credentials.getSecretKey());
+                                          credentials.getSecretKey());
         } else if (storageProviderType.equals(StorageProviderType.CHRONOPOLIS)) {
             return new ChronopolisStorageProvider(credentials.getAccessKey(),
-                                               credentials.getSecretKey());
+                                                  credentials.getSecretKey());
         }
         throw new RuntimeException(storageProviderType
-                + " is not a supported storage provider type");
-    }    
+                                   + " is not a supported storage provider type");
+    }
 
 }

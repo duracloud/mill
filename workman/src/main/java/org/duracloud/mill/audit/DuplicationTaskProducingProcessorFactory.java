@@ -14,9 +14,9 @@ import org.duracloud.mill.workman.TaskProcessor;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Mar 20, 2014
+ * Date: Mar 20, 2014
  */
-public class DuplicationTaskProducingProcessorFactory extends AuditTaskProcessorFactory{
+public class DuplicationTaskProducingProcessorFactory extends AuditTaskProcessorFactory {
 
     private TaskQueue duplicationTaskQueue;
     private DuplicationPolicyManager duplicationPolicyManager;
@@ -26,7 +26,7 @@ public class DuplicationTaskProducingProcessorFactory extends AuditTaskProcessor
      * @param duplicationPolicyManager
      */
     public DuplicationTaskProducingProcessorFactory(TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager) {
+                                                    DuplicationPolicyManager duplicationPolicyManager) {
         super();
         this.duplicationTaskQueue = duplicationTaskQueue;
         this.duplicationPolicyManager = duplicationPolicyManager;
@@ -38,7 +38,7 @@ public class DuplicationTaskProducingProcessorFactory extends AuditTaskProcessor
     @Override
     protected TaskProcessor createImpl(AuditTask auditTask) {
         return new DuplicationTaskProducingProcessor(auditTask,
-                duplicationTaskQueue, 
-                duplicationPolicyManager);
+                                                     duplicationTaskQueue,
+                                                     duplicationPolicyManager);
     }
 }

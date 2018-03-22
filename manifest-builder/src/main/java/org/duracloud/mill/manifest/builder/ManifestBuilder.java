@@ -29,12 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Daniel Bernstein Date: Jan 2, 2015
+ * @author Daniel Bernstein
+ * Date: Jan 2, 2015
  */
 @Component
 public class ManifestBuilder {
-    private static final Logger log = LoggerFactory
-            .getLogger(ManifestBuilder.class);
+    private static final Logger log = LoggerFactory.getLogger(ManifestBuilder.class);
     private Collection<ContentStore> contentStores;
     private List<String> spaceList;
     private String account;
@@ -45,34 +45,33 @@ public class ManifestBuilder {
     private int successes = 0;
     private int errors = 0;
     private int totalProcessed = 0;
+
     @Autowired
     public ManifestBuilder(ManifestStore manifestStore) {
         this.manifestStore = manifestStore;
     }
 
     /**
-     * 
      * @param account
      * @param contentStores
      * @param spaceList
-     * @param manifestItemRepo
      * @param clean
      * @param dryRun
-     * @param threads 
+     * @param threads
      */
     public void init(String account,
                      Collection<ContentStore> contentStores,
                      List<String> spaceList,
                      boolean clean,
-                     boolean dryRun, 
+                     boolean dryRun,
                      int threads) {
         this.account = account;
         this.contentStores = contentStores;
         this.spaceList = spaceList;
         this.clean = clean;
         this.dryRun = dryRun;
-        
-        if(this.executor != null){
+
+        if (this.executor != null) {
             this.executor.shutdownNow();
         }
 
@@ -84,40 +83,39 @@ public class ManifestBuilder {
                                                threads,
                                                0l,
                                                TimeUnit.MILLISECONDS,
-                                               new LinkedBlockingQueue<Runnable>(500));  
+                                               new LinkedBlockingQueue<Runnable>(500));
 
     }
 
     public void execute() throws Exception {
         long startTime = System.currentTimeMillis();
-        
-        if(clean){
+
+        if (clean) {
             clean();
         }
         build();
-        
+
         this.executor.shutdown();
         log.info("awaiting the completion of all outstanding tasks...");
-        if(this.executor.awaitTermination(5, TimeUnit.MINUTES)){
+        if (this.executor.awaitTermination(5, TimeUnit.MINUTES)) {
             log.info("Completed all tasks.");
-        }else{
+        } else {
             log.info("Unable to complete all tasks within the timeout period of 5 minutes.");
             this.executor.shutdownNow();
         }
-        
-        String duration = DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-startTime);
-        
+
+        String duration = DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - startTime);
+
         log.info("duration={} total_item_processed={}  successes={} errors={}",
                  duration,
                  totalProcessed,
                  successes,
                  errors);
-        
+
     }
-    
 
     /**
-     * 
+     *
      */
     private void build() throws Exception {
         for (ContentStore store : contentStores) {
@@ -130,24 +128,22 @@ public class ManifestBuilder {
             }
         }
 
-        
     }
 
     /**
      * @param spaceId
-     * @param spaceId 
+     * @param spaceId
      * @param store
      */
-    private void
-            buildSpace(final String storeId, final String spaceId, final ContentStore store) throws Exception {
-        log.info("starting manifest rebuild for storeId={} spaceId={}",storeId, spaceId);
+    private void buildSpace(final String storeId, final String spaceId, final ContentStore store) throws Exception {
+        log.info("starting manifest rebuild for storeId={} spaceId={}", storeId, spaceId);
         Iterator<String> contentIds = store.getSpaceContents(spaceId);
         while (contentIds.hasNext()) {
             final String contentId = contentIds.next();
 
-            while(true){
-                try{
-                    this.executor.execute(new Runnable(){
+            while (true) {
+                try {
+                    this.executor.execute(new Runnable() {
                         /* (non-Javadoc)
                          * @see java.lang.Runnable#run()
                          */
@@ -161,21 +157,19 @@ public class ManifestBuilder {
                                 successes++;
                             } catch (Exception e) {
                                 errors++;
-                                log.error(MessageFormat
-                                                  .format("failed to update manifest for storeId={0} spaceId={1} contentId={2} message={3}",
-                                                          storeId,
-                                                          spaceId,
-                                                          contentId,
-                                                          e.getMessage()),
-                                          e);
+                                log.error(
+                                    MessageFormat.format("failed to update manifest for storeId={0} spaceId={1} " +
+                                                         "contentId={2} message={3}",
+                                                         storeId, spaceId, contentId, e.getMessage()),
+                                    e);
                             }
-                            
+
                         }
-                        
+
                     });
-                    
+
                     break;
-                }catch(RejectedExecutionException ex){
+                } catch (RejectedExecutionException ex) {
                     log.debug("failed to add new task: {} : thread executor -> taskCount={}, current pool size={}",
                               ex.getMessage(),
                               executor.getTaskCount(),
@@ -188,15 +182,17 @@ public class ManifestBuilder {
             this.totalProcessed++;
 
         }
-        
-        log.info("all manifest rebuild tasks scheduled for  for storeId={} spaceId={}",storeId, spaceId);
- 
+
+        log.info("all manifest rebuild tasks scheduled for  for storeId={} spaceId={}", storeId, spaceId);
+
     }
 
     private void sleep() {
-        try{
+        try {
             Thread.sleep(10);
-        }catch(InterruptedException e){}
+        } catch (InterruptedException e) {
+            // Exit sleep on interruption
+        }
     }
 
     /**
@@ -208,22 +204,16 @@ public class ManifestBuilder {
                                  String spaceId,
                                  String contentId,
                                  ContentStore store) throws Exception {
-        String message = MessageFormat
-                .format("rebuilt manifest entry for storeId={0} spaceId=\"{1}\" contentId=\"{2}\"",
-                        storeId,
-                        spaceId,
-                        contentId);
+        String message =
+            MessageFormat.format("rebuilt manifest entry for storeId={0} spaceId=\"{1}\" contentId=\"{2}\"",
+                                 storeId, spaceId, contentId);
         if (dryRun) {
             log.info("(dry run: no update) - " + message);
         } else {
             log.debug("about to rebuild manifest entry for storeId={} spaceId=\"{}\" contentId=\"{}\"",
-                      storeId,
-                      spaceId,
-                      contentId);
-            Map<String, String> props = store.getContentProperties(spaceId,
-                                                                   contentId);
-            String modified = props
-                    .get(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
+                      storeId, spaceId, contentId);
+            Map<String, String> props = store.getContentProperties(spaceId, contentId);
+            String modified = props.get(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
             Date timeStamp;
 
             try {
@@ -233,17 +223,17 @@ public class ManifestBuilder {
             }
 
             //some items are missing content size information.
-	    String contentSize = props.get(StorageProvider.PROPERTIES_CONTENT_SIZE);
-            if(contentSize == null){
+            String contentSize = props.get(StorageProvider.PROPERTIES_CONTENT_SIZE);
+            if (contentSize == null) {
                 contentSize = "0";
             }
-            
-            manifestStore.addUpdate(account, 
-                                    storeId, 
-                                    spaceId, 
-                                    contentId, 
-                                    props.get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM), 
-                                    props.get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE), 
+
+            manifestStore.addUpdate(account,
+                                    storeId,
+                                    spaceId,
+                                    contentId,
+                                    props.get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM),
+                                    props.get(StorageProvider.PROPERTIES_CONTENT_MIMETYPE),
                                     contentSize,
                                     timeStamp);
 
@@ -253,7 +243,7 @@ public class ManifestBuilder {
     }
 
     /**
-     * 
+     *
      */
     private void clean() throws Exception {
         for (ContentStore store : contentStores) {
@@ -264,13 +254,11 @@ public class ManifestBuilder {
                     if (!dryRun) {
                         manifestStore.delete(account, storeId, spaceId);
                         log.info("manifest deleted for storeId={} spaceId={}",
-                                 storeId,
-                                 spaceId);
+                                 storeId, spaceId);
                     } else {
                         log.info("you're in dry run mode: manifest for storeId={} spaceId={} will be "
-                                         + "deleted when doing a \"wet\" run. No modifications have been made.",
-                                 storeId,
-                                 spaceId);
+                                 + "deleted when doing a \"wet\" run. No modifications have been made.",
+                                 storeId, spaceId);
                     }
                 }
             }

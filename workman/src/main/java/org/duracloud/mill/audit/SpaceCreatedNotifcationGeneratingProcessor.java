@@ -16,17 +16,17 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 11, 2014
+ * Date: Apr 11, 2014
  */
 public class SpaceCreatedNotifcationGeneratingProcessor implements TaskProcessor {
     private static Logger log = LoggerFactory
-            .getLogger(SpaceCreatedNotifcationGeneratingProcessor.class);
+        .getLogger(SpaceCreatedNotifcationGeneratingProcessor.class);
 
     private AuditTask task;
     private NotificationManager notificationManager;
 
     public SpaceCreatedNotifcationGeneratingProcessor(AuditTask task,
-            NotificationManager notificationManager) {
+                                                      NotificationManager notificationManager) {
         this.task = task;
         this.notificationManager = notificationManager;
     }
@@ -41,38 +41,36 @@ public class SpaceCreatedNotifcationGeneratingProcessor implements TaskProcessor
             log.info("new space audit task received for account {} received: {}", account, task);
             String storeId = task.getStoreId();
             String spaceId = task.getSpaceId();
-            log.warn(
-                     "New space notification: subdomain: {}, storeId: {}, spaceId: {}: ",
+            log.warn("New space notification: subdomain: {}, storeId: {}, spaceId: {}: ",
                      account, storeId, spaceId);
 
             newSpace(account,
-                    task.getStoreId(),
-                    task.getSpaceId(), 
-                    task.getDateTime(),
-                    task.getUserId());
-        }else{
+                     task.getStoreId(),
+                     task.getSpaceId(),
+                     task.getDateTime(),
+                     task.getUserId());
+        } else {
             log.debug("This task {} is not a space creation task: it will be ignored.", task);
         }
     }
-    
+
     private void newSpace(String subdomain,
-                         String storeId,
-                         String spaceId,
-                         String datetime,
-                         String username) {
-                     
-                     
-                     String host = subdomain + ".duracloud.org";
-                     String subject = "New Space on " + host + ", provider " + storeId + ": " + 
-                             spaceId;
-                     StringBuilder body = new StringBuilder();
-                     
-                     body.append("A new space has been created!\n\n");
-                     body.append("Subdomain: https://" + host + "\n");
-                     body.append("Storage Provider Id: " + storeId + "\n");
-                     body.append("Space: " + spaceId + "\n");
-                     
-                     this.notificationManager.sendEmail(subject, body.toString());
+                          String storeId,
+                          String spaceId,
+                          String datetime,
+                          String username) {
+
+        String host = subdomain + ".duracloud.org";
+        String subject = "New Space on " + host + ", provider " + storeId + ": " +
+                         spaceId;
+        StringBuilder body = new StringBuilder();
+
+        body.append("A new space has been created!\n\n");
+        body.append("Subdomain: https://" + host + "\n");
+        body.append("Storage Provider Id: " + storeId + "\n");
+        body.append("Space: " + spaceId + "\n");
+
+        this.notificationManager.sendEmail(subject, body.toString());
     }
 
 }

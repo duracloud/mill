@@ -13,26 +13,25 @@ import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 public class TaskWorkerFactoryImpl implements TaskWorkerFactory {
+
     private TaskProcessorFactory processorFactory;
     private TaskQueue deadLetterQueue;
     private ScheduledThreadPoolExecutor timer;
-    
+
     public TaskWorkerFactoryImpl(TaskProcessorFactory factory, TaskQueue deadLetterQueue) {
-        if (factory == null)
-            throw new IllegalArgumentException(
-                    "processorFactory must be non-null");
+        if (factory == null) {
+            throw new IllegalArgumentException("processorFactory must be non-null");
+        }
         this.processorFactory = factory;
 
-        if (deadLetterQueue == null)
-            throw new IllegalArgumentException(
-                    "deadLetterQueue must be non-null");
+        if (deadLetterQueue == null) {
+            throw new IllegalArgumentException("deadLetterQueue must be non-null");
+        }
         this.deadLetterQueue = deadLetterQueue;
-        
+
         this.timer = new ScheduledThreadPoolExecutor(5);
 
     }
@@ -47,7 +46,7 @@ public class TaskWorkerFactoryImpl implements TaskWorkerFactory {
         taskWorker.init();
         return taskWorker;
     }
-    
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.workman.TaskWorkerFactory#destroy()
      */

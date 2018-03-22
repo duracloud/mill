@@ -19,7 +19,7 @@ import org.junit.Test;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Jan 22, 2014
+ * Date: Jan 22, 2014
  */
 public class StateTest {
 
@@ -39,7 +39,8 @@ public class StateTest {
 
     @Test
     public void testToString() {
-        DuplicationMorsel morsel = new DuplicationMorsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
+        DuplicationMorsel morsel =
+            new DuplicationMorsel("test", "space", "marker", new DuplicationStorePolicy("0", "1"));
         State<Morsel> state = new State<>();
         Assert.assertNotNull(state.toString());
         LinkedHashSet<Morsel> morsels = new LinkedHashSet<>();

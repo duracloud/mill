@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.storagereporter;
 
+import static java.math.RoundingMode.HALF_UP;
+
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -16,7 +18,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import static java.math.RoundingMode.HALF_UP;
 
 import org.duracloud.account.db.model.AccountInfo;
 import org.duracloud.account.db.model.AccountInfo.AccountStatus;
@@ -34,13 +35,12 @@ import org.slf4j.LoggerFactory;
  * most recent byte count exceeds the allocation set on the storage provider's
  * "storage limit" property. The report shows the total for each storage
  * provider, the storage limit, and the % capacity of that storage provider.
- * 
+ *
  * @author dbernstein
  * @since: Jun 29, 2017
  */
 public class StorageReporter {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(StorageReporter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageReporter.class);
 
     private JpaSpaceStatsRepo statsRepo;
     private DuracloudAccountRepo accountRepo;
@@ -57,7 +57,6 @@ public class StorageReporter {
     public StorageReporter(JpaSpaceStatsRepo statsRepo,
                            DuracloudAccountRepo accountRepo,
                            NotificationManager notification) {
-
         this.statsRepo = statsRepo;
         this.accountRepo = accountRepo;
         this.notification = notification;
@@ -65,7 +64,6 @@ public class StorageReporter {
 
     /**
      * @return
-     * 
      */
     public StorageReportResult run() {
         // for each active account
@@ -76,8 +74,7 @@ public class StorageReporter {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, -1);
         Date lastMonth = c.getTime();
-        List<AccountInfo> accounts = accountRepo
-                .findByStatus(AccountStatus.ACTIVE);
+        List<AccountInfo> accounts = accountRepo.findByStatus(AccountStatus.ACTIVE);
         Collections.sort(accounts, new Comparator<AccountInfo>() {
             @Override
             public int compare(AccountInfo o1, AccountInfo o2) {
@@ -89,10 +86,8 @@ public class StorageReporter {
             String accountId = account.getSubdomain();
             LOGGER.info("processing {}", accountId);
             // gather all storage providers for an account into a single list.
-            StorageProviderAccount primary = account
-                    .getPrimaryStorageProviderAccount();
-            Set<StorageProviderAccount> secondary = account
-                    .getSecondaryStorageProviderAccounts();
+            StorageProviderAccount primary = account.getPrimaryStorageProviderAccount();
+            Set<StorageProviderAccount> secondary = account.getSecondaryStorageProviderAccounts();
             List<StorageProviderAccount> providers = new LinkedList<>(secondary);
             providers.add(0, primary);
 
@@ -100,17 +95,15 @@ public class StorageReporter {
 
             // for each storage provider
             for (StorageProviderAccount storageProviderAccount : providers) {
-                List<Object[]> stats = statsRepo
-                        .getByAccountIdAndStoreId(accountId,
-                                                  String.valueOf(storageProviderAccount
-                                                          .getId()),
-                                                  lastMonth,
-                                                  now,
-                                                  JpaSpaceStatsRepo.INTERVAL_DAY);
+                List<Object[]> stats =
+                    statsRepo.getByAccountIdAndStoreId(accountId,
+                                                       String.valueOf(storageProviderAccount.getId()),
+                                                       lastMonth,
+                                                       now,
+                                                       JpaSpaceStatsRepo.INTERVAL_DAY);
                 long total = 0;
                 if (stats != null && stats.size() > 0) {
-                    total = ((BigDecimal) stats.get(stats.size() - 1)[3])
-                            .longValue();
+                    total = ((BigDecimal) stats.get(stats.size() - 1)[3]).longValue();
                 }
                 result.addStorageProviderResult(storageProviderAccount, total);
             }
@@ -169,32 +162,28 @@ public class StorageReporter {
         body.append(MessageFormat.format("{0} (subdomain={1}):\n",
                                          account.getAcctName(),
                                          account.getSubdomain()));
-        for (StorageProviderResult presult : result
-                .getStorageProviderResults()) {
+        for (StorageProviderResult presult : result.getStorageProviderResults()) {
             StorageProviderAccount spa = presult.getStorageProviderAccount();
             int limit = spa.getStorageLimit();
             String total = new BigDecimal(presult.getTotalBytes())
-                    .divide(TB_BIG_DECIMAL, 2, HALF_UP).setScale(2, HALF_UP)
-                    .toString();
+                .divide(TB_BIG_DECIMAL, 2, HALF_UP).setScale(2, HALF_UP).toString();
             String capacity = new BigDecimal(presult.getTotalBytes())
-                    .divide(new BigDecimal(limit * StorageProviderResult.TB),
-                            2,
-                            HALF_UP)
-                    .multiply(ONE_HUNDRED).setScale(2, HALF_UP).toString();
+                .divide(new BigDecimal(limit * StorageProviderResult.TB), 2, HALF_UP)
+                .multiply(ONE_HUNDRED).setScale(2, HALF_UP).toString();
 
             String line = MessageFormat
-                    .format("    provider={0}/{1}, current total: {2} TB, "
-                            + "allocated storage: {3} TB, capacity: {4} %, status: {5}\n",
-                            String.valueOf(spa.getId()),
-                            spa.getProviderType().name(),
-                            total,
-                            limit,
-                            capacity,
-                            presult.isOversubscribed() ? "OVER LIMIT" : "OK");
+                .format("    provider={0}/{1}, current total: {2} TB, "
+                        + "allocated storage: {3} TB, capacity: {4} %, status: {5}\n",
+                        String.valueOf(spa.getId()),
+                        spa.getProviderType().name(),
+                        total,
+                        limit,
+                        capacity,
+                        presult.isOversubscribed() ? "OVER LIMIT" : "OK");
             body.append(line);
 
         }
-        
+
         body.append("\n");
     }
 }

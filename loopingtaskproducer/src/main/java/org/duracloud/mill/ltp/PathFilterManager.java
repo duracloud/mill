@@ -23,16 +23,17 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class allows users to flexibly include and exclude accounts, stores and spaces
- * in various looping task production contexts.  The include and exclude patterns must 
- * follow this pattern:  /(account|*)/(store|*)/(spaceId|*).  
- * 
- * Inclusions are checked before exclusions.  If no inclusions are specified, everything that is not excluded is assumed to be included.
- * 
- * @author Daniel Bernstein Date: May 5, 2014
+ * in various looping task production contexts.  The include and exclude patterns must
+ * follow this pattern:  /(account|*)/(store|*)/(spaceId|*).
+ *
+ * Inclusions are checked before exclusions.  If no inclusions are specified, everything that is not excluded is
+ * assumed to be included.
+ *
+ * @author Daniel Bernstein
+ * Date: May 5, 2014
  */
 public class PathFilterManager {
-    private static final Logger log = LoggerFactory
-            .getLogger(PathFilterManager.class);
+    private static final Logger log = LoggerFactory.getLogger(PathFilterManager.class);
     private List<String> exclusions;
     private List<String> inclusions;
 
@@ -56,13 +57,13 @@ public class PathFilterManager {
     }
 
     private List<String> loadPatterns(File file,
-                                       String type) {
+                                      String type) {
         try (Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             LineIterator it = new LineIterator(r);
             List<String> patterns = new ArrayList<>();
             while (it.hasNext()) {
                 String pattern = it.next();
-                if(!pattern.startsWith("#")){
+                if (!pattern.startsWith("#")) {
                     addPattern(type, patterns, pattern);
                 }
             }
@@ -73,8 +74,7 @@ public class PathFilterManager {
         }
     }
 
-    private void
-            addPattern(String type, List<String> patterns, String pattern) {
+    private void addPattern(String type, List<String> patterns, String pattern) {
         pattern = validateAndScrubPattern(pattern);
         patterns.add(pattern);
         log.info("Added " + type + " pattern: {}", pattern);
@@ -85,31 +85,31 @@ public class PathFilterManager {
      */
     private String validateAndScrubPattern(String pattern) {
         String regex = "(/([*]|[A-Za-z0-9_.-]+[*]?)){3}";
-        if(!StringUtils.isEmpty(pattern)){
-            if(pattern.matches(regex)){
+        if (!StringUtils.isEmpty(pattern)) {
+            if (pattern.matches(regex)) {
                 return pattern.trim();
             }
         }
-        
-        throw new DuraCloudRuntimeException(
-                                            "pattern \""+pattern+"\" is invalid.  " +
-                                            "Must be start with a forward slash, contain three slashes, " +
-                                            "and after each slash must be at least one alpha numeric charactor or * character.");
+
+        throw new DuraCloudRuntimeException("pattern \"" + pattern + "\" is invalid. Must be start with a " +
+                                            "forward slash, contain three slashes, and after each slash must " +
+                                            "be at least one alpha numeric charactor or * character.");
     }
 
     private void checkFileParam(File file) {
-        if (file == null)
+        if (file == null) {
             throw new IllegalArgumentException("file must be non-null");
-        if (!file.exists())
-            throw new IllegalArgumentException(file.getAbsolutePath()
-                    + " does not exist");
+        }
+        if (!file.exists()) {
+            throw new IllegalArgumentException(file.getAbsolutePath() + " does not exist");
+        }
     }
 
     /**
      * Returns true if the path is included and not excluded. A path is included
      * if the inclusions list is null or empty or the path matches an item in
      * the list.
-     * 
+     *
      * @param path
      * @return
      */
@@ -125,7 +125,7 @@ public class PathFilterManager {
             return false;
         }
 
-        if (matchesList(path, exclusions,true)) {
+        if (matchesList(path, exclusions, true)) {
             log.debug("{} matches exclusions: skipping...", path);
             return true;
         }
@@ -134,7 +134,7 @@ public class PathFilterManager {
 
     private boolean matchesList(String path, List<String> list, boolean matchAllSegments) {
         for (String pattern : list) {
-            if(matches(pattern, path, matchAllSegments)){
+            if (matches(pattern, path, matchAllSegments)) {
                 return true;
             }
         }
@@ -144,47 +144,46 @@ public class PathFilterManager {
     /**
      * @param pattern
      * @param path
-     * @param matchAllSegments 
+     * @param matchAllSegments
      * @return
      */
     private boolean matches(String pattern, String path, boolean matchAllSegments) {
         String[] pathSegments = path.substring(1).split("/");
         String[] patternSegments = pattern.substring(1).split("/");
-        
-        
-        for(int i = 0; i < pathSegments.length; i++){
+
+        for (int i = 0; i < pathSegments.length; i++) {
             String pathSegment = pathSegments[i].trim();
             String patternSegment = patternSegments[i].trim();
             boolean endsWithWildCard = patternSegment.endsWith("*");
-            boolean entireSegmentIsWild = endsWithWildCard && patternSegment.length()==1;
-            if(entireSegmentIsWild){
+            boolean entireSegmentIsWild = endsWithWildCard && patternSegment.length() == 1;
+            if (entireSegmentIsWild) {
                 continue;
-            }else if(endsWithWildCard){
+            } else if (endsWithWildCard) {
                 //strip off wildcard
-                patternSegment = patternSegment.substring(0, patternSegment.length()-1);
-                if(!pathSegment.startsWith(patternSegment)){
+                patternSegment = patternSegment.substring(0, patternSegment.length() - 1);
+                if (!pathSegment.startsWith(patternSegment)) {
                     return false;
                 }
-            }else{
-                if(!pathSegment.equals(patternSegment)){
+            } else {
+                if (!pathSegment.equals(patternSegment)) {
                     return false;
                 }
             }
         }
-        
-        if(matchAllSegments) {
-            if(pathSegments.length != patternSegments.length){
+
+        if (matchAllSegments) {
+            if (pathSegments.length != patternSegments.length) {
                 int diff = patternSegments.length - pathSegments.length;
                 int lowerBound = patternSegments.length - diff;
-                for(int i = patternSegments.length-1; i >= lowerBound; i--){
-                    if(!patternSegments[i].equals("*")){
+                for (int i = patternSegments.length - 1; i >= lowerBound; i--) {
+                    if (!patternSegments[i].equals("*")) {
                         return false;
                     }
                 }
             }
         }
-        
+
         return true;
-        
+
     }
 }

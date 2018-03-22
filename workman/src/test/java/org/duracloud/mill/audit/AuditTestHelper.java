@@ -11,13 +11,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.common.util.DateUtil;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Mar 21, 2014
+ * Date: Mar 21, 2014
  */
 public class AuditTestHelper {
+
+    private AuditTestHelper() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
 
     /**
      * @return
@@ -31,11 +34,11 @@ public class AuditTestHelper {
         task.setContentId("contentId");
         task.setAction(AuditTask.ActionType.DELETE_CONTENT.name());
         task.setContentSize("1000");
-        task.setDateTime(System.currentTimeMillis()+"");
+        task.setDateTime(System.currentTimeMillis() + "");
         task.setContentChecksum("12341243214234");
         task.setUserId("user");
         task.setContentMimetype("application/text");
-        Map<String,String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("key", "value");
         task.setContentProperties(map);
         task.setSpaceACLs("acls");

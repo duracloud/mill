@@ -17,11 +17,15 @@ import org.duracloud.storage.domain.StorageProviderType;
 
 /**
  * @author Daniel Bernstein
- *	       Date: May 15, 2014
+ * Date: May 15, 2014
  */
 public class BitIntegrityHelper {
-    private static DateFormat dateFormat = 
-            new SimpleDateFormat(DateUtil.DateFormat.DEFAULT_FORMAT.getPattern());
+    private static DateFormat dateFormat =
+        new SimpleDateFormat(DateUtil.DateFormat.DEFAULT_FORMAT.getPattern());
+
+    private BitIntegrityHelper() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
 
     /**
      * @param message
@@ -30,8 +34,8 @@ public class BitIntegrityHelper {
      * @return
      */
     public static String buildFailureMessage(String message,
-            BitIntegrityCheckTask bitTask,
-            StorageProviderType storageProviderType) {
+                                             BitIntegrityCheckTask bitTask,
+                                             StorageProviderType storageProviderType) {
         StringBuilder builder = new StringBuilder();
         builder.append("Failure to bit-integrity check content item due to: ");
         builder.append(message);
@@ -47,7 +51,7 @@ public class BitIntegrityHelper {
         builder.append(bitTask.getContentId());
         return builder.toString();
     }
-    
+
     /**
      * @param next
      * @return
@@ -55,17 +59,17 @@ public class BitIntegrityHelper {
     public static String formatLogLine(BitLogItem item) {
 
         String[] values = {
-                dateFormat.format(item.getModified()),
-                item.getAccount(), 
-                item.getStoreId(),
-                item.getStoreType().name(), 
-                item.getSpaceId(),
-                item.getContentId(), 
-                item.getResult().name(),
-                item.getContentChecksum(), 
-                item.getStorageProviderChecksum(),
-                item.getManifestChecksum(),
-                item.getDetails()};
+            dateFormat.format(item.getModified()),
+            item.getAccount(),
+            item.getStoreId(),
+            item.getStoreType().name(),
+            item.getSpaceId(),
+            item.getContentId(),
+            item.getResult().name(),
+            item.getContentChecksum(),
+            item.getStorageProviderChecksum(),
+            item.getManifestChecksum(),
+            item.getDetails()};
 
         return StringUtils.join(values, "\t");
 
@@ -76,19 +80,19 @@ public class BitIntegrityHelper {
      */
     public static String getHeader() {
         String[] values = {
-                "date-checked",
-                "account", 
-                "store-id",
-                "store-type", 
-                "space-id",
-                "content-id", 
-                "result",
-                "content-checksum", 
-                "provider-checksum",
-                "manifest-checksum",
-                "details"};
+            "date-checked",
+            "account",
+            "store-id",
+            "store-type",
+            "space-id",
+            "content-id",
+            "result",
+            "content-checksum",
+            "provider-checksum",
+            "manifest-checksum",
+            "details"};
 
-        return StringUtils.join(values, "\t")+"\n";
+        return StringUtils.join(values, "\t") + "\n";
 
     }
 

@@ -7,17 +7,17 @@
  */
 package org.duracloud.mill.dup.repo;
 
-import org.duracloud.common.util.IOUtil;
-
 import java.io.File;
 import java.io.InputStream;
+
+import org.duracloud.common.util.IOUtil;
 
 /**
  * Provides access to a duplication policy repo that is stored on the local
  * file system, as a directory containing the policy files.
  *
  * @author Bill Branan
- *         Date: 10/31/13
+ * Date: 10/31/13
  */
 public class LocalDuplicationPolicyRepo implements DuplicationPolicyRepo {
 
@@ -25,7 +25,7 @@ public class LocalDuplicationPolicyRepo implements DuplicationPolicyRepo {
 
     public LocalDuplicationPolicyRepo(String repoDirPath) {
         this.repoDir = new File(repoDirPath);
-        if(!repoDir.exists() || !repoDir.isDirectory()) {
+        if (!repoDir.exists() || !repoDir.isDirectory()) {
             throw new RuntimeException("Path " + repoDirPath + " does not " +
                                        "point to a duplication policy directory");
         }

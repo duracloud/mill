@@ -15,13 +15,13 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Daniel Bernstein
- *         Date: Sep 11, 2014
+ * Date: Sep 11, 2014
  */
 @Configuration
 public class ManifestConfig {
 
     @Bean
-    public ManifestStore manifestStore(JpaManifestItemRepo manifestItemRepo){
+    public ManifestStore manifestStore(JpaManifestItemRepo manifestItemRepo) {
         return new JpaManifestStore(manifestItemRepo);
     }
 

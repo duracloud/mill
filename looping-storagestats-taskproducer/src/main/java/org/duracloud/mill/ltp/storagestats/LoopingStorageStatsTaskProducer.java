@@ -33,12 +33,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Daniel Bernstein Date: Apr 28, 2014
+ * @author Daniel Bernstein
+ * Date: Apr 28, 2014
  */
-public class LoopingStorageStatsTaskProducer
-        extends LoopingTaskProducer<StorageStatsMorsel> {
-    private static Logger log = LoggerFactory
-            .getLogger(LoopingStorageStatsTaskProducer.class);
+public class LoopingStorageStatsTaskProducer extends LoopingTaskProducer<StorageStatsMorsel> {
+
+    private static Logger log = LoggerFactory.getLogger(LoopingStorageStatsTaskProducer.class);
     private PathFilterManager exclusionManager;
     private int waitTimeInMsBeforeQueueSizeCheck = 10000;
 
@@ -66,14 +66,13 @@ public class LoopingStorageStatsTaskProducer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.ltp.LoopingTaskProducer#loadMorselQueueFromSource(java
      * .util.Queue)
      */
     @Override
-    protected void
-              loadMorselQueueFromSource(Queue<StorageStatsMorsel> morselQueue) {
+    protected void loadMorselQueueFromSource(Queue<StorageStatsMorsel> morselQueue) {
         // generate set of morsels based on duplication policy
         try {
             for (String account : getAccountsList()) {
@@ -85,10 +84,8 @@ public class LoopingStorageStatsTaskProducer
                     continue;
                 }
 
-                AccountCredentials accountCreds = getCredentialsRepo()
-                        .getAccountCredentials(account);
-                for (StorageProviderCredentials cred : accountCreds
-                        .getProviderCredentials()) {
+                AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
+                for (StorageProviderCredentials cred : accountCreds.getProviderCredentials()) {
                     String storePath = accountPath + "/" + cred.getProviderId();
                     if (exclusionManager.isExcluded(storePath)) {
                         continue;
@@ -103,8 +100,7 @@ public class LoopingStorageStatsTaskProducer
                         if (!exclusionManager.isExcluded(spacePath)) {
                             morselQueue.add(new StorageStatsMorsel(account,
                                                                    cred.getProviderId(),
-                                                                   cred.getProviderType()
-                                                                           .name(),
+                                                                   cred.getProviderType().name(),
                                                                    spaceId));
                         }
                     }
@@ -129,7 +125,7 @@ public class LoopingStorageStatsTaskProducer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.ltp.LoopingTaskProducer#nibble(org.duracloud.mill.ltp.
      * Morsel)
@@ -139,8 +135,7 @@ public class LoopingStorageStatsTaskProducer
         StorageStatsMorsel morsel = queue.peek();
         String storeId = morsel.getStoreId();
 
-        StorageProvider store = getStorageProvider(morsel.getAccount(),
-                                                   storeId);
+        StorageProvider store = getStorageProvider(morsel.getAccount(), storeId);
 
         int maxTaskQueueSize = getMaxTaskQueueSize();
         int taskQueueSize = getTaskQueue().size();
@@ -190,7 +185,7 @@ public class LoopingStorageStatsTaskProducer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.ltp.LoopingTaskProducer#logIncrementalStatsBySubdomain
      * (java.lang.String, org.duracloud.mill.ltp.RunStats)
@@ -199,14 +194,13 @@ public class LoopingStorageStatsTaskProducer
     protected void logIncrementalStatsByAccount(String account,
                                                 RunStats stats) {
         log.info("Session stats by account (incremental): account={} tasksAdded={}",
-                 account,
-                 ((StorageStatsRunStats) stats).getAdded());
+                 account, ((StorageStatsRunStats) stats).getAdded());
 
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.ltp.LoopingTaskProducer#logCumulativeSessionStats()
      */
@@ -214,13 +208,12 @@ public class LoopingStorageStatsTaskProducer
     protected void logCumulativeSessionStats(Map<String, RunStats> runstats,
                                              RunStats cumulativeTotals) {
         log.info("session stats (global cumulative): domains={} tasksAdded={}",
-                 runstats.keySet().size(),
-                 ((StorageStatsRunStats) cumulativeTotals).getAdded());
+                 runstats.keySet().size(), ((StorageStatsRunStats) cumulativeTotals).getAdded());
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.ltp.LoopingTaskProducer#logGlobalncrementalStats(org.
      * duracloud.mill.ltp.RunStats)
@@ -233,7 +226,7 @@ public class LoopingStorageStatsTaskProducer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.duracloud.mill.ltp.LoopingTaskProducer#createRunStats()
      */
     @Override
@@ -247,7 +240,7 @@ public class LoopingStorageStatsTaskProducer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.ltp.LoopingTaskProducer#getLoopingProducerTypePrefix()
      */

@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.dup;
 
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.junit.Assert.assertThat;
+
+import java.util.Set;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
@@ -14,11 +19,6 @@ import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.junit.Assert.assertThat;
 
 /**
  * Integration test for the DuplicatonPolicyManager which interacts with S3
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertThat;
  * to S3.
  *
  * @author Bill Branan
- *         Date: 11/1/13
+ * Date: 11/1/13
  */
 public class TestDuplicationPolicyManager extends BaseDuplicationPolicyTester {
 
@@ -41,8 +41,8 @@ public class TestDuplicationPolicyManager extends BaseDuplicationPolicyTester {
 
         // Create policy bucket
         String accessKey = System.getenv("AWS_ACCESS_KEY_ID");
-        bucketName = accessKey.toLowerCase()  + "." +
-            S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;
+        bucketName = accessKey.toLowerCase() + "." +
+                     S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;
         s3Client.createBucket(bucketName);
 
         // Load accounts list
@@ -65,7 +65,7 @@ public class TestDuplicationPolicyManager extends BaseDuplicationPolicyTester {
     @After
     public void teardown() {
         // Clear policy bucket contents
-        for(S3ObjectSummary object :
+        for (S3ObjectSummary object :
             s3Client.listObjects(bucketName).getObjectSummaries()) {
             s3Client.deleteObject(bucketName, object.getKey());
         }
@@ -81,7 +81,7 @@ public class TestDuplicationPolicyManager extends BaseDuplicationPolicyTester {
 
         Set<String> dupAccounts = policyManager.getDuplicationAccounts();
         assertThat(dupAccounts, hasItems("account1", "account2", "account3"));
-        for(String dupAccount : dupAccounts) {
+        for (String dupAccount : dupAccounts) {
             DuplicationPolicy policy =
                 policyManager.getDuplicationPolicy(dupAccount);
             assertThat(policy.getSpaces(), hasItems("testSpace1", "testSpace2"));

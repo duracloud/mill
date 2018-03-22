@@ -26,27 +26,25 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 
 public class ManifestCleanerDriver extends DriverSupport {
 
     private static Logger log = LoggerFactory
-            .getLogger(ManifestCleanerDriver.class);
+        .getLogger(ManifestCleanerDriver.class);
 
-    public ManifestCleanerDriver(){
+    public ManifestCleanerDriver() {
         super(new CommonCommandLineOptions());
     }
-    
+
     public static void main(String[] args) {
         new ManifestCleanerDriver().execute(args);
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.util.DriverSupport#executeImpl(org.apache.commons.
      * cli.CommandLine)
@@ -54,10 +52,10 @@ public class ManifestCleanerDriver extends DriverSupport {
     @Override
     protected void executeImpl(CommandLine cmd) {
         try {
-            List<PropertyDefinition> defintions = 
-                    new PropertyDefinitionListBuilder().addMillDb()
-                                                       .addManifestExpirationDate()
-                                                       .build();
+            List<PropertyDefinition> defintions =
+                new PropertyDefinitionListBuilder().addMillDb()
+                                                   .addManifestExpirationDate()
+                                                   .build();
             PropertyVerifier verifier = new PropertyVerifier(defintions);
             verifier.verify(System.getProperties());
             String time = System.getProperty(ConfigConstants.MANIFEST_EXPIRATION_TIME);
@@ -71,8 +69,8 @@ public class ManifestCleanerDriver extends DriverSupport {
 
             long deleted = 0l;
             long total = 0l;
-            while((deleted = store.purgeDeletedItemsBefore(expirationDate)) > 0){
-                total+=deleted;
+            while ((deleted = store.purgeDeletedItemsBefore(expirationDate)) > 0) {
+                total += deleted;
                 log.info("Deleted {} items that were flagged as deleted before {}",
                          deleted,
                          expirationDate);
@@ -81,8 +79,7 @@ public class ManifestCleanerDriver extends DriverSupport {
             log.info("Purge completed: Deleted a grand total of {} items that were flagged as deleted before {}",
                      total,
                      expirationDate);
-        
-            
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

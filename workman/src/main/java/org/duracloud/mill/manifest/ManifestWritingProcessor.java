@@ -19,16 +19,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *         Date: Sep 3, 2014
+ * Date: Sep 3, 2014
  */
-public class ManifestWritingProcessor extends
-                                     TaskProcessorBase {
+public class ManifestWritingProcessor extends TaskProcessorBase {
     private static Logger log = LoggerFactory.getLogger(ManifestWritingProcessor.class);
     private AuditTask task;
     private ManifestStore manifestStore;
+
     /**
      * @param task
-     * @param manifestStore 
+     * @param manifestStore
      */
     public ManifestWritingProcessor(AuditTask task, ManifestStore manifestStore) {
         super(task);
@@ -48,54 +48,48 @@ public class ManifestWritingProcessor extends
             String contentId = task.getContentId();
             String action = task.getAction();
             Date timeStamp = new Date(Long.parseLong(task.getDateTime()));
-            
-            if(ActionType.ADD_CONTENT.name().equals(action) || 
-                    ActionType.COPY_CONTENT.name().equals(action) ){
+
+            if (ActionType.ADD_CONTENT.name().equals(action) ||
+                ActionType.COPY_CONTENT.name().equals(action)) {
                 String mimetype = task.getContentMimetype();
-                if(mimetype == null){
+                if (mimetype == null) {
                     mimetype = "application/octet-stream";
                 }
-                
+
                 String size = task.getContentSize();
-                if(size == null){
+                if (size == null) {
                     size = "0";
                 }
-                
-                if(!this.manifestStore.addUpdate(account, 
-                                    storeId, 
-                                    spaceId, 
-                                    contentId,
-                                    task.getContentChecksum(),
-                                    mimetype,
-                                    size,
-                                    timeStamp)){
-                    //since no update occurred
-                    //tell any downstream task processors to ignore
-                    //this task
+
+                if (!this.manifestStore.addUpdate(account,
+                                                  storeId,
+                                                  spaceId,
+                                                  contentId,
+                                                  task.getContentChecksum(),
+                                                  mimetype,
+                                                  size,
+                                                  timeStamp)) {
+                    // since no update occurred, tell any downstream task processors to ignore this task
                     TransProcessorState.ignore();
-                };
-                
-            }else if(ActionType.DELETE_CONTENT.name().equals(action)){
-                if(!this.manifestStore.flagAsDeleted(account,
-                                                 storeId,
-                                                 spaceId,
-                                                 contentId,
-                                                 timeStamp)){
-                    //since no update occurred
-                    //tell any downstream task processors to ignore
-                    //this task
+                }
+            } else if (ActionType.DELETE_CONTENT.name().equals(action)) {
+                if (!this.manifestStore.flagAsDeleted(account,
+                                                      storeId,
+                                                      spaceId,
+                                                      contentId,
+                                                      timeStamp)) {
+                    // since no update occurred, tell any downstream task processors to ignore this task
                     TransProcessorState.ignore();
-                };
-            }else{
-                log.debug("action {} not handled by this processor: task={}", action,task);
+                }
+            } else {
+                log.debug("action {} not handled by this processor: task={}", action, task);
             }
             log.info("audit task successfully processed: {}", task);
         } catch (Exception e) {
-            String message = "Failed to execute " + task + ": "
-                    + e.getMessage();
+            String message = "Failed to execute " + task + ": " + e.getMessage();
             log.debug(message, e);
             throw new TaskExecutionFailedException(message, e);
         }
-    }        
+    }
 
 }

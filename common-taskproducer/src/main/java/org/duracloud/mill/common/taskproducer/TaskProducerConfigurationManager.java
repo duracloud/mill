@@ -7,13 +7,12 @@
  */
 package org.duracloud.mill.common.taskproducer;
 
-import org.apache.commons.lang3.StringUtils;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.config.ConfigurationManager;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Nov 5, 2013
+ * Date: Nov 5, 2013
  */
 public class TaskProducerConfigurationManager extends ConfigurationManager {
 
@@ -27,7 +26,6 @@ public class TaskProducerConfigurationManager extends ConfigurationManager {
     public String getDuplicationPolicyBucketSuffix() {
         return System.getProperty(ConfigConstants.DUPLICATION_POLICY_BUCKET_SUFFIX);
     }
-    
 
     /**
      * @return

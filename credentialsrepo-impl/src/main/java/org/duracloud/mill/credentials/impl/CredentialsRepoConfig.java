@@ -12,17 +12,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 @Configuration
 public class CredentialsRepoConfig {
 
-
     @Bean
-    public PropertyPlaceholderConfigurer propertyPlaceholderConfigurer(){
-        PropertyPlaceholderConfigurer configurer =  new PropertyPlaceholderConfigurer();
+    public PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
+        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
         configurer.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
         return configurer;
     }

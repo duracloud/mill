@@ -14,9 +14,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 /**
  * A definition of a bite-sized swath of content ids that can be nibbled by the
  * <code>LoopingTaskProducer</code>.
- * 
- * @author Daniel Bernstein 
- *         Date: Nov 7, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Nov 7, 2013
  */
 public class Morsel {
     protected static final String[] EXCLUSIONS = {"marker", "deletePerformed"};
@@ -24,11 +24,11 @@ public class Morsel {
     private String spaceId;
     private String marker;
     private boolean deletePerformed = false;
-    
+
     public Morsel() {
-        
+
     }
-    
+
     /**
      * @param account
      * @param spaceId
@@ -43,14 +43,13 @@ public class Morsel {
         this.marker = marker;
     }
 
-
     /**
      * @return the subdomain
      */
     public String getAccount() {
         return account;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -65,7 +64,7 @@ public class Morsel {
     private String[] getExclusions() {
         return EXCLUSIONS;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -81,14 +80,13 @@ public class Morsel {
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
-    
+
     /**
      * @return the spaceId
      */
     public String getSpaceId() {
         return spaceId;
     }
-
 
     /**
      * @return the marker

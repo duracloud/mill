@@ -9,7 +9,6 @@ package org.duracloud.mill.manifest;
 
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
 
 import java.util.Date;
 
@@ -22,13 +21,13 @@ import org.junit.Test;
 
 /**
  * @author Daniel Bernstein
- *         Date: Sep 4, 2014
+ * Date: Sep 4, 2014
  */
-public class ManifestWritingProcessorTest extends AbstractTestBase{
-    
+public class ManifestWritingProcessorTest extends AbstractTestBase {
+
     @Mock
     private AuditTask task;
-    
+
     @Mock
     private ManifestStore store;
 
@@ -41,7 +40,7 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
     private String contentMimetype = "content-mimetype";
     private Long dateTime = System.currentTimeMillis();
     private int attempts = 2;
-    
+
     @Test
     public void testAddContentTask() throws TaskExecutionFailedException, ManifestItemWriteException {
         setupAddUpdate(ActionType.ADD_CONTENT);
@@ -52,23 +51,22 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
         setupAddUpdate(ActionType.COPY_CONTENT);
     }
 
-    private void
-            setupAddUpdate(ActionType action) throws ManifestItemWriteException,
-                                             TaskExecutionFailedException {
+    private void setupAddUpdate(ActionType action) throws ManifestItemWriteException,
+        TaskExecutionFailedException {
         setupTask(action);
 
         expect(task.getContentMimetype()).andReturn(contentMimetype);
         expect(task.getContentSize()).andReturn(contentSize);
         expect(task.getContentChecksum()).andReturn(contentChecksum);
-        
+
         expect(this.store.addUpdate(eq(account),
-                             eq(storeId),
-                             eq(spaceId),
-                             eq(contentId),
-                             eq(contentChecksum),
-                             eq(contentMimetype),
-                             eq(contentSize),
-                             eq(new Date(dateTime)))).andReturn(true);
+                                    eq(storeId),
+                                    eq(spaceId),
+                                    eq(contentId),
+                                    eq(contentChecksum),
+                                    eq(contentMimetype),
+                                    eq(contentSize),
+                                    eq(new Date(dateTime)))).andReturn(true);
         replayAll();
         executeProcessor();
     }
@@ -79,18 +77,18 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
         expect(task.getSpaceId()).andReturn(spaceId).times(2);
         expect(task.getContentId()).andReturn(contentId).times(2);
         expect(task.getAction()).andReturn(action.name());
-        expect(task.getDateTime()).andReturn(dateTime+"");
+        expect(task.getDateTime()).andReturn(dateTime + "");
         expect(task.getAttempts()).andReturn(attempts);
     }
-    
+
     @Test
     public void testDeleteContent() throws TaskExecutionFailedException, ManifestItemWriteException {
         setupTask(ActionType.DELETE_CONTENT);
         expect(this.store.flagAsDeleted(eq(account),
-                             eq(storeId),
-                             eq(spaceId),
-                             eq(contentId),
-                             eq(new Date(dateTime)))).andReturn(true);
+                                        eq(storeId),
+                                        eq(spaceId),
+                                        eq(contentId),
+                                        eq(new Date(dateTime)))).andReturn(true);
         replayAll();
         executeProcessor();
     }
@@ -121,12 +119,9 @@ public class ManifestWritingProcessorTest extends AbstractTestBase{
         executeProcessor();
     }
 
-    
     private void executeProcessor() throws TaskExecutionFailedException {
         ManifestWritingProcessor processor = new ManifestWritingProcessor(task, store);
         processor.execute();
     }
-    
-    
 
 }

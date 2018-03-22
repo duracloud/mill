@@ -11,6 +11,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
 import org.junit.AfterClass;
@@ -18,26 +20,23 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 /**
- * @author Daniel Bernstein Date: Dec 2, 2013
+ * @author Daniel Bernstein
+ * Date: Dec 2, 2013
  */
 public class TestPolicyEditor extends BaseSeleniumTest {
     private static final String LOGIN_LOCATOR = "css=#loginButton";
 
-    private static AmazonS3Client      s3Client;
-    private static String              bucketName;
- 
+    private static AmazonS3Client s3Client;
+    private static String bucketName;
+
     /**
      * @throws java.lang.Exception
      */
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
-        File policyAccountsFile = new File(
-                "src/test/resources/duplication-accounts.json");
+        File policyAccountsFile = new File("src/test/resources/duplication-accounts.json");
         File policyFile = new File("src/test/resources/duplication-policy.json");
 
         assertTrue(policyAccountsFile.exists());
@@ -46,8 +45,8 @@ public class TestPolicyEditor extends BaseSeleniumTest {
 
         // Create policy bucket
         String accessKey = System.getenv("AWS_ACCESS_KEY_ID");
-        bucketName = accessKey.toLowerCase()  + "." +
-            S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;
+        bucketName = accessKey.toLowerCase() + "." +
+                     S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;
         s3Client.createBucket(bucketName);
 
         // Load accounts list
@@ -60,11 +59,11 @@ public class TestPolicyEditor extends BaseSeleniumTest {
             "account1" + DuplicationPolicyRepo.DUP_POLICY_SUFFIX;
         s3Client.putObject(bucketName, acct1PolicyName, policyFile);
     }
-    
+
     @AfterClass
-    public static void afterClass(){
+    public static void afterClass() {
         // Clear policy bucket contents
-        for(S3ObjectSummary object :
+        for (S3ObjectSummary object :
             s3Client.listObjects(bucketName).getObjectSummaries()) {
             s3Client.deleteObject(bucketName, object.getKey());
         }
@@ -73,7 +72,7 @@ public class TestPolicyEditor extends BaseSeleniumTest {
         s3Client.deleteBucket(bucketName);
 
     }
-    
+
     @Before
     public void setUp() throws Exception {
         super.before();
@@ -95,7 +94,7 @@ public class TestPolicyEditor extends BaseSeleniumTest {
     }
 
     /**
-     * 
+     *
      */
     private void clickLoginButton() {
         assertTrue(sc.isVisible(LOGIN_LOCATOR));
@@ -111,7 +110,7 @@ public class TestPolicyEditor extends BaseSeleniumTest {
     }
 
     /**
-     * 
+     *
      */
     private void doLogin() {
         typeField("username");
@@ -130,7 +129,7 @@ public class TestPolicyEditor extends BaseSeleniumTest {
     }
 
     /**
-     * 
+     *
      */
     private void openAccounts() {
         sc.open("#/accounts");

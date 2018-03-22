@@ -13,7 +13,7 @@ import org.duracloud.mill.workman.TaskProcessor;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 11, 2014
+ * Date: Apr 11, 2014
  */
 public class SpaceCreatedNotifcationGeneratingProcessorFactory extends AuditTaskProcessorFactory {
 
@@ -29,7 +29,7 @@ public class SpaceCreatedNotifcationGeneratingProcessorFactory extends AuditTask
     @Override
     public TaskProcessor createImpl(AuditTask auditTask) {
         return new SpaceCreatedNotifcationGeneratingProcessor(auditTask,
-                notificationManager);
- 
+                                                              notificationManager);
+
     }
 }

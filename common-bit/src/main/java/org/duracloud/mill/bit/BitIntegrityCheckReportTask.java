@@ -12,7 +12,7 @@ import org.duracloud.common.queue.task.Task;
 
 /**
  * @author Daniel Bernstein
- *	       Date: May 1, 2014
+ * Date: May 1, 2014
  */
 public class BitIntegrityCheckReportTask extends SpaceCentricTypedTask {
 
@@ -22,5 +22,5 @@ public class BitIntegrityCheckReportTask extends SpaceCentricTypedTask {
         task.setType(Task.Type.BIT_REPORT);
         return task;
     }
- 
+
 }

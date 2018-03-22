@@ -7,19 +7,18 @@
  */
 package org.duracloud.mill.notification;
 
-
 /**
  * @author Daniel Bernstein
- *	       Date: Dec 31, 2013
+ * Date: Dec 31, 2013
  */
 public interface NotificationManager {
 
-
     /**
      * Send a generic notification to the mill's admin
+     *
      * @param subject message subject
-     * @param body message body
+     * @param body    message body
      */
-    void sendEmail(String subject, String body );
+    void sendEmail(String subject, String body);
 
 }

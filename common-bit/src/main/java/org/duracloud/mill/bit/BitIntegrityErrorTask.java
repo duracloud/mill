@@ -15,9 +15,9 @@ import org.duracloud.storage.domain.StorageProviderType;
 
 /**
  * Provides the information necessary to describe a bit integrity error.
- * 
- * @author Daniel Bernstein 
- *         Date: 04/22/2014
+ *
+ * @author Daniel Bernstein
+ * Date: 04/22/2014
  */
 public class BitIntegrityErrorTask extends TypedTask {
 
@@ -26,19 +26,18 @@ public class BitIntegrityErrorTask extends TypedTask {
     private static final String CONTENT_CHECKSUM_KEY = "contentChecksum";
     private static final String MANIFEST_CHECKSUM_CHECKSUM_KEY = "manifestChecksum";
     private static final String STORE_CHECKSUM_KEY = "storeChecksum";
-    
+
     private String description;
     private StorageProviderType storeType;
-    private String contentChecksum,
-                   storeChecksum,
-                   manifestChecksum;
-                   
-                   
+    private String contentChecksum;
+    private String storeChecksum;
+    private String manifestChecksum;
+
     @Override
     public Task writeTask() {
         Task task = super.writeTask();
         task.setType(Task.Type.BIT_ERROR);
-        Map<String,String> p = task.getProperties();
+        Map<String, String> p = task.getProperties();
         p.put(DESCRIPTION_KEY, description);
         p.put(STORE_TYPE_KEY, storeType.name());
         p.put(CONTENT_CHECKSUM_KEY, contentChecksum);
@@ -46,7 +45,7 @@ public class BitIntegrityErrorTask extends TypedTask {
         p.put(STORE_CHECKSUM_KEY, storeChecksum);
         return task;
     }
-    
+
     /* (non-Javadoc)
      * @see org.duracloud.common.queue.task.TypedTask#readTask(org.duracloud.common.queue.task.Task)
      */
@@ -116,19 +115,18 @@ public class BitIntegrityErrorTask extends TypedTask {
         this.storeChecksum = storeChecksum;
     }
 
-
     /**
      * @return the manifestChecksum
      */
     public String getManifestChecksum() {
         return manifestChecksum;
     }
-    
+
     /**
      * @param manifestChecksum the manifestChecksum to set
      */
     public void setManifestChecksum(String manifestChecksum) {
         this.manifestChecksum = manifestChecksum;
     }
- 
+
 }
