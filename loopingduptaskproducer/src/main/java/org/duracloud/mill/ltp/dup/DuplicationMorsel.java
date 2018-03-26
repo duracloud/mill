@@ -13,18 +13,18 @@ import org.duracloud.mill.ltp.Morsel;
 /**
  * A definition of a bite-sized swath of content ids that can be nibbled by the
  * <code>LoopingTaskProducer</code>.
- * 
- * @author Daniel Bernstein 
- *         Date: Nov 7, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Nov 7, 2013
  */
-public class DuplicationMorsel extends Morsel{
-    
+public class DuplicationMorsel extends Morsel {
+
     private DuplicationStorePolicy storePolicy;
 
     public DuplicationMorsel() {
-        
+
     }
-    
+
     /**
      * @param subdomain
      * @param spaceId
@@ -33,8 +33,8 @@ public class DuplicationMorsel extends Morsel{
      * @param inprocess
      */
     public DuplicationMorsel(String subdomain, String spaceId, String marker,
-            DuplicationStorePolicy storePolicy) {
-        super(subdomain,spaceId, marker);
+                             DuplicationStorePolicy storePolicy) {
+        super(subdomain, spaceId, marker);
         this.storePolicy = storePolicy;
     }
 

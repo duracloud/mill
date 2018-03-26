@@ -8,6 +8,8 @@
 
 package org.duracloud.mill.audit;
 
+import static org.easymock.EasyMock.isA;
+
 import org.duracloud.audit.task.AuditTask;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
@@ -19,13 +21,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.easymock.EasyMock.*;
+
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 30, 2013
+ * Date: Oct 30, 2013
  */
 @RunWith(EasyMockRunner.class)
-public class SpaceCreatedNotificationGeneratingProcessorTest extends EasyMockSupport{
+public class SpaceCreatedNotificationGeneratingProcessorTest extends EasyMockSupport {
 
     @Mock
     private NotificationManager notificationManager;
@@ -45,17 +47,15 @@ public class SpaceCreatedNotificationGeneratingProcessorTest extends EasyMockSup
         verifyAll();
     }
 
-
     @Test
-    public void testSpaceCreate() throws TaskExecutionFailedException  {
+    public void testSpaceCreate() throws TaskExecutionFailedException {
         AuditTask task = AuditTestHelper.createTestAuditTask();
         task.setAction(AuditTask.ActionType.CREATE_SPACE.name());
 
         notificationManager.sendEmail(isA(String.class), isA(String.class));
         EasyMock.expectLastCall().once();
         replayAll();
-        new SpaceCreatedNotifcationGeneratingProcessor(task,notificationManager).execute();
+        new SpaceCreatedNotifcationGeneratingProcessor(task, notificationManager).execute();
     }
 
- 
 }

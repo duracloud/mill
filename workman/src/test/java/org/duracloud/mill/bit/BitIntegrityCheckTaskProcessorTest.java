@@ -7,6 +7,13 @@
  */
 package org.duracloud.mill.bit;
 
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -37,13 +44,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
-
-import static org.junit.Assert.*;
-
 /**
  * @author Daniel Bernstein
-           Date: 10/15/2014
+ * Date: 10/15/2014
  */
 @RunWith(EasyMockRunner.class)
 public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
@@ -88,10 +91,8 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     /**
      * @return
-     * 
      */
-    private BitIntegrityCheckTask
-            createBitIntegrityCheckTask(final int attempts) {
+    private BitIntegrityCheckTask createBitIntegrityCheckTask(final int attempts) {
 
         BitIntegrityCheckTask task = new BitIntegrityCheckTask() {
             @Override
@@ -117,7 +118,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         c.add(Calendar.DATE, -1);
         return createChecksumProps(checksum, c.getTime());
     }
-    
+
     private Map<String, String> createChecksumProps(String checksum, Date modifiedDate) {
         Map<String, String> props = new HashMap<>();
         props.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, checksum);
@@ -148,7 +149,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     private void storeMockNotFound() {
         EasyMock.expect(store.getContentProperties(spaceId, contentId))
                 .andThrow(new NotFoundException("test")).times(4);
-        
+
     }
 
     /**
@@ -158,26 +159,22 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         expect(store.getContentProperties(spaceId, contentId)).andReturn(props);
     }
 
-
-
-    private void
-        bitLogStoreMockInvalid(StorageProviderType storeType,
-                           String contentChecksum,
-                           String storeChecksum,
-                           String manifestChecksum) throws Exception {
+    private void bitLogStoreMockInvalid(StorageProviderType storeType,
+                                        String contentChecksum,
+                                        String storeChecksum,
+                                        String manifestChecksum) throws Exception {
         bitLogStoreMock(storeType,
                         contentChecksum,
                         storeChecksum,
                         manifestChecksum,
                         BitIntegrityResult.FAILURE);
     }
-    
-    private void
-            bitLogStoreMock(StorageProviderType storeType,
-                                   String contentChecksum,
-                                   String storeChecksum,
-                                   String manifestChecksum, 
-                                   BitIntegrityResult result) throws Exception {
+
+    private void bitLogStoreMock(StorageProviderType storeType,
+                                 String contentChecksum,
+                                 String storeChecksum,
+                                 String manifestChecksum,
+                                 BitIntegrityResult result) throws Exception {
 
         EasyMock.expect(bitLogStore.write(eq(account),
                                           eq(storeId),
@@ -201,7 +198,6 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         return value == null ? isNull(String.class) : eq(value);
     }
 
-
     /**
      * @return
      */
@@ -212,12 +208,12 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     }
 
     //
+
     /**
      * @param storageProviderType
      * @return
      */
-    private BitIntegrityCheckTaskProcessor
-            createTaskProcessor(StorageProviderType storageProviderType) {
+    private BitIntegrityCheckTaskProcessor createTaskProcessor(StorageProviderType storageProviderType) {
         return new BitIntegrityCheckTaskProcessor(task,
                                                   store,
                                                   manifestStore,
@@ -233,36 +229,36 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         testSuccess(StorageProviderType.AMAZON_S3, true);
     }
 
-     @Test
-     public void testSuccessWithContentCheckSDSC() throws Exception {
-     testSuccess(StorageProviderType.SDSC, true);
-     }
-    
-     @Test
-     public void testSuccessWithOutContentCheckGlacier() throws Exception {
-     testSuccess(StorageProviderType.AMAZON_GLACIER, false);
-     }
-    
-     @Test
-     public void testSuccessWithOutContentCheckDpn() throws Exception {
+    @Test
+    public void testSuccessWithContentCheckSDSC() throws Exception {
+        testSuccess(StorageProviderType.SDSC, true);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckGlacier() throws Exception {
+        testSuccess(StorageProviderType.AMAZON_GLACIER, false);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckDpn() throws Exception {
         testSuccess(StorageProviderType.DPN, false);
-     }
+    }
 
-     @Test
-     public void testSuccessWithOutContentCheckChronopolis() throws Exception {
-         testSuccess(StorageProviderType.CHRONOPOLIS, false);
-     }
+    @Test
+    public void testSuccessWithOutContentCheckChronopolis() throws Exception {
+        testSuccess(StorageProviderType.CHRONOPOLIS, false);
+    }
 
-     @Test
-     public void testSuccessWithOutContentCheckIRODS() throws Exception {
-     testSuccess(StorageProviderType.IRODS, false);
-     }
-    
-     @Test
-     public void testSuccessWithOutContentCheckRackSpace() throws Exception {
-     testSuccess(StorageProviderType.RACKSPACE, false);
-     }
-    
+    @Test
+    public void testSuccessWithOutContentCheckIRODS() throws Exception {
+        testSuccess(StorageProviderType.IRODS, false);
+    }
+
+    @Test
+    public void testSuccessWithOutContentCheckRackSpace() throws Exception {
+        testSuccess(StorageProviderType.RACKSPACE, false);
+    }
+
     @Test
     public void testSourContent() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
@@ -276,10 +272,9 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         this.taskProcessor.execute();
     }
 
-    private void
-            mockGetContentChecksum(String outputChecksum) throws TaskExecutionFailedException {
+    private void mockGetContentChecksum(String outputChecksum) throws TaskExecutionFailedException {
         expect(contentChecksumHelper.getContentChecksum(isA(String.class)))
-                .andReturn(outputChecksum).atLeastOnce();
+            .andReturn(outputChecksum).atLeastOnce();
     }
 
     @Test
@@ -305,14 +300,16 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         storeMockValidChecksum();
         mockManifestInvalidChecksum();
         mockGetContentChecksum(checksum);
-        
-        expect(manifestStore.getItem(eq(account),eq(storeId),eq(spaceId), eq(contentId))).andReturn(manifestItem);
+
+        expect(manifestStore.getItem(eq(account), eq(storeId), eq(spaceId), eq(contentId)))
+            .andReturn(manifestItem);
         String mimetype = "plain/text";
         String size = "1000";
         expect(manifestItem.getContentMimetype()).andReturn(mimetype);
         expect(manifestItem.getContentSize()).andReturn(size);
-        expect(manifestStore.addUpdate(eq(account),eq(storeId),eq(spaceId),eq(contentId), eq(checksum), eq(mimetype), eq(size), isA(Date.class))).andReturn(true);
-        
+        expect(manifestStore.addUpdate(eq(account), eq(storeId), eq(spaceId), eq(contentId), eq(checksum), eq(mimetype),
+                                       eq(size), isA(Date.class))).andReturn(true);
+
         bitLogStoreMockInvalid(storeType, checksum, checksum, badChecksum);
         mockBitErrorTaskPut();
         this.taskProcessor = createTaskProcessor(storeType);
@@ -333,7 +330,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
 
     @Test
     public void testFailedManifestChecksumPenultimateAttempt() throws Exception {
-        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS-1);
+        this.task = createBitIntegrityCheckTask(TaskWorker.MAX_ATTEMPTS - 1);
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum();
         mockManifestInvalidChecksum();
@@ -341,7 +338,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         failAfterWait(penultimateWait);
-   }
+    }
 
     @Test
     public void testFailedManifestChecksumDueToNullChecksumUltimateAttempt() throws Exception {
@@ -357,7 +354,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         this.taskProcessor.execute();
-   }
+    }
 
     @Test
     public void testIgnoreFailedManifestChecksumUltimateAttempt() throws Exception {
@@ -365,13 +362,12 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum(new Date());
         mockManifestChecksumNull();
-        
+
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         this.taskProcessor.execute();
-   }
+    }
 
-    
     @Test
     public void testAllChecksumsMismatchedUltimateAttempt() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
@@ -388,7 +384,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         replayAll();
         this.taskProcessor.execute();
     }
-    
+
     @Test
     public void testAllChecksumsMismatchedUltimateAttemptGlacier() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_GLACIER;
@@ -397,14 +393,14 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         storeMockInvalidChecksum();
         mockManifestValidChecksum();
         mockManifestUpdateNotNullManifest(badChecksum);
-        
+
         bitLogStoreMockInvalid(storeType, null, badChecksum, checksum);
         mockBitErrorTaskPut();
         this.taskProcessor = createTaskProcessor(storeType);
         replayAll();
         this.taskProcessor.execute();
     }
-    
+
     @Test
     public void testContentNotFound() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
@@ -439,6 +435,7 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
             this.taskProcessor.execute();
             fail("above invocations should have failed.");
         } catch (TaskExecutionFailedException ex) {
+            // Expected exception
         }
     }
 
@@ -457,10 +454,9 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      * @throws Exception
      * @throws TaskExecutionFailedException
      */
-    private void
-            testSuccess(StorageProviderType storeType, boolean checkContent) throws NotFoundException,
-                                                                            Exception,
-                                                                            TaskExecutionFailedException {
+    private void testSuccess(StorageProviderType storeType, boolean checkContent) throws NotFoundException,
+        Exception,
+        TaskExecutionFailedException {
         mockManifestValidChecksum();
 
         storeMockValidChecksum();
@@ -475,53 +471,50 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         this.taskProcessor.execute();
     }
 
-
     /**
      * @param storeType
      */
     private void bitLogStoreMockValid(StorageProviderType storeType,
-                           String contentChecksum, String storeChecksum) throws Exception {
+                                      String contentChecksum,
+                                      String storeChecksum) throws Exception {
         bitLogStoreMock(storeType,
                         contentChecksum,
                         storeChecksum,
                         storeChecksum,
                         BitIntegrityResult.SUCCESS);
-    }        
+    }
 
-    private void
-            mockGetValidContentChecksum() throws TaskExecutionFailedException {
+    private void mockGetValidContentChecksum() throws TaskExecutionFailedException {
         mockGetContentChecksum(checksum);
     }
 
-    private void
-            mockManifestValidChecksum() throws org.duracloud.common.db.error.NotFoundException {
+    private void mockManifestValidChecksum() throws org.duracloud.common.db.error.NotFoundException {
         mockManifestChecksum(checksum);
     }
 
-    private void
-            mockManifestInvalidChecksum() throws org.duracloud.common.db.error.NotFoundException {
+    private void mockManifestInvalidChecksum() throws org.duracloud.common.db.error.NotFoundException {
         mockManifestChecksum(badChecksum);
     }
 
-    private void
-            mockManifestChecksum(String checksum) throws org.duracloud.common.db.error.NotFoundException {
+    private void mockManifestChecksum(String checksum) throws org.duracloud.common.db.error.NotFoundException {
         expect(manifestStore.getItem(eq(account),
                                      eq(storeId),
                                      eq(spaceId),
                                      eq(contentId))).andReturn(manifestItem);
         expect(manifestItem.getContentChecksum()).andReturn(checksum);
-        
+
     }
-    
-    private void
-            mockManifestChecksumNull() throws org.duracloud.common.db.error.NotFoundException {
+
+    private void mockManifestChecksumNull() throws org.duracloud.common.db.error.NotFoundException {
         expect(manifestStore.getItem(eq(account),
                                      eq(storeId),
                                      eq(spaceId),
-                                     eq(contentId))).andThrow(new org.duracloud.common.db.error.NotFoundException("test"));
+                                     eq(contentId)))
+            .andThrow(new org.duracloud.common.db.error.NotFoundException("test"));
     }
-    
-    private void mockManifestUpdateNotNullManifest(String checksum) throws org.duracloud.common.db.error.NotFoundException, ManifestItemWriteException{
+
+    private void mockManifestUpdateNotNullManifest(String checksum)
+        throws org.duracloud.common.db.error.NotFoundException, ManifestItemWriteException {
         expect(manifestStore.getItem(eq(account),
                                      eq(storeId),
                                      eq(spaceId),
@@ -532,15 +525,14 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
         mockManifestStoreUpdate(checksum);
     }
 
-    private void
-            mockManifestStoreUpdate(String checksum) throws ManifestItemWriteException {
+    private void mockManifestStoreUpdate(String checksum) throws ManifestItemWriteException {
         expect(manifestStore.addUpdate(eq(account),
-                                eq(storeId),
-                                eq(spaceId),
-                                eq(contentId),
-                                eq(checksum),
-                                eq(mimetype),
-                                eq(contentSize),
-                                isA(Date.class))).andReturn(true);
+                                       eq(storeId),
+                                       eq(spaceId),
+                                       eq(contentId),
+                                       eq(checksum),
+                                       eq(mimetype),
+                                       eq(contentSize),
+                                       isA(Date.class))).andReturn(true);
     }
 }

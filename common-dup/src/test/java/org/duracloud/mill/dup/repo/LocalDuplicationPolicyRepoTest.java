@@ -7,6 +7,13 @@
  */
 package org.duracloud.mill.dup.repo;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.io.FileUtils;
 import org.duracloud.common.util.IOUtil;
 import org.duracloud.mill.dup.BaseDuplicationPolicyTester;
@@ -14,16 +21,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
-
 /**
  * @author Bill Branan
- *         Date: 11/1/13
+ * Date: 11/1/13
  */
 public class LocalDuplicationPolicyRepoTest extends BaseDuplicationPolicyTester {
 

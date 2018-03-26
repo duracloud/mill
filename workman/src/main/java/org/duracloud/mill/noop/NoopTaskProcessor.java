@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * the task. This is intended to be used for testing and experimentation.
  *
  * @author Bill Branan
- *         Date: 10/23/13
+ * Date: 10/23/13
  */
 public class NoopTaskProcessor implements TaskProcessor {
     private static Logger log = LoggerFactory.getLogger(NoopTaskProcessor.class);
@@ -35,9 +35,9 @@ public class NoopTaskProcessor implements TaskProcessor {
     public void execute() throws TaskExecutionFailedException {
         StringBuilder results = new StringBuilder();
         results.append("Executing NOOP Task Processor\nTask Properties:\n");
-        
+
         Map<String, String> props = task.getProperties();
-        for(String key : props.keySet()) {
+        for (String key : props.keySet()) {
             results.append(key);
             results.append(": ");
             results.append(props.get(key));
@@ -50,7 +50,7 @@ public class NoopTaskProcessor implements TaskProcessor {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        
+
         NoopTaskProcessor.completedCount++;
     }
 

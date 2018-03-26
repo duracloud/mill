@@ -7,6 +7,17 @@
  */
 package org.duracloud.mill.dup;
 
+import static org.duracloud.common.util.ChecksumUtil.Algorithm.MD5;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.Map;
+import javax.ws.rs.core.HttpHeaders;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.duracloud.common.retry.ExceptionHandler;
@@ -16,37 +27,18 @@ import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
-import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
-import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorBase;
-import org.duracloud.s3storage.S3StorageProvider;
-import org.duracloud.sdscstorage.SDSCStorageProvider;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.error.StorageStateException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response.Status.Family;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.Map;
-
-import static org.duracloud.common.util.ChecksumUtil.Algorithm.MD5;
-
 /**
  * This class performs the Duplication Task
- * 
+ *
  * @author Bill Branan
- * 
  */
 public class DuplicationTaskProcessor extends TaskProcessorBase {
 
@@ -60,10 +52,10 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         LoggerFactory.getLogger(DuplicationTaskProcessor.class);
 
     public DuplicationTaskProcessor(DuplicationTask dupTask,
-                                       StorageProvider sourceStore,
-                                       StorageProvider destStore,
-                                       File workDir,
-                                       ManifestStore manifestStore) {
+                                    StorageProvider sourceStore,
+                                    StorageProvider destStore,
+                                    File workDir,
+                                    ManifestStore manifestStore) {
         super(dupTask);
         this.dupTask = dupTask;
         this.sourceStore = sourceStore;
@@ -79,20 +71,20 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         String contentId = dupTask.getContentId();
 
         // If space ID is missing, fail
-        if(null == spaceId || spaceId.equals("")) {
+        if (null == spaceId || spaceId.equals("")) {
             throw new DuplicationTaskExecutionFailedException(
                 buildFailureMessage("SpaceId value is null or empty"));
         }
 
         // If content ID is missing, check on space
-        if(null == contentId || contentId.equals("")) {
-            if(spaceExists(sourceStore, spaceId)) {
+        if (null == contentId || contentId.equals("")) {
+            if (spaceExists(sourceStore, spaceId)) {
                 ensureDestSpaceExists(spaceId);
             } else { // Source space must have been deleted
-                if(spaceExists(destStore, spaceId)) {
+                if (spaceExists(destStore, spaceId)) {
                     Iterator<String> contentItems =
                         getSpaceListing(destStore, spaceId);
-                    if(!contentItems.hasNext()) { // List is empty
+                    if (!contentItems.hasNext()) { // List is empty
                         deleteDestSpace(spaceId);
                     } // If dest space is not empty, do not attempt a delete
                 }
@@ -109,24 +101,24 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         Map<String, String> destProperties =
             getContentProperties(destStore, spaceId, contentId);
 
-        if(null != sourceProperties) { // Item exists in source provider
+        if (null != sourceProperties) { // Item exists in source provider
             String sourceChecksum = sourceProperties.get(
                 StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
             cleanProperties(sourceProperties);
 
-            if(null != destProperties) { // Item exists in dest provider
+            if (null != destProperties) { // Item exists in dest provider
                 String destChecksum = destProperties.get(
                     StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
                 cleanProperties(destProperties);
 
                 // Item exists in both providers, compare checksums
-                if(null != sourceChecksum) {
-                    if(sourceChecksum.equals(destChecksum)) {
+                if (null != sourceChecksum) {
+                    if (sourceChecksum.equals(destChecksum)) {
                         // Source and destination checksums are equal
                         // Check to see if content properties are consistent
                         boolean propertiesEqual =
                             compareProperties(sourceProperties, destProperties);
-                        if(!propertiesEqual) {
+                        if (!propertiesEqual) {
                             // Properties are not equal, duplicate the props
                             duplicateProperties(spaceId,
                                                 contentId,
@@ -158,7 +150,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                                  sourceProperties);
             }
         } else { // Item does not exist in source, it must have been deleted
-            if(null != destProperties) { // Item does exist in dest
+            if (null != destProperties) { // Item does exist in dest
                 // Perform delete on destination
                 duplicateDeletion(spaceId, contentId);
             }
@@ -168,7 +160,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     /**
      * Determines if a space in the given store exists.
      *
-     * @param store the storage provider in which to check the space
+     * @param store   the storage provider in which to check the space
      * @param spaceId space to check
      * @return true if space exists, false otherwise
      */
@@ -184,9 +176,9 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                     return true;
                 }
             });
-        } catch(NotFoundException nfe) {
+        } catch (NotFoundException nfe) {
             return false;
-        } catch(Exception e) {
+        } catch (Exception e) {
             String msg = "Error attempting to check if space exists: " +
                          e.getMessage();
             throw new DuplicationTaskExecutionFailedException(
@@ -202,7 +194,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     private void ensureDestSpaceExists(final String spaceId) {
         try {
             destStore.createSpace(spaceId);
-        } catch(Exception e) {
+        } catch (Exception e) {
             // The space already exists
         }
     }
@@ -210,7 +202,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     /**
      * Retrieve the content listing for a space
      *
-     * @param store the storage provider in which the space exists
+     * @param store   the storage provider in which the space exists
      * @param spaceId space from which to retrieve listing
      * @return
      */
@@ -225,7 +217,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                     return store.getSpaceContents(spaceId, null);
                 }
             });
-        } catch(Exception e) {
+        } catch (Exception e) {
             String msg = "Error attempting to retrieve space listing: " +
                          e.getMessage();
             throw new DuplicationTaskExecutionFailedException(
@@ -252,7 +244,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                     return "success";
                 }
             });
-        } catch(Exception e) {
+        } catch (Exception e) {
             String msg = "Error attempting to delete the destination space: " +
                          e.getMessage();
             throw new DuplicationTaskExecutionFailedException(
@@ -285,22 +277,18 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
             }, new ExceptionHandler() {
                 @Override
                 public void handle(Exception ex) {
-                    if(!(ex instanceof NotFoundException)){
-                        log.debug(ex.getMessage(),ex);
-                    }else{
-                        log.debug(
-                                "retry attempt failed but probably not an issue: {}",
-                                ex.getMessage());
+                    if (!(ex instanceof NotFoundException)) {
+                        log.debug(ex.getMessage(), ex);
+                    } else {
+                        log.debug("retry attempt failed but probably not an issue: {}", ex.getMessage());
                     }
                 }
             });
-        } catch(NotFoundException nfe) {
+        } catch (NotFoundException nfe) {
             return null;
-        } catch(Exception e) {
-            String msg = "Error attempting to retrieve content properties: " +
-                         e.getMessage();
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg), e);
+        } catch (Exception e) {
+            String msg = "Error attempting to retrieve content properties: " + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
     }
 
@@ -308,7 +296,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
      * Determines if source and destination properties are equal.
      *
      * @param sourceProps properties from the source content item
-     * @param destProps properties from the destination content item
+     * @param destProps   properties from the destination content item
      * @return true if all properties match
      */
     protected boolean compareProperties(Map<String, String> sourceProps,
@@ -324,10 +312,10 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
      * @param sourceProperties
      */
     private void duplicateProperties(final String spaceId,
-            final String contentId, final Map<String, String> sourceProperties)
-            throws TaskExecutionFailedException {
+                                     final String contentId, final Map<String, String> sourceProperties)
+        throws TaskExecutionFailedException {
         log.info("Duplicating properties for " + contentId + " in space "
-                + spaceId + " in account " + dupTask.getAccount());
+                 + spaceId + " in account " + dupTask.getAccount());
 
         try {
             new Retrier().execute(new Retriable() {
@@ -335,15 +323,12 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                 public String retry() throws Exception {
                     // Set properties
                     try {
-                        destStore.setContentProperties(spaceId, contentId,
-                                sourceProperties);
+                        destStore.setContentProperties(spaceId, contentId, sourceProperties);
                     } catch (StorageStateException ex) {
                         String message = "Unable to set content properties" +
-                        		 " on destination store ({0}) for " +
-                        		 "{1} (content) in {2} (space)";
-                        log.warn(MessageFormat
-                                .format(message,
-                                        destStore, contentId, spaceId));
+                                         " on destination store ({0}) for " +
+                                         "{1} (content) in {2} (space)";
+                        log.warn(MessageFormat.format(message, destStore, contentId, spaceId));
                     }
 
                     return "success";
@@ -352,23 +337,24 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
             });
 
             log.info("Successfully duplicated properties for " + contentId
-                    + " in space " + spaceId + " in account "
-                    + dupTask.getAccount());
+                     + " in space " + spaceId + " in account "
+                     + dupTask.getAccount());
 
         } catch (Exception e) {
-            String msg = "Error attempting to duplicate content properties: "
-                    + e.getMessage();
+            String msg = "Error attempting to duplicate content properties: " + e.getMessage();
             throw new DuplicationTaskExecutionFailedException(
-                    buildFailureMessage(msg), e);
+                buildFailureMessage(msg), e);
         }
     }
+
     /**
      * Pull out the system-generated properties, to allow the properties that
      * are added to the duplicated item to be only the user-defined properties.
+     *
      * @param props
      */
     private void cleanProperties(Map<String, String> props) {
-        if(props != null){
+        if (props != null) {
             props.remove(StorageProvider.PROPERTIES_CONTENT_MD5);
             props.remove(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
             props.remove(StorageProvider.PROPERTIES_CONTENT_MODIFIED);
@@ -407,25 +393,24 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         File localFile = null;
         while (!localChecksumMatch && attempt < 3) {
             // Get content stream
-            try(InputStream sourceStream = getSourceContent(spaceId, contentId)){
+            try (InputStream sourceStream = getSourceContent(spaceId, contentId)) {
                 // Cache content locally
                 localFile = cacheContent(sourceStream);
                 // Check content
                 String localChecksum = checksumUtil.generateChecksum(localFile);
-                if(sourceChecksum.equals(localChecksum)) {
+                if (sourceChecksum.equals(localChecksum)) {
                     localChecksumMatch = true;
                 } else {
                     cleanup(localFile);
                 }
-            } catch(Exception e) {
-                log.warn("Error generating checksum for source content: " +
-                         e.getMessage(), e);
+            } catch (Exception e) {
+                log.warn("Error generating checksum for source content: " + e.getMessage(), e);
             }
             attempt++;
         }
 
         // Put content
-        if(localChecksumMatch) {
+        if (localChecksumMatch) {
             putDestinationContent(spaceId,
                                   contentId,
                                   sourceChecksum,
@@ -440,8 +425,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
             cleanup(localFile);
             String msg = "Unable to retrieve content which matches the" +
                          " expected source checksum of: " + sourceChecksum;
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg));
+            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg));
         }
         cleanup(localFile);
     }
@@ -460,11 +444,9 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                     return sourceStore.getContent(spaceId, contentId);
                 }
             });
-        } catch(Exception e) {
-            String msg = "Error attempting to get source content: " +
-                         e.getMessage();
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg), e);
+        } catch (Exception e) {
+            String msg = "Error attempting to get source content: " + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
     }
 
@@ -476,20 +458,18 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         File localFile = null;
         try {
             localFile = File.createTempFile("content-item", ".tmp", workDir);
-            try(OutputStream outStream = FileUtils.openOutputStream(localFile)) {
+            try (OutputStream outStream = FileUtils.openOutputStream(localFile)) {
                 IOUtils.copy(inStream, outStream);
             }
             inStream.close();
-        } catch(IOException e) {
-            
-            if(localFile != null){
+        } catch (IOException e) {
+
+            if (localFile != null) {
                 cleanup(localFile);
             }
 
-            String msg = "Unable to cache content file due to: " +
-                         e.getMessage();
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg), e);
+            String msg = "Unable to cache content file due to: " + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
         return localFile;
     }
@@ -508,7 +488,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                         StorageProvider.PROPERTIES_CONTENT_MIMETYPE);
 
                     // Push to destination
-                    try(InputStream destStream = FileUtils.openInputStream(file)) {
+                    try (InputStream destStream = FileUtils.openInputStream(file)) {
                         String destChecksum =
                             destStore.addContent(spaceId,
                                                  contentId,
@@ -517,7 +497,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                                                  file.length(),
                                                  sourceChecksum,
                                                  destStream);
-                        if(sourceChecksum.equals(destChecksum)) {
+                        if (sourceChecksum.equals(destChecksum)) {
                             return "success";
                         } else {
                             throw new RuntimeException("Checksum in dest " +
@@ -526,26 +506,24 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                     }
                 }
             });
-        } catch(Exception e) {
+        } catch (Exception e) {
             cleanup(file);
-            String msg = "Error attempting to add destination content: " +
-                         e.getMessage();
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg), e);
+            String msg = "Error attempting to add destination content: " + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
     }
 
     private void cleanup(File file) {
         try {
             FileUtils.forceDelete(file);
-        } catch(IOException e) {
+        } catch (IOException e) {
             log.info("Unable to delete temp file: " + file.getAbsolutePath() +
                      " due to: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Deletes a content item in the destination space, but only if it does not exists in the 
+     * Deletes a content item in the destination space, but only if it does not exists in the
      * source manifest.
      *
      * @param spaceId
@@ -554,16 +532,17 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     private void duplicateDeletion(final String spaceId,
                                    final String contentId)
         throws TaskExecutionFailedException {
-        
-        if(existsInSourceManifest(spaceId, contentId)){
-            throw new TaskExecutionFailedException(MessageFormat
-                                                   .format("item exists in source manifest and thus appears to be missing content.  account={0}, storeId={1}, spaceId={2}, contentId={3}",
-                                                           this.dupTask.getAccount(),
-                                                           this.dupTask.getSourceStoreId(),
-                                                           spaceId,
-                                                           contentId));
+
+        if (existsInSourceManifest(spaceId, contentId)) {
+            throw new TaskExecutionFailedException(
+                MessageFormat.format("item exists in source manifest and thus appears to be " +
+                                     "missing content.  account={0}, storeId={1}, spaceId={2}, contentId={3}",
+                                     this.dupTask.getAccount(),
+                                     this.dupTask.getSourceStoreId(),
+                                     spaceId,
+                                     contentId));
         }
-        
+
         log.info("Duplicating deletion of " + contentId + " in dest space " +
                  spaceId + " in account " + dupTask.getAccount());
         try {
@@ -575,11 +554,9 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                     return "success";
                 }
             });
-        } catch(Exception e) {
-            String msg = "Error attempting to delete content : " +
-                         e.getMessage();
-            throw new DuplicationTaskExecutionFailedException(
-                buildFailureMessage(msg), e);
+        } catch (Exception e) {
+            String msg = "Error attempting to delete content : " + e.getMessage();
+            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
 
         log.info("Successfully deleted content item (content_id=" + contentId +
@@ -592,23 +569,25 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
      * @param contentId
      */
     private boolean existsInSourceManifest(String spaceId, String contentId) {
-        //if the source store's manifest contains an entry for this item
+        // if the source store's manifest contains an entry for this item
         // it indicates that the content item is missing from the provider
         // and thus the copy should not be deleted and an error should be raised.
         // If there is a temporary backup in the audit log, then this issue should
         // be resolved by the automatic retry mechanism.
         String sourceStoreId = this.dupTask.getSourceStoreId();
         String account = this.dupTask.getAccount();
-        
+
         try {
             ManifestItem item = this.manifestStore.getItem(account, sourceStoreId, spaceId, contentId);
-            if(!item.isDeleted()){
+            if (!item.isDeleted()) {
                 return true;
             }
-        } catch (org.duracloud.common.db.error.NotFoundException e1) {}
-        
+        } catch (org.duracloud.common.db.error.NotFoundException e1) {
+            // Indicates that the item does not exist, so fall through to returning false
+        }
+
         return false;
-        
+
     }
 
     private String buildFailureMessage(String message) {

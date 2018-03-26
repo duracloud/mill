@@ -7,16 +7,16 @@
  */
 package org.duracloud.mill.task;
 
-import org.duracloud.common.queue.task.Task;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import org.duracloud.common.queue.task.Task;
+import org.junit.Test;
 
 /**
  * @author Bill Branan
- *         Date: 10/24/13
+ * Date: 10/24/13
  */
 public class DuplicationTaskTest {
 

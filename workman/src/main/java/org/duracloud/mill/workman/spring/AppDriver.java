@@ -25,9 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 
 public class AppDriver extends DriverSupport {
@@ -58,67 +56,62 @@ public class AppDriver extends DriverSupport {
         super(new WorkmanOptions());
     }
 
- 
-
     public static void main(String[] args) {
         new AppDriver().execute(args);
     }
-    
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.util.DriverSupport#executeImpl(org.apache.commons.cli.CommandLine)
      */
     @Override
     protected void executeImpl(CommandLine cmd) {
-        
+
         String taskQueueNames = cmd.getOptionValue(TASK_QUEUES_OPTION);
         if (taskQueueNames != null) {
-            setSystemProperty(ConfigConstants.QUEUE_TASK_ORDERED,
-                              taskQueueNames);
+            setSystemProperty(ConfigConstants.QUEUE_TASK_ORDERED, taskQueueNames);
         }
 
-        
-        List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
-                                                                            .addMillDb()
-                                                                            .addMcDb()
-                                                                            .addDeadLetterQueue()
-                                                                            .addAuditQueue()
-                                                                            .addBitIntegrityQueue()
-                                                                            .addBitIntegrityErrorQueue()
-                                                                            .addBitIntegrityReportQueue()
-                                                                            .addNotifications()
-                                                                            .addWorkDir()
-                                                                            .addTaskQueueOrder()
-                                                                            .addDuplicationPolicyBucketSuffix()
-                                                                            .addDuplicationPolicyRefreshFrequency()
-                                                                            .addDuplicationHighPriorityQueue()
-                                                                            .addLocalDuplicationDir()
-                                                                            .addMaxWorkers()
-                                                                            .build();
+        List<PropertyDefinition> defintions =
+            new PropertyDefinitionListBuilder().addAws()
+                                               .addMillDb()
+                                               .addMcDb()
+                                               .addDeadLetterQueue()
+                                               .addAuditQueue()
+                                               .addBitIntegrityQueue()
+                                               .addBitIntegrityErrorQueue()
+                                               .addBitIntegrityReportQueue()
+                                               .addNotifications()
+                                               .addWorkDir()
+                                               .addTaskQueueOrder()
+                                               .addDuplicationPolicyBucketSuffix()
+                                               .addDuplicationPolicyRefreshFrequency()
+                                               .addDuplicationHighPriorityQueue()
+                                               .addLocalDuplicationDir()
+                                               .addMaxWorkers()
+                                               .build();
         PropertyVerifier verifier = new PropertyVerifier(defintions);
         verifier.verify(System.getProperties());
 
-        
         TaskProducerConfigurationManager config = new WorkmanConfigurationManager();
 
         String workDirPath = config.getWorkDirectoryPath();
-        
+
         if (workDirPath == null || workDirPath.trim() == "") {
             // this should never happen since workDirPath is required,
             // but I'll leave this in here as a sanity check.
-            workDirPath = System.getProperty("java.io.tmpdir") + File.separator
-                    + "workman-work";
+            workDirPath = System.getProperty("java.io.tmpdir") + File.separator + "workman-work";
         }
 
         initializeWorkDir(workDirPath);
 
         String localDuplicationPolicyDirPath = config.getDuplicationPolicyDir();
-        
+
         if (localDuplicationPolicyDirPath != null && !new File(localDuplicationPolicyDirPath).exists()) {
             System.err.print("The local duplication policy directory "
-                    + "path you specified, "
-                    + localDuplicationPolicyDirPath + " does not exist: ");
+                             + "path you specified, "
+                             + localDuplicationPolicyDirPath + " does not exist: ");
             die();
-        } 
+        }
 
         ApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill");
     }
@@ -134,18 +127,16 @@ public class AppDriver extends DriverSupport {
             if (!workDir.exists()) {
                 if (!workDir.mkdirs()) {
                     String message = "Unable to create work dir: "
-                            + workDir.getAbsolutePath()
-                            + ". Check that workman process has "
-                            + "permission to create this directory";
+                                     + workDir.getAbsolutePath()
+                                     + ". Check that workman process has "
+                                     + "permission to create this directory";
                     log.error(message);
                     System.exit(1);
                 }
             }
 
         } catch (Exception ex) {
-            log.error("failed to initialize workDir " + workDirPath + ":"
-                              + ex.getMessage(),
-                      ex);
+            log.error("failed to initialize workDir " + workDirPath + ":" + ex.getMessage(), ex);
             System.exit(1);
         }
 

@@ -21,14 +21,14 @@ import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 
 /**
  * @author Bill Branan
- *         Date: 10/30/13
+ * Date: 10/30/13
  */
 public class DuplicationPolicyManager {
 
     private Map<String, DuplicationPolicy> dupAccounts = null;
 
     private DuplicationPolicyRepo policyRepo;
-    
+
     public DuplicationPolicyManager(DuplicationPolicyRepo policyRepo) {
         this.policyRepo = policyRepo;
     }
@@ -40,12 +40,12 @@ public class DuplicationPolicyManager {
         try {
             List<String> dupAccountList =
                 readDupAccounts(policyRepo.getDuplicationAccounts());
-            for(String dupAccount : dupAccountList) {
+            for (String dupAccount : dupAccountList) {
                 DuplicationPolicy policy =
                     readDupPolicy(policyRepo.getDuplicationPolicy(dupAccount));
                 dupAccounts.put(dupAccount, policy);
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Unable to load duplication policies " +
                                        "due to: " + e.getMessage(), e);
         }
@@ -62,8 +62,10 @@ public class DuplicationPolicyManager {
     private List<String> readDupAccounts(InputStream dupAccountsStream)
         throws IOException {
         ObjectMapper objMapper = new ObjectMapper();
-        return objMapper.readValue(dupAccountsStream,
-                                   new TypeReference<List<String>>(){});
+        return objMapper.readValue(
+            dupAccountsStream,
+            new TypeReference<List<String>>() {
+            });
     }
 
     private DuplicationPolicy readDupPolicy(InputStream dupPolicyStream)
@@ -83,10 +85,10 @@ public class DuplicationPolicyManager {
     }
 
     /**
-     * 
+     *
      */
     private synchronized void ensurePoliciesLoaded() {
-        if(dupAccounts == null){
+        if (dupAccounts == null) {
             refreshPolicies();
         }
     }
@@ -101,11 +103,11 @@ public class DuplicationPolicyManager {
         ensurePoliciesLoaded();
         return dupAccounts.get(account);
     }
-    
+
     /**
-     * Causes the cached duplication policy set to be cleared.  
+     * Causes the cached duplication policy set to be cleared.
      */
-    public void clearPolicyCache(){
+    public void clearPolicyCache() {
         dupAccounts = null;
     }
 

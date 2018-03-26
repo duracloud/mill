@@ -13,11 +13,12 @@ import org.duracloud.mill.ltp.RunStats;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 28, 2014
+ * Date: Apr 28, 2014
  */
 public class BitIntegrityRunStats extends RunStats {
 
     private int added = 0;
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.ltp.RunStats#reset()
      */
@@ -31,7 +32,7 @@ public class BitIntegrityRunStats extends RunStats {
      */
     @Override
     public void copyValuesFrom(RunStats runstats) {
-        added = ((BitIntegrityRunStats)runstats).added;
+        added = ((BitIntegrityRunStats) runstats).added;
     }
 
     /* (non-Javadoc)
@@ -39,7 +40,7 @@ public class BitIntegrityRunStats extends RunStats {
      */
     @Override
     public void add(RunStats runstats) {
-        add(((BitIntegrityRunStats)runstats).added);
+        add(((BitIntegrityRunStats) runstats).added);
     }
 
     /**
@@ -48,14 +49,14 @@ public class BitIntegrityRunStats extends RunStats {
     public void add(int added) {
         this.added += added;
     }
-    
+
     /**
      * @return the added
      */
     public int getAdded() {
         return added;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
@@ -63,6 +64,5 @@ public class BitIntegrityRunStats extends RunStats {
     public String toString() {
         return MessageFormat.format("bit_check_messages_added={0}", added);
     }
-
 
 }

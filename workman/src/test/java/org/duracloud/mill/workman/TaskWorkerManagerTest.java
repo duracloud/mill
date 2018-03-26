@@ -26,41 +26,39 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 @RunWith(EasyMockRunner.class)
-public class TaskWorkerManagerTest extends EasyMockSupport{
+public class TaskWorkerManagerTest extends EasyMockSupport {
+
     @Mock
-    private TaskQueue  lowPriorityQueue;
-    
+    private TaskQueue lowPriorityQueue;
+
     @Mock
     private TaskQueue highPriorityQueue;
-    
-    @Mock 
+
+    @Mock
     private TaskQueue deadLetterQueue;
 
     @Mock
     private TaskWorkerFactory factory;
-    
-    
+
     @Before
-    public void setup(){
-        
+    public void setup() {
+
     }
-    
+
     @After
-    public void tearDown(){
+    public void tearDown() {
         verifyAll();
     }
-    
+
     @Test
     public void testInit() throws Exception {
         int times = 4;
-        final CountDownLatch latch = new CountDownLatch((times+1)*2);
+        final CountDownLatch latch = new CountDownLatch((times + 1) * 2);
         Task task = new Task();
-        
+
         configureQueue(times, latch, task, lowPriorityQueue);
         configureQueue(times, latch, task, highPriorityQueue);
         EasyMock.expect(deadLetterQueue.getName()).andReturn("dead").anyTimes();
@@ -70,40 +68,40 @@ public class TaskWorkerManagerTest extends EasyMockSupport{
 
         TaskWorkerManager manager;
 
-        manager = new TaskWorkerManager(Arrays.asList(highPriorityQueue,
-                                                                        lowPriorityQueue),
-                                                          deadLetterQueue,
-                                                          factory);
+        manager = new TaskWorkerManager(Arrays.asList(highPriorityQueue, lowPriorityQueue),
+                                        deadLetterQueue,
+                                        factory);
 
         //set max workers
-        System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY, times+"");
+        System.setProperty(TaskWorkerManager.MAX_WORKER_PROPERTY_KEY, times + "");
 
         manager.init();
 
         Assert.assertEquals(times, manager.getMaxWorkers());
 
         Assert.assertTrue(latch.await(6000, TimeUnit.MILLISECONDS));
-        
+
         manager.destroy();
     }
 
-
     private void configureQueue(int times,
-            final CountDownLatch latch,
-            Task task,
-            TaskQueue queue)            throws TimeoutException {
-        EasyMock.expect(queue.size()).andReturn(0).anyTimes();
+                                final CountDownLatch latch,
+                                Task task,
+                                TaskQueue queue) throws TimeoutException {
 
+        EasyMock.expect(queue.size()).andReturn(0).anyTimes();
         EasyMock.expect(queue.take()).andReturn(task).times(times);
         EasyMock.expect(queue.getName()).andReturn("test").anyTimes();
 
         EasyMock.expect(factory.create(task, queue)).andReturn(new TaskWorker() {
             @Override
             public void run() {
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {}
-                    latch.countDown();
+                try {
+                    Thread.sleep(1500);
+                } catch (InterruptedException e) {
+                    // Exit sleep on interruption
+                }
+                latch.countDown();
             }
         }).times(times);
         EasyMock.expect(queue.take()).andStubAnswer(new IAnswer<Task>() {
@@ -116,6 +114,6 @@ public class TaskWorkerManagerTest extends EasyMockSupport{
                 throw new TimeoutException();
             }
         });
-
     }
+
 }

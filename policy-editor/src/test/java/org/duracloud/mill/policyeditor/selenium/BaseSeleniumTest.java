@@ -9,23 +9,21 @@ package org.duracloud.mill.policyeditor.selenium;
 
 import java.util.Properties;
 
+import com.thoughtworks.selenium.DefaultSelenium;
+import com.thoughtworks.selenium.Selenium;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thoughtworks.selenium.DefaultSelenium;
-import com.thoughtworks.selenium.Selenium;
-
 /**
  * @author "Daniel Bernstein (dbernstein@duraspace.org)"
- *
  */
 public abstract class BaseSeleniumTest {
 
     // initialize sync with test config
     protected Properties props = null;
-    
+
     protected static Logger log =
         LoggerFactory.getLogger(BaseSeleniumTest.class);
 
@@ -44,11 +42,10 @@ public abstract class BaseSeleniumTest {
         return port != null ? port : DEFAULT_PORT;
     }
 
-
-
     protected String getBaseUrl() throws Exception {
         return "http://localhost:" + getPort() + getAppRoot();
     }
+
     @Before
     public void before() throws Exception {
         String url = getBaseUrl() + "/";
@@ -57,15 +54,14 @@ public abstract class BaseSeleniumTest {
         log.info("started selenium client on " + url);
         props = getProperties();
     }
-    
-    protected static Properties getProperties() throws Exception{
+
+    protected static Properties getProperties() throws Exception {
         Properties p = new Properties();
         p.load(BaseSeleniumTest.class.getClassLoader()
-                   .getResourceAsStream("test.properties"));
+                                     .getResourceAsStream("test.properties"));
 
         return p;
     }
-
 
     @After
     public void after() {
@@ -73,11 +69,13 @@ public abstract class BaseSeleniumTest {
         sc = null;
         log.info("stopped selenium client");
     }
-    
+
     protected void sleep(long ms) {
         try {
             Thread.sleep(ms);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            // Exit sleep on interruption
+        }
     }
 
     protected boolean isTextPresent(String pattern) {
@@ -90,13 +88,12 @@ public abstract class BaseSeleniumTest {
 
     protected Selenium createSeleniumClient(String url) {
         DefaultSelenium selenium = new DefaultSelenium("localhost", 4444,
-                "*firefox", url);
+                                                       "*firefox", url);
         return selenium;
     }
 
-
     /**
-     * @param sc
+     *
      */
     protected void waitForPage() {
         log.debug("waiting for page to load...");
@@ -109,8 +106,6 @@ public abstract class BaseSeleniumTest {
         log.debug("clicked " + locator);
         waitForPage(sc);
     }
-
-    
 
     /**
      * @param sc

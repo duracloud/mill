@@ -11,14 +11,14 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 25, 2013
+ * Date: Oct 25, 2013
  */
 public class ConfigurationManager {
-    
+
     public String getAuditQueueName() {
         return System.getProperty(ConfigConstants.QUEUE_NAME_AUDIT);
     }
-    
+
     public String getBitIntegrityQueue() {
         return System.getProperty(ConfigConstants.QUEUE_NAME_BIT_INTEGRITY);
     }
@@ -26,20 +26,20 @@ public class ConfigurationManager {
     public String getWorkDirectoryPath() {
         return System.getProperty(ConfigConstants.WORK_DIRECTORY_PATH);
     }
-    
+
     public String[] getNotificationRecipients() {
         return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS);
     }
 
     private String[] getCommaSeparatedListToArray(String prop) {
-        String values =  System.getProperty(prop);
-        if(StringUtils.isBlank(values)){
+        String values = System.getProperty(prop);
+        if (StringUtils.isBlank(values)) {
             return new String[0];
-        }else{
+        } else {
             return values.split(",");
         }
     }
-    
+
     public String[] getNotificationRecipientsNonTech() {
         return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS_NON_TECH);
     }

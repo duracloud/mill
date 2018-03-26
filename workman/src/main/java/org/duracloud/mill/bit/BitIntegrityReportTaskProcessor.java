@@ -37,21 +37,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Daniel Bernstein Date: May 7, 2014
+ * @author Daniel Bernstein
+ * Date: May 7, 2014
  */
-public class BitIntegrityReportTaskProcessor extends
-                                            TaskProcessorBase {
-    private static Logger log = LoggerFactory
-            .getLogger(BitIntegrityReportTaskProcessor.class);
+public class BitIntegrityReportTaskProcessor extends TaskProcessorBase {
+    private static Logger log = LoggerFactory.getLogger(BitIntegrityReportTaskProcessor.class);
     private BitIntegrityCheckReportTask task;
     private BitLogStore bitLogStore;
     private StorageProvider store;
     private TaskProducerConfigurationManager config;
 
     private NotificationManager notificationManager;
+
     /**
-     * @param bitTask
-     * @param bitLogStore
+     *
      */
     public BitIntegrityReportTaskProcessor(BitIntegrityCheckReportTask task,
                                            BitLogStore bitLogStore,
@@ -68,7 +67,7 @@ public class BitIntegrityReportTaskProcessor extends
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.duracloud.mill.workman.TaskProcessorBase#executeImpl()
      */
     @Override
@@ -79,7 +78,7 @@ public class BitIntegrityReportTaskProcessor extends
 
         // open text file
         final File bitLogDir = new File(config.getWorkDirectoryPath()
-                + File.separator + "bit-integrity-reports");
+                                        + File.separator + "bit-integrity-reports");
         if (!bitLogDir.exists()) {
             bitLogDir.mkdirs();
         }
@@ -97,14 +96,14 @@ public class BitIntegrityReportTaskProcessor extends
             // upload to duracloud
             final String reportSpaceId = "x-duracloud-admin";
             final String reportContentId = "bit-integrity/" + spaceId + "/" + storeId + "/"
-                    + bitLog.getName();
+                                           + bitLog.getName();
 
             new Retrier().execute(new Retriable() {
                 @Override
                 public Object retry() throws Exception {
                     Iterator<String> spaces = store.getSpaces();
-                    while(spaces.hasNext()){
-                        if(spaces.next().equals(reportSpaceId)){
+                    while (spaces.hasNext()) {
+                        if (spaces.next().equals(reportSpaceId)) {
                             return null;
                         }
                     }
@@ -113,8 +112,7 @@ public class BitIntegrityReportTaskProcessor extends
                     return null;
                 }
             });
-            
-            
+
             new Retrier().execute(new Retriable() {
 
                 @Override
@@ -130,55 +128,50 @@ public class BitIntegrityReportTaskProcessor extends
             });
 
             BitIntegrityReportResult result = BitIntegrityReportResult.SUCCESS;
-            
-            if(errors.size() > 0){
+
+            if (errors.size() > 0) {
                 result = BitIntegrityReportResult.FAILURE;
             }
-            
+
             BitIntegrityReport report = bitLogStore.addReport(account,
                                                               storeId,
                                                               spaceId,
                                                               reportSpaceId,
                                                               reportContentId,
                                                               result,
-                                                              new Date()); 
-            
-            if(errors.size() > 0){
+                                                              new Date());
+
+            if (errors.size() > 0) {
                 log.warn(
-                         "Bit integirty errors: subdomain: {}, storeId: {}, spaceId: {}: ",
-                         account, storeId, spaceId);
+                    "Bit integirty errors: subdomain: {}, storeId: {}, spaceId: {}: ",
+                    account, storeId, spaceId);
 
                 notifyManagerOfBitIntegrityErrors(report, errors);
             }
 
-            try{
+            try {
                 // delete all bit integrity log items for space.
                 bitLogStore.delete(account, storeId, spaceId);
-                log.info(
-                         "Deleted Bit Log Items for account: {}, storeId: {}, spaceId: {}: ",
+                log.info("Deleted Bit Log Items for account: {}, storeId: {}, spaceId: {}: ",
                          account, storeId, spaceId);
-                
-            }catch(Exception ex){
-                log.warn(MessageFormat.format("failed to delete bit log items where account={0}, store_id = {1}, space_id = {2} due to: {3}",
-                         account,
-                         storeId,
-                         spaceId,
-                         ex.getMessage()), ex);
+
+            } catch (Exception ex) {
+                log.warn(MessageFormat.format(
+                    "failed to delete bit log items where account={0}, store_id = {1}, space_id = {2} due to: {3}",
+                    account, storeId, spaceId, ex.getMessage()), ex);
             }
 
         } catch (Exception ex) {
-            throw new TaskExecutionFailedException("task processing failed: "
-                    + ex.getMessage(), ex);
+            throw new TaskExecutionFailedException("task processing failed: " + ex.getMessage(), ex);
         } finally {
             try {
                 bitLog.delete();
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 log.warn("failed to delete bit log: " + bitLog.getAbsolutePath(), ex);
             }
         }
 
     }
-
 
     /**
      * @param report
@@ -190,39 +183,37 @@ public class BitIntegrityReportTaskProcessor extends
         String account = report.getAccount();
         String storeId = report.getStoreId();
         String spaceId = report.getSpaceId();
-        
 
         String host = account + ".duracloud.org";
 
-        String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +errors.size()+ ")  detected on " + 
-                         host + ", providerId=" + storeId + 
+        String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +
+                         errors.size() + ")  detected on " + host + ", providerId=" + storeId +
                          ", spaceId=" + spaceId;
 
         StringBuilder body = new StringBuilder();
-        
+
         body.append(BitIntegrityHelper.getHeader());
-        for(BitLogItem error : errors){
+        for (BitLogItem error : errors) {
             body.append(BitIntegrityHelper.formatLogLine(error) + "\n");
         }
 
-
-        this.notificationManager.sendEmail(subject,body.toString());
+        this.notificationManager.sendEmail(subject, body.toString());
     }
 
     private List<BitLogItem> writeLog(File bitLog,
-                          String account,
-                          String storeId,
-                          String spaceId) throws Exception {
+                                      String account,
+                                      String storeId,
+                                      String spaceId) throws Exception {
         List<BitLogItem> errors = new LinkedList<>();
         try (FileWriter writer = new FileWriter(bitLog)) {
             // for each bit integrity item for space write to file
             writer.write(BitIntegrityHelper.getHeader());
             Iterator<BitLogItem> it = this.bitLogStore.getBitLogItems(account,
                                                                       storeId,
-                                                                          spaceId);
+                                                                      spaceId);
             while (it.hasNext()) {
                 BitLogItem item = it.next();
-                if(isError(item)){
+                if (isError(item)) {
                     errors.add(item);
                 }
                 writer.write(BitIntegrityHelper.formatLogLine(item));
@@ -231,7 +222,7 @@ public class BitIntegrityReportTaskProcessor extends
                 }
             }
         }
-        
+
         return errors;
     }
 
@@ -241,7 +232,7 @@ public class BitIntegrityReportTaskProcessor extends
      */
     private boolean isError(BitLogItem item) {
         BitIntegrityResult result = item.getResult();
-        return (result.equals(BitIntegrityResult.ERROR) || 
+        return (result.equals(BitIntegrityResult.ERROR) ||
                 result.equals(BitIntegrityResult.FAILURE));
     }
 
@@ -249,15 +240,12 @@ public class BitIntegrityReportTaskProcessor extends
                                   String storeId,
                                   String spaceId,
                                   File bitLogDir) {
-        DateFormat fileDateFormat = new SimpleDateFormat(DateUtil.DateFormat.PLAIN_FORMAT
-                .getPattern());
+        DateFormat fileDateFormat = new SimpleDateFormat(DateUtil.DateFormat.PLAIN_FORMAT.getPattern());
 
         File bitLog = new File(bitLogDir, "bit-integrity_" + account
-                + "_" + storeId + "_" + spaceId + "_"
-                + fileDateFormat.format(new Date()) + ".tsv");
+                                          + "_" + storeId + "_" + spaceId + "_"
+                                          + fileDateFormat.format(new Date()) + ".tsv");
         return bitLog;
     }
-
-
 
 }

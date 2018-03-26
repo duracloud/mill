@@ -30,8 +30,9 @@ import org.springframework.context.annotation.Configuration;
 /**
  * This class tests a round trip for processing Noop Tasks, from task creation
  * to task processing.
- * 
- * @author Daniel Bernstein Date: Oct 24, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Oct 24, 2013
  */
 public class NoopProcessorLocalRoundTripTest {
 
@@ -43,36 +44,29 @@ public class NoopProcessorLocalRoundTripTest {
     private ApplicationContext context;
 
     @Configuration
-    public static class TestAppConfig  {
+    public static class TestAppConfig {
 
- 
-        @Bean(initMethod="init", destroyMethod="destroy")
+        @Bean(initMethod = "init", destroyMethod = "destroy")
         public TaskWorkerManager taskWorkerManager(RootTaskProcessorFactory factory,
-                                                    TaskQueue deadLetterQueue) {
-            return new TaskWorkerManager(Arrays.asList(new TaskQueue[] {
-                    HIGH_PRIORITY_QUEUE, LOW_PRIORITY_QUEUE }),
-                    deadLetterQueue, new TaskWorkerFactoryImpl(factory,
-                            deadLetterQueue));
+                                                   TaskQueue deadLetterQueue) {
+            return new TaskWorkerManager(Arrays.asList(new TaskQueue[] {HIGH_PRIORITY_QUEUE, LOW_PRIORITY_QUEUE}),
+                                         deadLetterQueue,
+                                         new TaskWorkerFactoryImpl(factory, deadLetterQueue));
         }
-        
+
         @Bean
-        public RootTaskProcessorFactory 
-                    rootTaskProcessorFactory(File workDir) {
+        public RootTaskProcessorFactory rootTaskProcessorFactory(File workDir) {
 
             RootTaskProcessorFactory factory = new RootTaskProcessorFactory();
-            factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(null,
-                    workDir));
+            factory.addTaskProcessorFactory(new NoopTaskProcessorFactory(null, workDir));
 
             return factory;
         }
-        
+
         @Bean
         public TaskQueue deadLetterQueue() {
             return DEAD_LETTER_QUEUE;
         }
-        
-        
-        
 
         @Bean
         public File workDir() {
@@ -80,6 +74,7 @@ public class NoopProcessorLocalRoundTripTest {
             return new File(configurationManager.getWorkDirectoryPath());
         }
     }
+
     /**
      * @throws java.lang.Exception
      */
@@ -104,15 +99,15 @@ public class NoopProcessorLocalRoundTripTest {
     @Test
     public void test() {
         int count = 10;
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             NoopTask noopTask = new NoopTask();
             Task task = noopTask.writeTask();
             task.setVisibilityTimeout(600);
             LOW_PRIORITY_QUEUE.put(task);
             HIGH_PRIORITY_QUEUE.put(task);
         }
-        
-        sleep(20*1000);
+
+        sleep(20 * 1000);
 
         Assert.assertEquals(0, HIGH_PRIORITY_QUEUE.getInprocessCount());
         Assert.assertEquals(count, HIGH_PRIORITY_QUEUE.getCompletedCount());

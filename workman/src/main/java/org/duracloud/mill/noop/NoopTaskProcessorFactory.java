@@ -7,18 +7,18 @@
  */
 package org.duracloud.mill.noop;
 
-import org.duracloud.mill.credentials.CredentialsRepo;
+import java.io.File;
+
 import org.duracloud.common.queue.task.Task;
+import org.duracloud.mill.credentials.CredentialsRepo;
 import org.duracloud.mill.workman.TaskProcessor;
 import org.duracloud.mill.workman.TaskProcessorFactoryBase;
 
-import java.io.File;
-
 /**
  * A processor factory for a noop task.
- * 
- * @author Daniel Bernstein 
- *         Date: Oct 24, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Oct 24, 2013
  */
 public class NoopTaskProcessorFactory extends TaskProcessorFactoryBase {
     /**
@@ -31,7 +31,7 @@ public class NoopTaskProcessorFactory extends TaskProcessorFactoryBase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.workman.TaskProcessorFactoryBase#createImpl(org.duracloud
      * .mill.domain.Task)
@@ -43,7 +43,7 @@ public class NoopTaskProcessorFactory extends TaskProcessorFactoryBase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.workman.TaskProcessorFactoryBase#isSupported(org.duracloud
      * .mill.domain.Task)

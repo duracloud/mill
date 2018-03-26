@@ -11,7 +11,7 @@ import org.duracloud.mill.workman.TaskExecutionFailedException;
 
 /**
  * @author Bill Branan
- *         Date: 10/22/13
+ * Date: 10/22/13
  */
 public class DuplicationTaskExecutionFailedException
     extends TaskExecutionFailedException {

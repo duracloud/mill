@@ -8,10 +8,8 @@
 package org.duracloud.mill.credentials;
 
 /**
- * 
  * @author Daniel Bernstein
- *
  */
-abstract public class CredentialsRepoBase implements CredentialsRepo{
+abstract public class CredentialsRepoBase implements CredentialsRepo {
 
 }

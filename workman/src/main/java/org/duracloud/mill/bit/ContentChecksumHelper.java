@@ -20,14 +20,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulates retry logic for calculating 
+ * This class encapsulates retry logic for calculating
  * content checksums.
- * @author Daniel Bernstein 
-           Date: Oct 14, 2014
+ *
+ * @author Daniel Bernstein
+ * Date: Oct 14, 2014
  */
 public class ContentChecksumHelper {
-    private static Logger log = LoggerFactory
-            .getLogger(ContentChecksumHelper.class);
+    private static Logger log = LoggerFactory.getLogger(ContentChecksumHelper.class);
     private StorageProviderType storageProviderType;
     private ChecksumUtil checksumUtil;
     private BitIntegrityCheckTask bitTask;
@@ -51,16 +51,13 @@ public class ContentChecksumHelper {
     }
 
     /**
-     * 
-     * @param correctChecksum
-     *            The presumed correct checksum. If the calculated checksum of
-     *            the content does not match this checksum, a rety is triggered
-     *            to ensure that there was no
+     * @param correctChecksum The presumed correct checksum. If the calculated checksum of
+     *                        the content does not match this checksum, a rety is triggered
+     *                        to ensure that there was no
      * @return
      * @throws TaskExecutionFailedException
      */
-    public String
-            getContentChecksum(final String correctChecksum) throws TaskExecutionFailedException {
+    public String getContentChecksum(final String correctChecksum) throws TaskExecutionFailedException {
 
         if (checked) {
             return contentChecksum;
@@ -70,18 +67,17 @@ public class ContentChecksumHelper {
             new Retrier().execute(new Retriable() {
                 @Override
                 public String retry() throws Exception {
-                    try (InputStream inputStream = store.getContent(bitTask
-                            .getSpaceId(), bitTask.getContentId())) {
-                        String checksum = checksumUtil
-                                .generateChecksum(inputStream);
+                    try (InputStream inputStream =
+                             store.getContent(bitTask.getSpaceId(), bitTask.getContentId())) {
+                        String checksum = checksumUtil.generateChecksum(inputStream);
 
                         contentChecksum = checksum;
 
                         if (!correctChecksum.equals(checksum)) {
                             String message = BitIntegrityHelper
-                                    .buildFailureMessage("The content checksum does not match specified checksum: ",
-                                                         bitTask,
-                                                         storageProviderType);
+                                .buildFailureMessage("The content checksum does not match specified checksum: ",
+                                                     bitTask,
+                                                     storageProviderType);
                             log.warn(message);
                             throw new ChecksumsDoNotMatchException(message);
                         } else {
@@ -95,20 +91,19 @@ public class ContentChecksumHelper {
         } catch (NotFoundException | ChecksumsDoNotMatchException ex) {
             if (ex instanceof NotFoundException) {
                 log.warn(BitIntegrityHelper
-                        .buildFailureMessage("Could not compute checksum  - content not found",
-                                             bitTask,
-                                             storageProviderType));
-            }else{
+                             .buildFailureMessage("Could not compute checksum  - content not found",
+                                                  bitTask,
+                                                  storageProviderType));
+            } else {
                 log.warn("Checksums did not match provided checksum = {}, content checksum = {}",
-                         correctChecksum,
-                         contentChecksum);
+                         correctChecksum, contentChecksum);
             }
         } catch (Exception e) {
-            throw new BitIntegrityCheckTaskExecutionFailedException(BitIntegrityHelper
-                                                                            .buildFailureMessage("Could not compute checksum from content stream",
-                                                                                                 bitTask,
-                                                                                                 storageProviderType),
-                                                                    e);
+            throw new BitIntegrityCheckTaskExecutionFailedException(
+                BitIntegrityHelper.buildFailureMessage("Could not compute checksum from content stream",
+                                                       bitTask,
+                                                       storageProviderType),
+                e);
         }
 
         this.checked = true;

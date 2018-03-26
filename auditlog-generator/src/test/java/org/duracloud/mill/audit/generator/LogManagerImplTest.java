@@ -7,6 +7,23 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import static org.easymock.EasyMock.anyLong;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.duracloud.common.util.ContentIdUtil;
 import org.duracloud.mill.db.model.JpaAuditLogItem;
@@ -18,20 +35,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertTrue;
-
 /**
- * @author Daniel Bernstein Date: Sep 8, 2014
+ * @author Daniel Bernstein
+ * Date: Sep 8, 2014
  */
 public class LogManagerImplTest extends AbstractTestBase {
     private LogManagerImpl manager;
@@ -59,7 +65,7 @@ public class LogManagerImplTest extends AbstractTestBase {
     @Before
     public void setup() {
         logsRootDir = new File(System.getProperty("java.io.tmpdir")
-                + File.separator + System.currentTimeMillis());
+                               + File.separator + System.currentTimeMillis());
         logsRootDir.mkdirs();
     }
 
@@ -67,13 +73,12 @@ public class LogManagerImplTest extends AbstractTestBase {
     public void tearDown() {
         super.tearDown();
         FileUtils.deleteQuietly(logsRootDir);
-    };
+    }
 
     /**
      * Test method for
      * {@link org.duracloud.mill.audit.generator.LogManagerImpl#write(org.duracloud.mill.db.model.JpaAuditLogItem)}
-     * .
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -84,7 +89,7 @@ public class LogManagerImplTest extends AbstractTestBase {
                                      logSpace) {
             /*
              * (non-Javadoc)
-             * 
+             *
              * @see
              * org.duracloud.mill.audit.generator.LogManagerImpl#createSpaceLog
              * (org.duracloud.mill.audit.generator.LogKey)
@@ -97,9 +102,9 @@ public class LogManagerImplTest extends AbstractTestBase {
 
         long itemId1 = 1;
         long itemId2 = 2l;
-        
-        JpaAuditLogItem item1 = createItem(itemId1,new Date(System.currentTimeMillis()-1));
-        JpaAuditLogItem duplicateItem = createItem(itemId2,new Date(System.currentTimeMillis()));
+
+        JpaAuditLogItem item1 = createItem(itemId1, new Date(System.currentTimeMillis() - 1));
+        JpaAuditLogItem duplicateItem = createItem(itemId2, new Date(System.currentTimeMillis()));
 
         spaceLog.write(eq(item1));
         expectLastCall().once();
@@ -117,7 +122,7 @@ public class LogManagerImplTest extends AbstractTestBase {
         this.manager.write(duplicateItem);
 
     }
-    
+
     /**
      * @param itemId1
      * @param date
@@ -178,7 +183,7 @@ public class LogManagerImplTest extends AbstractTestBase {
                                                    eq(file.length()),
                                                    isA(String.class),
                                                    isA(InputStream.class)))
-                    .andReturn("checksum");
+                .andReturn("checksum");
 
         }
 
@@ -196,7 +201,7 @@ public class LogManagerImplTest extends AbstractTestBase {
     private void createManager() {
         manager = new LogManagerImpl(storageProvider,
                                      logsRootDir.getAbsolutePath(),
-                                     repo, 
+                                     repo,
                                      logSpace);
     }
 

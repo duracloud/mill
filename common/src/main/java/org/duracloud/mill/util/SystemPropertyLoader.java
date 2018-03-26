@@ -19,20 +19,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 30, 2013
+ * Date: Oct 30, 2013
  */
 public class SystemPropertyLoader {
     private static Logger log = LoggerFactory.getLogger(SystemPropertyLoader.class);
-    
+
+    private SystemPropertyLoader() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
+
     /**
-     * 
      * @param filePath
      */
     public static void load(String filePath) throws IOException {
         File file = new File(filePath);
         if (!file.exists()) {
-            throw new FileNotFoundException("Config file " + filePath
-                    + " not found.");
+            throw new FileNotFoundException("Config file " + filePath + " not found.");
         }
 
         log.info("loading {}", file);
@@ -43,13 +45,11 @@ public class SystemPropertyLoader {
             props.load(is);
             for (Object key : props.keySet()) {
                 if (System.getProperty(key.toString()) == null) {
-                    System.setProperty(key.toString(), props.get(key)
-                            .toString());
+                    System.setProperty(key.toString(), props.get(key).toString());
                 }
             }
         } catch (IOException e) {
-            throw new IOException("Failed to load configuration file: "
-                    + file, e);
+            throw new IOException("Failed to load configuration file: " + file, e);
         }
 
         log.info("successfully loaded {}", file);

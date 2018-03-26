@@ -19,9 +19,9 @@ import org.springframework.stereotype.Repository;
 
 /**
  * @author Daniel Bernstein
- *         Date: Oct 17, 2014
+ * Date: Oct 17, 2014
  */
-@Repository(value="bitLogItemRepo")
+@Repository(value = "bitLogItemRepo")
 public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
 
     /**
@@ -31,19 +31,19 @@ public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
      * @param pageable
      * @return
      */
-    public Page<JpaBitLogItem>
-           findByAccountAndStoreIdAndSpaceId(String account,
-                                             String storeId,
-                                             String spaceId,
-                                             Pageable pageable);
+    public Page<JpaBitLogItem> findByAccountAndStoreIdAndSpaceId(String account,
+                                                                 String storeId,
+                                                                 String spaceId,
+                                                                 Pageable pageable);
 
     /**
      * @param account
      * @param storeId
      * @param spaceId
      */
-     @Modifying
-     @Query(nativeQuery=true, value="delete from bit_log_item where account=?1 and store_id=?2 and space_id=?3 limit 50000")
+    @Modifying
+    @Query(nativeQuery = true,
+           value = "delete from bit_log_item where account=?1 and store_id=?2 and space_id=?3 limit 50000")
     public int deleteFirst50000ByAccountAndStoreIdAndSpaceId(String account,
                                                              String storeId,
                                                              String spaceId);
@@ -54,7 +54,8 @@ public interface JpaBitLogItemRepo extends JpaRepository<JpaBitLogItem, Long> {
      * @param spaceId
      * @return
      */
-     @Query("select b from JpaBitLogItem b where b.account = ?1 and b.storeId = ?2 and b.spaceId = ?3 and (b.result = 'ERROR' or b.result = 'FAILURE')")
+    @Query("select b from JpaBitLogItem b where b.account = ?1 and b.storeId = ?2 and b.spaceId = ?3 and (b.result = " +
+           "'ERROR' or b.result = 'FAILURE')")
     public List<BitLogItem> findErrorsAndFailures(String account,
                                                   String storeId,
                                                   String spaceId);

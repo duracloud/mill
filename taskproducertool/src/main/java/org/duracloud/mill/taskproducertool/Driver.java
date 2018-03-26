@@ -30,7 +30,6 @@ import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.Task.Type;
-import org.duracloud.common.util.DateUtil;
 import org.duracloud.mill.bit.BitIntegrityCheckReportTask;
 import org.duracloud.mill.bit.BitIntegrityCheckTask;
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
@@ -38,10 +37,15 @@ import org.duracloud.mill.task.DuplicationTask;
 
 /**
  * A simple client for placing various kinds of messages (NOOP, DUP, and BIT) on a task queue.
- * @author Daniel Bernstein 
- *         Date: Oct 28, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Oct 28, 2013
  */
 public class Driver {
+
+    private Driver() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -69,7 +73,7 @@ public class Driver {
     private static Options getOptions() {
         Options options = new Options();
         Option subdomain = new Option("s", "subdomain", true,
-                "A duracloud subdomain");
+                                      "A duracloud subdomain");
         subdomain.setArgs(1);
         subdomain.setArgName("subdomain");
         subdomain.setRequired(true);
@@ -82,69 +86,69 @@ public class Driver {
         options.addOption(queue);
 
         Option username = new Option("u", "username", true,
-                "The queue service username");
+                                     "The queue service username");
         username.setArgs(1);
         username.setArgName("username");
         options.addOption(username);
 
         Option password = new Option("p", "password", true,
-                "The queue service password");
+                                     "The queue service password");
         password.setArgs(1);
         password.setArgName("password");
         options.addOption(password);
 
         Option type = new Option("t", "type", true,
-                "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT, STORAGE_STATS");
+                                 "The type of operation: NOOP, DUP, BIT, AUDIT, BIT_REPORT, STORAGE_STATS");
         type.setArgs(1);
         type.setArgName("type");
         type.setRequired(true);
         options.addOption(type);
 
         Option sourceStorageProviderId = new Option("a", "source-provider-id",
-                true, "The id of the source storage provider");
+                                                    true, "The id of the source storage provider");
         sourceStorageProviderId.setArgs(1);
         sourceStorageProviderId.setArgName("id");
         options.addOption(sourceStorageProviderId);
 
         Option destStorageProviderId = new Option("b", "dest-provider-id",
-                true, "The id of the destination storage provider");
+                                                  true, "The id of the destination storage provider");
         destStorageProviderId.setArgs(1);
         destStorageProviderId.setArgName("id");
         options.addOption(destStorageProviderId);
 
         Option spaceId = new Option("d", "space-id", true,
-                "The id of the space");
+                                    "The id of the space");
         spaceId.setArgs(1);
         spaceId.setArgName("spaceId");
         options.addOption(spaceId);
 
         Option contentId = new Option("c", "content-id", true,
-                "The id of the source content");
+                                      "The id of the source content");
         contentId.setArgs(1);
         contentId.setArgName("contentId");
         options.addOption(contentId);
 
         Option contentIdFile = new Option("f", "content-id-file", true,
-                "A file containing a list of content ids");
+                                          "A file containing a list of content ids");
         contentIdFile.setArgs(1);
         contentIdFile.setArgName("content-id-file");
         options.addOption(contentIdFile);
 
         Option action = new Option("n", "action", true,
-                "An action field for audit task (ADDED_CONTENT, DELETED_CONTENT) ");
+                                   "An action field for audit task (ADDED_CONTENT, DELETED_CONTENT) ");
         action.setArgs(1);
         action.setArgName("action");
         options.addOption(action);
 
         Option contentSize = new Option("z", "content-size", true,
-                "A content size for audit tasks ( in bytes)");
+                                        "A content size for audit tasks ( in bytes)");
         contentSize.setArgs(1);
         contentSize.setArgName("content-size");
-        
+
         options.addOption(contentSize);
 
         Option checksum = new Option("k", "checksum", true,
-                "a checksum field");
+                                     "a checksum field");
         checksum.setArgs(1);
         checksum.setArgName("checksum");
         options.addOption(checksum);
@@ -155,13 +159,13 @@ public class Driver {
     public static void main(String[] args) {
         try {
             CommandLine cmd = parseArgs(args);
-            
+
             String queue = cmd.getOptionValue("q");
             String username = cmd.getOptionValue("u");
             String password = cmd.getOptionValue("p");
             String subdomain = cmd.getOptionValue("s");
             Type taskType = Task.Type
-                    .valueOf(cmd.getOptionValue("t").toUpperCase());
+                .valueOf(cmd.getOptionValue("t").toUpperCase());
             String sourceStoreId = cmd.getOptionValue("a");
             String destStoreId = cmd.getOptionValue("b");
             String spaceId = cmd.getOptionValue("d");
@@ -171,79 +175,79 @@ public class Driver {
             String checksum = cmd.getOptionValue("k");
 
             List<String> contentIds = new ArrayList<>();
-            
-            if(contentId != null){
+
+            if (contentId != null) {
                 contentIds.add(contentId);
             }
-            
+
             String contentIdFilePath = cmd.getOptionValue("f");
-            
-            if(contentIdFilePath != null){
+
+            if (contentIdFilePath != null) {
                 File file = new File(contentIdFilePath);
-                if(!file.exists()){
+                if (!file.exists()) {
                     throw new IOException("contentIds file does not exist: " + file.getAbsolutePath());
                 }
-                
+
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 String line = null;
-                while((line = reader.readLine()) != null){
-                    if(!StringUtils.isBlank(line)){
+                while ((line = reader.readLine()) != null) {
+                    if (!StringUtils.isBlank(line)) {
                         contentIds.add(line.trim());
                     }
                 }
             }
-            
-            if(contentIds.size() == 0){
+
+            if (contentIds.size() == 0) {
                 throw new Exception("You must specify at least one content id " +
-                		"either using the -c parameter or -f parameter.");
+                                    "either using the -c parameter or -f parameter.");
             }
-            
-            if(username != null){
+
+            if (username != null) {
                 System.setProperty("aws.accessKeyId", username);
             }
-            
-            if(password != null){
+
+            if (password != null) {
                 System.setProperty("aws.secretKey", password);
             }
 
-
             TaskQueue taskQueue = new SQSTaskQueue(queue);
-            
-            for(String content : contentIds){
+
+            for (String content : contentIds) {
                 SpaceCentricTypedTask typedTask;
-                if(taskType.equals(Type.DUP)) {
+                if (taskType.equals(Type.DUP)) {
                     DuplicationTask dupTask = new DuplicationTask();
                     dupTask.setSourceStoreId(sourceStoreId);
                     dupTask.setDestStoreId(destStoreId);
                     dupTask.setContentId(contentId);
                     typedTask = dupTask;
-                } else if(taskType.equals(Type.NOOP)) {
+                } else if (taskType.equals(Type.NOOP)) {
                     NoopTask noopTask = new NoopTask();
                     typedTask = noopTask;
-                } else if(taskType.equals(Type.AUDIT)) {
+                } else if (taskType.equals(Type.AUDIT)) {
                     AuditTask auditTask = new AuditTask();
                     auditTask.setContentChecksum(checksum != null ? checksum : "no-checksum-provided");
-                    auditTask.setAction(action != null ? ActionType.valueOf(action).name() : ActionType.ADD_CONTENT.name());
-                    auditTask.setContentSize(contentSize !=null ?  contentSize : "0");
-                    if(!ActionType.DELETE_CONTENT.name().equals(action)){
+                    auditTask
+                        .setAction(action != null ? ActionType.valueOf(action).name() : ActionType.ADD_CONTENT.name());
+                    auditTask.setContentSize(contentSize != null ? contentSize : "0");
+                    if (!ActionType.DELETE_CONTENT.name().equals(action)) {
                         auditTask.setContentMimetype("application/octet-stream");
                     }
 
-                    auditTask.setDateTime(System.currentTimeMillis()+"");
+                    auditTask.setDateTime(System.currentTimeMillis() + "");
                     auditTask.setUserId("root");
                     auditTask.setContentId(content);
                     typedTask = auditTask;
-                } else if(taskType.equals(Type.BIT_REPORT)) {
+                } else if (taskType.equals(Type.BIT_REPORT)) {
                     BitIntegrityCheckReportTask task = new BitIntegrityCheckReportTask();
                     typedTask = task;
-                } else if(taskType.equals(Type.BIT)) {
+                } else if (taskType.equals(Type.BIT)) {
                     BitIntegrityCheckTask task = new BitIntegrityCheckTask();
                     task.setContentId(contentId);
                     typedTask = task;
-                } else if(taskType.equals(Type.STORAGE_STATS)) {
-                     typedTask = new StorageStatsTask();
+                } else if (taskType.equals(Type.STORAGE_STATS)) {
+                    typedTask = new StorageStatsTask();
                 } else {
-                   throw new RuntimeException("taskType " + taskType + " not supported.");
+                    throw new RuntimeException("taskType " + taskType + " not supported.");
                 }
 
                 typedTask.setAccount(subdomain);

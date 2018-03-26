@@ -9,10 +9,9 @@ package org.duracloud.mill.credentials;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 30, 2013
+ * Date: Oct 30, 2013
  */
-public class StorageProviderCredentialsNotFoundException extends
-        CredentialsRepoException {
+public class StorageProviderCredentialsNotFoundException extends CredentialsRepoException {
 
     private static final long serialVersionUID = 1L;
 

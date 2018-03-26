@@ -7,9 +7,12 @@
  */
 package org.duracloud.mill.workman;
 
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.duracloud.common.queue.TaskQueue;
@@ -20,12 +23,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.easymock.EasyMock.*;
-
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 public class TaskWorkerImplTest {
     private Task task;
@@ -38,16 +37,16 @@ public class TaskWorkerImplTest {
     public void setUp() throws Exception {
         task = EasyMock.createMock(Task.class);
         expect(task.getType()).andReturn(Task.Type.NOOP);
-        
+
         processor = EasyMock.createMock(TaskProcessor.class);
         queue = EasyMock.createMock(TaskQueue.class);
         deadLetterQueue = EasyMock.createMock(TaskQueue.class);
 
         factory = EasyMock.createMock(TaskProcessorFactory.class);
-        EasyMock.expect(task.getVisibilityTimeout()).andReturn(
-                1);
-        EasyMock.expect(factory.create(EasyMock.isA(Task.class))).andReturn(
-                processor);
+        EasyMock.expect(task.getVisibilityTimeout())
+                .andReturn(1);
+        EasyMock.expect(factory.create(EasyMock.isA(Task.class)))
+                .andReturn(processor);
 
     }
 
@@ -71,7 +70,6 @@ public class TaskWorkerImplTest {
             }
         });
 
-        
         queue.extendVisibilityTimeout(EasyMock.isA(Task.class));
         EasyMock.expectLastCall().times(2, 4);
         queue.deleteTask(EasyMock.isA(Task.class));

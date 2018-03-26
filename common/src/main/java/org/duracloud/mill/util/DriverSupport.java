@@ -21,29 +21,29 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 23, 2014
+ * Date: Apr 23, 2014
  */
 public abstract class DriverSupport {
     private static Logger log = LoggerFactory.getLogger(DriverSupport.class);
 
     private Options options;
-        
-    public DriverSupport(Options options){
+
+    public DriverSupport(Options options) {
         this.options = options;
     }
-    
+
     public void die() {
         usage();
         System.exit(1);
     }
-    
+
     public void usage() {
         HelpFormatter help = new HelpFormatter();
         help.setWidth(80);
         help.printHelp(getClass().getCanonicalName(), options);
     }
-    
-    public  CommandLine parseArgs(String[] args) {
+
+    public CommandLine parseArgs(String[] args) {
         CommandLineParser parser = new GnuParser();
         CommandLine cmd = null;
         try {
@@ -55,7 +55,7 @@ public abstract class DriverSupport {
 
         return cmd;
     }
-    
+
     public final void execute(String[] args) {
 
         try {
@@ -70,11 +70,11 @@ public abstract class DriverSupport {
             executeImpl(cmd);
         } catch (Throwable ex) {
             log.error("failed to startup " + getClass().getCanonicalName()
-                    + ": " + ex.getMessage(), ex);
+                      + ": " + ex.getMessage(), ex);
         }
 
     }
-    
+
     /**
      * @param cmd
      */
@@ -95,17 +95,18 @@ public abstract class DriverSupport {
      * @param cmd
      */
     protected abstract void executeImpl(CommandLine cmd);
-    
-    protected void setSystemProperty(String name, String value){
+
+    protected void setSystemProperty(String name, String value) {
         setSystemProperty(name, value, null);
-        
+
     }
-    protected void setSystemProperty(String name, String value, String defaultValue){
-        if(value == null){
+
+    protected void setSystemProperty(String name, String value, String defaultValue) {
+        if (value == null) {
             value = defaultValue;
         }
-        
-        System.setProperty(name,  value);
+
+        System.setProperty(name, value);
     }
-    
+
 }

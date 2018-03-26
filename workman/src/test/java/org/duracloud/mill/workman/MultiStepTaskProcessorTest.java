@@ -7,16 +7,13 @@
  */
 package org.duracloud.mill.workman;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.duracloud.common.util.WaitUtil;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
@@ -29,25 +26,25 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Daniel Bernstein
- *	       Date: May 7, 2014
+ * Date: May 7, 2014
  */
 @RunWith(EasyMockRunner.class)
-public class MultiStepTaskProcessorTest extends EasyMockSupport{
+public class MultiStepTaskProcessorTest extends EasyMockSupport {
 
     @Mock
     private TaskProcessor step1;
-    
+
     @Mock
     private TaskProcessor step2;
 
     @Mock
     private TaskProcessor step1a;
-    
+
     @Mock
     private TaskProcessor step2a;
 
     private MultiStepTaskProcessor processor;
-    
+
     /**
      * @throws java.lang.Exception
      */
@@ -66,7 +63,8 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
 
     /**
      * Test method for {@link org.duracloud.mill.workman.MultiStepTaskProcessor#execute()}.
-     * @throws TaskExecutionFailedException 
+     *
+     * @throws TaskExecutionFailedException
      */
     @Test
     public void testExecute() throws TaskExecutionFailedException {
@@ -74,19 +72,19 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
         EasyMock.expectLastCall().once();
         step2.execute();
         EasyMock.expectLastCall().once();
-        
+
         replayAll();
-        
+
         processor.addTaskProcessor(step1);
         processor.addTaskProcessor(step2);
-        
+
         processor.execute();
-        
+
     }
-    
+
     @Test
-    public void testExecuteWithIgoreInConcurrentThreads() throws Exception{
-        
+    public void testExecuteWithIgoreInConcurrentThreads() throws Exception {
+
         //execute the multistep processor in two separate threads. In one thread
         //ignore after the first step; in the second thread do not ignore
         step1.execute();
@@ -120,10 +118,9 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
 
     }
 
-    
     @Test
-    public void testExecuteWithIgoreInSameThread() throws Exception{
-        
+    public void testExecuteWithIgoreInSameThread() throws Exception {
+
         //execute the two processors successively in one thread.  First time around
         //ignore after the first step; in the second time around do not ignore
         step1.execute();
@@ -141,7 +138,6 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
         step1a.execute();
         EasyMock.expectLastCall().once();
 
-
         step2a.execute();
         EasyMock.expectLastCall().once();
 
@@ -155,21 +151,23 @@ public class MultiStepTaskProcessorTest extends EasyMockSupport{
         processor = new MultiStepTaskProcessor();
         processor.addTaskProcessor(step1a);
         processor.addTaskProcessor(step2a);
-        
+
         processor.execute();
 
-        
     }
 
     private Future<Boolean> executeProcessorInThread() {
         FutureTask<Boolean> future = new FutureTask<>(new Callable<Boolean>() {
             private boolean result = false;
+
             @Override
             public Boolean call() throws Exception {
                 try {
                     processor.execute();
                     result = true;
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    // return false result
+                }
                 return result;
             }
         });

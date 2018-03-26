@@ -8,7 +8,7 @@
 package org.duracloud.mill.storagestats.aws;
 
 /**
- * @author Bill Branan 
+ * @author Bill Branan
  * Date: 10/29/2015
  */
 public class BucketStats {
@@ -46,6 +46,6 @@ public class BucketStats {
     @Override
     public String toString() {
         return "{" + "bucketName='" + bucketName + ", totalItems=" + totalItems
-                + ", totalBytes=" + totalBytes + '}';
+               + ", totalBytes=" + totalBytes + '}';
     }
 }

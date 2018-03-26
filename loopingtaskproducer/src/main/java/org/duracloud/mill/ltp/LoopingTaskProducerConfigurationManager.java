@@ -11,10 +11,8 @@ import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Dec 6, 2013
+ * Date: Dec 6, 2013
  */
-public class LoopingTaskProducerConfigurationManager extends
-        TaskProducerConfigurationManager {
-
+public class LoopingTaskProducerConfigurationManager extends TaskProducerConfigurationManager {
 
 }

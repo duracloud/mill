@@ -21,9 +21,9 @@ import org.springframework.transaction.TransactionSystemException;
 /**
  * As a processor of audit tasks as the name suggests, this class creates an
  * audit log entry and subsequently updates the content index.
- * 
- * @author Daniel Bernstein 
- *         Date: Mar 20, 2014
+ *
+ * @author Daniel Bernstein
+ * Date: Mar 20, 2014
  */
 public class AuditLogWritingProcessor extends TaskProcessorBase {
     private final Logger log = LoggerFactory.getLogger(AuditLogWritingProcessor.class);
@@ -32,7 +32,7 @@ public class AuditLogWritingProcessor extends TaskProcessorBase {
     private AuditTask task;
 
     public AuditLogWritingProcessor(AuditTask task,
-            AuditLogStore auditLogStore) {
+                                    AuditLogStore auditLogStore) {
         super(task);
         this.auditLogStore = auditLogStore;
         this.task = task;
@@ -44,8 +44,6 @@ public class AuditLogWritingProcessor extends TaskProcessorBase {
     @Override
     protected void executeImpl() throws TaskExecutionFailedException {
 
-
-
         try {
             String account = task.getAccount();
             String storeId = task.getStoreId();
@@ -55,35 +53,35 @@ public class AuditLogWritingProcessor extends TaskProcessorBase {
             Map<String, String> props = task.getContentProperties();
             String acls = task.getSpaceACLs();
             Date timestamp = new Date(Long.valueOf(task.getDateTime()));
-            
-            auditLogStore.write(account, 
-                                storeId, 
-                                spaceId, 
+
+            auditLogStore.write(account,
+                                storeId,
+                                spaceId,
                                 contentId,
-                                task.getContentChecksum(), 
+                                task.getContentChecksum(),
                                 task.getContentMimetype(),
-                                task.getContentSize(), 
-                                task.getUserId(), 
+                                task.getContentSize(),
+                                task.getUserId(),
                                 action,
-                                props != null ? AuditLogStoreUtil.serialize(props) : null, 
+                                props != null ? AuditLogStoreUtil.serialize(props) : null,
                                 acls,
-                                task.getSourceSpaceId(), 
+                                task.getSourceSpaceId(),
                                 task.getSourceContentId(),
                                 timestamp);
 
             log.debug("audit task successfully processed: {}", task);
-        } catch(TransactionSystemException e){
+        } catch (TransactionSystemException e) {
             log.error("failed to write item  ( account={} storeId={} spaceId={} contentId={} timestamp={} ) " +
-            	     "to the database due to a transactional error. Likely cause: duplicate entry. Details: {}. Ignoring...",
-                     task.getAccount(),
-                     task.getStoreId(),
-                     task.getSpaceId(),
-                     task.getContentId(),
-                     new Date(Long.valueOf(task.getDateTime())),
-                     e.getMessage());
+                      "to the database due to a transactional error. Likely cause: duplicate entry. Details: {}. " +
+                      "Ignoring...",
+                      task.getAccount(),
+                      task.getStoreId(),
+                      task.getSpaceId(),
+                      task.getContentId(),
+                      new Date(Long.valueOf(task.getDateTime())),
+                      e.getMessage());
         } catch (Exception e) {
-            String message = "Failed to execute " + task + ": "
-                    + e.getMessage();
+            String message = "Failed to execute " + task + ": " + e.getMessage();
             log.debug(message, e);
             throw new TaskExecutionFailedException(message, e);
         }

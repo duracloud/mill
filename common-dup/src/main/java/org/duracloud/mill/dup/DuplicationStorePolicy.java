@@ -13,8 +13,9 @@ package org.duracloud.mill.dup;
  * each space to be duplicated as defined in DuplicationPolicy will have a list
  * of one or more DuplicationStorePolicy defining the duplication order for the
  * space.
+ *
  * @author Erik Paulsson
- *         Date: 10/29/13
+ * Date: 10/29/13
  */
 public class DuplicationStorePolicy {
 

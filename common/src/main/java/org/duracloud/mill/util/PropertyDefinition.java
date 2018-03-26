@@ -12,14 +12,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Daniel Bernstein Date: Dec 4, 2014
+ * @author Daniel Bernstein
+ * Date: Dec 4, 2014
  */
 public class PropertyDefinition {
     private String name;
     private Set<String> validValues;
     private boolean required;
-    private boolean sensitive; // indicates that the property's values should
-                               // not be printed to any logs
+    private boolean sensitive; // indicates that the property's values should not be printed to any logs
 
     /**
      * @param name
@@ -32,20 +32,19 @@ public class PropertyDefinition {
                               boolean required,
                               boolean sensitive) {
         this.name = name;
-        if(validValues == null){
+        if (validValues == null) {
             validValues = new String[0];
         }
         this.validValues = new HashSet<>(Arrays.asList(validValues));
         this.required = required;
         this.sensitive = sensitive;
     }
-    
+
     /**
      * @param name
      * @param required
      */
-    public PropertyDefinition(String name,
-                              boolean required) {
+    public PropertyDefinition(String name, boolean required) {
         this(name, null, required, false);
     }
 
@@ -63,8 +62,6 @@ public class PropertyDefinition {
 
     public boolean isSensitive() {
         return sensitive;
-    }   
-    
-    
+    }
 
 }

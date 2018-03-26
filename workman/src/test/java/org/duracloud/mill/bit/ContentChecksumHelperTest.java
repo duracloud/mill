@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.bit;
 
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -22,13 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
-
-import static org.junit.Assert.*;
-
 /**
  * @author Daniel Bernstein
- *         Date: Oct 15, 2014
+ * Date: Oct 15, 2014
  */
 @RunWith(EasyMockRunner.class)
 public class ContentChecksumHelperTest extends EasyMockSupport {
@@ -37,18 +38,19 @@ public class ContentChecksumHelperTest extends EasyMockSupport {
     private String checksum = "checksum";
     private String account = "account";
     private String storeId = "storeId";
-    
+
     @Mock
     private StorageProvider store;
-    
+
     @Mock
     private BitIntegrityCheckTask task;
-    
+
     @Mock
     private ChecksumUtil checksumUtil;
-    
-    @Mock 
+
+    @Mock
     private InputStream is;
+
     /**
      * @throws java.lang.Exception
      */
@@ -66,39 +68,42 @@ public class ContentChecksumHelperTest extends EasyMockSupport {
 
     /**
      * Test method for {@link org.duracloud.mill.bit.ContentChecksumHelper#getContentChecksum(java.lang.String)}.
-     * @throws TaskExecutionFailedException 
-     * @throws IOException 
+     *
+     * @throws TaskExecutionFailedException
+     * @throws IOException
      */
     @Test
     public void testGetContentChecksum() throws TaskExecutionFailedException, IOException {
-        
+
         setupTask(1);
         setupStorageProvider(1);
         setupChecksumUtil(checksum);
         replayAll();
-        ContentChecksumHelper helper = new ContentChecksumHelper(StorageProviderType.AMAZON_S3, task, store, checksumUtil);
+        ContentChecksumHelper helper =
+            new ContentChecksumHelper(StorageProviderType.AMAZON_S3, task, store, checksumUtil);
         String resultChecksum = helper.getContentChecksum(checksum);
         assertEquals(resultChecksum, helper.getContentChecksum(checksum));
     }
 
     @Test
-    public void testRetry() throws Exception{
+    public void testRetry() throws Exception {
         String badChecksum = "bad-checksum";
         setupTask(3);
         expect(task.getAccount()).andReturn(account);
         expect(task.getStoreId()).andReturn(storeId);
-        
+
         setupStorageProvider(2);
         setupChecksumUtil(badChecksum);
         setupChecksumUtil(checksum);
 
         replayAll();
-        ContentChecksumHelper helper = new ContentChecksumHelper(StorageProviderType.AMAZON_S3, task, store, checksumUtil);
+        ContentChecksumHelper helper =
+            new ContentChecksumHelper(StorageProviderType.AMAZON_S3, task, store, checksumUtil);
         String resultChecksum = helper.getContentChecksum(checksum);
         assertEquals(resultChecksum, helper.getContentChecksum(checksum));
 
     }
-    
+
     private void setupChecksumUtil(String checksum) {
         expect(checksumUtil.generateChecksum(is)).andReturn(checksum);
     }

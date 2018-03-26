@@ -32,13 +32,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 30, 2013
+ * Date: Oct 30, 2013
  */
 @RunWith(EasyMockRunner.class)
-public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
+public class DuplicationTaskProducingProcessorTest extends EasyMockSupport {
 
     @Mock
     private DuplicationPolicyManager policyManager;
@@ -68,7 +67,8 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
     }
 
     /**
-     * Test method for {@link org.duracloud.mill.durastore.ContentMessageListener#onMessage(org.duracloud.storage.aop.ContentMessage)}.
+     * Test method for
+     * {@link org.duracloud.mill.durastore.ContentMessageListener#onMessage(org.duracloud.storage.aop.ContentMessage)}.
      */
     @Test
     public void testNoPolicies() throws TaskExecutionFailedException {
@@ -76,17 +76,16 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
         EasyMock.expect(policyManager.getDuplicationPolicy(EasyMock.isA(String.class))).andReturn(policy);
 
         replayAll();
-        
+
         execute(task);
     }
 
     private void execute(AuditTask task) throws TaskExecutionFailedException {
-        new DuplicationTaskProducingProcessor(task, duplicationTaskQueue,
-                policyManager).execute();
+        new DuplicationTaskProducingProcessor(task, duplicationTaskQueue, policyManager).execute();
     }
 
     @Test
-    public void testOnMessageNonDuplicationAction() throws TaskExecutionFailedException{
+    public void testOnMessageNonDuplicationAction() throws TaskExecutionFailedException {
         AuditTask task = createAuditTask(AuditTask.ActionType.GET_CONTENT.name());
         replayAll();
         execute(task);
@@ -100,7 +99,7 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
         task.setAction(action);
         task.setSpaceId("spaceId");
         task.setStoreId("storeId");
-       
+
         return task;
     }
 
@@ -109,46 +108,46 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
         testSuccessfulDuplicationTaskCreation(AuditTask.ActionType.DELETE_SPACE);
     }
 
-    
     @Test
-    public void testSuccessfulDuplicationTaskOnDelete(){
+    public void testSuccessfulDuplicationTaskOnDelete() {
         testSuccessfulDuplicationTaskCreation(AuditTask.ActionType.DELETE_CONTENT);
     }
 
     @Test
-    public void testSuccessfulDuplicationTaskOnCopy(){
+    public void testSuccessfulDuplicationTaskOnCopy() {
         testSuccessfulDuplicationTaskCreation(AuditTask.ActionType.COPY_CONTENT);
     }
+
     @Test
-    public void testSuccessfulDuplicationTaskOnIngest(){
+    public void testSuccessfulDuplicationTaskOnIngest() {
         testSuccessfulDuplicationTaskCreation(AuditTask.ActionType.ADD_CONTENT);
     }
 
     @Test
-    public void testSuccessfulDuplicationTaskOnUpdate(){
+    public void testSuccessfulDuplicationTaskOnUpdate() {
         testSuccessfulDuplicationTaskCreation(AuditTask.ActionType.SET_CONTENT_PROPERTIES);
     }
 
     private void testSuccessfulDuplicationTaskCreation(AuditTask.ActionType action) {
-        
+
         try {
             AuditTask task = createAuditTask(action.name());
             task.setStoreId("storeId");
             task.setSpaceId("spaceId");
-            
+
             final int count = 10;
-            for(int i = 0; i < count; i++){
+            for (int i = 0; i < count; i++) {
                 DuplicationStorePolicy storePolicy = new DuplicationStorePolicy();
                 storePolicy.setSrcStoreId("storeId");
-                storePolicy.setDestStoreId("destId"+i);
+                storePolicy.setDestStoreId("destId" + i);
                 policy.addDuplicationStorePolicy("spaceId", storePolicy);
             }
-            
+
             EasyMock.expect(policyManager.getDuplicationPolicy(EasyMock.isA(String.class))).andReturn(policy);
 
             duplicationTaskQueue.put(EasyMock.isA(Set.class));
-            
-            EasyMock.expectLastCall().andStubDelegateTo(new TaskQueueAdapter(){
+
+            EasyMock.expectLastCall().andStubDelegateTo(new TaskQueueAdapter() {
                 /* (non-Javadoc)
                  * @see org.duracloud.mill.durastore.ContentMessageListenerTest.TaskQueueAdapter#put(java.util.Set)
                  */
@@ -157,46 +156,67 @@ public class DuplicationTaskProducingProcessorTest extends EasyMockSupport{
                     Assert.assertEquals(count, tasks.size());
                 }
             });
-            
+
             replayAll();
-            
+
             execute(task);
-            
-        }catch(TaskExecutionFailedException ex){
+
+        } catch (TaskExecutionFailedException ex) {
             throw new RuntimeException(ex);
         }
-        
+
     }
-    
-    private static class TaskQueueAdapter implements TaskQueue{
+
+    private static class TaskQueueAdapter implements TaskQueue {
         /* (non-Javadoc)
          * @see org.duracloud.common.queue.TaskQueue#getName()
          */
         @Override
         public String getName() {
-           return "test";
+            return "test";
         }
-        public void put(Task task) {}
-        public void put(Task... tasks) {}
-        public void put(Set<Task> tasks) {}
-        public Task take() throws TimeoutException { return null;}
-        public void extendVisibilityTimeout(Task task)
-                throws TaskNotFoundException {}
-        public void deleteTask(Task task) throws TaskNotFoundException {}
-        public Integer size() { return null;}
+
+        public void put(Task task) {
+        }
+
+        public void put(Task... tasks) {
+        }
+
+        public void put(Set<Task> tasks) {
+        }
+
+        public Task take() throws TimeoutException {
+            return null;
+        }
+
+        public void extendVisibilityTimeout(Task task) throws TaskNotFoundException {
+        }
+
+        public void deleteTask(Task task) throws TaskNotFoundException {
+        }
+
+        public Integer size() {
+            return null;
+        }
+
         public Integer sizeIncludingInvisibleAndDelayed() {
             return null;
         }
+
         /* (non-Javadoc)
          * @see org.duracloud.common.queue.TaskQueue#requeue(org.duracloud.common.queue.task.Task)
          */
         @Override
-        public void requeue(Task task) {}
+        public void requeue(Task task) {
+        }
+
         /* (non-Javadoc)
          * @see org.duracloud.common.queue.TaskQueue#deleteTasks(java.util.Set)
          */
         @Override
-        public void deleteTasks(Set<Task> tasks) throws TaskException {}
+        public void deleteTasks(Set<Task> tasks) throws TaskException {
+        }
+
         /* (non-Javadoc)
          * @see org.duracloud.common.queue.TaskQueue#take(int)
          */

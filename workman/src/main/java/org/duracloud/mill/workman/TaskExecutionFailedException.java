@@ -8,9 +8,7 @@
 package org.duracloud.mill.workman;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 public class TaskExecutionFailedException extends Exception {
 

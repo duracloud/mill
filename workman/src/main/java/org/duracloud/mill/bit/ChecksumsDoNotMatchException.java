@@ -9,10 +9,10 @@ package org.duracloud.mill.bit;
 
 /**
  * @author Daniel Bernstein
- *         Date: Oct 14, 2014
+ * Date: Oct 14, 2014
  */
 public class ChecksumsDoNotMatchException extends Exception {
-    public ChecksumsDoNotMatchException(String message){
+    public ChecksumsDoNotMatchException(String message) {
         super(message);
     }
 }

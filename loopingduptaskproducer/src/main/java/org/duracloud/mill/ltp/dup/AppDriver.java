@@ -14,7 +14,6 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
-
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -41,14 +40,15 @@ import org.slf4j.LoggerFactory;
 /**
  * A main class responsible for parsing command line arguments and launching the
  * Looping Task Producer.
- * 
- * @author Daniel Bernstein Date: Nov 4, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Nov 4, 2013
  */
 public class AppDriver extends LoopingTaskProducerDriverSupport {
     public static Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     /**
-     * 
+     *
      */
     public AppDriver() {
         super(new DuplicationOptions());
@@ -58,24 +58,23 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         new AppDriver().execute(args);
     }
 
-
-
     @Override
     protected LoopingTaskProducer buildTaskProducer() {
-        
-        List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
-                .addNotifications()
-                .addMcDb()
-                .addDuplicationLowPriorityQueue()
-                .addLoopingDupFrequency()
-                .addLoopingDupMaxQueueSize()
-                .addDuplicationPolicyBucketSuffix()
-                .addLocalDuplicationDir()
-                .addWorkDir()
-                .build();
+
+        List<PropertyDefinition> defintions =
+            new PropertyDefinitionListBuilder().addAws()
+                                               .addNotifications()
+                                               .addMcDb()
+                                               .addDuplicationLowPriorityQueue()
+                                               .addLoopingDupFrequency()
+                                               .addLoopingDupMaxQueueSize()
+                                               .addDuplicationPolicyBucketSuffix()
+                                               .addLocalDuplicationDir()
+                                               .addWorkDir()
+                                               .build();
         PropertyVerifier verifier = new PropertyVerifier(defintions);
         verifier.verify(System.getProperties());
-        
+
         LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
         processLocalDuplicationDirOption(config);
 
@@ -87,7 +86,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         String policyDir = config.getDuplicationPolicyDir();
         if (policyDir != null) {
             policyManager = new DuplicationPolicyManager(
-                    new LocalDuplicationPolicyRepo(policyDir));
+                new LocalDuplicationPolicyRepo(policyDir));
         } else {
             DuplicationPolicyRepo policyRepo;
             String bucketSuffix = config.getDuplicationPolicyBucketSuffix();
@@ -104,26 +103,28 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         CacheManager cacheManager = CacheManager.create();
         CacheConfiguration cacheConfig = new CacheConfiguration();
         cacheConfig.setName("contentIdCache");
-        cacheConfig.addPersistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.LOCALTEMPSWAP));
+        cacheConfig.addPersistence(
+            new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.LOCALTEMPSWAP));
         cacheConfig.setEternal(true);
         Cache cache = new Cache(cacheConfig);
         cacheManager.addCache(cache);
 
         String stateFilePath = new File(config.getWorkDirectoryPath(), "dup-producer-state.json").getAbsolutePath();
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath, DuplicationMorsel.class);
-        NotificationManager notificationMananger = 
-                new SESNotificationManager(config.getNotificationRecipients());
+        NotificationManager notificationMananger =
+            new SESNotificationManager(config.getNotificationRecipients());
 
-        LoopingDuplicationTaskProducer producer = new LoopingDuplicationTaskProducer(credentialsRepo,
-                                                                                     storageProviderFactory,
-                                                                                     policyManager,
-                                                                                     taskQueue,
-                                                                                     cache,
-                                                                                     stateManager,
-                                                                                     getMaxQueueSize(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE),
-                                                                                     getFrequency(ConfigConstants.LOOPING_DUP_FREQUENCY),
-                                                                                     notificationMananger,
-                                                                                     config);
+        LoopingDuplicationTaskProducer producer =
+            new LoopingDuplicationTaskProducer(credentialsRepo,
+                                               storageProviderFactory,
+                                               policyManager,
+                                               taskQueue,
+                                               cache,
+                                               stateManager,
+                                               getMaxQueueSize(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE),
+                                               getFrequency(ConfigConstants.LOOPING_DUP_FREQUENCY),
+                                               notificationMananger,
+                                               config);
         return producer;
     }
 
@@ -135,12 +136,12 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         if (localDuplicationPolicyDirPath != null) {
             if (!new File(localDuplicationPolicyDirPath).exists()) {
                 System.err.print("The local duplication policy directory "
-                        + "path you specified, "
-                        + localDuplicationPolicyDirPath + " does not exist: ");
+                                 + "path you specified, "
+                                 + localDuplicationPolicyDirPath + " does not exist: ");
                 die();
             }
             log.info("local duplication policy directory: {}",
-                    localDuplicationPolicyDirPath);
+                     localDuplicationPolicyDirPath);
         }
     }
 }
