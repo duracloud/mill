@@ -9,7 +9,6 @@ package org.duracloud.mill.storagestats;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.duracloud.common.error.DuraCloudRuntimeException;
@@ -117,30 +116,8 @@ public class StorageStatsTaskProcessor extends TaskProcessorBase {
                 byteCount = ((Number) statRow[1]).longValue();
             }
             addSpaceStats(spaceId, byteCount, itemCount);
-        } else {
-            Map<String, String> props = store.getSpaceProperties(spaceId);
-            Long itemCount = parseLong(props, StorageProvider.PROPERTIES_SPACE_COUNT);
-            Long byteCount = parseLong(props, StorageProvider.PROPERTIES_SPACE_SIZE);
-            addSpaceStats(spaceId, byteCount, itemCount);
         }
 
-    }
-
-    /**
-     * @return
-     */
-    private Long parseLong(Map<String, String> props, String key) {
-        String value = props.get(key);
-        if (value != null) {
-            try {
-                return Long.valueOf(value);
-            } catch (Exception ex) {
-                log.error("failed to parse value as long : " + ex.getMessage());
-            }
-        } else {
-            log.warn("No value found for key {}", key);
-        }
-        return 0l;
     }
 
     private void addSpaceStats(String spaceId, long byteCount, long itemCount) {
