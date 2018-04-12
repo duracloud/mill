@@ -742,6 +742,7 @@
         <artifactId>auditor</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>s3storageprovider</artifactId>
@@ -752,8 +753,8 @@
             <artifactId>aws-java-sdk</artifactId>
           </exclusion>
         </exclusions>
-
       </dependency>
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>glacierstorageprovider</artifactId>
@@ -765,22 +766,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      <dependency>
-        <groupId>org.duracloud</groupId>
-        <artifactId>sdscstorageprovider</artifactId>
-        <version>${duracloud.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.duracloud</groupId>
-        <artifactId>rackspacestorageprovider</artifactId>
-        <version>${duracloud.version}</version>
-      </dependency>
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>snapshotstorageprovider</artifactId>

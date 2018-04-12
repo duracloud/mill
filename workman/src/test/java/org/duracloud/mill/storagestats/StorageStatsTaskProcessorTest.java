@@ -13,8 +13,6 @@ import static org.easymock.EasyMock.isA;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
@@ -172,37 +170,6 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
         expect(stats.getTotalBytes()).andReturn(byteCount);
         expect(stats.getTotalItems()).andReturn(objectCount);
         expect(storageStatsGatherer.getBucketStats(spaceId)).andReturn(stats);
-        replayAll();
-
-        StorageStatsTaskProcessor processor = createProcessor(storageProviderType);
-        processor.execute();
-    }
-
-    @Test
-    public void testNonS3() throws Exception {
-        String spaceId = "space-id";
-        String storeId = "store-id";
-        String account = "account";
-        Long byteCount = 100l;
-        Long objectCount = 101l;
-
-        expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
-        expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
-        expect(task.getAccount()).andReturn(account).atLeastOnce();
-        expect(task.getAttempts()).andReturn(0);
-
-        StorageProviderType storageProviderType = StorageProviderType.SDSC;
-        Map<String, String> props = new HashMap<>();
-        props.put(StorageProvider.PROPERTIES_SPACE_COUNT, objectCount.toString());
-        props.put(StorageProvider.PROPERTIES_SPACE_SIZE, byteCount.toString());
-
-        expect(this.storageProvider.getSpaceProperties(spaceId)).andReturn(props);
-        expect(spaceStatsManager.addSpaceStats(isA(Date.class),
-                                               eq(account),
-                                               eq(storeId),
-                                               eq(spaceId),
-                                               eq(byteCount.longValue()),
-                                               eq(objectCount.longValue()))).andReturn(new SpaceStats());
         replayAll();
 
         StorageStatsTaskProcessor processor = createProcessor(storageProviderType);

@@ -230,11 +230,6 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     }
 
     @Test
-    public void testSuccessWithContentCheckSDSC() throws Exception {
-        testSuccess(StorageProviderType.SDSC, true);
-    }
-
-    @Test
     public void testSuccessWithOutContentCheckGlacier() throws Exception {
         testSuccess(StorageProviderType.AMAZON_GLACIER, false);
     }
@@ -252,11 +247,6 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     @Test
     public void testSuccessWithOutContentCheckIRODS() throws Exception {
         testSuccess(StorageProviderType.IRODS, false);
-    }
-
-    @Test
-    public void testSuccessWithOutContentCheckRackSpace() throws Exception {
-        testSuccess(StorageProviderType.RACKSPACE, false);
     }
 
     @Test

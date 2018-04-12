@@ -39,10 +39,6 @@ public class DuplicationTaskProcessorFactoryTest {
         successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
                                                               StorageProviderType.AMAZON_GLACIER});
         successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
-                                                              StorageProviderType.SDSC});
-        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
-                                                              StorageProviderType.RACKSPACE});
-        successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
                                                               StorageProviderType.CHRONOPOLIS});
         successfulProviderList.add(new StorageProviderType[] {StorageProviderType.AMAZON_S3,
                                                               StorageProviderType.DPN});

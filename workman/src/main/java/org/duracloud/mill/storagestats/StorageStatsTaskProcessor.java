@@ -117,11 +117,6 @@ public class StorageStatsTaskProcessor extends TaskProcessorBase {
                 byteCount = ((Number) statRow[1]).longValue();
             }
             addSpaceStats(spaceId, byteCount, itemCount);
-        } else {
-            Map<String, String> props = store.getSpaceProperties(spaceId);
-            Long itemCount = parseLong(props, StorageProvider.PROPERTIES_SPACE_COUNT);
-            Long byteCount = parseLong(props, StorageProvider.PROPERTIES_SPACE_SIZE);
-            addSpaceStats(spaceId, byteCount, itemCount);
         }
 
     }
