@@ -13,9 +13,9 @@ import org.duracloud.mill.workman.TaskProcessor;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Mar 20, 2014
+ * Date: Mar 20, 2014
  */
-public class AuditLogWritingProcessorFactory extends AuditTaskProcessorFactory{
+public class AuditLogWritingProcessorFactory extends AuditTaskProcessorFactory {
 
     private AuditLogStore auditLogStore;
 
@@ -23,7 +23,7 @@ public class AuditLogWritingProcessorFactory extends AuditTaskProcessorFactory{
         super();
         this.auditLogStore = auditLogStore;
     }
-    
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.audit.AuditTaskProcessorFactory#createImpl(org.duracloud.audit.task.AuditTask)
      */

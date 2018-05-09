@@ -15,12 +15,13 @@ import org.duracloud.mill.config.ConfigConstants;
 
 /**
  * @author Daniel Bernstein
- *         Date: Dec 4, 2014
+ * Date: Dec 4, 2014
  */
 public class PropertyDefinitionListBuilder {
-     private List<PropertyDefinition> definitions = new LinkedList<>();
+    private List<PropertyDefinition> definitions = new LinkedList<>();
+
     /**
-     * 
+     *
      */
     public PropertyDefinitionListBuilder addAws() {
         add(ConfigConstants.AWS_ACCESS_KEY_ID, false);
@@ -41,7 +42,7 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.MILL_DB_HOST, true);
         add(ConfigConstants.MILL_DB_PORT, true);
         add(ConfigConstants.MILL_DB_USER, true);
-        add(ConfigConstants.MILL_DB_PASS, true,true);
+        add(ConfigConstants.MILL_DB_PASS, true, true);
         return this;
     }
 
@@ -50,7 +51,7 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.MC_DB_HOST, true);
         add(ConfigConstants.MC_DB_PORT, true);
         add(ConfigConstants.MC_DB_USER, true);
-        add(ConfigConstants.MC_DB_PASS, true,true);
+        add(ConfigConstants.MC_DB_PASS, true, true);
         return this;
     }
 
@@ -58,44 +59,43 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.QUEUE_NAME_DEAD_LETTER, true);
         return this;
     }
-    
-    public PropertyDefinitionListBuilder addAuditQueue(){
+
+    public PropertyDefinitionListBuilder addAuditQueue() {
         add(ConfigConstants.QUEUE_NAME_AUDIT, true);
         return this;
     }
 
-
-    public PropertyDefinitionListBuilder addDuplicationHighPriorityQueue(){
+    public PropertyDefinitionListBuilder addDuplicationHighPriorityQueue() {
         add(ConfigConstants.QUEUE_NAME_DUP_HIGH_PRIORITY, true);
         return this;
     }
 
-    public PropertyDefinitionListBuilder addDuplicationLowPriorityQueue(){
+    public PropertyDefinitionListBuilder addDuplicationLowPriorityQueue() {
         add(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY, true);
         return this;
     }
 
-    public PropertyDefinitionListBuilder addLocalDuplicationDir(){
+    public PropertyDefinitionListBuilder addLocalDuplicationDir() {
         add(ConfigConstants.LOCAL_DUPLICATION_DIR, false);
         return this;
     }
-    
-    public PropertyDefinitionListBuilder addDuplicationPolicyBucketSuffix(){
+
+    public PropertyDefinitionListBuilder addDuplicationPolicyBucketSuffix() {
         add(ConfigConstants.DUPLICATION_POLICY_BUCKET_SUFFIX, false);
         return this;
     }
-    
-    public PropertyDefinitionListBuilder addDuplicationPolicyRefreshFrequency(){
+
+    public PropertyDefinitionListBuilder addDuplicationPolicyRefreshFrequency() {
         add(ConfigConstants.DUPLICATION_POLICY_REFRESH_FREQUENCY, false);
         return this;
     }
 
-    public PropertyDefinitionListBuilder addBitIntegrityQueue(){
+    public PropertyDefinitionListBuilder addBitIntegrityQueue() {
         add(ConfigConstants.QUEUE_NAME_BIT_INTEGRITY, true);
         return this;
     }
 
-    public PropertyDefinitionListBuilder addBitIntegrityErrorQueue(){
+    public PropertyDefinitionListBuilder addBitIntegrityErrorQueue() {
         add(ConfigConstants.QUEUE_NAME_BIT_ERROR, true);
         return this;
     }
@@ -112,18 +112,18 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
-    public PropertyDefinitionListBuilder addStorageStatsQueue(){
+    public PropertyDefinitionListBuilder addStorageStatsQueue() {
         add(ConfigConstants.QUEUE_NAME_STORAGE_STATS, true);
         return this;
     }
 
     public PropertyDefinitionListBuilder addLoopingStorageStatsFrequency() {
-        add(ConfigConstants.LOOPING_STORAGE_STATS_FREQUENCY,false);
+        add(ConfigConstants.LOOPING_STORAGE_STATS_FREQUENCY, false);
         return this;
     }
 
     public PropertyDefinitionListBuilder addLoopingStorageStatsMaxQueueSize() {
-        add(ConfigConstants.LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE,false);
+        add(ConfigConstants.LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE, false);
         return this;
     }
 
@@ -133,22 +133,22 @@ public class PropertyDefinitionListBuilder {
     }
 
     public PropertyDefinitionListBuilder addWorkDir() {
-        add(ConfigConstants.WORK_DIRECTORY_PATH,true);
+        add(ConfigConstants.WORK_DIRECTORY_PATH, true);
         return this;
     }
 
     public PropertyDefinitionListBuilder addGlobalWorkDir() {
-        add(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH,false);
+        add(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH, false);
         return this;
     }
 
-    public List<PropertyDefinition> build(){
+    public List<PropertyDefinition> build() {
         return new ArrayList<>(this.definitions);
     }
 
     public PropertyDefinitionListBuilder addMaxWorkers() {
-       add(ConfigConstants.MAX_WORKERS, false);
-       return this;
+        add(ConfigConstants.MAX_WORKERS, false);
+        return this;
     }
 
     public PropertyDefinitionListBuilder addDuracloudAuditSpace() {
@@ -157,22 +157,22 @@ public class PropertyDefinitionListBuilder {
     }
 
     public PropertyDefinitionListBuilder addLoopingBitFrequency() {
-        add(ConfigConstants.LOOPING_BIT_FREQUENCY,false);
+        add(ConfigConstants.LOOPING_BIT_FREQUENCY, false);
         return this;
     }
 
     public PropertyDefinitionListBuilder addLoopingBitMaxQueueSize() {
-        add(ConfigConstants.LOOPING_BIT_MAX_TASK_QUEUE_SIZE,false);
+        add(ConfigConstants.LOOPING_BIT_MAX_TASK_QUEUE_SIZE, false);
         return this;
     }
-    
+
     public PropertyDefinitionListBuilder addLoopingDupFrequency() {
-        add(ConfigConstants.LOOPING_DUP_FREQUENCY,false);
+        add(ConfigConstants.LOOPING_DUP_FREQUENCY, false);
         return this;
     }
 
     public PropertyDefinitionListBuilder addLoopingDupMaxQueueSize() {
-        add(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE,false);
+        add(ConfigConstants.LOOPING_DUP_MAX_TASK_QUEUE_SIZE, false);
         return this;
     }
 

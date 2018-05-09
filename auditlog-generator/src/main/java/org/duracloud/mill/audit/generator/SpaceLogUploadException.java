@@ -11,10 +11,10 @@ import org.duracloud.common.error.DuraCloudRuntimeException;
 
 /**
  * @author Daniel Bernstein
- *         Date: Sep 5, 2014
+ * Date: Sep 5, 2014
  */
 public class SpaceLogUploadException extends DuraCloudRuntimeException {
-    public SpaceLogUploadException(String message, Exception ex){
-        super(message,ex);
+    public SpaceLogUploadException(String message, Exception ex) {
+        super(message, ex);
     }
 }

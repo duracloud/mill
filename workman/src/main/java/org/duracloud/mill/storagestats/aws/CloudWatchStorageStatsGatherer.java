@@ -24,13 +24,16 @@ import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.Dimension;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
+import org.duracloud.s3storage.S3StorageProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @author Daniel Bernstein Date: Mar 1, 2016
+ * @author Daniel Bernstein
+ * Date: Mar 1, 2016
  */
 public class CloudWatchStorageStatsGatherer {
-    private Logger log = LoggerFactory
-            .getLogger(CloudWatchStorageStatsGatherer.class);
+    private Logger log = LoggerFactory.getLogger(CloudWatchStorageStatsGatherer.class);
 
     private AmazonCloudWatch cloudWatchClient;
     private S3StorageProvider s3StorageProvider;
@@ -44,10 +47,8 @@ public class CloudWatchStorageStatsGatherer {
         String bucketName = s3StorageProvider.getBucketName(spaceId);
         BucketStats bucketDetails = new BucketStats();
         bucketDetails.setBucketName(bucketName);
-        bucketDetails
-                .setTotalItems(getTotalItems(bucketName, cloudWatchClient));
-        bucketDetails
-                .setTotalBytes(getTotalBytes(bucketName, cloudWatchClient));
+        bucketDetails.setTotalItems(getTotalItems(bucketName, cloudWatchClient));
+        bucketDetails.setTotalBytes(getTotalBytes(bucketName, cloudWatchClient));
         return bucketDetails;
     }
 
@@ -132,9 +133,9 @@ public class CloudWatchStorageStatsGatherer {
 
         List<Dimension> dimensions = new ArrayList<>();
         dimensions.add(new Dimension().withName("BucketName")
-                .withValue(bucketName));
+                                      .withValue(bucketName));
         dimensions.add(new Dimension().withName("StorageType")
-                .withValue(storageType));
+                                      .withValue(storageType));
         request.setDimensions(dimensions);
 
         return request;

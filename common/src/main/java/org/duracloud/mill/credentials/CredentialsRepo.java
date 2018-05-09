@@ -11,23 +11,24 @@ import java.util.List;
 
 /**
  * This interface mediates all interaction with the credential-providing subsystem.
- * @author Daniel Bernstein
  *
+ * @author Daniel Bernstein
  */
 public interface CredentialsRepo {
     /**
      * Returns a set of credentials associated with an account.
-     * 
+     *
      * @param account The id of the DuraCloud account - maps directly to the subdomain.
      * @param storeId The storage provider id
      * @return
      * @throws CredentialsRepoException
      */
     StorageProviderCredentials getStorageProviderCredentials(String account,
-            String storeId) throws CredentialsRepoException;
-    
+                                                             String storeId) throws CredentialsRepoException;
+
     /**
      * Returns a list of accounts
+     *
      * @return
      * @throws CredentialsRepoException
      */
@@ -35,17 +36,19 @@ public interface CredentialsRepo {
 
     /**
      * Returns a list of storage provider  associated with an account
+     *
      * @param account
      * @return
      * @throws CredentialsRepoException
      */
     public AccountCredentials getAccountCredentials(String account) throws AccountCredentialsNotFoundException;
-    
+
     /**
      * Returns true if the account is active.
+     *
      * @param account
      * @return
-     * @throws AccountCredentialsNotFoundException if no account  found. 
+     * @throws AccountCredentialsNotFoundException if no account found.
      */
     public boolean isAccountActive(String account) throws AccountCredentialsNotFoundException;
 }

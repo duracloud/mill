@@ -7,7 +7,6 @@
  */
 package org.duracloud.mill.workman;
 
-
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.NoopTask;
 import org.duracloud.common.queue.task.Task;
@@ -23,21 +22,23 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 /**
  * This class tests a round trip for processing Noop Tasks, from task creation
  * to task processing using an sqs queue.
- * 
- * @author Daniel Bernstein Date: Oct 24, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Oct 24, 2013
  */
 
 public class TestNoopProcessorRoundTripWithSQS {
 
     private ApplicationContext context;
     private TaskQueue queue;
+
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
         context = new AnnotationConfigApplicationContext(AppConfig.class);
-        queue = (TaskQueue)context.getBean("auditQueue");
+        queue = (TaskQueue) context.getBean("auditQueue");
     }
 
     /**
@@ -50,9 +51,9 @@ public class TestNoopProcessorRoundTripWithSQS {
 
     @Test
     public void test() {
-        
+
         int count = 10;
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             NoopTask noopTask = new NoopTask();
             noopTask.setAccount("foobar");
             noopTask.setContentId("foobar");

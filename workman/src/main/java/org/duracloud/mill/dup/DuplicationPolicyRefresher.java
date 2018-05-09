@@ -12,12 +12,13 @@ import java.util.TimerTask;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 11, 2014
+ * Date: Apr 11, 2014
  */
 public class DuplicationPolicyRefresher {
     private Timer timer;
     private Long policyManagerRefreshFrequencyMs;
     private DuplicationPolicyManager policyManager;
+
     /**
      * @param policyManagerRefreshFrequencyMs
      */
@@ -28,7 +29,7 @@ public class DuplicationPolicyRefresher {
 
     public void init() {
         timer = new Timer();
-        timer.schedule(new TimerTask(){
+        timer.schedule(new TimerTask() {
             /* (non-Javadoc)
              * @see java.util.TimerTask#run()
              */
@@ -36,10 +37,10 @@ public class DuplicationPolicyRefresher {
             public void run() {
                 policyManager.clearPolicyCache();
             }
-        }, policyManagerRefreshFrequencyMs, policyManagerRefreshFrequencyMs);        
+        }, policyManagerRefreshFrequencyMs, policyManagerRefreshFrequencyMs);
     }
-    
-    public void destroy(){
+
+    public void destroy() {
         timer.cancel();
     }
 }

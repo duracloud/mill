@@ -12,7 +12,7 @@ import org.duracloud.common.util.UserUtil;
 
 /**
  * @author Bill Branan
- *         Date: 3/25/14
+ * Date: 3/25/14
  */
 public class SimpleUserUtil implements UserUtil {
 

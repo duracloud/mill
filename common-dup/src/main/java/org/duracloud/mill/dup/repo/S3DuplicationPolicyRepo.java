@@ -7,18 +7,18 @@
  */
 package org.duracloud.mill.dup.repo;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.Bucket;
-
 import java.io.InputStream;
 import java.util.List;
+
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.Bucket;
 
 /**
  * Provides access to a duplication policy repo that is stored in S3, as a
  * bucket which contains the policy files.
  *
  * @author Bill Branan
- *         Date: 10/31/13
+ * Date: 10/31/13
  */
 public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
 
@@ -32,7 +32,8 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
     /**
      * Creates an S3 policy repo connection. Expects that S3 credentials
      * will be available from the environment, as described here:
-     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client.html#AmazonS3Client%28%29
+     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client
+     * .html#AmazonS3Client%28%29
      */
     public S3DuplicationPolicyRepo() {
         this.s3Client = new AmazonS3Client();
@@ -44,7 +45,8 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
      * Creates an S3 policy repo connection. Uses the provided bucket suffix.
      * Expects that S3 credentials will be available from the environment,
      * as described here:
-     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client.html#AmazonS3Client%28%29
+     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client
+     * .html#AmazonS3Client%28%29
      */
     public S3DuplicationPolicyRepo(String policyRepoBucketSuffix) {
         this(new AmazonS3Client(), policyRepoBucketSuffix);
@@ -65,14 +67,14 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
 
     private void init() {
         List<Bucket> buckets = s3Client.listBuckets();
-        for(Bucket bucket : buckets) {
+        for (Bucket bucket : buckets) {
             String bucketName = bucket.getName();
-            if(bucketName.endsWith(policyRepoBucketSuffix)) {
+            if (bucketName.endsWith(policyRepoBucketSuffix)) {
                 policyRepoBucketName = bucketName;
             }
         }
 
-        if(null == policyRepoBucketName) {
+        if (null == policyRepoBucketName) {
             throw new RuntimeException("Unable to find duplication policy " +
                                        "repo bucket in S3. Bucket suffix: " +
                                        policyRepoBucketSuffix);

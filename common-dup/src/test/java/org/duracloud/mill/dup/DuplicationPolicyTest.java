@@ -7,14 +7,6 @@
  */
 package org.duracloud.mill.dup;
 
-import org.junit.Test;
-
-import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -22,9 +14,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileInputStream;
+import java.util.Iterator;
+import java.util.Set;
+
+import org.junit.Test;
+
 /**
  * @author Erik Paulsson
- *         Date: 10/29/13
+ * Date: 10/29/13
  */
 public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
 
@@ -83,7 +81,7 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         assertThat("2", is(equalTo(duplicationStorePolicy.getDestStoreId())));
         assertFalse(space2Iter.hasNext());
     }
-    
+
     @Test
     public void testDuplicationPolicyDefaults() throws Exception {
         DuplicationPolicy duplicationPolicy =

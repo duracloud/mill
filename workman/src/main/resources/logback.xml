@@ -2,7 +2,7 @@
 
 <configuration debug="false" scan="false">
   <jmxConfigurator/>
-  <property name="LOG_FILENAME" value="${duracloud.home}/logs/duracloud-mill.log" />
+  <property name="LOG_FILENAME" value="${duracloud.home}/logs/duracloud-mill.log"/>
 
   <appender name="DURACLOUD" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
@@ -27,7 +27,7 @@
   <logger name="org.duracloud.mill" level="${log.level}">
     <appender-ref ref="DURACLOUD"/>
   </logger>
-  
+
   <logger name="org.springframework" level="${log.level}">
     <appender-ref ref="DURACLOUD"/>
   </logger>

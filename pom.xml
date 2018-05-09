@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>mill</artifactId>
@@ -45,9 +45,9 @@
   </organization>
 
   <scm>
- 	  <connection>scm:git:git@github.com:duracloud/mill.git</connection>
- 	  <url>scm:git:git@github.com:duracloud/mill.git</url>
- 	  <developerConnection>scm:git:git@github.com:duracloud/mill.git</developerConnection>
+    <connection>scm:git:git@github.com:duracloud/mill.git</connection>
+    <url>scm:git:git@github.com:duracloud/mill.git</url>
+    <developerConnection>scm:git:git@github.com:duracloud/mill.git</developerConnection>
   </scm>
 
   <modules>
@@ -99,66 +99,66 @@
     </profile>
 
     <profile>
-        <id>profile-generate-docs-source-signature</id>
-        <activation>
-            <activeByDefault>false</activeByDefault>
-            <property>
-                <name>releaseBuild</name>
-            </property>
-        </activation>
-        <build>
-            <plugins>
+      <id>profile-generate-docs-source-signature</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+        <property>
+          <name>releaseBuild</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>2.3</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.3</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                            <configuration>
-                              <additionalparam>${javadoc.opts}</additionalparam>
-                            </configuration>
-                        </execution>
-                     </executions>
-                </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <additionalparam>${javadoc.opts}</additionalparam>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.5</version>
-                    <executions>
-                        <execution>
-                            <id>sign-artifacts</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
 
-            </plugins>
-        </build>
+        </plugins>
+      </build>
     </profile>
 
   </profiles>
@@ -272,16 +272,13 @@
                   </filter>
                 </filters>
                 <transformers>
-                  <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                     <mainClass>${mainClass}</mainClass>
                   </transformer>
-                  <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                     <resource>META-INF/spring.handlers</resource>
                   </transformer>
-                  <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                     <resource>META-INF/spring.schemas</resource>
                   </transformer>
                 </transformers>
@@ -289,7 +286,7 @@
             </execution>
           </executions>
         </plugin>
-      
+
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>2.8</version>
@@ -397,7 +394,7 @@
             </goals>
             <configuration>
               <rules>
-                <dependencyConvergence />
+                <dependencyConvergence/>
                 <bannedDependencies>
                   <searchTransitive>true</searchTransitive>
                   <excludes>
@@ -426,6 +423,45 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Used to validate all code style rules in source code using Checkstyle -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>verify-style</id>
+            <!-- Bind to process-classes so it runs after compile, but before package -->
+            <phase>process-classes</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <configLocation>
+            https://raw.githubusercontent.com/duraspace/codestyle/master/duraspace-checkstyle.xml
+          </configLocation>
+          <suppressionsLocation>
+            https://raw.githubusercontent.com/duraspace/codestyle/master/duraspace-checkstyle-suppressions.xml
+          </suppressionsLocation>
+          <encoding>UTF-8</encoding>
+          <consoleOutput>true</consoleOutput>
+          <logViolationsToConsole>true</logViolationsToConsole>
+          <failOnViolation>true</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
+        <dependencies>
+          <!-- Override dependencies to use latest version of checkstyle -->
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.8</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
     </plugins>
 
   </build>
@@ -453,17 +489,17 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.powermock</groupId>
-         <artifactId>powermock-module-junit4</artifactId>
-         <version>${powermock.version}</version>
-         <scope>test</scope>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-module-junit4</artifactId>
+        <version>${powermock.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.powermock</groupId>
-         <artifactId>powermock-api-easymock</artifactId>
-         <version>${powermock.version}</version>
-         <scope>test</scope>
-      </dependency>  
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-api-easymock</artifactId>
+        <version>${powermock.version}</version>
+        <scope>test</scope>
+      </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -524,7 +560,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk-ses</artifactId>
@@ -536,7 +572,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk-sqs</artifactId>
@@ -560,8 +596,6 @@
           </exclusion>
         </exclusions>
       </dependency>
- 
-
 
       <dependency>
         <groupId>org.codehaus.jackson</groupId>
@@ -657,7 +691,7 @@
         <artifactId>mill-db-repo</artifactId>
         <version>${duracloud.db.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.duracloud.db</groupId>
         <artifactId>common</artifactId>
@@ -708,55 +742,41 @@
         <artifactId>auditor</artifactId>
         <version>${duracloud.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>s3storageprovider</artifactId>
-	<version>${duracloud.version}</version>
-	<exclusions>
-	  <exclusion>
+        <version>${duracloud.version}</version>
+        <exclusions>
+          <exclusion>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-	  </exclusion>
-	</exclusions>
-
+          </exclusion>
+        </exclusions>
       </dependency>
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>glacierstorageprovider</artifactId>
         <version>${duracloud.version}</version>
-	<exclusions>
-	  <exclusion>
+        <exclusions>
+          <exclusion>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-	  </exclusion>
-	</exclusions>
+          </exclusion>
+        </exclusions>
       </dependency>
-      <dependency>
-        <groupId>org.duracloud</groupId>
-        <artifactId>sdscstorageprovider</artifactId>
-        <version>${duracloud.version}</version>
-	<exclusions>
-	  <exclusion>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-	  </exclusion>
-	</exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.duracloud</groupId>
-        <artifactId>rackspacestorageprovider</artifactId>
-        <version>${duracloud.version}</version>
-      </dependency>
+
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>snapshotstorageprovider</artifactId>
         <version>${duracloud.version}</version>
-	<exclusions>
-	  <exclusion>
+        <exclusions>
+          <exclusion>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-	  </exclusion>
-	</exclusions>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
@@ -808,7 +828,7 @@
       <dependency>
         <groupId>net.sf.ehcache</groupId>
         <artifactId>ehcache</artifactId>
-        <version>2.8.2</version>      
+        <version>2.8.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

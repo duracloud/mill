@@ -48,12 +48,13 @@ import org.slf4j.LoggerFactory;
  * content items, and duplication store policy. If all content items are visited
  * within a single run before the task queue limit has been reached, the
  * producer will exit.
- * 
+ *
  * For more information about how this process fits into the whole system of
  * collaborating components, see
  * https://wiki.duraspace.org/display/DSPINT/DuraCloud+Duplication+-+System+Overview
- * 
- * @author Daniel Bernstein Date: Nov 5, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Nov 5, 2013
  */
 public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable {
     private static Logger log = LoggerFactory.getLogger(LoopingTaskProducer.class);
@@ -68,18 +69,18 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private RunStats cumulativeTotals;
     private NotificationManager notificationManager;
     private LoopingTaskProducerConfigurationManager config;
-    private Map<String,RunStats> runstats = new HashMap<>();
+    private Map<String, RunStats> runstats = new HashMap<>();
 
     public LoopingTaskProducer(CredentialsRepo credentialsRepo,
                                StorageProviderFactory storageProviderFactory,
                                TaskQueue taskQueue,
                                StateManager<T> state,
-                               int maxTaskQueueSize, 
+                               int maxTaskQueueSize,
                                Frequency frequency,
                                LocalTime startTime,
-                               NotificationManager notificationManager, 
+                               NotificationManager notificationManager,
                                LoopingTaskProducerConfigurationManager config) {
-        
+
         this.credentialsRepo = credentialsRepo;
         this.storageProviderFactory = storageProviderFactory;
         this.taskQueue = taskQueue;
@@ -92,17 +93,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         this.notificationManager = notificationManager;
         this.config = config;
     }
-    
-    protected Frequency getFrequency(){
+
+    protected Frequency getFrequency() {
         return this.frequency;
     }
-    
-
 
     protected CredentialsRepo getCredentialsRepo() {
         return credentialsRepo;
     }
-
 
     protected TaskQueue getTaskQueue() {
         return taskQueue;
@@ -111,54 +109,59 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     protected int getMaxTaskQueueSize() {
         return maxTaskQueueSize;
     }
-    
-    public void run(){
-        
-        
+
+    public void run() {
+
         Timer timer = new Timer();
         try {
-            
+
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     logSessionStats();
                 }
 
-            }, 5 * 60 * 1000, 5 * 60 * 1000);  
-            
-            if(runLater()){
+            }, 5 * 60 * 1000, 5 * 60 * 1000);
+
+            if (runLater()) {
                 return;
             }
 
             log.info("Starting run...");
             Queue<T> morselQueue = loadMorselQueue();
-            
-            while(!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize){
+
+            while (!morselQueue.isEmpty() && this.taskQueue.size() < maxTaskQueueSize) {
                 T morsel = morselQueue.peek();
-                
-                if(morsel != null){
+
+                if (morsel != null) {
                     //check that account is still active
                     //if not remove from list, but only if
                     //it has not yet been started.  If an account becomes
-                    //inactive in the middle of processing a morsel,  then 
-                    //allow to finish even if it results in errors. 
+                    //inactive in the middle of processing a morsel,  then
+                    //allow to finish even if it results in errors.
                     String account = morsel.getAccount();
                     try {
-                        if(!this.credentialsRepo.isAccountActive(account)){
-                            if(morsel.getMarker() == null){
+                        if (!this.credentialsRepo.isAccountActive(account)) {
+                            if (morsel.getMarker() == null) {
                                 log.info("account {} has become inactive.  Abandonning morsel {}.", account, morsel);
                                 morselQueue.poll();
                                 continue;
-                            }else{
-                                String message = MessageFormat.format("account {0} has become inactive in the middle of processing {1}. "
-                                        + "  Allowing this morsel to continue but failure is likely.  "
-                                        + "\nExpect items to appear in the dead letter queue shortly.", account, morsel);
+                            } else {
+                                String message = MessageFormat
+                                    .format("account {0} has become inactive in the middle of processing {1}. "
+                                            + "  Allowing this morsel to continue but failure is likely.  "
+                                            + "\nExpect items to appear in the dead letter queue shortly.",
+                                            account, morsel);
                                 log.warn(message);
-                                sendEmail(getSimpleName() + " attempting into account after start of morsel processing.", message);
+                                sendEmail(getSimpleName() +
+                                          " attempting into account after start of morsel processing.",
+                                          message);
                             }
                         }
-                    }catch(AccountCredentialsNotFoundException ex){
-                        String message = MessageFormat.format("account {0} does not exist.  Abandonning morsel {1}.", account, morsel);
+                    } catch (AccountCredentialsNotFoundException ex) {
+                        String message =
+                            MessageFormat.format("account {0} does not exist.  Abandonning morsel {1}.",
+                                                 account, morsel);
                         log.warn(message);
                         sendEmail(getSimpleName() + " attempted to access into non-existent account", message);
 
@@ -166,34 +169,33 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                 }
                 nibble(morselQueue);
                 persistMorsels(morselQueue, morselsToReload);
-               
-                if(morselQueue.isEmpty()){
+
+                if (morselQueue.isEmpty()) {
                     morselQueue = reloadMorselQueue();
-                }else{
+                } else {
                     //break if nothing was removed from the queue
                     //if nothing was removed from the queue we can assume
                     //that the for whatever reason the morsel could not be processed
                     //at this time, so the process should wait for the next run.
-                    if(morsel.equals(morselQueue.peek())){
+                    if (morsel.equals(morselQueue.peek())) {
                         break;
                     }
                 }
-                
-               
+
             }
 
             logSessionStats();
 
-            if(morselQueue.isEmpty()){
+            if (morselQueue.isEmpty()) {
                 scheduleNextRun();
                 writeCompletionFile();
             }
-            
+
             log.info("Session ended.");
-        }catch(Exception ex){
+        } catch (Exception ex) {
             log.error("failed to complete run on " + getSimpleName() + ": " + ex.getMessage(), ex);
-            sendEmail("failed to complete run on " + getSimpleName() , ex.getMessage());
-        }finally {
+            sendEmail("failed to complete run on " + getSimpleName(), ex.getMessage());
+        } finally {
             timer.cancel();
         }
     }
@@ -208,14 +210,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private void writeCompletionFile() {
         File completionFile = getCompletionFile();
         try {
-            if(completionFile.createNewFile()){
+            if (completionFile.createNewFile()) {
                 log.info("successfully created completion marker file: {}",
                          completionFile.getAbsolutePath());
-            }else{
+            } else {
                 log.warn("completion marker file unexpectably exists already " +
-            		 "- something may be amiss: {}",
+                         "- something may be amiss: {}",
                          completionFile.getAbsolutePath());
-                
+
             }
         } catch (IOException e) {
             log.error("Unable to create the completion file {}: {}",
@@ -229,7 +231,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      */
     private void deleteCompletionFileIfExists() {
         File completionFile = getCompletionFile();
-        if(completionFile.exists()){
+        if (completionFile.exists()) {
             completionFile.delete();
         }
     }
@@ -243,20 +245,20 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
 
     private void resetIncrementalSessionStats() {
-        synchronized (runstats){
-            for(String account : runstats.keySet()){
+        synchronized (runstats) {
+            for (String account : runstats.keySet()) {
                 RunStats stats = runstats.get(account);
                 stats.reset();
             }
         }
     }
-    
-    protected RunStats calculateStatTotals(RunStats currentTotals){
+
+    protected RunStats calculateStatTotals(RunStats currentTotals) {
         RunStats totals = createRunStats();
         totals.copyValuesFrom(currentTotals);
 
-        synchronized (runstats){
-            for(String account : runstats.keySet()){
+        synchronized (runstats) {
+            for (String account : runstats.keySet()) {
                 RunStats stats = runstats.get(account);
                 totals.add(stats);
             }
@@ -265,15 +267,15 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
 
     private void logSessionStats() {
-        synchronized (runstats){
-            for(String account : runstats.keySet()){
+        synchronized (runstats) {
+            for (String account : runstats.keySet()) {
                 RunStats stats = runstats.get(account);
                 logIncrementalStatsByAccount(account, stats);
             }
 
             RunStats incrementalTotals = calculateStatTotals(createRunStats());
             logGlobalncrementalStats(incrementalTotals);
-            
+
             this.cumulativeTotals = calculateStatTotals(cumulativeTotals);
             logCumulativeSessionStats(runstats, this.cumulativeTotals);
             resetIncrementalSessionStats();
@@ -281,14 +283,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
 
     /**
-     * 
+     *
      */
     private void scheduleNextRun() {
         Date currentStartDate = this.stateManager.getCurrentRunStartDate();
         Date nextRun = calculateNextRunDate(currentStartDate);
         this.stateManager.setNextRunStartDate(nextRun);
         this.stateManager.setCurrentRunStartDate(null);
-        
+
         String hostname = "unknown";
         try {
             hostname = InetAddress.getLocalHost().getHostName();
@@ -301,7 +303,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         builder.append(subject + "\n");
         builder.append(this.cumulativeTotals.toString() + "\n");
 
-        if(nextRun != null){
+        if (nextRun != null) {
             builder.append("Scheduling the next run for " + nextRun + "\n");
             log.info(subject + ": next run will start " + nextRun);
         }
@@ -313,42 +315,41 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         Date nextRun;
         Calendar c = Calendar.getInstance();
         //if the current start date is null calculate based on present moment.
-        if(previousDate == null){
+        if (previousDate == null) {
             //if a start time is defined
-            if(this.startTime != null){
+            if (this.startTime != null) {
                 //calculate based on start time.
                 c.set(Calendar.HOUR_OF_DAY, this.startTime.getHour());
                 c.set(Calendar.MINUTE, this.startTime.getMinute());
                 c.set(Calendar.SECOND, this.startTime.getSecond());
-                
+
                 //if the start time is before present moment
-                if(this.startTime.isBefore(LocalTime.now())){
+                if (this.startTime.isBefore(LocalTime.now())) {
                     //move to the following day
                     c.add(Calendar.DATE, 1);
                 }
                 nextRun = c.getTime();
-            }else{
+            } else {
                 //next run is now
                 nextRun = new Date();
             }
-            
-         
-        }else{  //otherwise calculate based on previous  date
+
+        } else {  //otherwise calculate based on previous  date
             //add the frequency
             c.setTimeInMillis(previousDate.getTime());
             c.add(this.frequency.getTimeUnit(), this.frequency.getValue());
             nextRun = c.getTime();
         }
-        
+
         //return null if the frequency is zero or less.
-        if(this.frequency.getValue() <= 0){
+        if (this.frequency.getValue() <= 0) {
             nextRun = null;
         }
-        
+
         return nextRun;
     }
-    
-    protected void sendEmail(String subject, String body){
+
+    protected void sendEmail(String subject, String body) {
         this.notificationManager.sendEmail(subject, body);
     }
 
@@ -358,49 +359,47 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     private boolean runLater() {
         boolean runLater = true;
         Date nextRun = this.stateManager.getNextRunStartDate();
-        
-        if(nextRun != null){
+
+        if (nextRun != null) {
             Date now = new Date();
-            if(getFrequency().getValue() <= 0){
+            if (getFrequency().getValue() <= 0) {
                 log.info("The frequency is set to {}: all scheduled runs will be cancelled.",
                          getFrequency());
                 this.stateManager.setNextRunStartDate(null);
-            }else if(now.after(nextRun)){
+            } else if (now.after(nextRun)) {
                 deleteCompletionFileIfExists();
                 this.stateManager.setCurrentRunStartDate(now);
                 this.stateManager.setNextRunStartDate(null);
                 runLater = false;
                 log.info("Time to start a new run: the next run was scheduled to run on {}. Let's roll.", nextRun);
-            }else{
+            } else {
                 log.info("It's not yet time start a new run: the next run is scheduled to run on {}.", nextRun);
             }
-        }else{
+        } else {
             Date currentRunStartDate = this.stateManager.getCurrentRunStartDate();
-            if(currentRunStartDate == null && getFrequency().getValue() <= 0){
+            if (currentRunStartDate == null && getFrequency().getValue() <= 0) {
                 log.info("The frequency is set to {}: no future runs will be scheduled.", getFrequency());
             } else {
-                if(currentRunStartDate == null){
+                if (currentRunStartDate == null) {
                     Date startDate = calculateNextRunDate(null);
-                    
-                    if(startDate.getTime() <= System.currentTimeMillis()){
+
+                    if (startDate.getTime() <= System.currentTimeMillis()) {
                         this.stateManager.setCurrentRunStartDate(startDate);
                         log.info("We're starting the first run on this machine");
-                    }else{
+                    } else {
                         this.stateManager.setNextRunStartDate(startDate);
                         log.info("We will start the first run on this machine at {}", startDate);
                         return true;
                     }
-                }else{
+                } else {
                     log.info("We're continuing the current run which was started on {}", currentRunStartDate);
                 }
                 runLater = false;
             }
         }
-        
+
         return runLater;
     }
-
-
 
     /**
      * @return
@@ -416,25 +415,23 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     /**
      * Loads the morsels from the persistent state if there are any; otherwise it loads  all other morsels based on
      * on duplication policy manager.
-     * 
+     *
      * @return
      */
     private Queue<T> loadMorselQueue() {
         Queue<T> morselQueue = createQueue();
-        
+
         //load morsels from state;
         Set<T> morsels = new LinkedHashSet<>(this.stateManager.getMorsels());
-        
+
         morselQueue.addAll(morsels);
 
-        if(morselQueue.isEmpty()){
+        if (morselQueue.isEmpty()) {
             loadMorselQueueFromSource(morselQueue);
         }
-        
+
         return morselQueue;
     }
-    
-   
 
     /**
      * @return
@@ -443,7 +440,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
         return new LinkedList<T>();
     }
 
-    private void persistMorsels(Queue<T> queue, List<T> morselsToReload){
+    private void persistMorsels(Queue<T> queue, List<T> morselsToReload) {
         LinkedHashSet<T> morsels = new LinkedHashSet<>();
         morsels.addAll(queue);
         morsels.addAll(morselsToReload);
@@ -454,9 +451,7 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * @param morsel
      */
     protected void addToReloadList(T morsel) {
-        log.info(
-                "adding morsel to reload list: {}",
-                morsel);
+        log.info("adding morsel to reload list: {}", morsel);
         morselsToReload.add(morsel);
     }
 
@@ -465,9 +460,9 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
      * @return
      */
     protected RunStats getStats(String account) {
-        synchronized(runstats){
+        synchronized (runstats) {
             RunStats stats = this.runstats.get(account);
-            if(stats == null){
+            if (stats == null) {
                 this.runstats.put(account, stats = createRunStats());
             }
             return stats;
@@ -475,15 +470,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     }
 
     protected StorageProvider getStorageProvider(String account,
-            String storeId)  {
+                                                 String storeId) {
         StorageProviderCredentials creds;
         try {
-            creds = credentialsRepo.getStorageProviderCredentials(account, 
-                                                          storeId);
+            creds = credentialsRepo.getStorageProviderCredentials(account, storeId);
         } catch (CredentialsRepoException e) {
             throw new RuntimeException(e);
         }
-        
+
         return getStorageProvider(creds);
     }
 
@@ -501,10 +495,9 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     protected abstract void loadMorselQueueFromSource(Queue<T> morselQueue);
 
     /**
-     * @param morsel
+     * @param queue
      */
     protected abstract void nibble(Queue<T> queue);
-    
 
     /**
      * @return
@@ -523,14 +516,14 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     protected abstract void logIncrementalStatsByAccount(String account, RunStats stats);
 
     /**
-     * 
      * @param runstats
      * @param cumulativeTotals
      */
-    protected abstract void logCumulativeSessionStats(Map<String,RunStats> runstats, RunStats cumulativeTotals);
-    
+    protected abstract void logCumulativeSessionStats(Map<String, RunStats> runstats, RunStats cumulativeTotals);
+
     /**
      * A short looping producer type identifier for use with state files.
+     *
      * @return
      */
     protected abstract String getLoopingProducerTypePrefix();
@@ -542,10 +535,10 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
     protected void sendEmail(String message, Exception ex) {
         StackTraceElement[] stackTrace = ex.getStackTrace();
         StringBuilder builder = new StringBuilder();
-        for(StackTraceElement ste : stackTrace){
+        for (StackTraceElement ste : stackTrace) {
             builder.append(ste.toString() + "\n");
         }
-        sendEmail(message,builder.toString());
+        sendEmail(message, builder.toString());
     }
 
 }

@@ -7,10 +7,12 @@
  */
 package org.duracloud.mill.storagestats;
 
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
@@ -28,14 +30,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
 /**
  * @author Daniel Bernstein
- *         Date: Mar 3, 2016
+ * Date: Mar 3, 2016
  */
 @RunWith(EasyMockRunner.class)
-public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
-    
+public class StorageStatsTaskProcessorTest extends EasyMockSupport {
+
     @Mock
     private StorageProvider storageProvider;
     @Mock
@@ -45,11 +46,12 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
     @Mock
     private CloudWatchStorageStatsGatherer storageStatsGatherer;
 
-    @Mock 
+    @Mock
     private StorageStatsTask task;
-    
+
     @Mock
     private JpaManifestItemRepo manifestItemRepo;
+
     /**
      * @throws java.lang.Exception
      */
@@ -66,14 +68,13 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
         verifyAll();
     }
 
-
     @Test
-    public void testS3() throws Exception{
+    public void testS3() throws Exception {
         testS3Based(StorageProviderType.AMAZON_S3);
     }
-    
+
     @Test
-    public void testOutOfTimeWindow() throws Exception{
+    public void testOutOfTimeWindow() throws Exception {
         String spaceId = "space-id";
         String storeId = "store-id";
         String account = "account";
@@ -90,46 +91,38 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
                                                                             manifestItemRepo);
         Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         c.set(Calendar.HOUR_OF_DAY, 19);
-        processor.currentTime = c.getTime();        
-        processor.execute();    
-    }    
+        processor.currentTime = c.getTime();
+        processor.execute();
+    }
 
     @Test
-    public void testGlacier() throws Exception{
+    public void testGlacier() throws Exception {
         String spaceId = "space-id";
         String storeId = "store-id";
         String account = "account";
         long byteCount = 100l;
         long objectCount = 101l;
-        
+
         expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
         expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
         expect(task.getAccount()).andReturn(account).atLeastOnce();
         expect(task.getAttempts()).andReturn(0);
 
-      
-        expect(this.manifestItemRepo
-                .getStorageStatsByAccountAndStoreIdAndSpaceId(account,
-                                                              storeId,
-                                                              spaceId))
-                                                                      .andReturn(new Object[]{new Object[] {
-                                                                              new Long(objectCount),
-                                                                              new Long(byteCount) }});
-        expect(spaceStatsManager
-               .addSpaceStats(isA(Date.class),
-                              eq(account),
-                              eq(storeId),
-                              eq(spaceId),
-                              eq(byteCount),
-                              eq(objectCount))).andReturn(new SpaceStats());
+        expect(this.manifestItemRepo.getStorageStatsByAccountAndStoreIdAndSpaceId(account, storeId, spaceId))
+            .andReturn(new Object[] {new Object[] {new Long(objectCount), new Long(byteCount)}});
+        expect(spaceStatsManager.addSpaceStats(isA(Date.class),
+                                               eq(account),
+                                               eq(storeId),
+                                               eq(spaceId),
+                                               eq(byteCount),
+                                               eq(objectCount))).andReturn(new SpaceStats());
 
         replayAll();
-        
+
         StorageStatsTaskProcessor processor = createProcessor(StorageProviderType.AMAZON_GLACIER);
 
-        processor.execute();    
-        
-    
+        processor.execute();
+
     }
 
     private StorageStatsTaskProcessor createProcessor(StorageProviderType providerType) {
@@ -146,12 +139,12 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
     }
 
     @Test
-    public void testDpn() throws Exception{
+    public void testDpn() throws Exception {
         testS3Based(StorageProviderType.DPN);
     }
 
     @Test
-    public void testChronopolis() throws Exception{
+    public void testChronopolis() throws Exception {
         testS3Based(StorageProviderType.CHRONOPOLIS);
     }
 
@@ -161,61 +154,27 @@ public class StorageStatsTaskProcessorTest  extends EasyMockSupport {
         String account = "account";
         long byteCount = 100l;
         long objectCount = 101l;
-        
+
         expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
         expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
         expect(task.getAccount()).andReturn(account).atLeastOnce();
         expect(task.getAttempts()).andReturn(0);
 
-      
-        expect(spaceStatsManager
-                .addSpaceStats(isA(Date.class),
-                               eq(account),
-                               eq(storeId),
-                               eq(spaceId),
-                               eq(byteCount),
-                               eq(objectCount))).andReturn(new SpaceStats());
+        expect(spaceStatsManager.addSpaceStats(isA(Date.class),
+                                               eq(account),
+                                               eq(storeId),
+                                               eq(spaceId),
+                                               eq(byteCount),
+                                               eq(objectCount))).andReturn(new SpaceStats());
         BucketStats stats = createMock(BucketStats.class);
         expect(stats.getTotalBytes()).andReturn(byteCount);
         expect(stats.getTotalItems()).andReturn(objectCount);
         expect(storageStatsGatherer.getBucketStats(spaceId)).andReturn(stats);
         replayAll();
-        
-        StorageStatsTaskProcessor processor = createProcessor(storageProviderType);
-        processor.execute();
-    }
 
-    @Test
-    public void testNonS3() throws Exception {
-        String spaceId = "space-id";
-        String storeId = "store-id";
-        String account = "account";
-        Long byteCount = 100l;
-        Long objectCount = 101l;
-        
-        expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
-        expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
-        expect(task.getAccount()).andReturn(account).atLeastOnce();
-        expect(task.getAttempts()).andReturn(0);
-
-        StorageProviderType storageProviderType = StorageProviderType.SDSC;
-        Map<String,String> props = new HashMap<>();
-        props.put(StorageProvider.PROPERTIES_SPACE_COUNT, objectCount.toString());
-        props.put(StorageProvider.PROPERTIES_SPACE_SIZE, byteCount.toString());
-
-        expect(this.storageProvider.getSpaceProperties(spaceId)).andReturn(props);
-        expect(spaceStatsManager
-                .addSpaceStats(isA(Date.class),
-                               eq(account),
-                               eq(storeId),
-                               eq(spaceId),
-                               eq(byteCount.longValue()),
-                               eq(objectCount.longValue()))).andReturn(new SpaceStats());
-        replayAll();
-        
         StorageStatsTaskProcessor processor = createProcessor(storageProviderType);
         processor.execute();
     }
 
 }
- 
+

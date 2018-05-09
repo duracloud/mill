@@ -7,14 +7,13 @@
  */
 package org.duracloud.mill.workman;
 
-
 /**
  * An exception that's thrown when a <code>TaskProcessor</code> cannot be created for any reason.
- * @author Daniel Bernstein
  *
+ * @author Daniel Bernstein
  */
 public class TaskProcessorCreationFailedException extends Exception {
-    
+
     private static final long serialVersionUID = 1L;
 
     public TaskProcessorCreationFailedException(String message) {
@@ -26,6 +25,6 @@ public class TaskProcessorCreationFailedException extends Exception {
      * @param e
      */
     public TaskProcessorCreationFailedException(String message, Exception e) {
-        super(message,e);
+        super(message, e);
     }
 }

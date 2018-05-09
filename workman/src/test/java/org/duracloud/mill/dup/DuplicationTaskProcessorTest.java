@@ -7,6 +7,17 @@
  */
 package org.duracloud.mill.dup;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.common.util.IOUtil;
 import org.duracloud.mill.db.model.ManifestItem;
@@ -21,21 +32,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import junit.framework.Assert;
-
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-
 /**
  * @author Bill Branan
- *         Date: 10/25/13
+ * Date: 10/25/13
  */
 public class DuplicationTaskProcessorTest {
 
@@ -75,12 +74,12 @@ public class DuplicationTaskProcessorTest {
     }
 
     private void replayMocks() {
-        EasyMock.replay(srcStore, destStore,manifestStore);
+        EasyMock.replay(srcStore, destStore, manifestStore);
     }
 
     @After
     public void teardown() {
-        EasyMock.verify(srcStore, destStore,manifestStore);
+        EasyMock.verify(srcStore, destStore, manifestStore);
         workDir.delete();
     }
 
@@ -108,7 +107,7 @@ public class DuplicationTaskProcessorTest {
         String twoKey = "two";
         srcProps.put(twoKey, null);
         assertEquals("Prop in src (with null value), not in dest, " +
-                      "should be false (not equal)",
+                     "should be false (not equal)",
                      false,
                      taskProcessor.compareProperties(srcProps, destProps));
 
@@ -271,7 +270,7 @@ public class DuplicationTaskProcessorTest {
 
         try {
             taskProcessor.execute();
-        } catch(DuplicationTaskExecutionFailedException e) {
+        } catch (DuplicationTaskExecutionFailedException e) {
             String msg = e.getMessage();
             assertTrue("Error message should contain account id",
                        msg.contains(account));
@@ -309,7 +308,7 @@ public class DuplicationTaskProcessorTest {
         // Error thrown
         try {
             taskProcessor.execute();
-        } catch(DuplicationTaskExecutionFailedException e) {
+        } catch (DuplicationTaskExecutionFailedException e) {
             String msg = e.getMessage();
             assertTrue("Error message should contain account id",
                        msg.contains(account));
@@ -365,6 +364,7 @@ public class DuplicationTaskProcessorTest {
     /**
      * Tests that  property dates that cannot be made due to the store client throwing
      * a StorageStateException are handled gracefully.
+     *
      * @throws Exception
      */
     @Test
@@ -396,7 +396,7 @@ public class DuplicationTaskProcessorTest {
 
         taskProcessor.execute();
     }
-    
+
     /**
      * Verifies the flow of actions that occur when a content item is not
      * available in the source store, but is available in the destination store.
@@ -412,8 +412,6 @@ public class DuplicationTaskProcessorTest {
 
         setupManifestStore(true);
 
-        
-        
         // Missing source content
         EasyMock.expect(srcStore.getContentProperties(spaceId, contentId))
                 .andThrow(new NotFoundException("")).anyTimes();
@@ -447,8 +445,7 @@ public class DuplicationTaskProcessorTest {
         EasyMock.expectLastCall().once();
 
         setupManifestStore(false);
-        
-        
+
         // Missing source content
         EasyMock.expect(srcStore.getContentProperties(spaceId, contentId))
                 .andThrow(new NotFoundException("")).anyTimes();
@@ -459,19 +456,17 @@ public class DuplicationTaskProcessorTest {
         EasyMock.expect(destStore.getContentProperties(spaceId, contentId))
                 .andReturn(destProps);
 
-
         replayMocks();
-        
-        try{
+
+        try {
             taskProcessor.execute();
             fail("unexpected success.");
-        }catch(TaskExecutionFailedException ex){
+        } catch (TaskExecutionFailedException ex) {
             assertTrue("expected failure", true);
         }
     }
 
-    private void
-            setupManifestStore(boolean deleted) throws org.duracloud.common.db.error.NotFoundException {
+    private void setupManifestStore(boolean deleted) throws org.duracloud.common.db.error.NotFoundException {
         ManifestItem item = new ManifestItem();
         item.setDeleted(deleted);
         // Missing source content
@@ -525,7 +520,7 @@ public class DuplicationTaskProcessorTest {
                                              EasyMock.eq(contentId),
                                              EasyMock.eq(mimetype),
                                              EasyMock.eq(srcProps),
-                                             EasyMock.eq((long)content.length()),
+                                             EasyMock.eq((long) content.length()),
                                              EasyMock.eq(checksum),
                                              EasyMock.<InputStream>anyObject()))
                 .andReturn(checksum);
@@ -583,7 +578,7 @@ public class DuplicationTaskProcessorTest {
                                              EasyMock.eq(contentId),
                                              EasyMock.eq(mimetype),
                                              EasyMock.eq(srcProps),
-                                             EasyMock.eq((long)content.length()),
+                                             EasyMock.eq((long) content.length()),
                                              EasyMock.eq(srcChecksum),
                                              EasyMock.<InputStream>anyObject()))
                 .andReturn(srcChecksum);

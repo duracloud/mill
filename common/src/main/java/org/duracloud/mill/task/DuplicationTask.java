@@ -7,17 +7,17 @@
  */
 package org.duracloud.mill.task;
 
+import java.util.Map;
+
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.task.TypedTask;
-
-import java.util.Map;
 
 /**
  * Provides the information necessary to complete a content
  * duplication activity.
  *
  * @author Bill Branan
- *         Date: 10/18/13
+ * Date: 10/18/13
  */
 public class DuplicationTask extends TypedTask {
 
@@ -27,6 +27,7 @@ public class DuplicationTask extends TypedTask {
 
     /**
      * Gets the source store ID. This is equivalent to calling getStoreId()
+     *
      * @return source store ID
      */
     public String getSourceStoreId() {
@@ -35,6 +36,7 @@ public class DuplicationTask extends TypedTask {
 
     /**
      * Sets the source store ID. This is equivalent to calling setStoreId(storeId)
+     *
      * @param sourceStoreId
      */
     public void setSourceStoreId(String sourceStoreId) {

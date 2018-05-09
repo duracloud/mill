@@ -15,12 +15,16 @@ import org.duracloud.common.json.JaxbJsonSerializer;
 
 /**
  * @author Daniel Bernstein
- *	       Date: May 14, 2014
+ * Date: May 14, 2014
  */
 public class AuditLogStoreUtil {
-    
-    private static JaxbJsonSerializer<Map<String, String>> MAP_SERIALIZER = new JaxbJsonSerializer(
-                                                                                  Map.class);
+
+    private static JaxbJsonSerializer<Map<String, String>> MAP_SERIALIZER =
+        new JaxbJsonSerializer(Map.class);
+
+    private AuditLogStoreUtil() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
 
     /**
      * @param props
@@ -33,14 +37,13 @@ public class AuditLogStoreUtil {
             throw new DuraCloudRuntimeException(e);
         }
     }
-    
-    public static Map<String,String> deserialize(String string) {
+
+    public static Map<String, String> deserialize(String string) {
         try {
             return MAP_SERIALIZER.deserialize(string);
         } catch (IOException e) {
             throw new DuraCloudRuntimeException(e);
         }
     }
-    
 
 }

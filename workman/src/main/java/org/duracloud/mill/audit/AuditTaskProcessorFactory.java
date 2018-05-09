@@ -17,24 +17,23 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *         Date: Apr 11, 2014
+ * Date: Apr 11, 2014
  */
 public abstract class AuditTaskProcessorFactory implements TaskProcessorFactory {
 
-    private final Logger log =
-            LoggerFactory.getLogger(AuditTaskProcessorFactory.class);
+    private final Logger log = LoggerFactory.getLogger(AuditTaskProcessorFactory.class);
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.workman.TaskProcessorFactory#create(org.duracloud.
      * common.queue.task.Task)
      */
     @Override
     public final TaskProcessor create(Task task)
-            throws TaskProcessorCreationFailedException {
-        if(isSupported(task)){
+        throws TaskProcessorCreationFailedException {
+        if (isSupported(task)) {
             log.debug("creating task processor for " + task);
             AuditTask auditTask = new AuditTask();
             auditTask.readTask(task);

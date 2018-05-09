@@ -8,28 +8,33 @@
 package org.duracloud.mill.workman;
 
 /**
- * This class defines  thread bound state to facilitate 
+ * This class defines  thread bound state to facilitate
  * communication between TaskProcessors when MultiStepTaskProcessor
  * are working a task.
+ *
  * @author Daniel Bernstein
- *         Date: Jan 8, 2016
+ * Date: Jan 8, 2016
  */
 public class TransProcessorState {
-    private static ThreadLocal<Boolean> IGNORE = new ThreadLocal<Boolean>(){
+    private static ThreadLocal<Boolean> IGNORE = new ThreadLocal<Boolean>() {
         protected Boolean initialValue() {
             return Boolean.FALSE;
-        };
+        }
     };
-    
+
+    private TransProcessorState() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
+
     public static boolean isIgnore() {
         return IGNORE.get();
     }
-    
-    public static void ignore(){
+
+    public static void ignore() {
         IGNORE.set(true);
     }
-    
-    public static void reset(){
+
+    public static void reset() {
         IGNORE.set(false);
     }
 }

@@ -31,31 +31,37 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * 
  * @author Daniel Bernstein
- * 
  */
 
 public class ManifestBuilderDriver extends DriverSupport {
 
-    private static Logger log = LoggerFactory
-            .getLogger(ManifestBuilderDriver.class);
+    private static Logger log = LoggerFactory.getLogger(ManifestBuilderDriver.class);
 
-    private static class ManifestBuilderOptions extends CommonCommandLineOptions{
+    private static class ManifestBuilderOptions extends CommonCommandLineOptions {
         public ManifestBuilderOptions() {
             super();
-            
-            addOption("u", "username", true, "DuraCloud username");
-            addOption("p", "password", true, "DuraCloud password");
-            addOption("h", "host", true, "DuraCloud host");
-            addOption("r", "port", true, "DuraCloud port: 443 by default",false);
-            addOption("s", "space-list", true, "A list of spaces to be included", false);
-            addOption("t", "store-list", true, "A list of storage providers to be included",false);
-            addOption("d", "dry-run", false, "Do not modify the manifest - only show what updates will be made.",false);
-            addOption("C", "clean", false, "Indicates that the manifest database should be cleared before performing updates.",false);
-            addOption("T", "threads", true, "The number of threads to be used. Default: 10",false);
+
+            addOption("u", "username", true,
+                      "DuraCloud username");
+            addOption("p", "password", true,
+                      "DuraCloud password");
+            addOption("h", "host", true,
+                      "DuraCloud host");
+            addOption("r", "port", true,
+                      "DuraCloud port: 443 by default", false);
+            addOption("s", "space-list", true,
+                      "A list of spaces to be included", false);
+            addOption("t", "store-list", true,
+                      "A list of storage providers to be included", false);
+            addOption("d", "dry-run", false,
+                      "Do not modify the manifest - only show what updates will be made.", false);
+            addOption("C", "clean", false,
+                      "Indicates that the manifest database should be cleared before performing updates.", false);
+            addOption("T", "threads", true,
+                      "The number of threads to be used. Default: 10", false);
         }
-        
+
         /* (non-Javadoc)
          * @see org.apache.commons.cli.Options#addOption(java.lang.String, java.lang.String, boolean, java.lang.String)
          */
@@ -64,31 +70,31 @@ public class ManifestBuilderDriver extends DriverSupport {
                                  String longOpt,
                                  boolean hasArg,
                                  String description) {
-            return addOption(opt, longOpt, hasArg, description,true);
+            return addOption(opt, longOpt, hasArg, description, true);
         }
-        
+
         public Options addOption(String opt,
                                  String longOpt,
                                  boolean hasArg,
-                                 String description, 
+                                 String description,
                                  boolean required) {
-            Option option = new Option(opt, longOpt,hasArg,description);
+            Option option = new Option(opt, longOpt, hasArg, description);
             option.setRequired(required);
             return super.addOption(option);
         }
     }
-    
-    public ManifestBuilderDriver(){
+
+    public ManifestBuilderDriver() {
         super(new ManifestBuilderOptions());
     }
-    
+
     public static void main(String[] args) {
         new ManifestBuilderDriver().execute(args);
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.duracloud.mill.util.DriverSupport#executeImpl(org.apache.commons.
      * cli.CommandLine)
@@ -96,59 +102,57 @@ public class ManifestBuilderDriver extends DriverSupport {
     @Override
     protected void executeImpl(CommandLine cmd) {
         try {
-            
-            
-            List<PropertyDefinition> defintions = 
-                    new PropertyDefinitionListBuilder().addMillDb()
-                                                       .build();
+            List<PropertyDefinition> defintions =
+                new PropertyDefinitionListBuilder().addMillDb()
+                                                   .build();
             PropertyVerifier verifier = new PropertyVerifier(defintions);
             verifier.verify(System.getProperties());
-            ApplicationContext context = 
-                    new AnnotationConfigApplicationContext("org.duracloud.mill.db", 
-                                                           "org.duracloud.mill.manifest.builder");
+            ApplicationContext context =
+                new AnnotationConfigApplicationContext("org.duracloud.mill.db",
+                                                       "org.duracloud.mill.manifest.builder");
             log.info("context initialized");
 
             boolean dryRun = Boolean.valueOf(cmd.hasOption("d"));
             boolean clean = Boolean.valueOf(cmd.hasOption("C"));
             String host = cmd.getOptionValue("host");
-            String port = cmd.getOptionValue("port","443");
+            String port = cmd.getOptionValue("port", "443");
             String username = cmd.getOptionValue("u");
             String password = cmd.getOptionValue("p");
             List<String> spaceList = new LinkedList<>();
-            if(cmd.hasOption("s")){
+            if (cmd.hasOption("s")) {
                 String spaces = cmd.getOptionValue("s", "");
-                if(!StringUtils.isEmpty(spaces)){
-                    spaceList = Arrays.asList(spaces.split("[,]"));                
+                if (!StringUtils.isEmpty(spaces)) {
+                    spaceList = Arrays.asList(spaces.split("[,]"));
                 }
             }
 
             List<String> storeList = new LinkedList<>();
 
-            if(cmd.hasOption("t")){
+            if (cmd.hasOption("t")) {
                 String stores = cmd.getOptionValue("t", "");
-                if(!StringUtils.isEmpty(stores)){
-                    storeList = Arrays.asList(stores.split("[,]"));                
+                if (!StringUtils.isEmpty(stores)) {
+                    storeList = Arrays.asList(stores.split("[,]"));
                 }
             }
-            
+
             int threads = 0;
             if (cmd.hasOption("T")) {
                 threads = Integer.parseInt(cmd.getOptionValue("T", "10"));
             }
-            
+
             String account = host.split("[.]")[0];
             ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port);
             storeManager.login(new Credential(username, password));
-            Map<String,ContentStore> contentStoreMap = storeManager.getContentStores();           
+            Map<String, ContentStore> contentStoreMap = storeManager.getContentStores();
             List<ContentStore> contentStores = new LinkedList<>();
-            for(String storeId : contentStoreMap.keySet()){
-                if(storeList.isEmpty() || storeList.contains(storeId)){
+            for (String storeId : contentStoreMap.keySet()) {
+                if (storeList.isEmpty() || storeList.contains(storeId)) {
                     ContentStore contentStore = contentStoreMap.get(storeId);
-                    contentStores.add(contentStore); 
+                    contentStores.add(contentStore);
                 }
             }
-            
-            ManifestBuilder builder = (ManifestBuilder)context.getBean(ManifestBuilder.class);
+
+            ManifestBuilder builder = (ManifestBuilder) context.getBean(ManifestBuilder.class);
             builder.init(account, contentStores, spaceList, clean, dryRun, threads);
             builder.execute();
         } catch (Exception e) {

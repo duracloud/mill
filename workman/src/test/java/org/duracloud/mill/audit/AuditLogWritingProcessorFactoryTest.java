@@ -23,17 +23,17 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Mar 20, 2014
+ * Date: Mar 20, 2014
  */
 @RunWith(EasyMockRunner.class)
-public class AuditLogWritingProcessorFactoryTest extends EasyMockSupport{
-   
+public class AuditLogWritingProcessorFactoryTest extends EasyMockSupport {
+
     @TestSubject
     private AuditLogWritingProcessorFactory factory;
-    
+
     @Mock
     private AuditLogStore logStore;
-    
+
     /**
      * @throws java.lang.Exception
      */
@@ -57,12 +57,10 @@ public class AuditLogWritingProcessorFactoryTest extends EasyMockSupport{
         factory.create(task.writeTask());
     }
 
-
-
     @Test
-    public void testCreateFail()  {
+    public void testCreateFail() {
         NoopTask task = new NoopTask();
-        
+
         replayAll();
         try {
             factory.create(task.writeTask());

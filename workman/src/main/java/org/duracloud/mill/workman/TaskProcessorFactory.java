@@ -12,10 +12,11 @@ import org.duracloud.common.queue.task.Task;
 /**
  * The TaskProcessResolver resolves a <code>TaskProcessor</code> for a given
  * instance of a <code>Task</code>
- * 
+ *
  * @author Daniel Bernstein
  */
 public interface TaskProcessorFactory {
     TaskProcessor create(Task task) throws TaskProcessorCreationFailedException;
+
     boolean isSupported(Task task);
 }

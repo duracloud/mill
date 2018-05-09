@@ -7,6 +7,17 @@
  */
 package org.duracloud.mill.bit;
 
+import static org.easymock.EasyMock.anyLong;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -37,12 +48,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
-
-import static org.junit.Assert.*;
-
 /**
- * @author Daniel Bernstein Date: 5/7/2014
+ * @author Daniel Bernstein
+ * Date: 5/7/2014
  */
 @RunWith(EasyMockRunner.class)
 public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
@@ -65,7 +73,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
 
     @Mock
     private TaskProducerConfigurationManager config;
-    
+
     @Mock
     private NotificationManager notificiationManager;
 
@@ -74,7 +82,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
         taskProcessor = new BitIntegrityReportTaskProcessor(task,
                                                             bitLogStore,
                                                             store,
-                                                            config, 
+                                                            config,
                                                             notificiationManager);
 
     }
@@ -126,51 +134,51 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
                                                eq(spaceId))).andReturn(it);
 
         final Capture<InputStream> capture = new Capture<>();
-        
+
         String reportSpace = "x-duracloud-admin";
         expect(this.store.getSpaces()).andReturn(Arrays.asList("aspace").iterator());
         this.store.createSpace(reportSpace);
         expectLastCall().once();
-        
+
         expect(this.store.addContent(eq(reportSpace),
-                              isA(String.class),
-                              isA(String.class),
-                              (Map<String, String>) isNull(),
-                              anyLong(),
-                              isA(String.class),
-                              capture(capture))).andAnswer(new IAnswer<String>() {
-            @Override
-            public String answer() throws Throwable {
-                InputStream is = capture.getValue();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                assertNotNull(reader.readLine());
-                assertNotNull(reader.readLine());
-                assertNull(reader.readLine());
-                return null;
-            }
-        });
-        
+                                     isA(String.class),
+                                     isA(String.class),
+                                     (Map<String, String>) isNull(),
+                                     anyLong(),
+                                     isA(String.class),
+                                     capture(capture)))
+            .andAnswer(new IAnswer<String>() {
+                @Override
+                public String answer() throws Throwable {
+                    InputStream is = capture.getValue();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    assertNotNull(reader.readLine());
+                    assertNotNull(reader.readLine());
+                    assertNull(reader.readLine());
+                    return null;
+                }
+            });
+
         bitLogStore.delete(account, storeId, spaceId);
         expectLastCall().once();
-        
 
         BitIntegrityReport report = createMock(BitIntegrityReport.class);
         expect(report.getAccount()).andReturn(account);
         expect(report.getStoreId()).andReturn(storeId);
         expect(report.getSpaceId()).andReturn(spaceId);
         expect(report.getId()).andReturn(1l);
-        
+
         expect(bitLogStore.addReport(eq(account),
-                              eq(storeId),
-                              eq(spaceId),
-                              isA(String.class),
-                              isA(String.class),
-                              eq(BitIntegrityReportResult.FAILURE),
-                              isA(Date.class))).andReturn(report);
-        
+                                     eq(storeId),
+                                     eq(spaceId),
+                                     isA(String.class),
+                                     isA(String.class),
+                                     eq(BitIntegrityReportResult.FAILURE),
+                                     isA(Date.class))).andReturn(report);
+
         notificiationManager.sendEmail(isA(String.class), isA(String.class));
         expectLastCall().once();
-        
+
         replayAll();
         taskProcessor.execute();
     }

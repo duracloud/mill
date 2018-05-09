@@ -14,11 +14,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Represents the persistent state of the <code>LoopingTaskProducer</code>.
+ *
  * @author Daniel Bernstein
- *	       Date: Nov 6, 2013
+ * Date: Nov 6, 2013
  */
 public class State<T> {
-    
+
     private LinkedHashSet<T> morsels = new LinkedHashSet<>();
     private Date currentRunStartDate = null;
     private Date nextRunStartDate = null;
@@ -29,7 +30,7 @@ public class State<T> {
     public LinkedHashSet<T> getMorsels() {
         return morsels;
     }
-    
+
     /**
      * @param morsels the morsels to set
      */
@@ -64,14 +65,13 @@ public class State<T> {
     public void setNextRunStartDate(Date time) {
         this.nextRunStartDate = time;
     }
-    
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
-    
 
 }

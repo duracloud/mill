@@ -14,16 +14,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * @author Daniel Bernstein
- *	       Date: Dec 11, 2013
+ * Date: Dec 11, 2013
  */
 public class Frequency {
     private String timeUnit;
     private int value;
-    private static Map<String,Integer> timeUnitToCalendarMap;
-    
+    private static Map<String, Integer> timeUnitToCalendarMap;
+
     static {
         timeUnitToCalendarMap = new HashMap<String, Integer>();
         timeUnitToCalendarMap.put("s", Calendar.SECOND);
@@ -33,7 +32,7 @@ public class Frequency {
         timeUnitToCalendarMap.put("m", Calendar.MONTH);
     }
 
-    public Frequency(String frequency) throws ParseException{
+    public Frequency(String frequency) throws ParseException {
         parse(frequency);
     }
 
@@ -43,32 +42,32 @@ public class Frequency {
     private void parse(String frequency) throws ParseException {
         Pattern p = Pattern.compile("([0]|[1-9][0-9]*)([sMhdm])");
         Matcher m = p.matcher(frequency);
-        if(!m.matches()){
-            throw new ParseException(frequency + " is not a valid frequency",0);
+        if (!m.matches()) {
+            throw new ParseException(frequency + " is not a valid frequency", 0);
         }
-        
+
         value = Integer.parseInt(m.group(1));
         timeUnit = m.group(2);
     }
-    
+
     /**
      * @return the value
      */
     public int getValue() {
         return value;
     }
-    
+
     /**
      * @return the timeUnit as Calendar Constant
      */
     public int getTimeUnit() {
         return timeUnitToCalendarMap.get(this.timeUnit);
     }
-    
+
     public String getTimeUnitAsString() {
         return this.timeUnit;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

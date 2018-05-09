@@ -11,16 +11,16 @@ import org.duracloud.mill.ltp.Morsel;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 28, 2014
+ * Date: Apr 28, 2014
  */
 public class BitIntegrityMorsel extends Morsel {
     private String storeId;
     private String storageProviderType;
-    
-    public BitIntegrityMorsel(){
+
+    public BitIntegrityMorsel() {
         super();
     }
-    
+
     /**
      * @param account
      * @param storeId
@@ -28,9 +28,9 @@ public class BitIntegrityMorsel extends Morsel {
      * @param spaceId
      */
     public BitIntegrityMorsel(String account,
-            String storeId,
-            String storageProviderType,
-            String spaceId) {
+                              String storeId,
+                              String storageProviderType,
+                              String spaceId) {
         super(account, spaceId, null);
         setStoreId(storeId);
         setStorageProviderType(storageProviderType);
@@ -42,21 +42,21 @@ public class BitIntegrityMorsel extends Morsel {
     public String getStorageProviderType() {
         return storageProviderType;
     }
-    
+
     /**
      * @param storageProviderType the storageProviderType to set
      */
     public void setStorageProviderType(String storageProviderType) {
         this.storageProviderType = storageProviderType;
     }
-    
+
     /**
      * @return the storeId
      */
     public String getStoreId() {
         return storeId;
     }
-    
+
     /**
      * @param storeId the storeId to set
      */

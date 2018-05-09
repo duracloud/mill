@@ -9,7 +9,7 @@ package org.duracloud.mill.config;
 
 /**
  * @author Daniel Bernstein
- *         Date: Dec 5, 2014
+ * Date: Dec 5, 2014
  */
 public class ConfigConstants {
 
@@ -53,17 +53,16 @@ public class ConfigConstants {
      */
 
     public static final String MAX_WORKERS = "max-workers";
-    
+
     /*
      * LOOPING BIT TASK PRODUCER
      */
     public static final String LOOPING_BIT_MAX_TASK_QUEUE_SIZE = "looping.bit.max-task-queue-size";
     public static final String LOOPING_BIT_FREQUENCY = "looping.bit.frequency";
-    
+
     public static final String LOOPING_BIT_EXCLUSION_LIST_KEY = "looping.bit.exclusion-list-file";
     public static final String LOOPING_BIT_INCLUSION_LIST_KEY = "looping.bit.inclusion-list-file";
 
-    
     /*
      * DUPLICATION
      */
@@ -76,7 +75,6 @@ public class ConfigConstants {
      */
     public static final String LOOPING_DUP_FREQUENCY = "looping.dup.frequency";
     public static final String LOOPING_DUP_MAX_TASK_QUEUE_SIZE = "looping.dup.max-task-queue-size";
-
 
     /*
      * LOOPING STORAGE STATS
@@ -96,7 +94,7 @@ public class ConfigConstants {
     public static final String MC_DB_PORT = "db.port";
     public static final String MC_DB_PASS = "db.pass";
     public static final String MC_DB_USER = "db.user";
-    
+
     /*
      * MILL DATABASE
      */
@@ -105,14 +103,19 @@ public class ConfigConstants {
     public static final String MILL_DB_PORT = "mill.db.port";
     public static final String MILL_DB_USER = "mill.db.user";
     public static final String MILL_DB_PASS = "mill.db.pass";
-    
+
     /*
      * MANIFEST
      */
     public static final String MANIFEST_EXPIRATION_TIME = "manifest.expiration-time";
+
     /**
-     * 
+     *
      */
     public static final String QUEUE_TASK_ORDERED = "queue.task.ordered";
+
+    private ConfigConstants() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
 
 }

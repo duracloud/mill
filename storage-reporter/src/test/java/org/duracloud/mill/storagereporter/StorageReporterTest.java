@@ -7,7 +7,13 @@
  */
 package org.duracloud.mill.storagereporter;
 
-import static org.junit.Assert.*;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -30,8 +36,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.easymock.EasyMock.*;
 
 /**
  * @author dbernstein
@@ -78,44 +82,44 @@ public class StorageReporterTest extends EasyMockSupport {
         expect(primary.getId()).andReturn(primaryId).atLeastOnce();
         expect(primary.getStorageLimit()).andReturn(2).atLeastOnce();
         expect(primary.getProviderType())
-                .andReturn(StorageProviderType.AMAZON_S3).atLeastOnce();
+            .andReturn(StorageProviderType.AMAZON_S3).atLeastOnce();
 
         StorageProviderAccount secondary = createMock(StorageProviderAccount.class);
         expect(secondary.getId()).andReturn(secondaryId).atLeastOnce();
         expect(secondary.getStorageLimit()).andReturn(2).atLeastOnce();
         expect(secondary.getProviderType())
-                .andReturn(StorageProviderType.AMAZON_GLACIER).atLeastOnce();
+            .andReturn(StorageProviderType.AMAZON_GLACIER).atLeastOnce();
 
         expect(account.getSubdomain()).andReturn(accountId).atLeastOnce();
         expect(account.getPrimaryStorageProviderAccount()).andReturn(primary);
         expect(account.getSecondaryStorageProviderAccounts())
-                .andReturn(new HashSet<StorageProviderAccount>(Arrays
-                        .asList(secondary)));
+            .andReturn(new HashSet<StorageProviderAccount>(Arrays
+                                                               .asList(secondary)));
 
         expect(accountRepo.findByStatus(AccountStatus.ACTIVE))
-                .andReturn(Arrays.asList(account));
+            .andReturn(Arrays.asList(account));
 
         List<Object[]> primaryStats = new LinkedList<>();
-        primaryStats.add(new Object[] { null, null, null,
-                new BigDecimal(StorageProviderResult.TB * 2 + 1) });
+        primaryStats.add(new Object[] {null, null, null,
+                                       new BigDecimal(StorageProviderResult.TB * 2 + 1)});
         List<Object[]> secondaryStats = new LinkedList<>();
-        secondaryStats.add(new Object[] { null, null, null,
-                new BigDecimal(StorageProviderResult.TB * 2 - 1) });
+        secondaryStats.add(new Object[] {null, null, null,
+                                         new BigDecimal(StorageProviderResult.TB * 2 - 1)});
 
         expect(statsRepo
-                .getByAccountIdAndStoreId(eq(accountId),
-                                          eq(primaryId + ""),
-                                          isA(Date.class),
-                                          isA(Date.class),
-                                          eq(JpaSpaceStatsRepo.INTERVAL_DAY)))
-                                                  .andReturn(primaryStats);
+                   .getByAccountIdAndStoreId(eq(accountId),
+                                             eq(primaryId + ""),
+                                             isA(Date.class),
+                                             isA(Date.class),
+                                             eq(JpaSpaceStatsRepo.INTERVAL_DAY)))
+            .andReturn(primaryStats);
         expect(statsRepo
-                .getByAccountIdAndStoreId(eq(accountId),
-                                          eq(secondaryId + ""),
-                                          isA(Date.class),
-                                          isA(Date.class),
-                                          eq(JpaSpaceStatsRepo.INTERVAL_DAY)))
-                                                  .andReturn(secondaryStats);
+                   .getByAccountIdAndStoreId(eq(accountId),
+                                             eq(secondaryId + ""),
+                                             isA(Date.class),
+                                             isA(Date.class),
+                                             eq(JpaSpaceStatsRepo.INTERVAL_DAY)))
+            .andReturn(secondaryStats);
 
         notification.sendEmail(isA(String.class), isA(String.class));
         expectLastCall();
@@ -129,10 +133,10 @@ public class StorageReporterTest extends EasyMockSupport {
         assertEquals(1, result.getOversubscribedAccounts().size());
         assertEquals(0, result.getUndersubscribedAccounts().size());
         List<StorageProviderResult> spResults = result
-                .getOversubscribedAccounts().get(0).getStorageProviderResults();
+            .getOversubscribedAccounts().get(0).getStorageProviderResults();
         for (StorageProviderResult spResult : spResults) {
             if (spResult.getStorageProviderAccount().getId()
-                    .equals(primaryId)) {
+                        .equals(primaryId)) {
                 assertTrue(spResult.isOversubscribed());
             } else {
                 assertFalse(spResult.isOversubscribed());

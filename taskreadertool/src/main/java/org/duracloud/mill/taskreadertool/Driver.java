@@ -7,6 +7,11 @@
  */
 package org.duracloud.mill.taskreadertool;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -14,26 +19,26 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.duracloud.common.queue.task.Task;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Map;
-
 /**
  * A client for reading tasks from a queue.
- * @author Bill Branan 
- *         Date: Jan 22, 2014
+ *
+ * @author Bill Branan
+ * Date: Jan 22, 2014
  */
 public class Driver {
 
     private static final Logger log = LoggerFactory.getLogger(Driver.class);
+
+    private Driver() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
 
     private static void usage() {
         HelpFormatter help = new HelpFormatter();
@@ -68,27 +73,27 @@ public class Driver {
         options.addOption(queue);
 
         Option username = new Option("u", "username", true,
-                "The queue service username");
+                                     "The queue service username");
         username.setArgs(1);
         username.setArgName("username");
         queue.setRequired(true);
         options.addOption(username);
 
         Option password = new Option("p", "password", true,
-                "The queue service password");
+                                     "The queue service password");
         password.setArgs(1);
         password.setArgName("password");
         queue.setRequired(true);
         options.addOption(password);
 
         Option output = new Option("o", "output-file-name", true,
-                "The name of the output file");
+                                   "The name of the output file");
         password.setArgs(1);
         password.setArgName("output");
         options.addOption(output);
 
         Option delete = new Option("d", "delete", false,
-                "Indicates that items read from the queue should be deleted");
+                                   "Indicates that items read from the queue should be deleted");
         options.addOption(delete);
 
         return options;
@@ -101,14 +106,14 @@ public class Driver {
             writer.write("Task Properties: ");
             writer.newLine();
             Map<String, String> taskProps = task.getProperties();
-            for(String key : taskProps.keySet()) {
-                if(!key.equals("RECEIPT_HANDLE")) { // Leave out receipt handle
+            for (String key : taskProps.keySet()) {
+                if (!key.equals("RECEIPT_HANDLE")) { // Leave out receipt handle
                     writer.write("  " + key + "=" + taskProps.get(key));
                     writer.newLine();
                 }
             }
             writer.newLine();
-        } catch(IOException e) {
+        } catch (IOException e) {
             log.error("Unable to write to file due to: " + e.getMessage() +
                       " Task content: " + task.toString());
         }
@@ -117,7 +122,7 @@ public class Driver {
     public static void main(String[] args) {
         try {
             CommandLine cmd = parseArgs(args);
-            
+
             String queue = cmd.getOptionValue("q");
             String username = cmd.getOptionValue("u");
             String password = cmd.getOptionValue("p");
@@ -128,7 +133,7 @@ public class Driver {
             System.setProperty("aws.secretKey", password);
 
             String outputFilename;
-            if(null != outputValue && !outputValue.isEmpty()) {
+            if (null != outputValue && !outputValue.isEmpty()) {
                 outputFilename = outputValue;
             } else {
                 outputFilename =
@@ -143,15 +148,15 @@ public class Driver {
             int taskQueueSize = taskQueue.size();
             log.warn("TaskQueue size: " + taskQueue.size());
 
-            for(int i=0; i< taskQueueSize; i++) {
+            for (int i = 0; i < taskQueueSize; i++) {
                 try {
                     Task task = taskQueue.take();
                     writeTask(writer, task);
-                    if(delete) {
+                    if (delete) {
                         taskQueue.deleteTask(task);
                     }
                     readCount++;
-                } catch(TimeoutException e) {
+                } catch (TimeoutException e) {
                     log.warn(
                         "Timeout exception, queue is empty: " + e.getMessage());
                 }

@@ -30,25 +30,23 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Apr 11, 2014
+ * Date: Apr 11, 2014
  */
 public class DuplicationTaskProducingProcessor implements TaskProcessor {
-    private static Logger log = LoggerFactory
-            .getLogger(DuplicationTaskProducingProcessor.class);
+    private static Logger log = LoggerFactory.getLogger(DuplicationTaskProducingProcessor.class);
 
     private AuditTask task;
     private TaskQueue duplicationTaskQueue;
     private DuplicationPolicyManager duplicationPolicyManager;
 
     /**
-     * @param at
+     * @param task
      * @param duplicationTaskQueue
      * @param duplicationPolicyManager
-     * @param notificationManager
      */
     public DuplicationTaskProducingProcessor(AuditTask task,
-            TaskQueue duplicationTaskQueue,
-            DuplicationPolicyManager duplicationPolicyManager) {
+                                             TaskQueue duplicationTaskQueue,
+                                             DuplicationPolicyManager duplicationPolicyManager) {
         this.task = task;
         this.duplicationTaskQueue = duplicationTaskQueue;
         this.duplicationPolicyManager = duplicationPolicyManager;
@@ -61,32 +59,29 @@ public class DuplicationTaskProducingProcessor implements TaskProcessor {
     public void execute() throws TaskExecutionFailedException {
         if (isDuplicatable(task)) {
             applyDuplicationPolicy(task);
-        }else{
-            log.warn("This message {} is not duplicable: it will be ignored." );
+        } else {
+            log.warn("This message {} is not duplicable: it will be ignored.");
         }
     }
-    
-   
+
     /**
-     * @param contentMessage
      * @return
      */
     private boolean isDuplicatable(AuditTask task) {
-        if(task.getAction() == null){
+        if (task.getAction() == null) {
             return false;
         }
-        
+
         try {
             AuditTask.ActionType action = AuditTask.ActionType.valueOf(task.getAction());
-            return (action.equals(ADD_CONTENT) || 
+            return (action.equals(ADD_CONTENT) ||
                     action.equals(SET_CONTENT_PROPERTIES) ||
                     action.equals(COPY_CONTENT) ||
                     action.equals(DELETE_CONTENT) ||
                     action.equals(DELETE_SPACE));
         } catch (IllegalArgumentException e) {
-            log.warn(
-                    "failed to get enum value of " + task.getAction()
-                            + ": " + e.getMessage());
+            log.warn("failed to get enum value of " + task.getAction()
+                     + ": " + e.getMessage());
             return false;
         }
     }
@@ -94,64 +89,58 @@ public class DuplicationTaskProducingProcessor implements TaskProcessor {
     protected void applyDuplicationPolicy(AuditTask task) {
 
         String account = task.getAccount();
-        DuplicationPolicy policy = duplicationPolicyManager
-                .getDuplicationPolicy(account);
+        DuplicationPolicy policy = duplicationPolicyManager.getDuplicationPolicy(account);
         if (policy == null) {
-            log.warn(
-                    "no policy found for account \"{}\": {} will be ignored. ",
-                    account, task);
+            log.warn("no policy found for account \"{}\": {} will be ignored. ", account, task);
             return;
-        } else{
-            log.debug(
-                    "applying duplication policies to {} for {}", task, account);
+        } else {
+            log.debug("applying duplication policies to {} for {}", task, account);
         }
-        
+
         String storeId = task.getStoreId();
         String spaceId = task.getSpaceId();
         String contentId = task.getContentId();
-        if(contentId == null){
+        if (contentId == null) {
             contentId = "";
         }
-        Set<DuplicationStorePolicy> dupStorePolicies = 
-                policy.getDuplicationStorePolicies(spaceId);
-        
-        if(dupStorePolicies != null && !dupStorePolicies.isEmpty()) {
-            
+        Set<DuplicationStorePolicy> dupStorePolicies =
+            policy.getDuplicationStorePolicies(spaceId);
+
+        if (dupStorePolicies != null && !dupStorePolicies.isEmpty()) {
+
             Set<Task> tasks = null;
-            
+
             for (DuplicationStorePolicy dupStorePolicy : dupStorePolicies) {
                 if (dupStorePolicy.getSrcStoreId().equals(storeId)) {
-                    log.debug(
-                            "policy's sourceStoreId matches " +
-                            "messageStoreId: policy={}; messageStoreId={}",
-                            dupStorePolicy, storeId);
+                    log.debug("policy's sourceStoreId matches " +
+                              "messageStoreId: policy={}; messageStoreId={}",
+                              dupStorePolicy, storeId);
                     DuplicationTask dupTask = new DuplicationTask();
                     dupTask.setAccount(account);
                     dupTask.setDestStoreId(dupStorePolicy.getDestStoreId());
                     dupTask.setSpaceId(spaceId);
                     dupTask.setContentId(contentId);
                     dupTask.setSourceStoreId(storeId);
-                    
+
                     log.info("adding duplication task to the task queue: {}", dupTask);
-                    
-                    if(tasks == null){
+
+                    if (tasks == null) {
                         tasks = new HashSet<>();
                     }
-                    
+
                     tasks.add(dupTask.writeTask());
-                }else{
-                    log.debug(
-                            "policy's sourceStoreId does not match " +
-                            "messageStoreId: policy={}; messageStoreId={}",
-                            dupStorePolicy, storeId);
+                } else {
+                    log.debug("policy's sourceStoreId does not match " +
+                              "messageStoreId: policy={}; messageStoreId={}",
+                              dupStorePolicy, storeId);
                 }
             }
-            
-            if(tasks != null){
+
+            if (tasks != null) {
                 duplicationTaskQueue.put(tasks);
             }
 
-        }else{
+        } else {
             log.info("no duplication policies for {} on account {}", spaceId, account);
         }
     }

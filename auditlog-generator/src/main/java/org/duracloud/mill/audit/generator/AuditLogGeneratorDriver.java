@@ -23,23 +23,21 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * 
  * @author Daniel Bernstein
- *
  */
 
-public class AuditLogGeneratorDriver extends DriverSupport{
+public class AuditLogGeneratorDriver extends DriverSupport {
 
     private static final Logger log = LoggerFactory.getLogger(AuditLogGeneratorDriver.class);
 
-    public AuditLogGeneratorDriver(){
+    public AuditLogGeneratorDriver() {
         super(new CommonCommandLineOptions());
     }
-    
+
     public static void main(String[] args) {
         new AuditLogGeneratorDriver().execute(args);
     }
-    
+
     /* (non-Javadoc)
      * @see org.duracloud.mill.util.DriverSupport#executeImpl(org.apache.commons.cli.CommandLine)
      */
@@ -52,21 +50,20 @@ public class AuditLogGeneratorDriver extends DriverSupport{
                                                .addWorkDir()
                                                .addGlobalWorkDir()
                                                .build();
-        
+
         new PropertyVerifier(list).verify(System.getProperties());
-        
+
         SystemConfig config = SystemConfig.instance();
         config.setAuditLogSpaceId(System
-                .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
-        
+                                      .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
+
         String workDir = System.getProperty(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH);
-        if(workDir == null){
+        if (workDir == null) {
             //for backwards compatibility use old work directory if no global work dir configured.
             workDir = System.getProperty(ConfigConstants.WORK_DIRECTORY_PATH);
         }
-        
-        String logRootDir = workDir + File.separator
-                + "audit-logs";
+
+        String logRootDir = workDir + File.separator + "audit-logs";
         initializeLogRoot(logRootDir);
         ApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill");
         log.info("spring context initialized.");
@@ -74,33 +71,31 @@ public class AuditLogGeneratorDriver extends DriverSupport{
         generator.execute();
         log.info("exiting...");
     }
-    
+
     /**
      * @param logRootPath
      */
     private static void initializeLogRoot(String logRootPath) {
 
-        try{
+        try {
             File logRootDir = new File(logRootPath);
 
-            if(!logRootDir.exists()) {
-                if(!logRootDir.mkdirs()){
+            if (!logRootDir.exists()) {
+                if (!logRootDir.mkdirs()) {
                     String message = "Unable to create log root dir: "
-                            + logRootDir.getAbsolutePath() +
-                            ". Please make sure that this process has " +
-                            "permission to create this directory";
+                                     + logRootDir.getAbsolutePath() +
+                                     ". Please make sure that this process has " +
+                                     "permission to create this directory";
                     log.error(message);
                     System.exit(1);
                 }
             }
-            
+
             SystemConfig.instance().setLogsDirectory(logRootPath);
-        }catch(Exception ex){
-            log.error(
-                    "failed to initialize log root dir " + logRootPath + ":"
-                            + ex.getMessage(), ex);
+        } catch (Exception ex) {
+            log.error("failed to initialize log root dir " + logRootPath + ":" + ex.getMessage(), ex);
             System.exit(1);
         }
-        
+
     }
 }

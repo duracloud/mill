@@ -20,16 +20,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 /**
- * @author Daniel Bernstein Date: Sep 5, 2014
+ * @author Daniel Bernstein
+ * Date: Sep 5, 2014
  */
 @Component
 public class AuditLogGenerator {
 
-    private static Logger log = LoggerFactory
-            .getLogger(AuditLogGenerator.class);
+    private static Logger log = LoggerFactory.getLogger(AuditLogGenerator.class);
     private JpaAuditLogItemRepo auditLogItemRepo;
     private LogManager logManager;
-    
+
     @Autowired
     public AuditLogGenerator(JpaAuditLogItemRepo auditLogItemRepo, LogManager logManager) {
         this.auditLogItemRepo = auditLogItemRepo;
@@ -58,12 +58,12 @@ public class AuditLogGenerator {
                 for (JpaAuditLogItem item : items) {
                     write(item);
                 }
-                
+
                 itemsWritten += items.size();
-                totalItemsWritten +=itemsWritten;
+                totalItemsWritten += itemsWritten;
                 log.info("{} audit items written.", items.size());
-                
-                if(itemsWritten >= 100000){
+
+                if (itemsWritten >= 100000) {
                     log.info("{} items written since last flush.  Flushing logs...", itemsWritten);
                     logManager.flushLogs();
                     itemsWritten = 0;
@@ -71,7 +71,7 @@ public class AuditLogGenerator {
                     logManager.purgeExpired();
                 }
             }
-            
+
             log.info("{} total audit items written in this run.", totalItemsWritten);
             log.info("perform final purge of expired items.");
             this.logManager.purgeExpired();
@@ -97,8 +97,5 @@ public class AuditLogGenerator {
     private void write(JpaAuditLogItem item) {
         logManager.write(item);
     }
-
-
-
 
 }

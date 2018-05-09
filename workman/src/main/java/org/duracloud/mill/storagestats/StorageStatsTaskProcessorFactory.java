@@ -35,34 +35,30 @@ import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
 
-
-
 /**
  * @author Daniel Bernstein
- *         Date: 03/03/2016
+ * Date: 03/03/2016
  */
-public class StorageStatsTaskProcessorFactory 
+public class StorageStatsTaskProcessorFactory
     extends TaskProcessorFactoryBase {
 
     private static Logger log =
         LoggerFactory.getLogger(StorageStatsTaskProcessorFactory.class);
 
-    
     private StorageProviderFactory storageProviderFactory;
     private SpaceStatsManager spaceStatsManager;
     private JpaManifestItemRepo manifestItemRepo;
 
     /**
-     * 
      * @param repo
      * @param storageProviderFactory
      * @param spaceStatsManager
      * @param manifestItemRepo
      */
     public StorageStatsTaskProcessorFactory(CredentialsRepo repo,
-                                                 StorageProviderFactory storageProviderFactory,
-                                                 SpaceStatsManager spaceStatsManager,
-                                                 JpaManifestItemRepo manifestItemRepo) {
+                                            StorageProviderFactory storageProviderFactory,
+                                            SpaceStatsManager spaceStatsManager,
+                                            JpaManifestItemRepo manifestItemRepo) {
         super(repo);
         this.storageProviderFactory = storageProviderFactory;
         this.spaceStatsManager = spaceStatsManager;
@@ -81,12 +77,10 @@ public class StorageStatsTaskProcessorFactory
         StorageStatsTask storageStatsTask = new StorageStatsTask();
         storageStatsTask.readTask(task);
         String subdomain = storageStatsTask.getAccount();
-        
-        
-        
+
         try {
-            StorageProviderCredentials credentials = getCredentialRepo().
-                getStorageProviderCredentials(subdomain, storageStatsTask.getStoreId());
+            StorageProviderCredentials credentials =
+                getCredentialRepo().getStorageProviderCredentials(subdomain, storageStatsTask.getStoreId());
             StorageProvider store = storageProviderFactory.create(credentials);
 
             CloudWatchStorageStatsGatherer gatherer = null;
@@ -105,20 +99,20 @@ public class StorageStatsTaskProcessorFactory
                 gatherer =new CloudWatchStorageStatsGatherer(client, (S3StorageProvider)store);
                 
             }
-            
+
             StorageProviderType storageProviderType = credentials.getProviderType();
             return new StorageStatsTaskProcessor(storageStatsTask,
-                                                      store,
-                                                      storageProviderType,
-                                                      spaceStatsManager,
-                                                      gatherer, 
-                                                      manifestItemRepo);
+                                                 store,
+                                                 storageProviderType,
+                                                 spaceStatsManager,
+                                                 gatherer,
+                                                 manifestItemRepo);
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: unable to locate" +
-                          " credentials for subdomain: " + e.getMessage(), e);
+                      " credentials for subdomain: " + e.getMessage(), e);
             throw new TaskProcessorCreationFailedException(
                 "failed to create TaskProcessor: unable to locate credentials " +
-                    "for subdomain: "+ subdomain, e);
+                "for subdomain: " + subdomain, e);
         }
     }
 }

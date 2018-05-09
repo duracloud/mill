@@ -13,9 +13,9 @@ import org.duracloud.common.queue.task.TypedTask;
 /**
  * Provides the information necessary to complete a bit integrity check on a
  * content item.
- * 
- * @author Daniel Bernstein 
- *         Date: 04/22/2014
+ *
+ * @author Daniel Bernstein
+ * Date: 04/22/2014
  */
 public class BitIntegrityCheckTask extends TypedTask {
 
@@ -25,5 +25,5 @@ public class BitIntegrityCheckTask extends TypedTask {
         task.setType(Task.Type.BIT);
         return task;
     }
- 
+
 }

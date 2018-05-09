@@ -10,16 +10,15 @@ package org.duracloud.mill.ltp;
 import java.text.ParseException;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Dec 11, 2013
+ * Date: Dec 11, 2013
  */
 public class FrequencyTest {
 
-     /**
+    /**
      * Test method for {@link org.duracloud.mill.ltp.Frequency#getValue()}.
      */
     @Test
@@ -27,11 +26,11 @@ public class FrequencyTest {
         test("60s", true);
         test("30M", true);
         test("7d", true);
-        test("1m",true);
-        test("1x",false);
-        test("0s",true);
-        test("01s",false);
-        
+        test("1m", true);
+        test("1x", false);
+        test("0s", true);
+        test("01s", false);
+
     }
 
     /**
@@ -41,13 +40,13 @@ public class FrequencyTest {
         boolean error = false;
         try {
             new Frequency(frequency);
-        }catch(ParseException ex){
+        } catch (ParseException ex) {
             error = true;
         }
-        
-        if(success){
+
+        if (success) {
             Assert.assertTrue(!error);
-        }else{
+        } else {
             Assert.assertTrue(error);
         }
     }

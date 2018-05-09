@@ -15,7 +15,7 @@ import java.io.InputStream;
  * how duplication is to be handled for DuraCloud accounts.
  *
  * @author Bill Branan
- *         Date: 10/31/13
+ * Date: 10/31/13
  */
 public interface DuplicationPolicyRepo {
 

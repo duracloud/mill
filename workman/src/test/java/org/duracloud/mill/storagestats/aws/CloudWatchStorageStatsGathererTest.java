@@ -15,6 +15,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
+import com.amazonaws.services.cloudwatch.model.Datapoint;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.easymock.Capture;
 import org.easymock.EasyMockRunner;
@@ -32,17 +36,17 @@ import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 
 /**
  * @author Daniel Bernstein
- *         Date: Mar 3, 2016
+ * Date: Mar 3, 2016
  */
 @RunWith(EasyMockRunner.class)
-public class CloudWatchStorageStatsGathererTest  extends EasyMockSupport {
-
+public class CloudWatchStorageStatsGathererTest extends EasyMockSupport {
 
     @Mock
     private AmazonCloudWatch client;
     
     @Mock
     private S3StorageProvider storageProvider;
+
     /**
      * @throws java.lang.Exception
      */
@@ -59,14 +63,13 @@ public class CloudWatchStorageStatsGathererTest  extends EasyMockSupport {
         verifyAll();
     }
 
-
     @Test
     public void test() throws Exception {
         String space = "space-id";
         expect(storageProvider.getBucketName(space)).andReturn(space);
         int objectCount = 3;
         List<Capture<GetMetricStatisticsRequest>> requests = new LinkedList<>();
-        
+
         int byteCount = 100;
         requests.add(setupRequest(objectCount));
         requests.add(setupRequest(byteCount));
@@ -76,13 +79,13 @@ public class CloudWatchStorageStatsGathererTest  extends EasyMockSupport {
         replayAll();
         CloudWatchStorageStatsGatherer gatherer = new CloudWatchStorageStatsGatherer(client, storageProvider);
         BucketStats details = gatherer.getBucketStats(space);
-        assertEquals(3*byteCount, details.getTotalBytes());
+        assertEquals(3 * byteCount, details.getTotalBytes());
         assertEquals(objectCount, details.getTotalItems());
-     
-        verifyRequests(requests.get(0),  space, "NumberOfObjects",  "AllStorageTypes");
-        verifyRequests(requests.get(1),  space, "BucketSizeBytes",  "StandardStorage");
-        verifyRequests(requests.get(2),  space, "BucketSizeBytes",  "StandardIAStorage");
-        verifyRequests(requests.get(3),  space, "BucketSizeBytes",  "ReducedRedundancyStorage");
+
+        verifyRequests(requests.get(0), space, "NumberOfObjects", "AllStorageTypes");
+        verifyRequests(requests.get(1), space, "BucketSizeBytes", "StandardStorage");
+        verifyRequests(requests.get(2), space, "BucketSizeBytes", "StandardIAStorage");
+        verifyRequests(requests.get(3), space, "BucketSizeBytes", "ReducedRedundancyStorage");
 
     }
 
@@ -97,11 +100,11 @@ public class CloudWatchStorageStatsGathererTest  extends EasyMockSupport {
                                 String metric,
                                 String storageType) {
         GetMetricStatisticsRequest request = capture.getValue();
-        
+
         assertEquals(metric, request.getMetricName());
         assertEquals(bucket, request.getDimensions().get(0).getValue());
         assertEquals(storageType, request.getDimensions().get(1).getValue());
-        
+
     }
 
     /**
@@ -113,7 +116,7 @@ public class CloudWatchStorageStatsGathererTest  extends EasyMockSupport {
         Capture<GetMetricStatisticsRequest> capture = new Capture<>();
         GetMetricStatisticsResult result = createMock(GetMetricStatisticsResult.class);
         Datapoint dp = new Datapoint();
-        dp.setMaximum((double)value);
+        dp.setMaximum((double) value);
         expect(result.getDatapoints()).andReturn(Arrays.asList(dp));
         expect(client.getMetricStatistics(capture(capture))).andReturn(result);
         return capture;

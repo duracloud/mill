@@ -10,27 +10,31 @@ package org.duracloud.mill.credentials.impl;
 import org.duracloud.mill.credentials.CredentialsRepo;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
 /**
- * 
  * @author Daniel Bernstein
- *
  */
 public class ApplicationContextLocator {
     private static ApplicationContext ctx;
-    
+
+    private ApplicationContextLocator() {
+        // Ensures no instances are made of this class, as there are only static members.
+    }
+
     static {
         ctx = new AnnotationConfigApplicationContext("org.duracloud.mill.db.repo",
                                                      "org.duracloud.account.db.repo",
                                                      "org.duracloud.account.db.config",
                                                      "org.duracloud.mill.credentials.impl");
-        
+
     }
-    public static CredentialsRepo getCredentialsRepo(){
+
+    public static CredentialsRepo getCredentialsRepo() {
         return ctx.getBean(CredentialsRepo.class);
 
     }
 
-    public static ApplicationContext get(){
+    public static ApplicationContext get() {
         return ctx;
 
     }

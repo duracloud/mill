@@ -18,44 +18,44 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for serializing the state to and from disk.
+ *
  * @author Daniel Bernstein
- *	       Date: Nov 5, 2013
+ * Date: Nov 5, 2013
  */
 public class StateManager<T extends Morsel> {
     private static Logger log = LoggerFactory.getLogger(StateManager.class);
     private File stateFile;
     private State<T> state = new State<>();
     private Class<T> klazz;
+
     /**
-     * @param absoluteFile
+     *
      */
     public StateManager(String path, Class<T> klazz) {
         stateFile = new File(path);
-        if(stateFile.exists() && stateFile.length() > 0){
+        if (stateFile.exists() && stateFile.length() > 0) {
             ObjectMapper m = new ObjectMapper();
             JavaType type = m.getTypeFactory().constructParametricType(State.class, klazz);
 
             try {
-                this.state = m.readValue(stateFile,type);
+                this.state = m.readValue(stateFile, type);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
-            }            
-        }else{
+            }
+        } else {
             state = new State<>();
         }
     }
 
-
-    
-    private void flush(){
+    private void flush() {
         ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.writeValue(this.stateFile, this.state);
             log.debug("saved {} to {}", this.state, this.stateFile.getAbsolutePath());
         } catch (Exception e) {
             throw new RuntimeException("failed to save " + this.state + " to "
-                    + this.stateFile.getAbsolutePath(), e);
+                                       + this.stateFile.getAbsolutePath(), e);
         }
     }
 
@@ -73,8 +73,6 @@ public class StateManager<T extends Morsel> {
         this.state.setMorsels(morsels);
         flush();
     }
-
-
 
     /**
      * @return
@@ -97,7 +95,7 @@ public class StateManager<T extends Morsel> {
     public Date getNextRunStartDate() {
         return this.state.getNextRunStartDate();
     }
-    
+
     /**
      * @param time
      */

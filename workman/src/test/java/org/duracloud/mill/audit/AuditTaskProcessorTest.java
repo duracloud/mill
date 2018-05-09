@@ -24,16 +24,16 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Mar 20, 2014
+ * Date: Mar 20, 2014
  */
 @RunWith(EasyMockRunner.class)
 public class AuditTaskProcessorTest extends EasyMockSupport {
 
     private AuditLogWritingProcessor processor;
-        
+
     @Mock
     private AuditLogStore logStore;
-    
+
     /**
      * @throws java.lang.Exception
      */
@@ -53,29 +53,27 @@ public class AuditTaskProcessorTest extends EasyMockSupport {
     public void test() throws TaskExecutionFailedException, AuditLogWriteFailedException {
 
         logStore.write(
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class), 
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(String.class),
-                EasyMock.isA(Date.class));
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(String.class),
+            EasyMock.isA(Date.class));
         EasyMock.expectLastCall().once();
-        
-        
+
         AuditTask task = AuditTestHelper.createTestAuditTask();
         replayAll();
         processor = new AuditLogWritingProcessor(task, logStore);
-        
+
         processor.execute();
     }
-
 
 }
