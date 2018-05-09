@@ -24,6 +24,7 @@ import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.duracloud.storage.domain.RetrievedContent;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.error.StorageStateException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -49,12 +50,14 @@ public class DuplicationTaskProcessorTest {
     private ManifestStore manifestStore;
     private DuplicationTaskProcessor taskProcessor;
     private File workDir;
+    private RetrievedContent retrievedContent;
 
     @Before
     public void setup() throws IOException {
         srcStore = EasyMock.createMock(StorageProvider.class);
         destStore = EasyMock.createMock(StorageProvider.class);
         manifestStore = EasyMock.createMock(ManifestStore.class);
+        retrievedContent = EasyMock.createMock(RetrievedContent.class);
         DuplicationTask dupTask = new DuplicationTask();
         dupTask.setAccount(account);
         dupTask.setSourceStoreId(srcStoreId);
@@ -74,12 +77,12 @@ public class DuplicationTaskProcessorTest {
     }
 
     private void replayMocks() {
-        EasyMock.replay(srcStore, destStore, manifestStore);
+        EasyMock.replay(srcStore, destStore, manifestStore, retrievedContent);
     }
 
     @After
     public void teardown() {
-        EasyMock.verify(srcStore, destStore, manifestStore);
+        EasyMock.verify(srcStore, destStore, manifestStore,retrievedContent);
         workDir.delete();
     }
 
@@ -511,9 +514,10 @@ public class DuplicationTaskProcessorTest {
 
         // Get source content
         InputStream contentStream = IOUtil.writeStringToStream(content);
+        EasyMock.expect(retrievedContent.getContentStream()).andReturn(contentStream);
         EasyMock.expect(srcStore.getContent(EasyMock.eq(spaceId),
                                             EasyMock.eq(contentId)))
-                .andReturn(contentStream);
+                .andReturn(retrievedContent);
 
         // Add dest content
         EasyMock.expect(destStore.addContent(EasyMock.eq(spaceId),
@@ -569,9 +573,10 @@ public class DuplicationTaskProcessorTest {
 
         // Get source content
         InputStream contentStream = IOUtil.writeStringToStream(content);
+        EasyMock.expect(retrievedContent.getContentStream()).andReturn(contentStream);
         EasyMock.expect(srcStore.getContent(EasyMock.eq(spaceId),
                                             EasyMock.eq(contentId)))
-                .andReturn(contentStream);
+                .andReturn(retrievedContent);
 
         // Add dest content
         EasyMock.expect(destStore.addContent(EasyMock.eq(spaceId),

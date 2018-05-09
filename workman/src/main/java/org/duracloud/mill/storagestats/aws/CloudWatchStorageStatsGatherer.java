@@ -14,12 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.duracloud.s3storage.S3StorageProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.Dimension;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
@@ -37,6 +32,7 @@ public class CloudWatchStorageStatsGatherer {
 
     private AmazonCloudWatch cloudWatchClient;
     private S3StorageProvider s3StorageProvider;
+
     public CloudWatchStorageStatsGatherer(AmazonCloudWatch cloudWatchClient, S3StorageProvider s3StorageProvider) {
         this.cloudWatchClient = cloudWatchClient;
         this.s3StorageProvider = s3StorageProvider;

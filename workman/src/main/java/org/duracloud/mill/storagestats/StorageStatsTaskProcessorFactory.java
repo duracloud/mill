@@ -9,6 +9,11 @@ package org.duracloud.mill.storagestats;
 
 import java.util.Map;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
@@ -25,17 +30,6 @@ import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
-
-
 
 /**
  * @author Daniel Bernstein
@@ -86,20 +80,22 @@ public class StorageStatsTaskProcessorFactory
             StorageProvider store = storageProviderFactory.create(credentials);
 
             CloudWatchStorageStatsGatherer gatherer = null;
-            if(store instanceof S3StorageProvider){
-            	BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(credentials
-                        .getAccessKey(), credentials.getSecretKey());
-            	AmazonCloudWatchClientBuilder builder = AmazonCloudWatchClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials));				
+            if (store instanceof S3StorageProvider) {
+                BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(credentials
+                                                                                      .getAccessKey(),
+                                                                                  credentials.getSecretKey());
+                AmazonCloudWatchClientBuilder builder = AmazonCloudWatchClientBuilder.standard().withCredentials(
+                    new AWSStaticCredentialsProvider(basicAWSCredentials));
                 Map<String, String> options = credentials.getOptions();
                 Regions region = null;
-            	if (options != null && options.get(StorageAccount.OPTS.AWS_REGION.name()) != null) {
-        			region = Regions.fromName(
-        					options.get(StorageAccount.OPTS.AWS_REGION.name()));
-            		builder.withRegion(region);
-            	}
-            	AmazonCloudWatch client = builder.build();
-                gatherer =new CloudWatchStorageStatsGatherer(client, (S3StorageProvider)store);
-                
+                if (options != null && options.get(StorageAccount.OPTS.AWS_REGION.name()) != null) {
+                    region = Regions.fromName(
+                        options.get(StorageAccount.OPTS.AWS_REGION.name()));
+                    builder.withRegion(region);
+                }
+                AmazonCloudWatch client = builder.build();
+                gatherer = new CloudWatchStorageStatsGatherer(client, (S3StorageProvider) store);
+
             }
 
             StorageProviderType storageProviderType = credentials.getProviderType();
