@@ -74,12 +74,21 @@ public class SpaceLogTest extends AbstractTestBase {
 
     @Test
     public void testWriteNoExistingLogs() throws Exception {
+        testWriteNoExistingLogs(contentId);
+    }
+
+    @Test
+    public void testWriteNoExistingLogsUTF8() throws Exception {
+        testWriteNoExistingLogs("blankHÃ©lÃ¨nÃ¥JÃ¶r.txt新年快乐");
+    }
+
+    private void testWriteNoExistingLogs(final String contentId) throws Exception {
 
         assertEquals(0, FileUtils.listFiles(logsRootDir,
                                             FileFilterUtils.trueFileFilter(),
                                             FileFilterUtils.trueFileFilter()).size());
 
-        setupAuditItem();
+        setupAuditItem(contentId);
         replayAll();
         createTestSubject();
 
@@ -94,11 +103,14 @@ public class SpaceLogTest extends AbstractTestBase {
         File file = files.get(0);
         assertTrue(file.length() > 0);
 
-        verifyFileContents();
+        verifyFileContents(contentId);
     }
 
-    private void verifyFileContents() throws FileNotFoundException,
-        IOException {
+    private void verifyFileContents() throws IOException {
+        verifyFileContents(contentId);
+    }
+
+    private void verifyFileContents(final String contentId) throws IOException {
 
         List<File> files = new ArrayList<>(FileUtils.listFiles(logsRootDir,
                                                                FileFilterUtils.trueFileFilter(),
@@ -108,10 +120,14 @@ public class SpaceLogTest extends AbstractTestBase {
         File file = files.get(0);
         assertTrue(file.length() > 0);
 
-        verifyFileContents(file);
+        verifyFileContents(file, contentId);
     }
 
     private void verifyFileContents(File file) throws FileNotFoundException, IOException {
+        verifyFileContents(file, contentId);
+    }
+
+    private void verifyFileContents(File file, final String contentId) throws FileNotFoundException, IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
         String line = reader.readLine();
@@ -136,10 +152,11 @@ public class SpaceLogTest extends AbstractTestBase {
         assertTrue(line.contains(this.spaceLog.formatDate(timestamp)));
     }
 
-    /**
-     *
-     */
     private void setupAuditItem() {
+        setupAuditItem(contentId);
+    }
+
+    private void setupAuditItem(final String contentId) {
         expect(item.getAccount()).andReturn(accountId).atLeastOnce();
         expect(item.getStoreId()).andReturn(storeId).atLeastOnce();
         expect(item.getSpaceId()).andReturn(spaceId).atLeastOnce();
@@ -164,7 +181,7 @@ public class SpaceLogTest extends AbstractTestBase {
 
     @Test
     public void testWriteExistingUndersizeLog() throws Exception {
-        setupAuditItem();
+        setupAuditItem(contentId);
         replayAll();
         createTestSubject();
         File file = createNewLogFile();

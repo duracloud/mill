@@ -172,7 +172,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <duracloud.version>4.5.0-SNAPSHOT</duracloud.version>
-    <duracloud.db.version>4.1.0</duracloud.db.version>
+    <duracloud.db.version>4.1.1</duracloud.db.version>
     <aws.sdk.version>1.11.155</aws.sdk.version>
     <spring.framework.version>4.2.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
