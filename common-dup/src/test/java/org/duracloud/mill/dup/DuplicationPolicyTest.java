@@ -26,7 +26,7 @@ import org.junit.Test;
  */
 public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
 
-    //@Test
+    @Test
     public void testDuplicationPolicyMarshall() throws Exception {
         DuplicationStorePolicy storePolicy12 = new DuplicationStorePolicy();
         storePolicy12.setSrcStoreId("1");
@@ -92,4 +92,12 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         assertThat(defaultPolicies, is(equalTo(duplicationPolicy.getDuplicationStorePolicies(spaceNotToIgnore))));
         assertThat(duplicationPolicy.getDuplicationStorePolicies(spaceToIgnore), is(equalTo(null)));
     }
+
+    @Test
+    public void testIgnoreXPrefixedSpaces() throws Exception {
+        DuplicationPolicy duplicationPolicy =
+            DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
+        assertThat(duplicationPolicy.getDuplicationStorePolicies("x-space"), is(equalTo(null)));
+    }
+
 }
