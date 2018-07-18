@@ -81,7 +81,7 @@ public class DuplicationPolicy {
      * @return
      */
     public Set<DuplicationStorePolicy> getDuplicationStorePolicies(String spaceId) {
-        if (!spacesToIgnore.contains(spaceId)) {
+        if (!spaceId.startsWith("x-") && !spacesToIgnore.contains(spaceId)) {
             LinkedHashSet<DuplicationStorePolicy> policies = spaceDuplicationStorePolicies.get(spaceId);
             return policies != null && !policies.isEmpty() ? policies : defaultPolicies;
         }
