@@ -100,6 +100,9 @@ public class CloudWatchStorageStatsGatherer {
         if (datapoints.size() > 0) {
             return datapoints.get(0).getMaximum().longValue();
         } else {
+            log.warn("CloudWatch returned no datapoints for " +
+                     "bucket = {}, metric = {}, and storage type = {}. \nrequest = {} \nresult = {} ",
+                     bucketName, metricName, storageType, request.toString(), result.toString());
             return 0;
         }
     }

@@ -33,17 +33,23 @@ public class StateManager<T extends Morsel> {
      */
     public StateManager(String path, Class<T> klazz) {
         stateFile = new File(path);
+        final boolean exists = stateFile.exists();
+        final long length = stateFile.length();
+
         if (stateFile.exists() && stateFile.length() > 0) {
             ObjectMapper m = new ObjectMapper();
             JavaType type = m.getTypeFactory().constructParametricType(State.class, klazz);
 
             try {
                 this.state = m.readValue(stateFile, type);
+                log.info("State file ( {} ) successfully read.", path);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         } else {
+            log.info("State file ( {} ) could not be read. Creating new state file. File exists: {}, file.length: {}",
+                     path, exists, length);
             state = new State<>();
         }
     }
