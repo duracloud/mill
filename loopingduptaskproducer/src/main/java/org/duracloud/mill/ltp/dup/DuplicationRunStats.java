@@ -14,20 +14,20 @@ import org.duracloud.mill.ltp.RunStats;
 public class DuplicationRunStats extends RunStats {
     private int deletes = 0;
     private int dups = 0;
-    
+
     @Override
-    public void reset(){
+    public void reset() {
         deletes = 0;
         dups = 0;
     }
-    
+
     /**
      * @return the dups
      */
     public int getDups() {
         return dups;
     }
-    
+
     /**
      * @return the deletes
      */
@@ -35,10 +35,9 @@ public class DuplicationRunStats extends RunStats {
         return deletes;
     }
 
-
     @Override
     public void copyValuesFrom(RunStats runstats) {
-        DuplicationRunStats dstats = (DuplicationRunStats)runstats;
+        DuplicationRunStats dstats = (DuplicationRunStats) runstats;
         this.deletes = dstats.deletes;
         this.dups = dstats.dups;
     }
@@ -48,7 +47,7 @@ public class DuplicationRunStats extends RunStats {
      */
     @Override
     public void add(RunStats stats) {
-        DuplicationRunStats dstats = (DuplicationRunStats)stats;
+        DuplicationRunStats dstats = (DuplicationRunStats) stats;
         addToDeletes(dstats.deletes);
         addToDups(dstats.dups);
     }
@@ -57,17 +56,17 @@ public class DuplicationRunStats extends RunStats {
      * @param dupsToAdd
      */
     public void addToDups(int dupsToAdd) {
-        this.dups += dupsToAdd;        
+        this.dups += dupsToAdd;
     }
 
     /**
      * @param deletesToAdd
      */
     public void addToDeletes(int deletesToAdd) {
-      this.deletes += deletesToAdd;
-        
+        this.deletes += deletesToAdd;
+
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

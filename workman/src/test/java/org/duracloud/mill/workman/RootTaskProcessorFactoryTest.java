@@ -14,14 +14,15 @@ import org.junit.Test;
 
 /**
  * @author Daniel Bernstein
- *	       Date: Oct 25, 2013
+ * Date: Oct 25, 2013
  */
 public class RootTaskProcessorFactoryTest {
 
-
     /**
-     * Test method for {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.common.queue.task.Task)}.
-     * @throws TaskProcessorCreationFailedException 
+     * Test method for
+     * {@link org.duracloud.mill.workman.RootTaskProcessorFactory#create(org.duracloud.common.queue.task.Task)}.
+     *
+     * @throws TaskProcessorCreationFailedException
      */
     @Test
     public void test() throws TaskProcessorCreationFailedException {
@@ -36,7 +37,7 @@ public class RootTaskProcessorFactoryTest {
         taskProcessorFactory.addTaskProcessorFactory(bad);
         taskProcessorFactory.addTaskProcessorFactory(good);
         TaskProcessor p2 = taskProcessorFactory.create(new Task());
-        Assert.assertEquals(taskProcessor,p2);
+        Assert.assertEquals(taskProcessor, p2);
         EasyMock.verify(taskProcessor, bad, good);
     }
 

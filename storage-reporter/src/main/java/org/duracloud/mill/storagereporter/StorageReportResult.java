@@ -11,12 +11,12 @@ import java.util.List;
 
 /**
  * @author danny
- *         Date: Jun 29, 2017
+ * Date: Jun 29, 2017
  */
 public class StorageReportResult {
 
     private List<AccountStorageReportResult> oversubscribedAccounts;
-    private List<AccountStorageReportResult> undersubscribedAccounts; 
+    private List<AccountStorageReportResult> undersubscribedAccounts;
 
     /**
      * @param oversubscribedAccounts
@@ -27,14 +27,14 @@ public class StorageReportResult {
         this.oversubscribedAccounts = oversubscribedAccounts;
         this.undersubscribedAccounts = undersubscribedAccounts;
     }
-    
+
     /**
      * @return the oversubscribedAccounts
      */
     public List<AccountStorageReportResult> getOversubscribedAccounts() {
         return oversubscribedAccounts;
     }
-    
+
     /**
      * @return the undersubscribedAccounts
      */

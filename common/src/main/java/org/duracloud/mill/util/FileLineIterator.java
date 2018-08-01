@@ -7,11 +7,11 @@
  */
 package org.duracloud.mill.util;
 
-import org.apache.commons.io.LineIterator;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import org.apache.commons.io.LineIterator;
 
 /**
  * This Iterator's items are lines of a file.  The hasNext() method returns true
@@ -21,7 +21,7 @@ import java.io.IOException;
  * underlying file is deleted.
  *
  * @author Erik Paulsson
- *         Date: 5/2/14
+ * Date: 5/2/14
  */
 public class FileLineIterator extends LineIterator {
 
@@ -35,7 +35,7 @@ public class FileLineIterator extends LineIterator {
     @Override
     public boolean hasNext() {
         boolean hasNext = super.hasNext();
-        if(! hasNext) {
+        if (!hasNext) {
             this.close();
         }
         return hasNext;

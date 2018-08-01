@@ -12,19 +12,18 @@ import java.util.Comparator;
 
 /**
  * Most recently  modified files are returned first.
- * @author Daniel Bernstein 
- *         Date: Sep 8, 2014
+ *
+ * @author Daniel Bernstein
+ * Date: Sep 8, 2014
  */
-public class LastModifiedDateFileComparator implements
-                                           Comparator<File> {
+public class LastModifiedDateFileComparator implements Comparator<File> {
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
     @Override
     public int compare(File o1, File o2) {
-        return -1*new Long(o1.lastModified())
-                .compareTo(new Long(o2.lastModified()));
+        return -1 * new Long(o1.lastModified()).compareTo(new Long(o2.lastModified()));
     }
 }

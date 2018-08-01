@@ -7,6 +7,10 @@
  */
 package org.duracloud.mill.ltp.bit;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+
 import java.io.File;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -43,11 +47,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
-
 /**
  * @author Daniel Bernstein
- *	       Date: May 1, 2014
+ * Date: May 1, 2014
  */
 @RunWith(EasyMockRunner.class)
 public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
@@ -61,19 +63,18 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
 
     @Mock
     private NotificationManager notificationManager;
-    
+
     private StateManager<BitIntegrityMorsel> stateManager;
 
     private TaskQueue bitQueue;
-    
+
     @Mock
     private LoopingBitTaskProducerConfigurationManager config;
 
-    @Mock 
+    @Mock
     private JpaBitIntegrityReportRepo bitReportRepo;
 
     private TaskQueue bitReportQueue;
-
 
     /**
      * @throws java.lang.Exception
@@ -95,24 +96,24 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     public void tearDown() throws Exception {
         verifyAll();
     }
-    
-    
+
     //scenarios
-    //verify that each space is processed completely and the queue emptied, before a report 
+    //verify that each space is processed completely and the queue emptied, before a report
     //task is added and the next space is processed.
 
     /**
      * Test method for {@link org.duracloud.mill.ltp.LoopingTaskProducer#run()}.
-     * @throws CredentialsRepoException 
+     *
+     * @throws CredentialsRepoException
      */
     @Test
     public void testRun() throws CredentialsRepoException, ParseException {
-        
+
         int morselCount = 2;
         int sourceCount = 2000;
 
         setupStore(morselCount, sourceCount);
-        setupStorageProviderFactory(morselCount*2);
+        setupStorageProviderFactory(morselCount * 2);
         setupCredentialsRepo();
         setupNotificationManager(1);
         setupLoopingTaskProducerConfig(1);
@@ -120,22 +121,22 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         int maxTaskQueueSize = calculateMaxQueueSize(morselCount, sourceCount);
         replayAll();
         LoopingTaskProducer<BitIntegrityMorsel> ltp = createTaskProducer(maxTaskQueueSize);
-        
+
         ltp.run();
 
         //after first run, queue should be loaded with the first morsel.
         Assert.assertEquals(sourceCount, bitQueue.size().intValue());
-        
+
         //running ltp again should result in no change to the taskqueue.
         ltp.run();
-       
+
         Assert.assertEquals(sourceCount, bitQueue.size().intValue());
-        
+
         //drain queue and run again
         int tasksProcessed = drainQueue(bitQueue);
-        
+
         Assert.assertEquals(0, bitQueue.size().intValue());
-        
+
         ltp.run();
         //now we now expect a single report task to appear on the queue + all of the next spaces items sans report task.
         Assert.assertEquals(sourceCount, bitQueue.size().intValue());
@@ -151,16 +152,16 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         //verify that the total number of tasks processed equals the sum of all bit integrity
         //and report tasks.
         Assert.assertEquals(tasksProcessed, maxTaskQueueSize);
-        
+
         Assert.assertEquals(morselCount, bitReportQueue.size().intValue());
     }
-    
+
     @Test
     public void testRunWithZeroFrequency() throws CredentialsRepoException, ParseException {
-        
+
         replayAll();
-        LoopingTaskProducer<BitIntegrityMorsel> ltp = createTaskProducer(100,"0s");
-        
+        LoopingTaskProducer<BitIntegrityMorsel> ltp = createTaskProducer(100, "0s");
+
         ltp.run();
         WaitUtil.wait(2);
 
@@ -173,33 +174,33 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
 
     private void setupBitReportRepo(int times) {
         expect(bitReportRepo
-                .findFirstByAccountAndStoreIdAndSpaceIdOrderByCompletionDateDesc(EasyMock
-                        .isA(String.class), EasyMock.isA(String.class), EasyMock
-                                .isA(String.class))).andReturn(null).times(times);
+                   .findFirstByAccountAndStoreIdAndSpaceIdOrderByCompletionDateDesc(EasyMock.isA(String.class),
+                                                                                    EasyMock.isA(String.class),
+                                                                                    EasyMock.isA(String.class)))
+            .andReturn(null).times(times);
     }
-    
+
     private void setupLoopingTaskProducerConfig(int times) {
         expect(this.config.getWorkDirectoryPath()).andReturn("java.io.tmpdir").times(times);
     }
-
 
     private void setupNotificationManager(int times) {
         notificationManager.sendEmail(isA(String.class), isA(String.class));
         expectLastCall().times(times);
     }
-    
-    @SuppressWarnings("unchecked")  
+
+    @SuppressWarnings("unchecked")
     @Test
     public void testNonExistentSpace() throws CredentialsRepoException, ParseException {
         int morselCount = 1;
         expectNotFoundOnGetSpaceContentsChunked(store);
         setupBitReportRepo(1);
-        
-         expectGetSpaces(morselCount);
+
+        expectGetSpaces(morselCount);
         setupStorageProviderFactory(morselCount);
         setupCredentialsRepo();
         setupNotificationManager(2);
-        
+
         setupLoopingTaskProducerConfig(1);
 
         replayAll();
@@ -211,15 +212,13 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     }
 
     /**
-     * 
+     *
      */
     private void setupEmptySourceSpacesGetChunked() {
-        EasyMock.expect(
-                store.getSpaceContentsChunked(
-                        EasyMock.isA(String.class),
-                        EasyMock.isNull(String.class), 
-                        EasyMock.anyInt(),
-                        EasyMock.isA(String.class)))
+        EasyMock.expect(store.getSpaceContentsChunked(EasyMock.isA(String.class),
+                                                      EasyMock.isNull(String.class),
+                                                      EasyMock.anyInt(),
+                                                      EasyMock.isA(String.class)))
                 .andReturn(new LinkedList<String>());
     }
 
@@ -229,7 +228,7 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
      */
     private int drainQueue(TaskQueue queue) {
         int tasksProcessed = 0;
-        while(queue.size() > 0){
+        while (queue.size() > 0) {
             try {
                 queue.take();
                 tasksProcessed++;
@@ -250,64 +249,58 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
         producer.run();
     }
 
- 
     /**
      * @param maxQueueSize
      * @return
      * @throws ParseException
      */
     private LoopingBitIntegrityTaskProducer createTaskProducer(int maxQueueSize)
-            throws ParseException {
+        throws ParseException {
         return createTaskProducer(maxQueueSize, "1s");
     }
 
     private LoopingBitIntegrityTaskProducer createTaskProducer(int maxQueueSize, String frequency)
-            throws ParseException {
-        LoopingBitIntegrityTaskProducer producer = new LoopingBitIntegrityTaskProducer(credentialsRepo, 
-                                                               bitReportRepo,
-                                                               storageProviderFactory, 
-                                                               bitQueue, 
-                                                               bitReportQueue,
-                                                               stateManager, 
-                                                               maxQueueSize,
-                                                               new Frequency(frequency),
-                                                               notificationManager,
-                                                               new PathFilterManager(),
-                                                               this.config);
+        throws ParseException {
+        LoopingBitIntegrityTaskProducer producer =
+            new LoopingBitIntegrityTaskProducer(credentialsRepo,
+                                                bitReportRepo,
+                                                storageProviderFactory,
+                                                bitQueue,
+                                                bitReportQueue,
+                                                stateManager,
+                                                maxQueueSize,
+                                                new Frequency(frequency),
+                                                notificationManager,
+                                                new PathFilterManager(),
+                                                this.config);
         producer.setWaitTimeInMsBeforeQueueSizeCheck(1);
         return producer;
     }
-
 
     /**
      * @param morselCount
      */
     private void expectEmptyListFromGetSpaceContents(StorageProvider store, int morselCount) {
         EasyMock.expect(store.getSpaceContents(EasyMock.isA(String.class), EasyMock.isNull(String.class)))
-        .andAnswer(new IAnswer<Iterator<String>>() {
-            /* (non-Javadoc)
-             * @see org.easymock.IAnswer#answer()
-             */
-            @Override
-            public Iterator<String> answer() throws Throwable {
-              return new LinkedList<String>().iterator();
-            }
-          })
-        .times(morselCount);
+                .andAnswer(new IAnswer<Iterator<String>>() {
+                    /* (non-Javadoc)
+                     * @see org.easymock.IAnswer#answer()
+                     */
+                    @Override
+                    public Iterator<String> answer() throws Throwable {
+                        return new LinkedList<String>().iterator();
+                    }
+                })
+                .times(morselCount);
     }
-
-
-
-
 
     private void expectNotFoundOnGetSpaceContentsChunked(StorageProvider store) {
         EasyMock.expect(store.getSpaceContentsChunked(EasyMock.isA(String.class),
-                                            EasyMock.isNull(String.class), 
-                                            EasyMock.anyInt(),
-                                            EasyMock.isNull(String.class)))
+                                                      EasyMock.isNull(String.class),
+                                                      EasyMock.anyInt(),
+                                                      EasyMock.isNull(String.class)))
                 .andThrow(new NotFoundException("test")).times(4);
     }
-
 
     /**
      * @param morselCount
@@ -315,15 +308,14 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
      * @return
      */
     private int calculateMaxQueueSize(int morselCount,
-            int storeCount) {
-        return (morselCount*storeCount);
+                                      int storeCount) {
+        return (morselCount * storeCount);
     }
 
     /**
      * @throws CredentialsRepoException
      */
-    private void setupCredentialsRepo()
-            throws CredentialsRepoException {
+    private void setupCredentialsRepo() throws CredentialsRepoException {
         List<String> accounts = new LinkedList<>();
         String account = "test-account";
         accounts.add(account);
@@ -332,24 +324,25 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
                                                                                  null,
                                                                                  null,
                                                                                  StorageProviderType.AMAZON_S3,
+                                                                                 null,
                                                                                  true);
-        
+
         AccountCredentials creds = new AccountCredentials(account,
-                Arrays.asList(storageCreds));
+                                                          Arrays.asList(storageCreds));
 
         EasyMock.expect(credentialsRepo.getStorageProviderCredentials(
-                EasyMock.isA(String.class), EasyMock.isA(String.class)))
+            EasyMock.isA(String.class), EasyMock.isA(String.class)))
                 .andReturn(storageCreds).atLeastOnce();
 
         EasyMock.expect(
-                credentialsRepo.getAccountCredentials(
-                        EasyMock.isA(String.class)))
+            credentialsRepo.getAccountCredentials(
+                EasyMock.isA(String.class)))
                 .andReturn(creds).atLeastOnce();
-        
+
         EasyMock.expect(credentialsRepo.getActiveAccounts()).andReturn(accounts);
 
         EasyMock.expect(credentialsRepo
-                .isAccountActive(EasyMock.isA(String.class))).andReturn(true).atLeastOnce();
+                            .isAccountActive(EasyMock.isA(String.class))).andReturn(true).atLeastOnce();
 
     }
 
@@ -358,9 +351,8 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
      */
     private void setupStorageProviderFactory(int rounds) {
         EasyMock.expect(storageProviderFactory.create(EasyMock.isA(StorageProviderCredentials.class)))
-        .andReturn(store).atLeastOnce();
+                .andReturn(store).atLeastOnce();
     }
-
 
     /**
      * @param morselCount
@@ -369,35 +361,27 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
     private void setupStore(final int morselCount, int sourceCount) {
         final List<String> sourceContentItems = new LinkedList<>();
 
-        for(int i = 0; i < sourceCount; i++){
-            sourceContentItems.add("item"+i);
+        for (int i = 0; i < sourceCount; i++) {
+            sourceContentItems.add("item" + i);
         }
 
-        for(int i = 0; i < morselCount; i++){
-
+        for (int i = 0; i < morselCount; i++) {
 
             int count = 1000;
 
-            String spaceId = "space"+i;
-            EasyMock.expect(store.getSpaceContentsChunked(spaceId, null,
-                    1000,
-                    null))
-                       .andReturn(sourceContentItems.subList(0, Math.min(count,sourceCount)));
+            String spaceId = "space" + i;
+            EasyMock.expect(store.getSpaceContentsChunked(spaceId, null, 1000, null))
+                    .andReturn(sourceContentItems.subList(0, Math.min(count, sourceCount)));
 
-            while(count <= sourceCount){
-                    EasyMock.expect(
-                            store.getSpaceContentsChunked(
-                                    spaceId,
-                                    null,
-                                    1000,
-                                    sourceContentItems.subList(count-1, count).get(0)))
-                            .andReturn(sourceContentItems.subList(count, sourceCount)).atLeastOnce();
-                    count+=1000;
-                    
+            while (count <= sourceCount) {
+                EasyMock.expect(store.getSpaceContentsChunked(spaceId, null, 1000,
+                                                              sourceContentItems.subList(count - 1, count).get(0)))
+                        .andReturn(sourceContentItems.subList(count, sourceCount)).atLeastOnce();
+                count += 1000;
+
             }
         }
 
-        
         expectGetSpaces(morselCount);
     }
 
@@ -411,11 +395,11 @@ public class LoopingBitIntegrityTaskProducerTest extends EasyMockSupport {
              */
             @Override
             public Iterator<String> answer() throws Throwable {
-              List<String> spaces = new LinkedList<>();
-              for(int i = 0; i < morselCount; ++i){
-                  spaces.add("space"+i);
-              }
-              return spaces.iterator();
+                List<String> spaces = new LinkedList<>();
+                for (int i = 0; i < morselCount; ++i) {
+                    spaces.add("space" + i);
+                }
+                return spaces.iterator();
             }
         }).anyTimes();
     }

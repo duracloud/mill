@@ -7,7 +7,8 @@
  */
 package org.duracloud.mill.util;
 
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,12 +17,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author Erik Paulsson
- *         Date: 4/25/14
+ * Date: 4/25/14
  */
 public class IteratorsTest {
 
@@ -33,10 +33,10 @@ public class IteratorsTest {
         populate(listB, 11, 1000);
 
         List<String> expectedDiffA = Arrays.asList(
-            new String[]{"1","2","3","4","5","6","7","8","9","10"});
+            new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
         Iterator<String> diffA = Iterators.difference(listA.iterator(),
-                                                     listB.iterator());
-        while(diffA.hasNext()) {
+                                                      listB.iterator());
+        while (diffA.hasNext()) {
             assertTrue(expectedDiffA.contains(diffA.next()));
         }
 
@@ -46,7 +46,7 @@ public class IteratorsTest {
     }
 
     private void populate(Collection<String> coll, int start, int end) {
-        for(int i = start; i<=end; i++) {
+        for (int i = start; i <= end; i++) {
             coll.add(Integer.toString(i));
         }
     }

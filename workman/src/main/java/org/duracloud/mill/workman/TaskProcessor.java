@@ -10,9 +10,8 @@ package org.duracloud.mill.workman;
 /**
  * The TaskProcessor implements the concrete functionality of a particular type
  * of task.
- * 
+ *
  * @author Daniel Bernstein
- * 
  */
 public interface TaskProcessor {
 

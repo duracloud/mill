@@ -11,7 +11,7 @@ import org.duracloud.mill.workman.TaskExecutionFailedException;
 
 /**
  * @author Erik Paulsson
- *         Date: 4/29/14
+ * Date: 4/29/14
  */
 public class BitIntegrityCheckTaskExecutionFailedException
     extends TaskExecutionFailedException {

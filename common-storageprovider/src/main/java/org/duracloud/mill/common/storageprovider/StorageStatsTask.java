@@ -9,13 +9,12 @@ package org.duracloud.mill.common.storageprovider;
 
 import org.duracloud.common.queue.task.SpaceCentricTypedTask;
 import org.duracloud.common.queue.task.Task;
-import org.duracloud.common.queue.task.TypedTask;
 
 /**
- * @author Daniel Bernstein 
- *         Date: Feb 29, 2016
+ * @author Daniel Bernstein
+ * Date: Feb 29, 2016
  */
-public class StorageStatsTask extends SpaceCentricTypedTask{
+public class StorageStatsTask extends SpaceCentricTypedTask {
     @Override
     public Task writeTask() {
         Task task = super.writeTask();

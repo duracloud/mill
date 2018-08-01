@@ -12,7 +12,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
- * @author Daniel Bernstein Date: Sep 5, 2014
+ * @author Daniel Bernstein
+ * Date: Sep 5, 2014
  */
 public class LogKey {
     private String accountId;
@@ -33,7 +34,7 @@ public class LogKey {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -43,7 +44,7 @@ public class LogKey {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -53,7 +54,7 @@ public class LogKey {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override

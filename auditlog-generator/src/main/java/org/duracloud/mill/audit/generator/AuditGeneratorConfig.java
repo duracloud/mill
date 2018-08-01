@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
@@ -14,11 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-
 /**
  * @author Daniel Bernstein
- *         Date: Sep 9, 2014
+ * Date: Sep 9, 2014
  */
 @Configuration
 public class AuditGeneratorConfig {
@@ -30,7 +29,7 @@ public class AuditGeneratorConfig {
         log.info("initializing logsDirectory with value: {}", dir);
         return dir;
     }
-    
+
     /**
      * @return
      */
@@ -39,13 +38,13 @@ public class AuditGeneratorConfig {
     }
 
     @Bean
-    public String auditLogSpaceId(){
+    public String auditLogSpaceId() {
         return SystemConfig.getInstance().getAuditLogSpaceId();
     }
-    
+
     @Bean
-    public StorageProvider storageProvider(){
-        //build the storage provider with a placeholder key since audit log generator 
+    public StorageProvider storageProvider() {
+        //build the storage provider with a placeholder key since audit log generator
         //does not depend on creating new spaces.
         return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);
 

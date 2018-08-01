@@ -7,16 +7,16 @@
  */
 package org.duracloud.mill.dup;
 
-import org.junit.Before;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 
 /**
  * @author Bill Branan
- *         Date: 11/1/13
+ * Date: 11/1/13
  */
 public class BaseDuplicationPolicyTester {
 

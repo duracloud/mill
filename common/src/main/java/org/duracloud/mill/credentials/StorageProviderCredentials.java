@@ -7,11 +7,13 @@
  */
 package org.duracloud.mill.credentials;
 
+import java.util.Map;
+
 import org.duracloud.storage.domain.StorageProviderType;
 
 /**
  * A class containing all necessary information for connecting to a provider.
- * 
+ *
  * @author Daniel Bernstein
  */
 public class StorageProviderCredentials {
@@ -20,24 +22,31 @@ public class StorageProviderCredentials {
     private String secretKey;
     private StorageProviderType providerType;
     private boolean primary;
+    private Map<String, String> options;
 
-    public StorageProviderCredentials(){
-        
+    public StorageProviderCredentials() {
+
     }
+
     /**
      * @param providerId
      * @param accessKey
      * @param secretKey
      * @param providerType
-     * @param primary 
+     * @param primary
      */
-    public StorageProviderCredentials(String providerId, String accessKey,
-            String secretKey, StorageProviderType providerType, boolean primary) {
+    public StorageProviderCredentials(String providerId,
+                                      String accessKey,
+                                      String secretKey,
+                                      StorageProviderType providerType,
+                                      Map<String, String> options,
+                                      boolean primary) {
         super();
         this.providerId = providerId;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.providerType = providerType;
+        this.options = options;
         this.setPrimary(primary);
     }
 
@@ -72,9 +81,19 @@ public class StorageProviderCredentials {
     public void setProviderType(StorageProviderType providerType) {
         this.providerType = providerType;
     }
+
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, String> options) {
+        this.options = options;
+    }
+
     public boolean isPrimary() {
         return primary;
     }
+
     public void setPrimary(boolean primary) {
         this.primary = primary;
     }

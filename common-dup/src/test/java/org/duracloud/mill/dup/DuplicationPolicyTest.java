@@ -7,14 +7,6 @@
  */
 package org.duracloud.mill.dup;
 
-import org.junit.Test;
-
-import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -22,13 +14,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileInputStream;
+import java.util.Iterator;
+import java.util.Set;
+
+import org.junit.Test;
+
 /**
  * @author Erik Paulsson
- *         Date: 10/29/13
+ * Date: 10/29/13
  */
 public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
 
-    //@Test
+    @Test
     public void testDuplicationPolicyMarshall() throws Exception {
         DuplicationStorePolicy storePolicy12 = new DuplicationStorePolicy();
         storePolicy12.setSrcStoreId("1");
@@ -83,7 +81,7 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         assertThat("2", is(equalTo(duplicationStorePolicy.getDestStoreId())));
         assertFalse(space2Iter.hasNext());
     }
-    
+
     @Test
     public void testDuplicationPolicyDefaults() throws Exception {
         DuplicationPolicy duplicationPolicy =
@@ -94,4 +92,12 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         assertThat(defaultPolicies, is(equalTo(duplicationPolicy.getDuplicationStorePolicies(spaceNotToIgnore))));
         assertThat(duplicationPolicy.getDuplicationStorePolicies(spaceToIgnore), is(equalTo(null)));
     }
+
+    @Test
+    public void testIgnoreXPrefixedSpaces() throws Exception {
+        DuplicationPolicy duplicationPolicy =
+            DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
+        assertThat(duplicationPolicy.getDuplicationStorePolicies("x-space"), is(equalTo(null)));
+    }
+
 }

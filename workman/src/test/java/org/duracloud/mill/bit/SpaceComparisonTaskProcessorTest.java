@@ -7,13 +7,21 @@
  */
 package org.duracloud.mill.bit;
 
-import org.duracloud.common.util.DateUtil;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+
 import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.storage.domain.StorageProviderType;
-import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
@@ -22,21 +30,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.isNull;
-
 /**
- * @author Daniel Bernstein Date: 5/7/2014
+ * @author Daniel Bernstein
+ * Date: 5/7/2014
  */
 @RunWith(EasyMockRunner.class)
 public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
@@ -97,10 +93,10 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
     private void setupNoMissingContent() {
         ManifestItem manifestItem2 = setupManifestIterator();
         store = setStorageProvider(contentId);
-        
+
         expect(manifestItem2.isMissingFromStorageProvider()).andReturn(false);
     }
-    
+
     /**
      * @return
      */
@@ -113,12 +109,11 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
     public void testNoErrorsAndResetManifestMissingStorageProviderFlag() throws Exception {
         setupTask();
 
-
-
         ManifestItem manifestItem2 = setupManifestIterator();
         store = setStorageProvider(contentId);
         expect(manifestItem2.isMissingFromStorageProvider()).andReturn(true);
-        manifestStore.updateMissingFromStorageProviderFlag(eq(account), eq(storeId), eq(spaceId), eq(contentId), eq(false));
+        manifestStore
+            .updateMissingFromStorageProviderFlag(eq(account), eq(storeId), eq(spaceId), eq(contentId), eq(false));
         expectLastCall().once();
         replayAll();
         createTestSubject();
@@ -126,8 +121,7 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
     }
 
     @Test
-    public void
-            testMissingContent() throws Exception {
+    public void testMissingContent() throws Exception {
         setupTask();
         store = setStorageProvider("notthecontentidimlookingfor");
         ManifestItem manifestItem2 = setupManifestIterator();
@@ -163,11 +157,10 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
 
         expect(manifestIt.hasNext()).andReturn(false);
         expect(manifestStore.getItems(eq(account), eq(storeId), eq(spaceId), eq(false)))
-                .andReturn(manifestIt);
+            .andReturn(manifestIt);
         return manifestItem2;
     }
 
- 
     private void setupMissingManifestBitLogWrite() {
         expect(bitLogStore.write(eq(account),
                                  eq(storeId),
@@ -182,13 +175,12 @@ public class SpaceComparisonTaskProcessorTest extends EasyMockSupport {
                                  isA(String.class))).andReturn(null);
     }
 
-    private void
-            setupGetManifestItem(boolean returnNull) throws org.duracloud.common.db.error.NotFoundException {
+    private void setupGetManifestItem(boolean returnNull) throws org.duracloud.common.db.error.NotFoundException {
         expect(this.manifestStore.getItem(eq(account),
                                           eq(storeId),
                                           eq(spaceId),
                                           eq(contentId)))
-                .andReturn(returnNull ? null : manifestItem);
+            .andReturn(returnNull ? null : manifestItem);
     }
 
 }

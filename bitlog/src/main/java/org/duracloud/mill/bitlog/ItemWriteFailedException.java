@@ -11,7 +11,7 @@ import org.duracloud.common.error.DuraCloudRuntimeException;
 
 /**
  * @author Daniel Bernstein
- *         Date: Aug 29, 2014
+ * Date: Aug 29, 2014
  */
 public class ItemWriteFailedException extends DuraCloudRuntimeException {
 

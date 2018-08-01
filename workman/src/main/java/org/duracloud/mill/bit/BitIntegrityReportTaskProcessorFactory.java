@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Daniel Bernstein
- *         Date: 5/7/2014
+ * Date: 5/7/2014
  */
 public class BitIntegrityReportTaskProcessorFactory
     extends TaskProcessorFactoryBase {
@@ -36,11 +36,12 @@ public class BitIntegrityReportTaskProcessorFactory
     private StorageProviderFactory storageProviderFactory;
     private TaskProducerConfigurationManager workmanConfigurationManager;
     private NotificationManager notificationManager;
-    
+
     public BitIntegrityReportTaskProcessorFactory(CredentialsRepo repo,
-                                                 BitLogStore bitLogStore, StorageProviderFactory storageProviderFactory,
-                                                 TaskProducerConfigurationManager workmanConfigurationManager, 
-                                                 NotificationManager notificationManager) {
+                                                  BitLogStore bitLogStore,
+                                                  StorageProviderFactory storageProviderFactory,
+                                                  TaskProducerConfigurationManager workmanConfigurationManager,
+                                                  NotificationManager notificationManager) {
         super(repo);
         this.bitLogStore = bitLogStore;
         this.storageProviderFactory = storageProviderFactory;
@@ -59,24 +60,25 @@ public class BitIntegrityReportTaskProcessorFactory
 
         BitIntegrityCheckReportTask bitTask = new BitIntegrityCheckReportTask();
         bitTask.readTask(task);
-        
+
         try {
-            
+
             AccountCredentials credentials = getCredentialRepo().getAccountCredentials(bitTask.getAccount());
-            for(StorageProviderCredentials creds : credentials.getProviderCredentials()){
-                if(creds.isPrimary()){
-                  StorageProvider store = storageProviderFactory.create(creds);
-                  
+            for (StorageProviderCredentials creds : credentials.getProviderCredentials()) {
+                if (creds.isPrimary()) {
+                    StorageProvider store = storageProviderFactory.create(creds);
+
                     return new BitIntegrityReportTaskProcessor(bitTask,
                                                                bitLogStore,
                                                                store,
                                                                workmanConfigurationManager,
                                                                notificationManager);
-                    
+
                 }
             }
-            
-            throw new TaskProcessorCreationFailedException("Unable to find a set of primary storage providder credentials");
+
+            throw new TaskProcessorCreationFailedException(
+                "Unable to find a set of primary storage providder credentials");
         } catch (Exception e) {
             log.error("failed to create TaskProcessor: " + e.getMessage(), e);
             throw new TaskProcessorCreationFailedException(

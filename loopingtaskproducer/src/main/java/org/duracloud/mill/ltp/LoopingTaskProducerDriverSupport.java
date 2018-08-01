@@ -19,14 +19,15 @@ import org.slf4j.LoggerFactory;
 /**
  * A main class responsible for parsing command line arguments and launching the
  * Looping Task Producer.
- * 
- * @author Daniel Bernstein Date: Nov 4, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Nov 4, 2013
  */
-public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
+public abstract class LoopingTaskProducerDriverSupport extends DriverSupport {
     private static Logger log = LoggerFactory.getLogger(LoopingTaskProducerDriverSupport.class);
 
     /**
-     * 
+     *
      */
     public LoopingTaskProducerDriverSupport(CommonCommandLineOptions options) {
         super(options);
@@ -34,7 +35,7 @@ public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
 
     @Override
     final protected void executeImpl(CommandLine cmd) {
-        
+
         try {
 
             LoopingTaskProducer producer = buildTaskProducer();
@@ -72,9 +73,6 @@ public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
         return maxTaskQueueSize;
     }
 
-  
-
-
     /**
      * @param cmd
      */
@@ -91,15 +89,15 @@ public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
         if (frequencyStr == null) {
             frequencyStr = "1m";
         }
-    
+
         Frequency frequency = null;
         try {
             frequency = new Frequency(frequencyStr);
             log.info("frequency = {}{}", frequency.getValue(),
-                    frequency.getTimeUnitAsString());
+                     frequency.getTimeUnitAsString());
         } catch (java.text.ParseException ex) {
             System.out.println("Frequency parameter is invalid: " + frequency
-                    + " Please refer to usage for valid examples.");
+                               + " Please refer to usage for valid examples.");
             die();
         }
         return frequency;
@@ -121,7 +119,7 @@ public abstract class  LoopingTaskProducerDriverSupport extends DriverSupport {
             return time;
         } catch (DateTimeParseException ex) {
             log.error(startTimeKey + " parameter value is invalid: "
-                    + startTimeStr + " Must follow the format HH:dd:ss", ex);
+                      + startTimeStr + " Must follow the format HH:dd:ss", ex);
             throw new RuntimeException(ex);
         }
     }

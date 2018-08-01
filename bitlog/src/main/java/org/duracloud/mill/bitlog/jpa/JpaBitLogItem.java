@@ -20,18 +20,18 @@ import org.duracloud.storage.domain.StorageProviderType;
 
 /**
  * @author Daniel Bernstein
- *         Date: Oct 17, 2014
+ * Date: Oct 17, 2014
  */
 @Entity
-@Table(name="bit_log_item")
+@Table(name = "bit_log_item")
 public class JpaBitLogItem extends BaseEntity implements BitLogItem {
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String account;
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String storeId;
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String spaceId;
-    @Column(nullable=false, length=1024)
+    @Column(nullable = false, length = 1024)
     private String contentId;
     private String contentChecksum;
     private String storageProviderChecksum;
@@ -40,9 +40,9 @@ public class JpaBitLogItem extends BaseEntity implements BitLogItem {
     private StorageProviderType storageProviderType;
     @Enumerated(EnumType.STRING)
     private BitIntegrityResult result;
-    @Column(length=1024)
+    @Column(length = 1024)
     private String details;
-    
+
     public StorageProviderType getStorageProviderType() {
         return storageProviderType;
     }
@@ -143,7 +143,6 @@ public class JpaBitLogItem extends BaseEntity implements BitLogItem {
         return this.storageProviderChecksum;
     }
 
-
     /* (non-Javadoc)
      * @see org.duracloud.mill.bitlog.BitLogItem#getDetails()
      */
@@ -167,5 +166,5 @@ public class JpaBitLogItem extends BaseEntity implements BitLogItem {
     public BitIntegrityResult getResult() {
         return this.result;
     }
-    
+
 }

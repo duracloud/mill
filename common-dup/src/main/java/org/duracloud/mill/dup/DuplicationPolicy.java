@@ -28,7 +28,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  * stream, allowing it to be stored in a DuraCloud account and be read here.
  *
  * @author Bill Branan
- *         Date: 10/18/13
+ * Date: 10/18/13
  */
 public class DuplicationPolicy {
 
@@ -38,11 +38,12 @@ public class DuplicationPolicy {
         spaceDuplicationStorePolicies = new HashMap<>();
 
     private LinkedHashSet<DuplicationStorePolicy> defaultPolicies = new LinkedHashSet<>();
-    
+
     private List<String> spacesToIgnore = new LinkedList<>();
 
     /**
      * A set of default policies.
+     *
      * @return
      */
     public LinkedHashSet<DuplicationStorePolicy> getDefaultPolicies() {
@@ -51,19 +52,20 @@ public class DuplicationPolicy {
 
     /**
      * A list of spaces that should be ignored by the duplication task generator.
+     *
      * @return
      */
     public List<String> getSpacesToIgnore() {
         return spacesToIgnore;
     }
 
-    public Map<String, LinkedHashSet<DuplicationStorePolicy>>
-    getSpaceDuplicationStorePolicies() {
+    public Map<String, LinkedHashSet<DuplicationStorePolicy>> getSpaceDuplicationStorePolicies() {
         return spaceDuplicationStorePolicies;
     }
 
     /**
      * A set of spaces which have policies associated with them.
+     *
      * @return
      */
     @JsonIgnore
@@ -74,11 +76,12 @@ public class DuplicationPolicy {
     /**
      * Retrieve the duplication store policies associated with a space.   If no policies are set
      * explicitly for that space, the method returns the default store policies.
+     *
      * @param spaceId
      * @return
      */
     public Set<DuplicationStorePolicy> getDuplicationStorePolicies(String spaceId) {
-        if(!spacesToIgnore.contains(spaceId)){
+        if (!spaceId.startsWith("x-") && !spacesToIgnore.contains(spaceId)) {
             LinkedHashSet<DuplicationStorePolicy> policies = spaceDuplicationStorePolicies.get(spaceId);
             return policies != null && !policies.isEmpty() ? policies : defaultPolicies;
         }
@@ -87,7 +90,8 @@ public class DuplicationPolicy {
 
     /**
      * Adds a DuplicationStorePolicy for the specified space ID.
-     * @param spaceId the space ID to add the DuplicationStorePolicy for
+     *
+     * @param spaceId  the space ID to add the DuplicationStorePolicy for
      * @param dupStore the DuplicationStorePolicy
      * @return true if added, false otherwise.  False will be returned if the
      * Set<DuplicationStorePolicy> for the specified space already contains the
@@ -97,7 +101,7 @@ public class DuplicationPolicy {
                                              DuplicationStorePolicy dupStore) {
         LinkedHashSet<DuplicationStorePolicy> dupStores =
             spaceDuplicationStorePolicies.get(spaceId);
-        if(dupStores == null) {
+        if (dupStores == null) {
             dupStores = new LinkedHashSet<>();
             spaceDuplicationStorePolicies.put(spaceId, dupStores);
         }
@@ -106,6 +110,7 @@ public class DuplicationPolicy {
 
     /**
      * Marshals a json stream into a duplication policy object.
+     *
      * @param policyStream
      * @return
      * @throws IOException
@@ -117,12 +122,13 @@ public class DuplicationPolicy {
 
     /**
      * Unmarshals a duplication policy into a json string.
+     *
      * @param duplicationPolicy
      * @return
      * @throws IOException
      */
     public static String marshall(DuplicationPolicy duplicationPolicy)
-            throws IOException {
+        throws IOException {
         return objMapper.writeValueAsString(duplicationPolicy);
     }
 }

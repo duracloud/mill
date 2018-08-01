@@ -10,9 +10,9 @@ package org.duracloud.mill.ltp;
 public abstract class RunStats {
 
     public abstract void reset();
-    
+
     public abstract void copyValuesFrom(RunStats runstats);
-    
+
     public abstract void add(RunStats stats);
 
 }

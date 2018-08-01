@@ -24,9 +24,9 @@ import org.duracloud.mill.util.PropertyVerifier;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- *  The main driver of the storage reporter tool.
- * 
- * @author dbernstein 
+ * The main driver of the storage reporter tool.
+ *
+ * @author dbernstein
  * @since: Jun 28, 2017
  */
 public class AppDriver extends DriverSupport {
@@ -55,30 +55,29 @@ public class AppDriver extends DriverSupport {
         verifier.verify(System.getProperties());
 
         // configure spring components
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("org.duracloud.mill.db",
-                                                                                            "org.duracloud.account.db");
-        JpaSpaceStatsRepo statsRepo = (JpaSpaceStatsRepo) context
-                .getBean(JpaSpaceStatsRepo.class);
-        DuracloudAccountRepo accountRepo = (DuracloudAccountRepo) context
-                .getBean(DuracloudAccountRepo.class);
+        AnnotationConfigApplicationContext context =
+            new AnnotationConfigApplicationContext("org.duracloud.mill.db",
+                                                   "org.duracloud.account.db");
+        JpaSpaceStatsRepo statsRepo = (JpaSpaceStatsRepo) context.getBean(JpaSpaceStatsRepo.class);
+        DuracloudAccountRepo accountRepo = (DuracloudAccountRepo) context.getBean(DuracloudAccountRepo.class);
 
         // setup notification client
         ConfigurationManager configManager = new ConfigurationManager();
         List<String> recipients = new LinkedList<>();
 
-        for(String email : configManager.getNotificationRecipients()){
+        for (String email : configManager.getNotificationRecipients()) {
             recipients.add(email);
         }
-        for(String email : configManager.getNotificationRecipientsNonTech()){
+        for (String email : configManager.getNotificationRecipientsNonTech()) {
             recipients.add(email);
         }
 
-        NotificationManager notification = new SESNotificationManager(recipients
-                .toArray(new String[0]));
+        NotificationManager notification =
+            new SESNotificationManager(recipients.toArray(new String[0]));
 
         StorageReporter reporter = new StorageReporter(statsRepo, accountRepo, notification);
         reporter.run();
-        
+
         context.close();
     }
 }

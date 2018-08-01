@@ -18,16 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Daniel Bernstein
- *         Date: Mar 1, 2016
+ * Date: Mar 1, 2016
  */
 @Component
 public class SpaceStatsManager {
     private JpaSpaceStatsRepo repo;
+
     @Autowired
-    public SpaceStatsManager(JpaSpaceStatsRepo repo){
+    public SpaceStatsManager(JpaSpaceStatsRepo repo) {
         this.repo = repo;
     }
-    
+
     @Transactional(MillJpaRepoConfig.TRANSACTION_MANAGER_BEAN)
     public SpaceStats addSpaceStats(Date timestamp,
                                     String account,
@@ -35,12 +36,11 @@ public class SpaceStatsManager {
                                     String spaceId,
                                     long byteCount,
                                     long objectCount) {
-        return repo
-                .save(new SpaceStats(timestamp,
-                                     account,
-                                     storeId,
-                                     spaceId,
-                                     byteCount,
-                                     objectCount));
+        return repo.save(new SpaceStats(timestamp,
+                                        account,
+                                        storeId,
+                                        spaceId,
+                                        byteCount,
+                                        objectCount));
     }
 }

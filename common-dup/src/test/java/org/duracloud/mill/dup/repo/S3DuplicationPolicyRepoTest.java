@@ -7,6 +7,14 @@
  */
 package org.duracloud.mill.dup.repo;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.S3Object;
@@ -14,17 +22,9 @@ import org.duracloud.common.util.IOUtil;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 /**
  * @author Bill Branan
- *         Date: 11/1/13
+ * Date: 11/1/13
  */
 public class S3DuplicationPolicyRepoTest {
 
@@ -33,7 +33,7 @@ public class S3DuplicationPolicyRepoTest {
         AmazonS3Client s3Client = EasyMock.createMock(AmazonS3Client.class);
 
         String policyBucketName = "my-personal-" +
-            S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;
+                                  S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;
 
         // Expect getBuckets call
         List<Bucket> buckets = new ArrayList<>();
@@ -76,6 +76,5 @@ public class S3DuplicationPolicyRepoTest {
 
         EasyMock.verify(s3Client);
     }
-
 
 }

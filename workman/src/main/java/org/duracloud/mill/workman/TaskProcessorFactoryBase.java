@@ -7,17 +7,16 @@
  */
 package org.duracloud.mill.workman;
 
-import org.duracloud.mill.credentials.CredentialsRepo;
-import org.duracloud.common.queue.task.Task;
-
 import java.io.File;
+
+import org.duracloud.common.queue.task.Task;
+import org.duracloud.mill.credentials.CredentialsRepo;
 
 /**
  * An abstract base class for building TaskProcessor factories that require
  * access to credentials.
- * 
+ *
  * @author Daniel Bernstein
- * 
  */
 public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
@@ -36,9 +35,10 @@ public abstract class TaskProcessorFactoryBase implements TaskProcessorFactory {
 
     @Override
     public final TaskProcessor create(Task task)
-            throws TaskProcessorCreationFailedException {
+        throws TaskProcessorCreationFailedException {
         if (!isSupported(task)) {
-            throw new TaskProcessorCreationFailedException(task + " is not supported by this factory:" + getClass().getSimpleName());
+            throw new TaskProcessorCreationFailedException(
+                task + " is not supported by this factory:" + getClass().getSimpleName());
         }
 
         return createImpl(task);

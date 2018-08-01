@@ -33,14 +33,15 @@ import org.springframework.context.ApplicationContext;
 /**
  * A main class responsible for parsing command line arguments and launching the
  * Looping Task Producer.
- * 
- * @author Daniel Bernstein Date: Nov 4, 2013
+ *
+ * @author Daniel Bernstein
+ * Date: Nov 4, 2013
  */
 public class AppDriver extends LoopingTaskProducerDriverSupport {
     private static Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     /**
-     * 
+     *
      */
     public AppDriver() {
         super(new CommonCommandLineOptions());
@@ -50,7 +51,6 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         new AppDriver().execute(args);
     }
 
-    
     /**
      * @param cmd
      */
@@ -58,13 +58,12 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         String exclusionList = System.getProperty(ConfigConstants.LOOPING_STORAGE_STATS_EXCLUSION_LIST_KEY);
         if (exclusionList != null) {
             File list = new File(exclusionList);
-            if(!list.exists()){
+            if (!list.exists()) {
                 throw new DuraCloudRuntimeException("exclusion list not found: " + list);
             }
         }
     }
-    
-    
+
     /**
      * @param cmd
      */
@@ -72,59 +71,61 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         String inclusionList = System.getProperty(ConfigConstants.LOOPING_STORAGE_STATS_INCLUSION_LIST_KEY);
         if (inclusionList != null) {
             File list = new File(inclusionList);
-            if(!list.exists()){
+            if (!list.exists()) {
                 throw new DuraCloudRuntimeException("inclusionlist not found: " + list);
             }
         }
     }
 
-
     @Override
     protected LoopingTaskProducer buildTaskProducer() {
 
-        List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
-                .addNotifications()
-                .addMcDb()
-                .addLoopingStorageStatsFrequency()
-                .addLoopingStorageStatsMaxQueueSize()
-                .addLoopingStorageStatsStartTime()
-                .addStorageStatsQueue()
-                .addWorkDir()
-                .build();
+        List<PropertyDefinition> defintions =
+            new PropertyDefinitionListBuilder().addAws()
+                                               .addNotifications()
+                                               .addMcDb()
+                                               .addLoopingStorageStatsFrequency()
+                                               .addLoopingStorageStatsMaxQueueSize()
+                                               .addLoopingStorageStatsStartTime()
+                                               .addStorageStatsQueue()
+                                               .addWorkDir()
+                                               .build();
         PropertyVerifier verifier = new PropertyVerifier(defintions);
         verifier.verify(System.getProperties());
-        
-        
+
         processExclusionListOption();
         processInclusionListOption();
-        
-        LoopingStorageStatsTaskProducerConfigurationManager config = new LoopingStorageStatsTaskProducerConfigurationManager();
+
+        LoopingStorageStatsTaskProducerConfigurationManager config =
+            new LoopingStorageStatsTaskProducerConfigurationManager();
 
         ApplicationContext ctx = ApplicationContextLocator.get();
-        CredentialsRepo  credentialsRepo = ctx.getBean(CredentialsRepo.class);
+        CredentialsRepo credentialsRepo = ctx.getBean(CredentialsRepo.class);
 
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
-        NotificationManager notificationMananger = 
-                new SESNotificationManager(config.getNotificationRecipients());
+        NotificationManager notificationMananger =
+            new SESNotificationManager(config.getNotificationRecipients());
         TaskQueue queue = new SQSTaskQueue(config.getStorageStatsQueue());
 
-        String stateFilePath = new File(config.getWorkDirectoryPath(), 
+        String stateFilePath = new File(config.getWorkDirectoryPath(),
                                         "storagestats-producer-state.json").getAbsolutePath();
 
         StateManager<StorageStatsMorsel> stateManager = new StateManager<StorageStatsMorsel>(
-                stateFilePath, StorageStatsMorsel.class);
+            stateFilePath, StorageStatsMorsel.class);
 
-        LoopingStorageStatsTaskProducer producer = new LoopingStorageStatsTaskProducer(credentialsRepo,
-                                                                                       storageProviderFactory,
-                                                                                       queue,
-                                                                                       stateManager,
-                                                                                       getMaxQueueSize(ConfigConstants.LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE),
-                                                                                       getFrequency(ConfigConstants.LOOPING_STORAGE_STATS_FREQUENCY),
-                                                                                       getStartTime(ConfigConstants.LOOPING_STORAGE_STATS_START_TIME),
-                                                                                       notificationMananger,
-                                                                                       config.getPathFilterManager(),
-                                                                                       config);
+        LoopingStorageStatsTaskProducer producer =
+            new LoopingStorageStatsTaskProducer(credentialsRepo,
+                                                storageProviderFactory,
+                                                queue,
+                                                stateManager,
+                                                getMaxQueueSize(
+                                                    ConfigConstants.LOOPING_STORAGE_STATS_MAX_TASK_QUEUE_SIZE),
+                                                getFrequency(ConfigConstants.LOOPING_STORAGE_STATS_FREQUENCY),
+                                                getStartTime(ConfigConstants.LOOPING_STORAGE_STATS_START_TIME),
+                                                notificationMananger,
+                                                config.getPathFilterManager(),
+                                                config);
         return producer;
     }
 }

@@ -7,6 +7,8 @@
  */
 package org.duracloud.mill.dup;
 
+import java.io.File;
+
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -22,14 +24,10 @@ import org.duracloud.storage.provider.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
-
 /**
- * This class is responsible for creating DuplicationTaskProcessors 
- * 
+ * This class is responsible for creating DuplicationTaskProcessors
+ *
  * @author Daniel Bernstein
- * 
  */
 public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
     private static Logger log =
@@ -43,13 +41,13 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
                                            StorageProviderFactory storageProviderFactory,
                                            File workDir,
                                            TaskQueue auditTaskQueue,
-                                           ManifestStore manifestStore){
+                                           ManifestStore manifestStore) {
         super(repo, workDir);
         this.auditTaskQueue = auditTaskQueue;
         this.storageProviderFactory = storageProviderFactory;
         this.manifestStore = manifestStore;
     }
-    
+
     @Override
     public boolean isSupported(Task task) {
         return task.getType().equals(Task.Type.DUP);
@@ -79,7 +77,7 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
                       "for subdomain: " + e.getMessage(), e);
             throw new TaskProcessorCreationFailedException(
                 "failed to create task: unable to locate credentials " +
-                "for subdomain: "+ subdomain, e);
+                "for subdomain: " + subdomain, e);
         }
     }
 
@@ -89,8 +87,8 @@ public class DuplicationTaskProcessorFactory extends TaskProcessorFactoryBase {
      * @return
      */
     private StorageProvider createStorageProvider(String storeId,
-                                                 String subdomain,
-                                                 TaskQueue auditTaskQueue) {
+                                                  String subdomain,
+                                                  TaskQueue auditTaskQueue) {
         try {
             StorageProviderCredentials credentials =
                 getCredentialRepo().getStorageProviderCredentials(subdomain,
