@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.audit.taskgenerator;
 
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -16,7 +17,6 @@ import org.duracloud.client.ContentStore;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.task.Task;
-import org.duracloud.domain.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AuditTaskGenerator {
     private static final Logger log = LoggerFactory.getLogger( AuditTaskGenerator.class );
+    private static final SimpleDateFormat ISO_DATETIME = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" );
     private ContentStore contentStore;
     private String spaceId;
     private String account;
@@ -55,11 +56,10 @@ public class AuditTaskGenerator {
         while (contentIds.hasNext()) {
             final String contentId = contentIds.next();
             Map<String, String> props = contentStore.getContentProperties( spaceId, contentId );
-            Content content = contentStore.getContent( spaceId, contentId );
             AuditTask task = new AuditTask();
             task.setAction( AuditTask.ActionType.ADD_CONTENT.name() );
             task.setUserId( this.username );
-            task.setDateTime( String.valueOf( System.currentTimeMillis() ) );
+            task.setDateTime( toEpochMilliseconds( props.get( ContentStore.CONTENT_MODIFIED ) ) + "" );
             task.setAccount( account );
             task.setStoreId( contentStore.getStoreId() );
             task.setStoreType( contentStore.getStorageProviderType() );
@@ -83,9 +83,24 @@ public class AuditTaskGenerator {
 
         String duration = DurationFormatUtils.formatDurationHMS( System.currentTimeMillis() - startTime );
 
-        log.info( "duration={} total_audit_tasks_added_to_queue={}",
-                  duration,
-                  totalAuditTasksAddedToQueue );
+        log.info(
+            "audit task generation complete for account={},  spaceId={} : duration={} " +
+            "total_audit_tasks_added_to_queue={}",
+            account,
+            spaceId,
+            duration,
+            totalAuditTasksAddedToQueue );
+
+    }
+
+    private long toEpochMilliseconds(String dateStr) throws Exception {
+        final long modifiedInMs;
+        if (dateStr != null) {
+            modifiedInMs = ISO_DATETIME.parse( dateStr ).getTime();
+        } else {
+            modifiedInMs = System.currentTimeMillis();
+        }
+        return modifiedInMs;
 
     }
 }

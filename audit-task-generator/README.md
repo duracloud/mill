@@ -33,6 +33,3 @@ The tool builds into an executable JAR file  which can be run using the followin
 java -Daws.profile="<profile your-profile>" -jar audit-task-generator-<version>.jar
 ```
 This will display help text that indicates the necessary parameters.
-
-# More Information
-Further documentation for this tool can be found [on the DuraCloud wiki](https://wiki.duraspace.org/display/DURACLOUDDOC/Auxiliary+Tools)
