@@ -64,6 +64,7 @@
     <module>looping-storagestats-taskproducer</module>
     <module>workman</module>
     <module>auditlog-generator</module>
+    <module>audit-task-generator</module>
     <module>manifest-cleaner</module>
     <module>manifest-builder</module>
     <module>taskproducertool</module>
