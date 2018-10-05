@@ -64,7 +64,7 @@ public class ContentChecksumHelper {
         }
 
         try {
-            new Retrier().execute(new Retriable() {
+            new Retrier(4, 5000 , 3).execute(new Retriable() {
                 @Override
                 public String retry() throws Exception {
                     try (InputStream inputStream =
