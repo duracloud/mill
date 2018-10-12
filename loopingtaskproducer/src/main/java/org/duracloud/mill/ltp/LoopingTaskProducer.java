@@ -323,10 +323,23 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
                 c.set(Calendar.MINUTE, this.startTime.getMinute());
                 c.set(Calendar.SECOND, this.startTime.getSecond());
 
-                //if the start time is before present moment
-                if (this.startTime.isBefore(LocalTime.now())) {
-                    //move to the following day
-                    c.add(Calendar.DATE, 1);
+                //if the start time is before the present moment
+                LocalTime now = LocalTime.now();
+                if (this.startTime.isBefore(now)) {
+                    // if less than 10 minutes has passed since the start time,
+                    // allow the next run to occur now (don't push to tomorrow)
+                    LocalTime startTimePlusTen = LocalTime.of(startTime.getHour(),
+                                                              startTime.getMinute() + 10,
+                                                              startTime.getSecond());
+                    if (startTimePlusTen.isAfter(now)) {
+                        log.info("Less than 10 minutes has passed since the scheduled start time, " +
+                                 "allowing run to begin now.");
+                    } else {
+                        //move to the following day
+                        log.info("The start time has passed for today. " +
+                                 "Setting next run to occur tomorrow");
+                        c.add(Calendar.DATE, 1);
+                    }
                 }
                 nextRun = c.getTime();
             } else {
