@@ -13,7 +13,6 @@ import org.duracloud.audit.task.AuditTask;
 import org.duracloud.audit.task.AuditTask.ActionType;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessorBase;
-import org.duracloud.mill.workman.TransProcessorState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,26 +60,20 @@ public class ManifestWritingProcessor extends TaskProcessorBase {
                     size = "0";
                 }
 
-                if (!this.manifestStore.addUpdate(account,
+                this.manifestStore.addUpdate(account,
                                                   storeId,
                                                   spaceId,
                                                   contentId,
                                                   task.getContentChecksum(),
                                                   mimetype,
                                                   size,
-                                                  timeStamp)) {
-                    // since no update occurred, tell any downstream task processors to ignore this task
-                    TransProcessorState.ignore();
-                }
+                                                  timeStamp);
             } else if (ActionType.DELETE_CONTENT.name().equals(action)) {
-                if (!this.manifestStore.flagAsDeleted(account,
+                this.manifestStore.flagAsDeleted(account,
                                                       storeId,
                                                       spaceId,
                                                       contentId,
-                                                      timeStamp)) {
-                    // since no update occurred, tell any downstream task processors to ignore this task
-                    TransProcessorState.ignore();
-                }
+                                                      timeStamp);
             } else {
                 log.debug("action {} not handled by this processor: task={}", action, task);
             }
