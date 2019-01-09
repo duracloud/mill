@@ -61,19 +61,19 @@ public class ManifestWritingProcessor extends TaskProcessorBase {
                 }
 
                 this.manifestStore.addUpdate(account,
-                                                  storeId,
-                                                  spaceId,
-                                                  contentId,
-                                                  task.getContentChecksum(),
-                                                  mimetype,
-                                                  size,
-                                                  timeStamp);
+                                             storeId,
+                                             spaceId,
+                                             contentId,
+                                             task.getContentChecksum(),
+                                             mimetype,
+                                             size,
+                                             timeStamp);
             } else if (ActionType.DELETE_CONTENT.name().equals(action)) {
                 this.manifestStore.flagAsDeleted(account,
-                                                      storeId,
-                                                      spaceId,
-                                                      contentId,
-                                                      timeStamp);
+                                                 storeId,
+                                                 spaceId,
+                                                 contentId,
+                                                 timeStamp);
             } else {
                 log.debug("action {} not handled by this processor: task={}", action, task);
             }
