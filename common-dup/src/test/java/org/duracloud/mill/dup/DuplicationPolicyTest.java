@@ -96,9 +96,9 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
     @Test
     public void testIgnoreXPrefixedSpaces() throws Exception {
         DuplicationPolicy duplicationPolicy =
-            DuplicationPolicy.unmarshall( new FileInputStream( policyFile ) );
-        assertThat( duplicationPolicy.getDuplicationStorePolicies( "x-space" ).size(),
-                    is( equalTo( 0 ) ) );
+                DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
+        assertThat(duplicationPolicy.getDuplicationStorePolicies("x-space").size(),
+                is(equalTo(0)));
     }
 
 }

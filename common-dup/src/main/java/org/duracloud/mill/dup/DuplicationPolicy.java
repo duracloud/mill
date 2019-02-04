@@ -44,7 +44,7 @@ public class DuplicationPolicy {
     private List<String> spacesToIgnore = new LinkedList<>();
 
     private static Set<DuplicationStorePolicy> EMPTY_SET =
-        Collections.synchronizedSet( new HashSet<DuplicationStorePolicy>( 0 ) );
+            Collections.unmodifiableSet(new HashSet<DuplicationStorePolicy>(0));
 
     /**
      * A set of default policies.
