@@ -9,12 +9,17 @@ package org.duracloud.mill.dup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.swing.text.html.parser.DTDConstants;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -40,6 +45,9 @@ public class DuplicationPolicy {
     private LinkedHashSet<DuplicationStorePolicy> defaultPolicies = new LinkedHashSet<>();
 
     private List<String> spacesToIgnore = new LinkedList<>();
+
+    private static Set<DuplicationStorePolicy> EMPTY_SET =
+        Collections.synchronizedSet( new HashSet<DuplicationStorePolicy>( 0 ) );
 
     /**
      * A set of default policies.
@@ -75,7 +83,11 @@ public class DuplicationPolicy {
 
     /**
      * Retrieve the duplication store policies associated with a space.   If no policies are set
-     * explicitly for that space, the method returns the default store policies.
+     * explicitly for that space, the method returns the default store policies.  An empty set is returned if any of
+     * the following conditions are true:
+     *    1) the space starts with "x-"
+     *    2) the space is not configured explicitly and there are no default store policies configured.
+     *    3) the space is defined in spacesToIgnore
      *
      * @param spaceId
      * @return
@@ -85,7 +97,7 @@ public class DuplicationPolicy {
             LinkedHashSet<DuplicationStorePolicy> policies = spaceDuplicationStorePolicies.get(spaceId);
             return policies != null && !policies.isEmpty() ? policies : defaultPolicies;
         }
-        return null;
+        return EMPTY_SET;
     }
 
     /**
