@@ -15,7 +15,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
