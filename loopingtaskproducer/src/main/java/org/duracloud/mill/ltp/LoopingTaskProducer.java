@@ -194,7 +194,8 @@ public abstract class LoopingTaskProducer<T extends Morsel> implements Runnable 
             log.info("Session ended.");
         } catch (Exception ex) {
             log.error("failed to complete run on " + getSimpleName() + ": " + ex.getMessage(), ex);
-            sendEmail("failed to complete run on " + getSimpleName(), ex.getMessage());
+            sendEmail( "failed to complete run on " + getSimpleName(),
+                       ex.getClass().getCanonicalName() + ":" + ex.getMessage() );
         } finally {
             timer.cancel();
         }

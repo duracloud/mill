@@ -90,14 +90,15 @@ public class DuplicationPolicyTest extends BaseDuplicationPolicyTester {
         String spaceNotToIgnore = "spaceNotToIgnore";
         Set<DuplicationStorePolicy> defaultPolicies = duplicationPolicy.getDefaultPolicies();
         assertThat(defaultPolicies, is(equalTo(duplicationPolicy.getDuplicationStorePolicies(spaceNotToIgnore))));
-        assertThat(duplicationPolicy.getDuplicationStorePolicies(spaceToIgnore), is(equalTo(null)));
+        assertThat(duplicationPolicy.getDuplicationStorePolicies(spaceToIgnore).size(), is(equalTo(0)));
     }
 
     @Test
     public void testIgnoreXPrefixedSpaces() throws Exception {
         DuplicationPolicy duplicationPolicy =
-            DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
-        assertThat(duplicationPolicy.getDuplicationStorePolicies("x-space"), is(equalTo(null)));
+                DuplicationPolicy.unmarshall(new FileInputStream(policyFile));
+        assertThat(duplicationPolicy.getDuplicationStorePolicies("x-space").size(),
+                is(equalTo(0)));
     }
 
 }
