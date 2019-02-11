@@ -15,7 +15,6 @@ import org.duracloud.mill.credentials.StorageProviderCredentials;
 import org.duracloud.mill.util.SimpleUserUtil;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.snapshotstorage.ChronopolisStorageProvider;
-import org.duracloud.snapshotstorage.DpnStorageProvider;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 
@@ -69,9 +68,6 @@ public class StorageProviderFactory {
             return new GlacierStorageProvider(credentials.getAccessKey(),
                                               credentials.getSecretKey(),
                                               credentials.getOptions());
-        } else if (storageProviderType.equals(StorageProviderType.DPN)) {
-            return new DpnStorageProvider(credentials.getAccessKey(),
-                                          credentials.getSecretKey());
         } else if (storageProviderType.equals(StorageProviderType.CHRONOPOLIS)) {
             return new ChronopolisStorageProvider(credentials.getAccessKey(),
                                                   credentials.getSecretKey());

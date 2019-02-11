@@ -32,6 +32,7 @@ import org.duracloud.mill.manifest.ManifestItemWriteException;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskWorker;
+import org.duracloud.storage.domain.RetrievedContent;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -203,7 +204,9 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
      */
     private InputStream storeMockInputstream() {
         InputStream is = EasyMock.createMock(InputStream.class);
-        EasyMock.expect(store.getContent(spaceId, contentId)).andReturn(is);
+        RetrievedContent retrievedContent = new RetrievedContent();
+        retrievedContent.setContentStream(is);
+        EasyMock.expect(store.getContent(spaceId, contentId)).andReturn(retrievedContent);
         return is;
     }
 
@@ -232,11 +235,6 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     @Test
     public void testSuccessWithOutContentCheckGlacier() throws Exception {
         testSuccess(StorageProviderType.AMAZON_GLACIER, false);
-    }
-
-    @Test
-    public void testSuccessWithOutContentCheckDpn() throws Exception {
-        testSuccess(StorageProviderType.DPN, false);
     }
 
     @Test
