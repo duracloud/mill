@@ -24,6 +24,7 @@ import org.duracloud.mill.db.model.ManifestItem;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.duracloud.storage.domain.RetrievedContent;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.error.StorageStateException;
 import org.duracloud.storage.provider.StorageProvider;
@@ -511,9 +512,11 @@ public class DuplicationTaskProcessorTest {
 
         // Get source content
         InputStream contentStream = IOUtil.writeStringToStream(content);
+        RetrievedContent retrievedContent = new RetrievedContent();
+        retrievedContent.setContentStream(contentStream);
         EasyMock.expect(srcStore.getContent(EasyMock.eq(spaceId),
                                             EasyMock.eq(contentId)))
-                .andReturn(contentStream);
+                .andReturn(retrievedContent);
 
         // Add dest content
         EasyMock.expect(destStore.addContent(EasyMock.eq(spaceId),
@@ -569,9 +572,11 @@ public class DuplicationTaskProcessorTest {
 
         // Get source content
         InputStream contentStream = IOUtil.writeStringToStream(content);
+        RetrievedContent retrievedContent = new RetrievedContent();
+        retrievedContent.setContentStream(contentStream);
         EasyMock.expect(srcStore.getContent(EasyMock.eq(spaceId),
                                             EasyMock.eq(contentId)))
-                .andReturn(contentStream);
+                .andReturn(retrievedContent);
 
         // Add dest content
         EasyMock.expect(destStore.addContent(EasyMock.eq(spaceId),

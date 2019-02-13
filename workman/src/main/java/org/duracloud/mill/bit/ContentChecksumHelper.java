@@ -68,7 +68,7 @@ public class ContentChecksumHelper {
                 @Override
                 public String retry() throws Exception {
                     try (InputStream inputStream =
-                             store.getContent(bitTask.getSpaceId(), bitTask.getContentId())) {
+                             store.getContent(bitTask.getSpaceId(), bitTask.getContentId()).getContentStream()) {
                         String checksum = checksumUtil.generateChecksum(inputStream);
 
                         contentChecksum = checksum;

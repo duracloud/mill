@@ -95,7 +95,6 @@ public class StorageStatsTaskProcessor extends TaskProcessorBase {
 
         String spaceId = this.storageStatsTask.getSpaceId();
         if (storageProviderType.equals(StorageProviderType.AMAZON_S3) ||
-            storageProviderType.equals(StorageProviderType.DPN) ||
             storageProviderType.equals(StorageProviderType.CHRONOPOLIS)) {
 
             BucketStats stats = this.storageStatsGatherer.getBucketStats(spaceId);
