@@ -5,7 +5,7 @@
   <groupId>org.duracloud.mill</groupId>
   <artifactId>mill</artifactId>
   <packaging>pom</packaging>
-  <version>2.7.4</version>
+  <version>3.0.0</version>
   <name>DuraCloud Mill</name>
   <description>Task processing system which supports DuraCloud</description>
   <url>http://duracloud.org</url>
@@ -172,8 +172,8 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <duracloud.version>4.4.6</duracloud.version>
-    <duracloud.db.version>4.1.1</duracloud.db.version>
+    <duracloud.version>6.0.0</duracloud.version>
+    <duracloud.db.version>6.0.0</duracloud.db.version>
     <aws.sdk.version>1.11.155</aws.sdk.version>
     <spring.framework.version>4.2.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
@@ -337,6 +337,9 @@
         <configuration>
           <skipTests>${skipUTs}</skipTests>
           <trimStackTrace>false</trimStackTrace>
+          <environmentVariables>
+            <AWS_REGION>us-east-1</AWS_REGION>
+          </environmentVariables>
           <systemProperties>
             <property>
               <name>PROJECT_VERSION</name>

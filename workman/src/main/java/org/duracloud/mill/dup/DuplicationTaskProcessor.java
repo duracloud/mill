@@ -441,7 +441,7 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                 @Override
                 public InputStream retry() throws Exception {
                     // Retrieve from source
-                    return sourceStore.getContent(spaceId, contentId);
+                    return sourceStore.getContent(spaceId, contentId).getContentStream();
                 }
             });
         } catch (Exception e) {

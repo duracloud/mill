@@ -17,6 +17,7 @@ import java.io.InputStream;
 
 import org.duracloud.common.util.ChecksumUtil;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.duracloud.storage.domain.RetrievedContent;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMockRunner;
@@ -111,8 +112,11 @@ public class ContentChecksumHelperTest extends EasyMockSupport {
     private void setupStorageProvider(int times) throws IOException {
         is.close();
         expectLastCall().times(times);
-        expect(store.getContent(eq(spaceId), eq(contentId))).andReturn(is).times(times);
 
+        RetrievedContent retrievedContent = new RetrievedContent();
+        retrievedContent.setContentStream(is);
+        expect(store.getContent(eq(spaceId), eq(contentId)))
+            .andReturn(retrievedContent).times(times);
     }
 
     private void setupTask(int times) {
