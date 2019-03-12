@@ -296,6 +296,20 @@
     </pluginManagement>
     <plugins>
       <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.6</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>sonatype-releases</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <!-- Ensures all artifacts are staged together in the same repo -->
+          <stagingProfileId>4f035a66af3dde</stagingProfileId>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
