@@ -31,9 +31,41 @@ public class ConfigurationManager {
         return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS);
     }
 
+    /**
+     * @return
+     */
+    public String getQueueType() {
+        String queueType = System.getProperty(ConfigConstants.QUEUE_TYPE).trim();
+        if ( queueType.equalsIgnoreCase("aws") ) {
+            return "AWS";
+        } else if ( queueType.equalsIgnoreCase("rabbitmq") ) {
+            return "RABBITMQ";
+        } else {
+            return "Unknown";
+        }
+    }
+
+    /**
+     * @return
+     */
+    public String[] getRabbitMQConfig() {
+
+        if ( getQueueType() == "RABBITMQ" ) {
+            String[] config = new String[] {
+                System.getProperty(ConfigConstants.RABBITMQ_HOST),
+                System.getProperty(ConfigConstants.RABBITMQ_EXCHANGE),
+                System.getProperty(ConfigConstants.RABBITMQ_USERNAME),
+                System.getProperty(ConfigConstants.RABBITMQ_PASSWORD)
+            };
+            return config;
+        } else {
+            return new String[0];
+        }
+    }
+
     private String[] getCommaSeparatedListToArray(String prop) {
         String values = System.getProperty(prop);
-        if (StringUtils.isBlank(values)) {
+        if (StringUtils.isBlank(values) ) {
             return new String[0];
         } else {
             return values.split(",");

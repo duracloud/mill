@@ -60,6 +60,19 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
+    public PropertyDefinitionListBuilder addQueueType() {
+        add(ConfigConstants.QUEUE_TYPE, true);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addRabbitMQConfig() {
+        add(ConfigConstants.RABBITMQ_HOST, false);
+        add(ConfigConstants.RABBITMQ_EXCHANGE, false);
+        add(ConfigConstants.RABBITMQ_USERNAME, false);
+        add(ConfigConstants.RABBITMQ_PASSWORD, false);
+        return this;
+    }
+
     public PropertyDefinitionListBuilder addAuditQueue() {
         add(ConfigConstants.QUEUE_NAME_AUDIT, true);
         return this;

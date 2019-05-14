@@ -11,9 +11,12 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
 import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
@@ -69,6 +72,7 @@ import org.springframework.context.annotation.Configuration;
 public class AppConfig {
 
     private static Logger log = LoggerFactory.getLogger(AppConfig.class);
+    private Connection rabbitMqConnection = null;
 
     @Bean
     public PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
@@ -229,8 +233,27 @@ public class AppConfig {
     protected List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager) {
         List<String> taskQueuesNames = configurationManager.getTaskQueueNames();
         List<TaskQueue> taskQueues = new LinkedList<>();
+        String queueType = configurationManager.getQueueType();
+        boolean isRabbitMQ = queueType.trim().equalsIgnoreCase("RABBITMQ");
+        String[] queueConfig = null;
+        Connection mqConn = null;
+
+        if (isRabbitMQ) {
+            queueConfig = configurationManager.getRabbitMQConfig();
+            mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[2], queueConfig[3]);
+        }
+
         for (String taskQueueName : taskQueuesNames) {
-            TaskQueue taskQueue = new SQSTaskQueue(taskQueueName.trim());
+            TaskQueue taskQueue;
+            if (isRabbitMQ) {
+                if (mqConn != null) {
+                    taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[1], taskQueueName.trim());
+                } else {
+                    break;
+                }
+            } else {
+                taskQueue = new SQSTaskQueue(taskQueueName.trim());
+            }
             taskQueues.add(taskQueue);
             log.info("created queue {}: priority = {}",
                      taskQueue.getName(),
@@ -239,38 +262,80 @@ public class AppConfig {
         return taskQueues;
     }
 
+    protected TaskQueue createTaskQueue (String queueType, TaskProducerConfigurationManager configurationManager, String queueName) {
+        TaskQueue taskQueue;
+        if ( queueType.trim().equalsIgnoreCase("RABBITMQ") ) {
+            String[] queueConfig = configurationManager.getRabbitMQConfig();
+            Connection mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[2], queueConfig[3]);
+            if (mqConn != null) {
+                taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[1], queueName.trim());
+            } else {
+                return null;
+            }
+        } else {
+            taskQueue = new SQSTaskQueue(queueName);
+        }
+        return taskQueue;
+    }
+
+    protected Connection getRabbitMQConnection (String host, String username, String password) {
+        if ( rabbitMqConnection == null ) {
+            try {
+                ConnectionFactory factory = new ConnectionFactory();
+                factory.setUsername(username);
+                factory.setPassword(password);
+                factory.setVirtualHost("/");
+                factory.setHost(host);
+                factory.setPort(5672);
+                Connection conn = factory.newConnection();
+                rabbitMqConnection = conn;
+                return conn;
+            } catch (Exception e) {
+                log.error("Not able to establish connection with RabbitMQ");
+                return null;
+            }
+        } else {
+            return rabbitMqConnection;
+        }
+    }
+
     @Bean
     public TaskQueue auditQueue(TaskProducerConfigurationManager configurationManager) {
-        TaskQueue queue = new SQSTaskQueue(configurationManager.getAuditQueueName());
-        log.info("created audit queue {}", queue);
+        String queueType = configurationManager.getQueueType();
+        TaskQueue queue = createTaskQueue(queueType, configurationManager, configurationManager.getAuditQueueName());
+        log.info("created audit queue {} of type: {}", queue, queueType);
         return queue;
     }
 
     @Bean
     public TaskQueue bitErrorQueue(WorkmanConfigurationManager configurationManager) {
-        TaskQueue queue = new SQSTaskQueue(configurationManager.getBitErrorQueueName());
-        log.info("created bit error queue {}", queue);
+        String queueType = configurationManager.getQueueType();
+        TaskQueue queue = createTaskQueue(queueType, configurationManager, configurationManager.getBitErrorQueueName());
+        log.info("created bit error queue {} of type: {}", queue, queueType);
         return queue;
     }
 
     @Bean
     public TaskQueue bitReportQueue(TaskProducerConfigurationManager configurationManager) {
-        TaskQueue queue = new SQSTaskQueue(configurationManager.getBitReportQueueName());
-        log.info("created bit report queue {}", queue);
+        String queueType = configurationManager.getQueueType();
+        TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getBitReportQueueName());
+        log.info("created bit report queue {} of type: {}", queue, queueType);
         return queue;
     }
 
     @Bean
     public TaskQueue duplicationQueue(WorkmanConfigurationManager configurationManager) {
-        TaskQueue queue = new SQSTaskQueue(configurationManager.getHighPriorityDuplicationQueueName());
-        log.info("created duplication queue {}", queue);
+        String queueType = configurationManager.getQueueType();
+        TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getHighPriorityDuplicationQueueName());
+        log.info("created duplication queue {} of type: {}", queue, queueType);
         return queue;
     }
 
     @Bean
     public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
-        TaskQueue queue = new SQSTaskQueue(configurationManager.getDeadLetterQueueName());
-        log.info("created dead letter  queue {}", queue);
+        String queueType = configurationManager.getQueueType();
+        TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getDeadLetterQueueName());
+        log.info("created dead letter  queue {} of type: {}", queue, queueType);
         return queue;
     }
 
@@ -286,11 +351,11 @@ public class AppConfig {
         DuplicationPolicyRepo policyRepo;
         String policyDir = configurationManager.getDuplicationPolicyDir();
 
-        if (policyDir != null) {
+        if ( policyDir != null ) {
             policyRepo = new LocalDuplicationPolicyRepo(policyDir);
         } else {
             String suffix = configurationManager.getPolicyBucketSuffix();
-            if (suffix != null) {
+            if ( suffix != null ) {
                 policyRepo = new S3DuplicationPolicyRepo(suffix);
             } else {
                 policyRepo = new S3DuplicationPolicyRepo();

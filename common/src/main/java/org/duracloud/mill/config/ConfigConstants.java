@@ -16,6 +16,7 @@ public class ConfigConstants {
     /*
      * QUEUES
      */
+    public static final String QUEUE_TYPE = "queue.type";
     public static final String QUEUE_NAME_BIT_ERROR = "queue.name.bit-error";
     public static final String QUEUE_NAME_BIT_REPORT = "queue.name.bit-report";
     public static final String QUEUE_NAME_BIT_INTEGRITY = "queue.name.bit-integrity";
@@ -25,6 +26,13 @@ public class ConfigConstants {
     public static final String QUEUE_NAME_STORAGE_STATS = "queue.name.storagestats";
 
     public static final String QUEUE_NAME_DEAD_LETTER = "queue.name.dead-letter";
+
+    //For QUEUE_TYPE=rabbitmq use only
+    public static final String RABBITMQ_HOST = "rabbitmq.host";
+    public static final String RABBITMQ_EXCHANGE = "rabbitmq.exchange";
+    public static final String RABBITMQ_USERNAME = "rabbitmq.username";
+    public static final String RABBITMQ_PASSWORD = "rabbitmq.password";
+
 
     /*
      * SHARED
