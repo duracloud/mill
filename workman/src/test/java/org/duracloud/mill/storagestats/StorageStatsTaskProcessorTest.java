@@ -12,9 +12,7 @@ import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isA;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.db.model.SpaceStats;
@@ -81,7 +79,7 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
 
     private void test(StorageProviderType storageProviderType) throws Exception {
 
-            String spaceId = "space-id";
+        String spaceId = "space-id";
         String storeId = "store-id";
         String account = "account";
         long byteCount = 100l;
@@ -110,15 +108,11 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
     }
 
     private StorageStatsTaskProcessor createProcessor(StorageProviderType providerType) {
-        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
-                                                                            storageProvider,
-                                                                            providerType,
-                                                                            spaceStatsManager,
-                                                                            manifestItemRepo);
-        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        c.set(Calendar.HOUR_OF_DAY, 21);
-        processor.currentTime = c.getTime();
-        return processor;
+        return new StorageStatsTaskProcessor(task,
+                                             storageProvider,
+                                             providerType,
+                                             spaceStatsManager,
+                                             manifestItemRepo);
     }
 }
 

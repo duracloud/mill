@@ -34,9 +34,6 @@ public class StorageStatsTaskProcessor extends TaskProcessorBase {
     private SpaceStatsManager spaceStatsManager;
     private JpaManifestItemRepo manifestRepo;
 
-    //the current time is protected so that it can be overridden by unit tests.
-    protected Date currentTime = null;
-
     public StorageStatsTaskProcessor(StorageStatsTask storageStatsTask,
                                      StorageProvider store,
                                      StorageProviderType storageProviderType,
