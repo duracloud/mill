@@ -7,19 +7,16 @@
  */
 package org.duracloud.mill.storagestats;
 
+import static org.duracloud.storage.domain.StorageProviderType.AMAZON_GLACIER;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.isA;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.duracloud.mill.common.storageprovider.StorageStatsTask;
 import org.duracloud.mill.db.model.SpaceStats;
 import org.duracloud.mill.db.repo.JpaManifestItemRepo;
-import org.duracloud.mill.storagestats.aws.BucketStats;
-import org.duracloud.mill.storagestats.aws.CloudWatchStorageStatsGatherer;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.EasyMockRunner;
@@ -44,9 +41,6 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
     @Mock
     private SpaceStatsManager spaceStatsManager;
     @Mock
-    private CloudWatchStorageStatsGatherer storageStatsGatherer;
-
-    @Mock
     private StorageStatsTask task;
 
     @Mock
@@ -69,34 +63,22 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
     }
 
     @Test
-    public void testS3() throws Exception {
-        testS3Based(StorageProviderType.AMAZON_S3);
-    }
-
-    @Test
-    public void testOutOfTimeWindow() throws Exception {
-        String spaceId = "space-id";
-        String storeId = "store-id";
-        String account = "account";
-        expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
-        expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
-        expect(task.getAccount()).andReturn(account).atLeastOnce();
-        expect(task.getAttempts()).andReturn(0);
-        replayAll();
-        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
-                                                                            storageProvider,
-                                                                            StorageProviderType.AMAZON_S3,
-                                                                            spaceStatsManager,
-                                                                            storageStatsGatherer,
-                                                                            manifestItemRepo);
-        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        c.set(Calendar.HOUR_OF_DAY, 19);
-        processor.currentTime = c.getTime();
-        processor.execute();
-    }
-
-    @Test
     public void testGlacier() throws Exception {
+        test(StorageProviderType.AMAZON_GLACIER);
+    }
+
+    @Test
+    public void testChronopolis() throws Exception {
+        test(StorageProviderType.CHRONOPOLIS);
+    }
+
+    @Test
+    public void testS3() throws Exception {
+        test(StorageProviderType.AMAZON_S3);
+    }
+
+    private void test(StorageProviderType storageProviderType) throws Exception {
+
         String spaceId = "space-id";
         String storeId = "store-id";
         String account = "account";
@@ -119,57 +101,18 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
 
         replayAll();
 
-        StorageStatsTaskProcessor processor = createProcessor(StorageProviderType.AMAZON_GLACIER);
+        StorageStatsTaskProcessor processor = createProcessor(AMAZON_GLACIER);
 
         processor.execute();
 
     }
 
     private StorageStatsTaskProcessor createProcessor(StorageProviderType providerType) {
-        StorageStatsTaskProcessor processor = new StorageStatsTaskProcessor(task,
-                                                                            storageProvider,
-                                                                            providerType,
-                                                                            spaceStatsManager,
-                                                                            storageStatsGatherer,
-                                                                            manifestItemRepo);
-        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        c.set(Calendar.HOUR_OF_DAY, 21);
-        processor.currentTime = c.getTime();
-        return processor;
+        return new StorageStatsTaskProcessor(task,
+                                             storageProvider,
+                                             providerType,
+                                             spaceStatsManager,
+                                             manifestItemRepo);
     }
-
-    @Test
-    public void testChronopolis() throws Exception {
-        testS3Based(StorageProviderType.CHRONOPOLIS);
-    }
-
-    private void testS3Based(StorageProviderType storageProviderType) throws Exception {
-        String spaceId = "space-id";
-        String storeId = "store-id";
-        String account = "account";
-        long byteCount = 100l;
-        long objectCount = 101l;
-
-        expect(task.getSpaceId()).andReturn(spaceId).atLeastOnce();
-        expect(task.getStoreId()).andReturn(storeId).atLeastOnce();
-        expect(task.getAccount()).andReturn(account).atLeastOnce();
-        expect(task.getAttempts()).andReturn(0);
-
-        expect(spaceStatsManager.addSpaceStats(isA(Date.class),
-                                               eq(account),
-                                               eq(storeId),
-                                               eq(spaceId),
-                                               eq(byteCount),
-                                               eq(objectCount))).andReturn(new SpaceStats());
-        BucketStats stats = createMock(BucketStats.class);
-        expect(stats.getTotalBytes()).andReturn(byteCount);
-        expect(stats.getTotalItems()).andReturn(objectCount);
-        expect(storageStatsGatherer.getBucketStats(spaceId)).andReturn(stats);
-        replayAll();
-
-        StorageStatsTaskProcessor processor = createProcessor(storageProviderType);
-        processor.execute();
-    }
-
 }
 
