@@ -23,6 +23,7 @@ import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.notification.SpringNotificationManager;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
@@ -107,8 +108,16 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         JpaBitIntegrityReportRepo bitReportRepo = ctx.getBean(JpaBitIntegrityReportRepo.class);
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
-        NotificationManager notificationMananger =
-            new SESNotificationManager(config.getNotificationRecipients());
+        NotificationManager notificationMananger = null;
+        String notificationType = config.getNotificationType();
+        if (notificationType == "AWS") {
+            notificationMananger =
+                    new SESNotificationManager(config.getNotificationRecipients());
+        } else if (notificationType == "SPRING") {
+            notificationMananger =
+                    new SpringNotificationManager(config.getNotificationRecipients(), config);
+        }
+
         TaskQueue bitTaskQueue = new SQSTaskQueue(
             config.getBitIntegrityQueue());
 

@@ -16,11 +16,14 @@ import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.db.repo.JpaSpaceStatsRepo;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.notification.SpringNotificationManager;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -30,17 +33,20 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @since: Jun 28, 2017
  */
 public class AppDriver extends DriverSupport {
+    public static Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     public AppDriver() {
         super(new CommonCommandLineOptions());
     }
 
     public static void main(String[] args) {
+
+        log.debug(String.valueOf(args));
         new AppDriver().execute(args);
     }
 
     /**
-     * @param cmd
+     * @param
      */
     @Override
     protected void executeImpl(CommandLine commandLine) {
@@ -72,8 +78,15 @@ public class AppDriver extends DriverSupport {
             recipients.add(email);
         }
 
-        NotificationManager notification =
-            new SESNotificationManager(recipients.toArray(new String[0]));
+        NotificationManager notification = null;
+        String notificationType = configManager.getNotificationType();
+        if (notificationType == "AWS") {
+            notification =
+                    new SESNotificationManager(recipients.toArray(new String[0]));
+        } else if (notificationType == "SPRING") {
+            notification =
+                    new SpringNotificationManager(configManager.getNotificationRecipients(), configManager);
+        }
 
         StorageReporter reporter = new StorageReporter(statsRepo, accountRepo, notification);
         reporter.run();

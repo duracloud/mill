@@ -48,6 +48,7 @@ import org.duracloud.mill.manifest.jpa.JpaManifestStore;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.notification.SpringNotificationManager;
 import org.duracloud.mill.storagestats.SpaceStatsManager;
 import org.duracloud.mill.storagestats.StorageStatsTaskProcessorFactory;
 import org.duracloud.mill.workman.MultiStepTaskProcessorFactory;
@@ -377,7 +378,16 @@ public class AppConfig {
     @Bean
     public NotificationManager notificationManager(TaskProducerConfigurationManager configurationManager) {
         String[] recipients = configurationManager.getNotificationRecipients();
-        SESNotificationManager manager = new SESNotificationManager(recipients);
+        String notificationType = configurationManager.getNotificationType();
+        NotificationManager manager;
+
+        if (notificationType == "AWS") {
+            manager = new SESNotificationManager(recipients);
+        } else if (notificationType == "SPRING") {
+            manager = new SpringNotificationManager(recipients, configurationManager);
+        } else {
+            return null;
+        }
         return manager;
     }
 

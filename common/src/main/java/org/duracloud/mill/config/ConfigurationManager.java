@@ -63,6 +63,38 @@ public class ConfigurationManager {
         }
     }
 
+    /**
+     * @return
+     */
+    public String getNotificationType() {
+        String notificationType = System.getProperty(ConfigConstants.NOTIFICATION_TYPE).trim();
+        if ( notificationType.equalsIgnoreCase("aws") ) {
+            return "AWS";
+        } else if ( notificationType.equalsIgnoreCase("spring") ) {
+            return "SPRING";
+        } else {
+            return "Unknown";
+        }
+    }
+
+    /**
+     * @return
+     */
+    public String[] getSpringConfig() {
+        if ( getNotificationType() == "SPRING" ) {
+            String[] config = new String[] {
+                    System.getProperty(ConfigConstants.NOTIFICATION_HOST),
+                    System.getProperty(ConfigConstants.NOTIFICATION_PORT),
+                    System.getProperty(ConfigConstants.NOTIFICATION_USER),
+                    System.getProperty(ConfigConstants.NOTIFICATION_PASS),
+                    System.getProperty(ConfigConstants.NOTIFICATION_FROM_ADDRESS)
+            };
+            return config;
+        } else {
+            return new String[0];
+        }
+    }
+
     private String[] getCommaSeparatedListToArray(String prop) {
         String values = System.getProperty(prop);
         if (StringUtils.isBlank(values) ) {

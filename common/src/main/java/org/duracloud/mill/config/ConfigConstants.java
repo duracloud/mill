@@ -44,6 +44,13 @@ public class ConfigConstants {
     public static final String NOTIFICATION_RECIPIENTS_NON_TECH = "notification.recipients.non-tech";
     public static final String NOTIFICATION_SENDER = "notification.sender";
 
+    public static final String NOTIFICATION_TYPE = "notification.type";
+    public static final String NOTIFICATION_HOST = "notification.host";
+    public static final String NOTIFICATION_PORT = "notification.port";
+    public static final String NOTIFICATION_USER = "notification.user";
+    public static final String NOTIFICATION_PASS = "notification.pass";
+    public static final String NOTIFICATION_FROM_ADDRESS = "notification.from-address";
+
     /*
      * AUDIT LOG GENERATOR
      */
