@@ -317,6 +317,14 @@ public class AppConfig {
     }
 
     @Bean
+    public TaskQueue bitIntegrityQueue(WorkmanConfigurationManager configurationManager) {
+        String queueType = configurationManager.getQueueType();
+        TaskQueue queue = createTaskQueue(queueType, configurationManager, configurationManager.getBitIntegrityQueue());
+        log.info("created bit integrity queue {} of type: {}", queue, queueType);
+        return queue;
+    }
+
+    @Bean
     public TaskQueue bitReportQueue(TaskProducerConfigurationManager configurationManager) {
         String queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getBitReportQueueName());

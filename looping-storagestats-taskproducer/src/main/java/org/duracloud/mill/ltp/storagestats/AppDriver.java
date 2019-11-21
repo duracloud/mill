@@ -13,6 +13,7 @@ import java.util.List;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -114,7 +115,14 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             notificationMananger =
                     new SpringNotificationManager(config.getNotificationRecipients(), config);
         }
-        TaskQueue queue = new SQSTaskQueue(config.getStorageStatsQueue());
+
+        TaskQueue queue = null;
+        if (config.getQueueType() == "RABBITMQ") {
+            String[] queueConfig = config.getRabbitMQConfig();
+            queue = new RabbitMQTaskQueue(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[3], config.getStorageStatsQueue());
+        } else {
+            queue = new SQSTaskQueue(config.getStorageStatsQueue());
+        }
 
         String stateFilePath = new File(config.getWorkDirectoryPath(),
                                         "storagestats-producer-state.json").getAbsolutePath();

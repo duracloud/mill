@@ -13,6 +13,7 @@ import java.util.List;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -118,11 +119,22 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                     new SpringNotificationManager(config.getNotificationRecipients(), config);
         }
 
-        TaskQueue bitTaskQueue = new SQSTaskQueue(
-            config.getBitIntegrityQueue());
+        String queueType = config.getQueueType();
+        TaskQueue bitTaskQueue = null;
+        TaskQueue bitReportQueue = null;
+        if (config.getQueueType() == "RABBITMQ") {
+            String[] queueConfig = config.getRabbitMQConfig();
+            bitTaskQueue = new RabbitMQTaskQueue(queueConfig[0], queueConfig[1], queueConfig[2],
+                    queueConfig[3], config.getBitIntegrityQueue());
+            bitReportQueue = new RabbitMQTaskQueue(queueConfig[0], queueConfig[1], queueConfig[2],
+                    queueConfig[3], config.getBitReportQueueName());
+        } else {
+            bitTaskQueue = new SQSTaskQueue(
+                    config.getBitIntegrityQueue());
 
-        TaskQueue bitReportQueue = new SQSTaskQueue(
-            config.getBitReportQueueName());
+            bitReportQueue = new SQSTaskQueue(
+                    config.getBitReportQueueName());
+        }
 
         String stateFilePath = new File(config.getWorkDirectoryPath(),
                                         "bit-producer-state.json").getAbsolutePath();

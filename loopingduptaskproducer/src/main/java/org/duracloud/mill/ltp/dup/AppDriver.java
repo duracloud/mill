@@ -16,6 +16,7 @@ import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
@@ -99,7 +100,15 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             policyManager = new DuplicationPolicyManager(policyRepo);
         }
 
-        TaskQueue taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
+        String queueType = config.getQueueType();
+        TaskQueue taskQueue = null;
+        if (config.getQueueType() == "RABBITMQ") {
+            String[] queueConfig = config.getRabbitMQConfig();
+            taskQueue = new RabbitMQTaskQueue(queueConfig[0], queueConfig[1], queueConfig[2],
+                    queueConfig[3], getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
+        } else {
+            taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
+        }
 
         CacheManager cacheManager = CacheManager.create();
         CacheConfiguration cacheConfig = new CacheConfiguration();
