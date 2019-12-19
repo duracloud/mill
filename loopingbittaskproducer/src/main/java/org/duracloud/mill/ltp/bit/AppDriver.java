@@ -125,9 +125,9 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         if (config.getQueueType() == "RABBITMQ") {
             String[] queueConfig = config.getRabbitMQConfig();
             bitTaskQueue = new RabbitMQTaskQueue(queueConfig[0], queueConfig[1], queueConfig[2],
-                    queueConfig[3], config.getBitIntegrityQueue());
+                    queueConfig[3], queueConfig[4], queueConfig[5], config.getBitIntegrityQueue());
             bitReportQueue = new RabbitMQTaskQueue(queueConfig[0], queueConfig[1], queueConfig[2],
-                    queueConfig[3], config.getBitReportQueueName());
+                    queueConfig[3], queueConfig[4], queueConfig[5], config.getBitReportQueueName());
         } else {
             bitTaskQueue = new SQSTaskQueue(
                     config.getBitIntegrityQueue());

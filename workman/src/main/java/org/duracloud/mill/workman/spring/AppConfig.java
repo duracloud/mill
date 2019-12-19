@@ -241,7 +241,7 @@ public class AppConfig {
 
         if (isRabbitMQ) {
             queueConfig = configurationManager.getRabbitMQConfig();
-            mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[2], queueConfig[3]);
+            mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[4], queueConfig[5]);
         }
 
         for (String taskQueueName : taskQueuesNames) {
@@ -267,7 +267,7 @@ public class AppConfig {
         TaskQueue taskQueue;
         if ( queueType.trim().equalsIgnoreCase("RABBITMQ") ) {
             String[] queueConfig = configurationManager.getRabbitMQConfig();
-            Connection mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[2], queueConfig[3]);
+            Connection mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[4], queueConfig[5]);
             if (mqConn != null) {
                 taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[1], queueName.trim());
             } else {
@@ -279,15 +279,15 @@ public class AppConfig {
         return taskQueue;
     }
 
-    protected Connection getRabbitMQConnection (String host, String username, String password) {
+    protected Connection getRabbitMQConnection (String host, String port, String vhost, String username, String password) {
         if ( rabbitMqConnection == null ) {
             try {
                 ConnectionFactory factory = new ConnectionFactory();
                 factory.setUsername(username);
                 factory.setPassword(password);
-                factory.setVirtualHost("/");
+                factory.setVirtualHost(vhost);
                 factory.setHost(host);
-                factory.setPort(5672);
+                factory.setPort(Integer.parseInt(port));
                 Connection conn = factory.newConnection();
                 rabbitMqConnection = conn;
                 return conn;

@@ -67,6 +67,8 @@ public class PropertyDefinitionListBuilder {
 
     public PropertyDefinitionListBuilder addRabbitMQConfig() {
         add(ConfigConstants.RABBITMQ_HOST, false);
+        add(ConfigConstants.RABBITMQ_PORT, false);
+        add(ConfigConstants.RABBITMQ_VHOST, false);
         add(ConfigConstants.RABBITMQ_EXCHANGE, false);
         add(ConfigConstants.RABBITMQ_USERNAME, false);
         add(ConfigConstants.RABBITMQ_PASSWORD, false);

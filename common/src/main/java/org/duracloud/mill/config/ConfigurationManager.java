@@ -53,6 +53,8 @@ public class ConfigurationManager {
         if ( getQueueType() == "RABBITMQ" ) {
             String[] config = new String[] {
                 System.getProperty(ConfigConstants.RABBITMQ_HOST),
+                System.getProperty(ConfigConstants.RABBITMQ_PORT),
+                System.getProperty(ConfigConstants.RABBITMQ_VHOST),
                 System.getProperty(ConfigConstants.RABBITMQ_EXCHANGE),
                 System.getProperty(ConfigConstants.RABBITMQ_USERNAME),
                 System.getProperty(ConfigConstants.RABBITMQ_PASSWORD)

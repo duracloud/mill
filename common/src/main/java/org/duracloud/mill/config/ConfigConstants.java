@@ -29,6 +29,8 @@ public class ConfigConstants {
 
     //For QUEUE_TYPE=rabbitmq use only
     public static final String RABBITMQ_HOST = "rabbitmq.host";
+    public static final String RABBITMQ_PORT = "rabbitmq.port";
+    public static final String RABBITMQ_VHOST = "rabbitmq.vhost";
     public static final String RABBITMQ_EXCHANGE = "rabbitmq.exchange";
     public static final String RABBITMQ_USERNAME = "rabbitmq.username";
     public static final String RABBITMQ_PASSWORD = "rabbitmq.password";
