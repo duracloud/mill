@@ -248,7 +248,7 @@ public class AppConfig {
             TaskQueue taskQueue;
             if (isRabbitMQ) {
                 if (mqConn != null) {
-                    taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[1], taskQueueName.trim());
+                    taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[3], taskQueueName.trim());
                 } else {
                     break;
                 }
@@ -269,7 +269,7 @@ public class AppConfig {
             String[] queueConfig = configurationManager.getRabbitMQConfig();
             Connection mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[4], queueConfig[5]);
             if (mqConn != null) {
-                taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[1], queueName.trim());
+                taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[3], queueName.trim());
             } else {
                 return null;
             }

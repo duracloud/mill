@@ -120,7 +120,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         if (config.getQueueType() == "RABBITMQ") {
             String[] queueConfig = config.getRabbitMQConfig();
             queue = new RabbitMQTaskQueue(
-                queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[3], queueConfig[4], queueConfig[5], config.getStorageStatsQueue()
+                queueConfig[0], Integer.parseInt(queueConfig[1]), queueConfig[2], queueConfig[3], queueConfig[4], queueConfig[5], config.getStorageStatsQueue()
             );
         } else {
             queue = new SQSTaskQueue(config.getStorageStatsQueue());
