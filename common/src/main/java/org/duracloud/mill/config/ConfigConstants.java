@@ -62,8 +62,12 @@ public class ConfigConstants {
     /*
      * AWS CREDENTIALS
      */
+    public static final String AWS_TYPE = "aws.type";
     public static final String AWS_ACCESS_KEY_ID = "aws.accessKeyId";
     public static final String AWS_SECRET_KEY = "aws.secretKey";
+    public static final String AWS_ENDPOINT = "aws.endpoint";
+    public static final String AWS_REGION = "aws.region";
+    public static final String AWS_SIGNER = "aws.signer";
 
     /*
      * WORKMAN

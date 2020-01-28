@@ -26,6 +26,7 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.dup.repo.SwiftDuplicationPolicyRepo;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
@@ -93,9 +94,21 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             DuplicationPolicyRepo policyRepo;
             String bucketSuffix = config.getDuplicationPolicyBucketSuffix();
             if (bucketSuffix != null) {
-                policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
+                if (config.getAWSType() == "SWIFT") {
+                    String[] swiftConfig = config.getSwiftConfig();
+                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
+                        swiftConfig[2], swiftConfig[3], swiftConfig[4], bucketSuffix);
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
+                }
             } else {
-                policyRepo = new S3DuplicationPolicyRepo();
+                if (config.getAWSType() == "SWIFT") {
+                    String[] swiftConfig = config.getSwiftConfig();
+                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
+                        swiftConfig[2], swiftConfig[3], swiftConfig[4]);
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo();
+                }
             }
             policyManager = new DuplicationPolicyManager(policyRepo);
         }

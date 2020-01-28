@@ -7,9 +7,13 @@
  */
 package org.duracloud.mill.audit.generator;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.storage.provider.StorageProvider;
+import org.duracloud.swiftstorage.SwiftStorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -46,8 +50,16 @@ public class AuditGeneratorConfig {
     public StorageProvider storageProvider() {
         //build the storage provider with a placeholder key since audit log generator
         //does not depend on creating new spaces.
-        return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);
-
+        SystemConfig systemConfig = systemConfig();
+        if (systemConfig.getAwsType() == "swift") {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("AWS_REGION", systemConfig.getAwsRegion());
+            map.put("SWIFT_S3_ENDPOINT", systemConfig.getAwsEndpoint());
+            map.put("SWIFT_S3_SIGNER_TYPE", systemConfig.getAwsSigner());
+            return new SwiftStorageProvider(systemConfig.getAwsAccessKey(), systemConfig.getAwsAccessKey(), map);
+        } else {
+            return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);
+        }
     }
 
 }

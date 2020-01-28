@@ -42,6 +42,7 @@ import org.duracloud.mill.dup.DuplicationTaskProcessorFactory;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.dup.repo.SwiftDuplicationPolicyRepo;
 import org.duracloud.mill.manifest.ManifestStore;
 import org.duracloud.mill.manifest.ManifestWritingProcessorFactory;
 import org.duracloud.mill.manifest.jpa.JpaManifestStore;
@@ -365,9 +366,21 @@ public class AppConfig {
         } else {
             String suffix = configurationManager.getPolicyBucketSuffix();
             if ( suffix != null ) {
-                policyRepo = new S3DuplicationPolicyRepo(suffix);
+                if (configurationManager.getAWSType() == "SWIFT") {
+                    String[] swiftConfig = configurationManager.getSwiftConfig();
+                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
+                            swiftConfig[2], swiftConfig[3], swiftConfig[4], suffix);
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo(suffix);
+                }
             } else {
-                policyRepo = new S3DuplicationPolicyRepo();
+                if (configurationManager.getAWSType() == "SWIFT") {
+                    String[] swiftConfig = configurationManager.getSwiftConfig();
+                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
+                            swiftConfig[2], swiftConfig[3], swiftConfig[4]);
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo();
+                }
             }
         }
 
