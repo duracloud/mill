@@ -29,6 +29,14 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
+    public PropertyDefinitionListBuilder addSwift() {
+        add(ConfigConstants.AWS_TYPE, false, true);
+        add(ConfigConstants.AWS_REGION, false, true);
+        add(ConfigConstants.AWS_ENDPOINT, false, true);
+        add(ConfigConstants.AWS_SIGNER_TYPE, false, true);
+        return this;
+    }
+
     private void add(String name, boolean required, boolean sensitive) {
         definitions.add(new PropertyDefinition(name, null, required, sensitive));
     }

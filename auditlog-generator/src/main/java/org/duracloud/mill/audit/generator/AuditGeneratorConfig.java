@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import org.duracloud.s3storage.S3StorageProvider;
+import org.duracloud.storage.domain.StorageAccount.OPTS;
 import org.duracloud.storage.provider.StorageProvider;
 import org.duracloud.swiftstorage.SwiftStorageProvider;
 import org.slf4j.Logger;
@@ -51,12 +52,12 @@ public class AuditGeneratorConfig {
         //build the storage provider with a placeholder key since audit log generator
         //does not depend on creating new spaces.
         SystemConfig systemConfig = systemConfig();
-        if (systemConfig.getAwsType() == "swift") {
+        if (systemConfig.getAwsType() == "SWIFT") {
             Map<String, String> map = new HashMap<String, String>();
-            map.put("AWS_REGION", systemConfig.getAwsRegion());
-            map.put("SWIFT_S3_ENDPOINT", systemConfig.getAwsEndpoint());
-            map.put("SWIFT_S3_SIGNER_TYPE", systemConfig.getAwsSigner());
-            return new SwiftStorageProvider(systemConfig.getAwsAccessKey(), systemConfig.getAwsAccessKey(), map);
+            map.put(OPTS.AWS_REGION.name(), systemConfig.getAwsRegion());
+            map.put(OPTS.SWIFT_S3_ENDPOINT.name(), systemConfig.getAwsEndpoint());
+            map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), systemConfig.getAwsSignerType());
+            return new SwiftStorageProvider(systemConfig.getAwsAccessKey(), systemConfig.getAwsSecretKey(), map);
         } else {
             return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);
         }

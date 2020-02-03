@@ -55,7 +55,7 @@ public class ConfigurationManager {
                 System.getProperty(ConfigConstants.AWS_SECRET_KEY),
                 System.getProperty(ConfigConstants.AWS_ENDPOINT),
                 System.getProperty(ConfigConstants.AWS_REGION),
-                System.getProperty(ConfigConstants.AWS_SIGNER)
+                System.getProperty(ConfigConstants.AWS_SIGNER_TYPE)
             };
             return config;
         } else {

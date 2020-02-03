@@ -27,7 +27,7 @@ public class SystemConfig {
     private String awsSecretKey;
     private String awsEndpoint;
     private String awsRegion;
-    private String awsSigner;
+    private String awsSignerType = null;
 
     public static SystemConfig instance() {
         return instance;
@@ -62,7 +62,13 @@ public class SystemConfig {
     }
 
     public String getAwsType() {
-        return awsType;
+        if ( awsType.equalsIgnoreCase("swift") ) {
+            return "SWIFT";
+        } else if ( awsType.equalsIgnoreCase("s3") ) {
+            return "S3";
+        } else {
+            return "Unknown";
+        }
     }
 
     public void setAwsType(String awsType) {
@@ -70,7 +76,7 @@ public class SystemConfig {
     }
 
     public String getAwsAccessKey() {
-        return awsType;
+        return awsAccessKey;
     }
 
     public void setAwsAccessKey(String awsAccessKey) {
@@ -98,15 +104,15 @@ public class SystemConfig {
     }
 
     public void setAwsRegion(String awsRegion) {
-        this.awsType = awsRegion;
+        this.awsRegion = awsRegion;
     }
 
-    public String getAwsSigner() {
-        return awsSigner;
+    public String getAwsSignerType() {
+        return awsSignerType;
     }
 
-    public void setAwsSigner(String awsSigner) {
-        this.awsSigner = awsSigner;
+    public void setAwsSignerType(String awsSignerType) {
+        this.awsSignerType = awsSignerType;
     }
 
 }

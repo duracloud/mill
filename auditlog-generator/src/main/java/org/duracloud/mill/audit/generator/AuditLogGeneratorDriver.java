@@ -45,6 +45,7 @@ public class AuditLogGeneratorDriver extends DriverSupport {
     protected void executeImpl(CommandLine cmd) {
         PropertyDefinitionListBuilder builder = new PropertyDefinitionListBuilder();
         List<PropertyDefinition> list = builder.addAws()
+                                               .addSwift()
                                                .addMillDb()
                                                .addDuracloudAuditSpace()
                                                .addWorkDir()
@@ -57,14 +58,12 @@ public class AuditLogGeneratorDriver extends DriverSupport {
         config.setAuditLogSpaceId(System
                                       .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
 
-        if (config.getAwsType() == "swift") {
-            config.setAwsType(System.getProperty(ConfigConstants.AWS_TYPE));
-            config.setAwsAccessKey(System.getProperty(ConfigConstants.AWS_ACCESS_KEY_ID));
-            config.setAwsSecretKey(System.getProperty(ConfigConstants.AWS_SECRET_KEY));
-            config.setAwsEndpoint(System.getProperty(ConfigConstants.AWS_ENDPOINT));
-            config.setAwsRegion(System.getProperty(ConfigConstants.AWS_REGION));
-            config.setAwsSigner(System.getProperty(ConfigConstants.AWS_SIGNER));
-        }
+        config.setAwsType(System.getProperty(ConfigConstants.AWS_TYPE));
+        config.setAwsAccessKey(System.getProperty(ConfigConstants.AWS_ACCESS_KEY_ID));
+        config.setAwsSecretKey(System.getProperty(ConfigConstants.AWS_SECRET_KEY));
+        config.setAwsRegion(System.getProperty(ConfigConstants.AWS_REGION));
+        config.setAwsEndpoint(System.getProperty(ConfigConstants.AWS_ENDPOINT));
+        config.setAwsSignerType(System.getProperty(ConfigConstants.AWS_SIGNER_TYPE));
 
         String workDir = System.getProperty(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH);
         if (workDir == null) {

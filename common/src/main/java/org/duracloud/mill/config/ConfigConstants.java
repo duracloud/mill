@@ -67,7 +67,7 @@ public class ConfigConstants {
     public static final String AWS_SECRET_KEY = "aws.secretKey";
     public static final String AWS_ENDPOINT = "aws.endpoint";
     public static final String AWS_REGION = "aws.region";
-    public static final String AWS_SIGNER = "aws.signer";
+    public static final String AWS_SIGNER_TYPE = "aws.signerType";
 
     /*
      * WORKMAN
