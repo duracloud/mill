@@ -121,7 +121,7 @@ public class ConfigurationManager {
                     System.getProperty(ConfigConstants.NOTIFICATION_PORT),
                     System.getProperty(ConfigConstants.NOTIFICATION_USER),
                     System.getProperty(ConfigConstants.NOTIFICATION_PASS),
-                    System.getProperty(ConfigConstants.NOTIFICATION_FROM_ADDRESS)
+                    System.getProperty(ConfigConstants.NOTIFICATION_SENDER)
             };
             return config;
         } else {

@@ -30,7 +30,7 @@ public class SpringNotificationManager implements NotificationManager {
 
     private JavaMailSenderImpl emailService;
     private String[] recipientEmailAddresses;
-    private String fromAddress;
+    private String sender;
 
     /**
      * @param
@@ -51,7 +51,7 @@ public class SpringNotificationManager implements NotificationManager {
         Integer port = Integer.parseInt(emailConfig[1].trim());
         String username = emailConfig[2].trim();
         String password = emailConfig[3].trim();
-        fromAddress = emailConfig[4].trim();
+        sender = emailConfig[4].trim();
 
         emailService = new JavaMailSenderImpl();
         Properties mailProperties = new Properties();
@@ -93,7 +93,7 @@ public class SpringNotificationManager implements NotificationManager {
         MimeMessageHelper messageHelper = new MimeMessageHelper(message);
 
         try {
-            messageHelper.setFrom(fromAddress);
+            messageHelper.setFrom(sender);
             messageHelper.setSubject(subject);
             messageHelper.setTo(recipientEmailAddresses);
             messageHelper.setText(body, false);

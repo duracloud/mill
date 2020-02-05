@@ -51,7 +51,6 @@ public class ConfigConstants {
     public static final String NOTIFICATION_PORT = "notification.port";
     public static final String NOTIFICATION_USER = "notification.user";
     public static final String NOTIFICATION_PASS = "notification.pass";
-    public static final String NOTIFICATION_FROM_ADDRESS = "notification.from-address";
 
     /*
      * AUDIT LOG GENERATOR
