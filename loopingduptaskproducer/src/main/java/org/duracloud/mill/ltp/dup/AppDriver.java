@@ -95,14 +95,14 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             String bucketSuffix = config.getDuplicationPolicyBucketSuffix();
             String[] swiftConfig = config.getSwiftConfig();
             if (bucketSuffix != null) {
-                if (swiftConfig[2] != null) { //check endpoint != null => swift
+                if (config.getS3Type() == "SWIFT") {
                     policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
                         swiftConfig[2], swiftConfig[3], bucketSuffix);
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
                 }
             } else {
-                if (swiftConfig[2] != null) { //check endpoint != null => swift
+                if (config.getS3Type() == "SWIFT") { //check endpoint != null => swift
                     policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
                         swiftConfig[2], swiftConfig[3]);
                 } else {

@@ -21,6 +21,7 @@ public class SystemConfig {
     private int duracloudPort = 443;
     private String duracloudUsername;
     private String duracloudPassword;
+    private String s3Type;
     private String auditLogSpaceId;
     private String awsAccessKey;
     private String awsSecretKey;
@@ -49,6 +50,14 @@ public class SystemConfig {
 
     public String getDurastoreContext() {
         return durastoreContext;
+    }
+
+    public String getS3Type() {
+        return s3Type;
+    }
+
+    public void setS3Type(String s3Type) {
+        this.s3Type = s3Type;
     }
 
     public String getAuditLogSpaceId() {

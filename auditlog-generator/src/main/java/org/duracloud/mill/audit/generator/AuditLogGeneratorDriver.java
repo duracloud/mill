@@ -55,6 +55,7 @@ public class AuditLogGeneratorDriver extends DriverSupport {
         new PropertyVerifier(list).verify(System.getProperties());
 
         SystemConfig config = SystemConfig.instance();
+        config.setS3Type(System.getProperty(ConfigConstants.S3_TYPE));
         config.setAuditLogSpaceId(System
                                       .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
 

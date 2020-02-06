@@ -30,6 +30,7 @@ public class PropertyDefinitionListBuilder {
     }
 
     public PropertyDefinitionListBuilder addSwift() {
+        add(ConfigConstants.S3_TYPE, false, true);
         add(ConfigConstants.SWIFT_ENDPOINT, false, true);
         add(ConfigConstants.SWIFT_SIGNER_TYPE, false, true);
         return this;
