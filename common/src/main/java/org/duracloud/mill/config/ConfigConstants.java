@@ -59,14 +59,12 @@ public class ConfigConstants {
     public static final String AUDIT_LOG_GENERATOR_AUDIT_LOG_SPACE_ID = "audit-log-generator.audit-log-space-id";
 
     /*
-     * AWS CREDENTIALS
+     * AWS/SWIFT CREDENTIALS
      */
-    public static final String AWS_TYPE = "aws.type";
     public static final String AWS_ACCESS_KEY_ID = "aws.accessKeyId";
     public static final String AWS_SECRET_KEY = "aws.secretKey";
-    public static final String AWS_ENDPOINT = "aws.endpoint";
-    public static final String AWS_REGION = "aws.region";
-    public static final String AWS_SIGNER_TYPE = "aws.signerType";
+    public static final String SWIFT_ENDPOINT = "swift.endpoint";
+    public static final String SWIFT_SIGNER_TYPE = "swift.signerType";
 
     /*
      * WORKMAN

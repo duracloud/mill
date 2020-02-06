@@ -365,19 +365,18 @@ public class AppConfig {
             policyRepo = new LocalDuplicationPolicyRepo(policyDir);
         } else {
             String suffix = configurationManager.getPolicyBucketSuffix();
+            String[] swiftConfig = configurationManager.getSwiftConfig();
             if ( suffix != null ) {
-                if (configurationManager.getAWSType() == "SWIFT") {
-                    String[] swiftConfig = configurationManager.getSwiftConfig();
+                if (swiftConfig[2] != null) { //check endpoint != null => swift
                     policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
-                            swiftConfig[2], swiftConfig[3], swiftConfig[4], suffix);
+                            swiftConfig[2], swiftConfig[3], suffix);
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo(suffix);
                 }
             } else {
-                if (configurationManager.getAWSType() == "SWIFT") {
-                    String[] swiftConfig = configurationManager.getSwiftConfig();
+                if (swiftConfig[2] != null) {
                     policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
-                            swiftConfig[2], swiftConfig[3], swiftConfig[4]);
+                            swiftConfig[2], swiftConfig[3]);
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo();
                 }

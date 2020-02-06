@@ -52,11 +52,10 @@ public class AuditGeneratorConfig {
         //build the storage provider with a placeholder key since audit log generator
         //does not depend on creating new spaces.
         SystemConfig systemConfig = systemConfig();
-        if (systemConfig.getAwsType() == "SWIFT") {
+        if (systemConfig.getSwiftEndpoint() != null) {
             Map<String, String> map = new HashMap<String, String>();
-            map.put(OPTS.AWS_REGION.name(), systemConfig.getAwsRegion());
-            map.put(OPTS.SWIFT_S3_ENDPOINT.name(), systemConfig.getAwsEndpoint());
-            map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), systemConfig.getAwsSignerType());
+            map.put(OPTS.SWIFT_S3_ENDPOINT.name(), systemConfig.getSwiftEndpoint());
+            map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), systemConfig.getSwiftSignerType());
             return new SwiftStorageProvider(systemConfig.getAwsAccessKey(), systemConfig.getAwsSecretKey(), map);
         } else {
             return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);

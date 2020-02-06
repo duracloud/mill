@@ -22,12 +22,10 @@ public class SystemConfig {
     private String duracloudUsername;
     private String duracloudPassword;
     private String auditLogSpaceId;
-    private String awsType;
     private String awsAccessKey;
     private String awsSecretKey;
-    private String awsEndpoint;
-    private String awsRegion;
-    private String awsSignerType = null;
+    private String swiftEndpoint;
+    private String swiftSignerType;
 
     public static SystemConfig instance() {
         return instance;
@@ -61,20 +59,6 @@ public class SystemConfig {
         this.auditLogSpaceId = auditLogSpaceId;
     }
 
-    public String getAwsType() {
-        if ( awsType.equalsIgnoreCase("swift") ) {
-            return "SWIFT";
-        } else if ( awsType.equalsIgnoreCase("s3") ) {
-            return "S3";
-        } else {
-            return "Unknown";
-        }
-    }
-
-    public void setAwsType(String awsType) {
-        this.awsType = awsType;
-    }
-
     public String getAwsAccessKey() {
         return awsAccessKey;
     }
@@ -91,28 +75,20 @@ public class SystemConfig {
         this.awsSecretKey = awsSecretKey;
     }
 
-    public String getAwsEndpoint() {
-        return awsEndpoint;
+    public String getSwiftEndpoint() {
+        return swiftEndpoint;
     }
 
-    public void setAwsEndpoint(String awsEndpoint) {
-        this.awsEndpoint = awsEndpoint;
+    public void setSwiftEndpoint(String swiftEndpoint) {
+        this.swiftEndpoint = swiftEndpoint;
     }
 
-    public String getAwsRegion() {
-        return awsRegion;
+    public String getSwiftSignerType() {
+        return swiftSignerType;
     }
 
-    public void setAwsRegion(String awsRegion) {
-        this.awsRegion = awsRegion;
-    }
-
-    public String getAwsSignerType() {
-        return awsSignerType;
-    }
-
-    public void setAwsSignerType(String awsSignerType) {
-        this.awsSignerType = awsSignerType;
+    public void setSwiftSignerType(String swiftSignerType) {
+        this.swiftSignerType = swiftSignerType;
     }
 
 }

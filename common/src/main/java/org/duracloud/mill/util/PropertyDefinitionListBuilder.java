@@ -30,10 +30,8 @@ public class PropertyDefinitionListBuilder {
     }
 
     public PropertyDefinitionListBuilder addSwift() {
-        add(ConfigConstants.AWS_TYPE, false, true);
-        add(ConfigConstants.AWS_REGION, false, true);
-        add(ConfigConstants.AWS_ENDPOINT, false, true);
-        add(ConfigConstants.AWS_SIGNER_TYPE, false, true);
+        add(ConfigConstants.SWIFT_ENDPOINT, false, true);
+        add(ConfigConstants.SWIFT_SIGNER_TYPE, false, true);
         return this;
     }
 

@@ -34,28 +34,13 @@ public class ConfigurationManager {
     /**
      * @return
      */
-    public String getAWSType() {
-        String awsType = System.getProperty(ConfigConstants.AWS_TYPE).trim();
-        if ( awsType.equalsIgnoreCase("swift") ) {
-            return "SWIFT";
-        } else if ( awsType.equalsIgnoreCase("aws") ) {
-            return "AWS";
-        } else {
-            return "Unknown";
-        }
-    }
-
-    /**
-     * @return
-     */
     public String[] getSwiftConfig() {
-        if ( getAWSType() == "SWIFT" ) {
+        if (System.getProperty(ConfigConstants.SWIFT_ENDPOINT) != null) {
             String[] config = new String[] {
                 System.getProperty(ConfigConstants.AWS_ACCESS_KEY_ID),
                 System.getProperty(ConfigConstants.AWS_SECRET_KEY),
-                System.getProperty(ConfigConstants.AWS_ENDPOINT),
-                System.getProperty(ConfigConstants.AWS_REGION),
-                System.getProperty(ConfigConstants.AWS_SIGNER_TYPE)
+                System.getProperty(ConfigConstants.SWIFT_ENDPOINT),
+                System.getProperty(ConfigConstants.SWIFT_SIGNER_TYPE)
             };
             return config;
         } else {

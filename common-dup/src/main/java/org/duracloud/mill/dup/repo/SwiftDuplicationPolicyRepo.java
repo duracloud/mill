@@ -27,10 +27,9 @@ public class SwiftDuplicationPolicyRepo implements DuplicationPolicyRepo {
      * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client
      * .html#AmazonS3Client%28%29
      */
-    public SwiftDuplicationPolicyRepo(String accessKey, String secretKey, String endpoint, String region, String signer) {
+    public SwiftDuplicationPolicyRepo(String accessKey, String secretKey, String endpoint, String signer) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(OPTS.SWIFT_S3_ENDPOINT.name(), endpoint);
-        map.put(OPTS.AWS_REGION.name(), region);
         map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), signer);
 
         this.s3Client = S3ProviderUtil.getAmazonS3Client(accessKey, secretKey, map);
@@ -38,10 +37,9 @@ public class SwiftDuplicationPolicyRepo implements DuplicationPolicyRepo {
         init();
     }
 
-    public SwiftDuplicationPolicyRepo(String accessKey, String secretKey, String endpoint, String region, String signer, String policyRepoBucketSuffix) {
+    public SwiftDuplicationPolicyRepo(String accessKey, String secretKey, String endpoint, String signer, String policyRepoBucketSuffix) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(OPTS.SWIFT_S3_ENDPOINT.name(), endpoint);
-        map.put(OPTS.AWS_REGION.name(), region);
         map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), signer);
 
         this.s3Client = S3ProviderUtil.getAmazonS3Client(accessKey, secretKey, map);
