@@ -367,14 +367,14 @@ public class AppConfig {
             String suffix = configurationManager.getPolicyBucketSuffix();
             String[] swiftConfig = configurationManager.getSwiftConfig();
             if ( suffix != null ) {
-                if (configurationManager.getS3Type() == "SWIFT") {
+                if (configurationManager.getS3Type().equalsIgnoreCase("swift")) {
                     policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
                             swiftConfig[2], swiftConfig[3], suffix);
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo(suffix);
                 }
             } else {
-                if (configurationManager.getS3Type() == "SWIFT") {
+                if (configurationManager.getS3Type().equalsIgnoreCase("swift")) {
                     policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
                             swiftConfig[2], swiftConfig[3]);
                 } else {

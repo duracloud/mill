@@ -52,7 +52,7 @@ public class AuditGeneratorConfig {
         //build the storage provider with a placeholder key since audit log generator
         //does not depend on creating new spaces.
         SystemConfig systemConfig = systemConfig();
-        if (systemConfig.getS3Type() == "SWIFT") {
+        if (systemConfig.getS3Type().equalsIgnoreCase("swift")) {
             Map<String, String> map = new HashMap<String, String>();
             map.put(OPTS.SWIFT_S3_ENDPOINT.name(), systemConfig.getSwiftEndpoint());
             map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), systemConfig.getSwiftSignerType());
