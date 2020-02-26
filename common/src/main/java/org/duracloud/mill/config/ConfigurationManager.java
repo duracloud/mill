@@ -34,32 +34,14 @@ public class ConfigurationManager {
     /**
      * @return
      */
-    public String getS3Type() {
-        String s3Type = System.getProperty(ConfigConstants.S3_TYPE);
-        if (s3Type.equalsIgnoreCase("swift")) {
-            return "SWIFT";
-        } else if (s3Type.equalsIgnoreCase("aws")) {
-            return "AWS";
-        } else {
-            return "Unknown";
-        }
-    }
-
-    /**
-     * @return
-     */
     public String[] getSwiftConfig() {
-        if (getS3Type() == "SWIFT") {
-            String[] config = new String[] {
-                System.getProperty(ConfigConstants.AWS_ACCESS_KEY_ID),
-                System.getProperty(ConfigConstants.AWS_SECRET_KEY),
-                System.getProperty(ConfigConstants.SWIFT_ENDPOINT),
-                System.getProperty(ConfigConstants.SWIFT_SIGNER_TYPE)
-            };
-            return config;
-        } else {
-            return new String[0];
-        }
+        String[] config = new String[] {
+            System.getProperty(ConfigConstants.SWIFT_ACCESS_KEY),
+            System.getProperty(ConfigConstants.SWIFT_SECRET_KEY),
+            System.getProperty(ConfigConstants.SWIFT_ENDPOINT),
+            System.getProperty(ConfigConstants.SWIFT_SIGNER_TYPE)
+        };
+        return config;
     }
 
     /**

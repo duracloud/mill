@@ -55,12 +55,11 @@ public class AuditLogGeneratorDriver extends DriverSupport {
         new PropertyVerifier(list).verify(System.getProperties());
 
         SystemConfig config = SystemConfig.instance();
-        config.setS3Type(System.getProperty(ConfigConstants.S3_TYPE));
         config.setAuditLogSpaceId(System
                                       .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
 
-        config.setAwsAccessKey(System.getProperty(ConfigConstants.AWS_ACCESS_KEY_ID));
-        config.setAwsSecretKey(System.getProperty(ConfigConstants.AWS_SECRET_KEY));
+        config.setSwiftAccessKey(System.getProperty(ConfigConstants.SWIFT_ACCESS_KEY));
+        config.setSwiftSecretKey(System.getProperty(ConfigConstants.SWIFT_SECRET_KEY));
         config.setSwiftEndpoint(System.getProperty(ConfigConstants.SWIFT_ENDPOINT));
         config.setSwiftSignerType(System.getProperty(ConfigConstants.SWIFT_SIGNER_TYPE));
 

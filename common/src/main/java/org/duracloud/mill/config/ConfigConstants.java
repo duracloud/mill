@@ -64,6 +64,8 @@ public class ConfigConstants {
      */
     public static final String AWS_ACCESS_KEY_ID = "aws.accessKeyId";
     public static final String AWS_SECRET_KEY = "aws.secretKey";
+    public static final String SWIFT_ACCESS_KEY = "swift.accessKey";
+    public static final String SWIFT_SECRET_KEY = "swift.secretKey";
     public static final String SWIFT_ENDPOINT = "swift.endpoint";
     public static final String SWIFT_SIGNER_TYPE = "swift.signerType";
 

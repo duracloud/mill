@@ -73,6 +73,7 @@ public class AppDriver extends DriverSupport {
 
         List<PropertyDefinition> defintions =
             new PropertyDefinitionListBuilder().addAws()
+                                               .addSwift()
                                                .addMillDb()
                                                .addMcDb()
                                                .addDeadLetterQueue()
@@ -83,6 +84,7 @@ public class AppDriver extends DriverSupport {
                                                .addBitIntegrityQueue()
                                                .addBitIntegrityErrorQueue()
                                                .addBitIntegrityReportQueue()
+                                               .addNotificationConfig()
                                                .addNotifications()
                                                .addWorkDir()
                                                .addTaskQueueOrder()

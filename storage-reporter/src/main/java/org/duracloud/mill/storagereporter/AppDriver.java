@@ -52,6 +52,7 @@ public class AppDriver extends DriverSupport {
     protected void executeImpl(CommandLine commandLine) {
 
         List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
+                                                                                 .addNotificationConfig()
                                                                                  .addNotifications()
                                                                                  .addNotificationsNonTech()
                                                                                  .addMcDb()

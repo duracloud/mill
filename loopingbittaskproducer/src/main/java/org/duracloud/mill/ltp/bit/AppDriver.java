@@ -88,8 +88,10 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         List<PropertyDefinition> defintions =
             new PropertyDefinitionListBuilder().addAws()
+                                               .addNotificationConfig()
                                                .addNotifications()
                                                .addMcDb()
+                                               .addRabbitMQConfig()
                                                .addBitIntegrityQueue()
                                                .addLoopingBitFrequency()
                                                .addLoopingBitMaxQueueSize()
