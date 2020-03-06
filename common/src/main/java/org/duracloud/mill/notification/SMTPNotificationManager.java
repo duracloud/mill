@@ -24,9 +24,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
  * @author Andrew Hong
  * Date: October 1, 2019
  */
-public class SpringNotificationManager implements NotificationManager {
+public class SMTPNotificationManager implements NotificationManager {
     private static final Logger log =
-            LoggerFactory.getLogger(SpringNotificationManager.class);
+            LoggerFactory.getLogger(SMTPNotificationManager.class);
 
     private JavaMailSenderImpl emailService;
     private String[] recipientEmailAddresses;
@@ -35,7 +35,7 @@ public class SpringNotificationManager implements NotificationManager {
     /**
      * @param
      */
-    public SpringNotificationManager(String[] recipientEmailAddresses, ConfigurationManager configurationManager) {
+    public SMTPNotificationManager(String[] recipientEmailAddresses, ConfigurationManager configurationManager) {
         this.recipientEmailAddresses = recipientEmailAddresses;
         if (ArrayUtils.isEmpty(this.recipientEmailAddresses)) {
             log.warn("There are no recipient emails configured. The notification manager will " +
@@ -47,23 +47,29 @@ public class SpringNotificationManager implements NotificationManager {
         }
 
         String[] emailConfig = configurationManager.getSpringConfig();
-        String host = emailConfig[0].trim();
-        Integer port = Integer.parseInt(emailConfig[1].trim());
-        String username = emailConfig[2].trim();
-        String password = emailConfig[3].trim();
+        String host = emailConfig[0];
+        String port = emailConfig[1];
+        String username = emailConfig[2];
+        String password = emailConfig[3];
         sender = emailConfig[4].trim();
 
         emailService = new JavaMailSenderImpl();
         Properties mailProperties = new Properties();
-        mailProperties.put("mail.smtp.auth", "true");
+        if (username != null) {
+            mailProperties.put("mail.smtp.auth", "true");
+            emailService.setUsername(username.trim());
+            emailService.setPassword(password.trim());
+        }
         mailProperties.put("mail.smtp.starttls.enable", "true");
         mailProperties.put("mail.smtp.starttls.required", "true");
         emailService.setJavaMailProperties(mailProperties);
         emailService.setProtocol("smtp");
-        emailService.setHost(host);
-        emailService.setPort(port);
-        emailService.setUsername(username);
-        emailService.setPassword(password);
+        emailService.setHost(host.trim());
+        // Set default port
+        if (port == null || port.isEmpty()) {
+            port = "25";
+        }
+        emailService.setPort(Integer.parseInt(port.trim()));
 
         try {
             //Test the connection
@@ -74,8 +80,8 @@ public class SpringNotificationManager implements NotificationManager {
                     host, port, username);
 
         } catch (MessagingException ex) {
-            log.error("Email connection test failed when connecting to {}, Port: {}, User: {}, because {}", host, port,
-                    username, ex.getMessage());
+            log.error("Email connection test failed when connecting to {}, Port: {}, User: {}, because {}",
+                    host, port, username, ex.getMessage());
         }
     }
 

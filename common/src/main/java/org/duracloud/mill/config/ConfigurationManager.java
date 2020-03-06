@@ -49,12 +49,10 @@ public class ConfigurationManager {
      */
     public String getQueueType() {
         String queueType = System.getProperty(ConfigConstants.QUEUE_TYPE).trim();
-        if ( queueType.equalsIgnoreCase("aws") ) {
-            return "AWS";
-        } else if ( queueType.equalsIgnoreCase("rabbitmq") ) {
-            return "RABBITMQ";
+        if (queueType.equalsIgnoreCase("rabbitmq")) {
+            return "RabbitMQ";
         } else {
-            return "Unknown";
+            return "AWS";
         }
     }
 
@@ -62,8 +60,7 @@ public class ConfigurationManager {
      * @return
      */
     public String[] getRabbitMQConfig() {
-
-        if ( getQueueType() == "RABBITMQ" ) {
+        if (getQueueType().equals("RabbitMQ")) {
             String[] config = new String[] {
                 System.getProperty(ConfigConstants.RABBITMQ_HOST),
                 System.getProperty(ConfigConstants.RABBITMQ_PORT),
@@ -82,13 +79,11 @@ public class ConfigurationManager {
      * @return
      */
     public String getNotificationType() {
-        String notificationType = System.getProperty(ConfigConstants.NOTIFICATION_TYPE).trim();
-        if ( notificationType.equalsIgnoreCase("aws") ) {
-            return "AWS";
-        } else if ( notificationType.equalsIgnoreCase("spring") ) {
-            return "SPRING";
+        String notificationType = System.getProperty(ConfigConstants.NOTIFICATION_TYPE);
+        if (notificationType != null && notificationType.trim().equalsIgnoreCase("SMTP")) {
+            return "SMTP";
         } else {
-            return "Unknown";
+            return "AWS";
         }
     }
 
@@ -96,7 +91,7 @@ public class ConfigurationManager {
      * @return
      */
     public String[] getSpringConfig() {
-        if ( getNotificationType() == "SPRING" ) {
+        if (getNotificationType().equals("SMTP")) {
             String[] config = new String[] {
                     System.getProperty(ConfigConstants.NOTIFICATION_HOST),
                     System.getProperty(ConfigConstants.NOTIFICATION_PORT),

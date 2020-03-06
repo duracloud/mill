@@ -16,7 +16,7 @@ import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.db.repo.JpaSpaceStatsRepo;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
-import org.duracloud.mill.notification.SpringNotificationManager;
+import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.PropertyDefinition;
@@ -84,9 +84,9 @@ public class AppDriver extends DriverSupport {
         if (notificationType == "AWS") {
             notification =
                     new SESNotificationManager(recipients.toArray(new String[0]));
-        } else if (notificationType == "SPRING") {
+        } else if (notificationType == "SMTP") {
             notification =
-                    new SpringNotificationManager(configManager.getNotificationRecipients(), configManager);
+                    new SMTPNotificationManager(configManager.getNotificationRecipients(), configManager);
         }
 
         StorageReporter reporter = new StorageReporter(statsRepo, accountRepo, notification);

@@ -49,7 +49,7 @@ import org.duracloud.mill.manifest.jpa.JpaManifestStore;
 import org.duracloud.mill.noop.NoopTaskProcessorFactory;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
-import org.duracloud.mill.notification.SpringNotificationManager;
+import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.storagestats.SpaceStatsManager;
 import org.duracloud.mill.storagestats.StorageStatsTaskProcessorFactory;
 import org.duracloud.mill.workman.MultiStepTaskProcessorFactory;
@@ -403,8 +403,8 @@ public class AppConfig {
 
         if (notificationType == "AWS") {
             manager = new SESNotificationManager(recipients);
-        } else if (notificationType == "SPRING") {
-            manager = new SpringNotificationManager(recipients, configurationManager);
+        } else if (notificationType == "SMTP") {
+            manager = new SMTPNotificationManager(recipients, configurationManager);
         } else {
             return null;
         }

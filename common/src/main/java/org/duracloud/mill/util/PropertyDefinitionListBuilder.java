@@ -69,7 +69,7 @@ public class PropertyDefinitionListBuilder {
     }
 
     public PropertyDefinitionListBuilder addQueueType() {
-        add(ConfigConstants.QUEUE_TYPE, true);
+        add(ConfigConstants.QUEUE_TYPE, false);
         return this;
     }
 

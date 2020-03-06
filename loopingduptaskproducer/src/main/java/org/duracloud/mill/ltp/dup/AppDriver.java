@@ -33,7 +33,7 @@ import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
-import org.duracloud.mill.notification.SpringNotificationManager;
+import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
@@ -141,9 +141,9 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         if (notificationType == "AWS") {
             notificationMananger =
                     new SESNotificationManager(config.getNotificationRecipients());
-        } else if (notificationType == "SPRING") {
+        } else if (notificationType == "SMTP") {
             notificationMananger =
-                    new SpringNotificationManager(config.getNotificationRecipients(), config);
+                    new SMTPNotificationManager(config.getNotificationRecipients(), config);
         }
 
         LoopingDuplicationTaskProducer producer =
