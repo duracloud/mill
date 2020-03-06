@@ -14,6 +14,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
+import org.duracloud.common.constant.Constants;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
@@ -117,7 +118,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         String queueType = config.getQueueType();
         TaskQueue taskQueue = null;
-        if (config.getQueueType() == "RABBITMQ") {
+        if (config.getQueueType().equals(Constants.RABBITMQ)) {
             String[] queueConfig = config.getRabbitMQConfig();
             taskQueue = new RabbitMQTaskQueue(queueConfig[0], Integer.parseInt(queueConfig[1]), queueConfig[2],
                     queueConfig[3], queueConfig[4], queueConfig[5], getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
@@ -138,12 +139,12 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath, DuplicationMorsel.class);
         NotificationManager notificationMananger = null;
         String notificationType = config.getNotificationType();
-        if (notificationType == "AWS") {
-            notificationMananger =
-                    new SESNotificationManager(config.getNotificationRecipients());
-        } else if (notificationType == "SMTP") {
+        if (notificationType.equals(Constants.SMTP)) {
             notificationMananger =
                     new SMTPNotificationManager(config.getNotificationRecipients(), config);
+        } else {
+            notificationMananger =
+                    new SESNotificationManager(config.getNotificationRecipients());
         }
 
         LoopingDuplicationTaskProducer producer =

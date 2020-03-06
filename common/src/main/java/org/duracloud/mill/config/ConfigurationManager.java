@@ -8,6 +8,7 @@
 package org.duracloud.mill.config;
 
 import org.apache.commons.lang3.StringUtils;
+import org.duracloud.common.constant.Constants;
 
 /**
  * @author Daniel Bernstein
@@ -48,11 +49,11 @@ public class ConfigurationManager {
      * @return
      */
     public String getQueueType() {
-        String queueType = System.getProperty(ConfigConstants.QUEUE_TYPE).trim();
-        if (queueType.equalsIgnoreCase("rabbitmq")) {
-            return "RabbitMQ";
+        String queueType = System.getProperty(ConfigConstants.QUEUE_TYPE);
+        if (queueType != null && queueType.trim().equalsIgnoreCase(Constants.RABBITMQ)) {
+            return Constants.RABBITMQ;
         } else {
-            return "AWS";
+            return Constants.SQS;
         }
     }
 
@@ -60,7 +61,7 @@ public class ConfigurationManager {
      * @return
      */
     public String[] getRabbitMQConfig() {
-        if (getQueueType().equals("RabbitMQ")) {
+        if (getQueueType().equals(Constants.RABBITMQ)) {
             String[] config = new String[] {
                 System.getProperty(ConfigConstants.RABBITMQ_HOST),
                 System.getProperty(ConfigConstants.RABBITMQ_PORT),
@@ -80,18 +81,18 @@ public class ConfigurationManager {
      */
     public String getNotificationType() {
         String notificationType = System.getProperty(ConfigConstants.NOTIFICATION_TYPE);
-        if (notificationType != null && notificationType.trim().equalsIgnoreCase("SMTP")) {
-            return "SMTP";
+        if (notificationType != null && notificationType.trim().equalsIgnoreCase(Constants.SMTP)) {
+            return Constants.SMTP;
         } else {
-            return "AWS";
+            return Constants.SES;
         }
     }
 
     /**
      * @return
      */
-    public String[] getSpringConfig() {
-        if (getNotificationType().equals("SMTP")) {
+    public String[] getSMTPConfig() {
+        if (getNotificationType().equals(Constants.SMTP)) {
             String[] config = new String[] {
                     System.getProperty(ConfigConstants.NOTIFICATION_HOST),
                     System.getProperty(ConfigConstants.NOTIFICATION_PORT),

@@ -46,7 +46,7 @@ public class SMTPNotificationManager implements NotificationManager {
                     ArrayUtils.toString(recipientEmailAddresses));
         }
 
-        String[] emailConfig = configurationManager.getSpringConfig();
+        String[] emailConfig = configurationManager.getSMTPConfig();
         String host = emailConfig[0];
         String port = emailConfig[1];
         String username = emailConfig[2];

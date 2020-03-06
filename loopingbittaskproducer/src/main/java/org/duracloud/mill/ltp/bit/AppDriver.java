@@ -10,6 +10,7 @@ package org.duracloud.mill.ltp.bit;
 import java.io.File;
 import java.util.List;
 
+import org.duracloud.common.constant.Constants;
 import org.duracloud.common.error.DuraCloudRuntimeException;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
@@ -113,18 +114,18 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         NotificationManager notificationMananger = null;
         String notificationType = config.getNotificationType();
-        if (notificationType == "AWS") {
-            notificationMananger =
-                    new SESNotificationManager(config.getNotificationRecipients());
-        } else if (notificationType == "SMTP") {
+        if (notificationType.equals(Constants.SMTP)) {
             notificationMananger =
                     new SMTPNotificationManager(config.getNotificationRecipients(), config);
+        } else {
+            notificationMananger =
+                    new SESNotificationManager(config.getNotificationRecipients());
         }
 
         String queueType = config.getQueueType();
         TaskQueue bitTaskQueue = null;
         TaskQueue bitReportQueue = null;
-        if (config.getQueueType() == "RABBITMQ") {
+        if (config.getQueueType().equals(Constants.RABBITMQ)) {
             String[] queueConfig = config.getRabbitMQConfig();
             bitTaskQueue = new RabbitMQTaskQueue(queueConfig[0], Integer.parseInt(queueConfig[1]), queueConfig[2],
                     queueConfig[3], queueConfig[4], queueConfig[5], config.getBitIntegrityQueue());

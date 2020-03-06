@@ -14,6 +14,7 @@ import java.util.List;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.common.constant.Constants;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
@@ -236,7 +237,7 @@ public class AppConfig {
         List<String> taskQueuesNames = configurationManager.getTaskQueueNames();
         List<TaskQueue> taskQueues = new LinkedList<>();
         String queueType = configurationManager.getQueueType();
-        boolean isRabbitMQ = queueType.trim().equalsIgnoreCase("RABBITMQ");
+        boolean isRabbitMQ = queueType.equals(Constants.RABBITMQ);
         String[] queueConfig = null;
         Connection mqConn = null;
 
@@ -266,7 +267,7 @@ public class AppConfig {
 
     protected TaskQueue createTaskQueue (String queueType, TaskProducerConfigurationManager configurationManager, String queueName) {
         TaskQueue taskQueue;
-        if ( queueType.trim().equalsIgnoreCase("RABBITMQ") ) {
+        if (queueType.equals(Constants.RABBITMQ) ) {
             String[] queueConfig = configurationManager.getRabbitMQConfig();
             Connection mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[4], queueConfig[5]);
             if (mqConn != null) {
@@ -401,13 +402,12 @@ public class AppConfig {
         String notificationType = configurationManager.getNotificationType();
         NotificationManager manager;
 
-        if (notificationType == "AWS") {
-            manager = new SESNotificationManager(recipients);
-        } else if (notificationType == "SMTP") {
+        if (notificationType.equals(Constants.SMTP)) {
             manager = new SMTPNotificationManager(recipients, configurationManager);
         } else {
-            return null;
+            manager = new SESNotificationManager(recipients);
         }
+
         return manager;
     }
 

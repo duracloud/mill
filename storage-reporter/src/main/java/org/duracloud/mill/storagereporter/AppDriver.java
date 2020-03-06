@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.common.constant.Constants;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.db.repo.JpaSpaceStatsRepo;
 import org.duracloud.mill.notification.NotificationManager;
@@ -81,12 +82,12 @@ public class AppDriver extends DriverSupport {
 
         NotificationManager notification = null;
         String notificationType = configManager.getNotificationType();
-        if (notificationType == "AWS") {
-            notification =
-                    new SESNotificationManager(recipients.toArray(new String[0]));
-        } else if (notificationType == "SMTP") {
+        if (notificationType.equals(Constants.SMTP)) {
             notification =
                     new SMTPNotificationManager(configManager.getNotificationRecipients(), configManager);
+        } else {
+            notification =
+                    new SESNotificationManager(recipients.toArray(new String[0]));
         }
 
         StorageReporter reporter = new StorageReporter(statsRepo, accountRepo, notification);
