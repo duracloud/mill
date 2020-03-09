@@ -122,8 +122,15 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         TaskQueue queue = null;
         if (config.getQueueType().equals(Constants.RABBITMQ)) {
             String[] queueConfig = config.getRabbitMQConfig();
+            String rmqHost = queueConfig[0];
+            Integer rmqPort = Integer.parseInt(queueConfig[1]);
+            String rmqVhost = queueConfig[2];
+            String rmqExchange = queueConfig[3];
+            String rmqUser = queueConfig[4];
+            String rmqPass = queueConfig[5];
             queue = new RabbitMQTaskQueue(
-                queueConfig[0], Integer.parseInt(queueConfig[1]), queueConfig[2], queueConfig[3], queueConfig[4], queueConfig[5], config.getStorageStatsQueue()
+                rmqHost, rmqPort, rmqVhost, rmqExchange, rmqUser, rmqPass,
+                config.getStorageStatsQueue()
             );
         } else {
             queue = new SQSTaskQueue(config.getStorageStatsQueue());

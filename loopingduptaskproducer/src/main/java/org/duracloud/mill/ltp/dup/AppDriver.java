@@ -98,17 +98,23 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             DuplicationPolicyRepo policyRepo;
             String bucketSuffix = config.getDuplicationPolicyBucketSuffix();
             String[] swiftConfig = config.getSwiftConfig();
+            String swiftAccessKey = swiftConfig[0];
+            String swiftSecretKey = swiftConfig[1];
+            String swiftEndpoint = swiftConfig[2];
+            String swiftSigner = swiftConfig[3];
             if (bucketSuffix != null) {
-                if (swiftConfig[2] != null) { // if we have a Swift Endpoint configured
-                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
-                        swiftConfig[2], swiftConfig[3], bucketSuffix);
+                if (swiftEndpoint != null && !swiftEndpoint.isEmpty()) {
+                    policyRepo = new SwiftDuplicationPolicyRepo(
+                        swiftAccessKey, swiftSecretKey, swiftEndpoint, swiftSigner, bucketSuffix
+                    );
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
                 }
             } else {
-                if (swiftConfig[2] != null) { // if we have a Swift Endpoint configured
-                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
-                        swiftConfig[2], swiftConfig[3]);
+                if (swiftEndpoint != null && !swiftEndpoint.isEmpty()) {
+                    policyRepo = new SwiftDuplicationPolicyRepo(
+                        swiftAccessKey, swiftSecretKey, swiftEndpoint, swiftSigner
+                    );
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo();
                 }
@@ -120,8 +126,16 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         TaskQueue taskQueue = null;
         if (config.getQueueType().equals(Constants.RABBITMQ)) {
             String[] queueConfig = config.getRabbitMQConfig();
-            taskQueue = new RabbitMQTaskQueue(queueConfig[0], Integer.parseInt(queueConfig[1]), queueConfig[2],
-                    queueConfig[3], queueConfig[4], queueConfig[5], getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
+            String rmqHost = queueConfig[0];
+            Integer rmqPort = Integer.parseInt(queueConfig[1]);
+            String rmqVhost = queueConfig[2];
+            String rmqExchange = queueConfig[3];
+            String rmqUser = queueConfig[4];
+            String rmqPass = queueConfig[5];
+            taskQueue = new RabbitMQTaskQueue(
+                rmqHost, rmqPort, rmqVhost, rmqExchange, rmqUser, rmqPass,
+                getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY)
+            );
         } else {
             taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
         }

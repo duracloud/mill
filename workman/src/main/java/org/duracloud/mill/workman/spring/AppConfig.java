@@ -233,24 +233,39 @@ public class AppConfig {
         return new TaskWorkerFactoryImpl(factory, deadLetterQueue);
     }
 
+    private Boolean isRabbitMQ(String queueType) {
+        return queueType.equals(Constants.RABBITMQ);
+    }
+
     protected List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager) {
         List<String> taskQueuesNames = configurationManager.getTaskQueueNames();
         List<TaskQueue> taskQueues = new LinkedList<>();
         String queueType = configurationManager.getQueueType();
-        boolean isRabbitMQ = queueType.equals(Constants.RABBITMQ);
         String[] queueConfig = null;
         Connection mqConn = null;
+        String rmqHost;
+        Integer rmqPort;
+        String rmqVhost;
+        String rmqExchange;
+        String rmqUser;
+        String rmqPass;
 
-        if (isRabbitMQ) {
+        if (isRabbitMQ(queueType)) {
             queueConfig = configurationManager.getRabbitMQConfig();
-            mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[4], queueConfig[5]);
+            rmqHost = queueConfig[0];
+            rmqPort = Integer.parseInt(queueConfig[1]);
+            rmqVhost = queueConfig[2];
+            rmqUser = queueConfig[4];
+            rmqPass = queueConfig[5];
+            mqConn = getRabbitMQConnection(rmqHost, rmqPort, rmqVhost, rmqUser, rmqPass);
         }
 
         for (String taskQueueName : taskQueuesNames) {
             TaskQueue taskQueue;
-            if (isRabbitMQ) {
+            if (isRabbitMQ(queueType)) {
                 if (mqConn != null) {
-                    taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[3], taskQueueName.trim());
+                    rmqExchange = queueConfig[3];
+                    taskQueue = new RabbitMQTaskQueue(mqConn, rmqExchange, taskQueueName.trim());
                 } else {
                     break;
                 }
@@ -267,11 +282,17 @@ public class AppConfig {
 
     protected TaskQueue createTaskQueue (String queueType, TaskProducerConfigurationManager configurationManager, String queueName) {
         TaskQueue taskQueue;
-        if (queueType.equals(Constants.RABBITMQ) ) {
+        if (isRabbitMQ(queueType)) {
             String[] queueConfig = configurationManager.getRabbitMQConfig();
-            Connection mqConn = getRabbitMQConnection(queueConfig[0], queueConfig[1], queueConfig[2], queueConfig[4], queueConfig[5]);
+            String rmqHost = queueConfig[0];
+            Integer rmqPort = Integer.parseInt(queueConfig[1]);
+            String rmqVhost = queueConfig[2];
+            String rmqExchange = queueConfig[3];
+            String rmqUser = queueConfig[4];
+            String rmqPass = queueConfig[5];
+            Connection mqConn = getRabbitMQConnection(rmqHost, rmqPort, rmqVhost, rmqUser, rmqPass);
             if (mqConn != null) {
-                taskQueue = new RabbitMQTaskQueue(mqConn, queueConfig[3], queueName.trim());
+                taskQueue = new RabbitMQTaskQueue(mqConn, rmqExchange, queueName.trim());
             } else {
                 return null;
             }
@@ -281,7 +302,7 @@ public class AppConfig {
         return taskQueue;
     }
 
-    protected Connection getRabbitMQConnection (String host, String port, String vhost, String username, String password) {
+    protected Connection getRabbitMQConnection (String host, Integer port, String vhost, String username, String password) {
         if ( rabbitMqConnection == null ) {
             try {
                 ConnectionFactory factory = new ConnectionFactory();
@@ -289,7 +310,7 @@ public class AppConfig {
                 factory.setPassword(password);
                 factory.setVirtualHost(vhost);
                 factory.setHost(host);
-                factory.setPort(Integer.parseInt(port));
+                factory.setPort(port);
                 Connection conn = factory.newConnection();
                 rabbitMqConnection = conn;
                 return conn;
@@ -367,17 +388,23 @@ public class AppConfig {
         } else {
             String suffix = configurationManager.getPolicyBucketSuffix();
             String[] swiftConfig = configurationManager.getSwiftConfig();
+            String swiftAccessKey = swiftConfig[0];
+            String swiftSecretKey = swiftConfig[1];
+            String swiftEndpoint = swiftConfig[2];
+            String swiftSigner = swiftConfig[3];
             if ( suffix != null ) {
-                if (swiftConfig[2] != null) { // if we have a Swift Endpoint configured
-                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
-                            swiftConfig[2], swiftConfig[3], suffix);
+                if (swiftEndpoint != null && !swiftEndpoint.isEmpty()) {
+                    policyRepo = new SwiftDuplicationPolicyRepo(
+                        swiftAccessKey, swiftSecretKey, swiftEndpoint, swiftSigner, suffix
+                    );
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo(suffix);
                 }
             } else {
-                if (swiftConfig[2] != null) { // if we have a Swift Endpoint configured
-                    policyRepo = new SwiftDuplicationPolicyRepo(swiftConfig[0], swiftConfig[1],
-                            swiftConfig[2], swiftConfig[3]);
+                if (swiftEndpoint != null && !swiftEndpoint.isEmpty()) {
+                    policyRepo = new SwiftDuplicationPolicyRepo(
+                        swiftAccessKey, swiftSecretKey, swiftEndpoint, swiftSigner
+                    );
                 } else {
                     policyRepo = new S3DuplicationPolicyRepo();
                 }
