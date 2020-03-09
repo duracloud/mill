@@ -79,7 +79,6 @@ public class AppDriver extends DriverSupport {
                                                .addDeadLetterQueue()
                                                .addQueueType()
                                                .addRabbitMQConfig()
-                                               .addQueueType()
                                                .addAuditQueue()
                                                .addBitIntegrityQueue()
                                                .addBitIntegrityErrorQueue()

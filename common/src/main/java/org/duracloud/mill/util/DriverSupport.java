@@ -46,7 +46,6 @@ public abstract class DriverSupport {
     public CommandLine parseArgs(String[] args) {
         CommandLineParser parser = new GnuParser();
         CommandLine cmd = null;
-        log.debug(String.valueOf(args));
         try {
             cmd = parser.parse(this.options, args);
         } catch (ParseException e) {

@@ -1,3 +1,10 @@
+/*
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ *     http://duracloud.org/license/
+ */
 package org.duracloud.mill.dup.repo;
 
 import java.io.InputStream;
@@ -22,10 +29,8 @@ public class SwiftDuplicationPolicyRepo implements DuplicationPolicyRepo {
     private String policyRepoBucketSuffix;
 
     /**
-     * Creates an S3 policy repo connection. Expects that S3 credentials
-     * will be available from the environment, as described here:
-     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client
-     * .html#AmazonS3Client%28%29
+     * Creates a Swift duplication policy repo connection.
+     * Connection details must be configured in .properties file.
      */
     public SwiftDuplicationPolicyRepo(String accessKey, String secretKey, String endpoint, String signer) {
         Map<String, String> map = new HashMap<String, String>();
@@ -58,7 +63,7 @@ public class SwiftDuplicationPolicyRepo implements DuplicationPolicyRepo {
 
         if (null == policyRepoBucketName) {
             throw new RuntimeException("Unable to find duplication policy " +
-                    "repo bucket in S3. Bucket suffix: " +
+                    "repo bucket in Swift. Bucket suffix: " +
                     policyRepoBucketSuffix);
         }
     }

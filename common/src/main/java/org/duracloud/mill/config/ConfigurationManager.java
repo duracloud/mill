@@ -32,9 +32,6 @@ public class ConfigurationManager {
         return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS);
     }
 
-    /**
-     * @return
-     */
     public String[] getSwiftConfig() {
         String[] config = new String[] {
             System.getProperty(ConfigConstants.SWIFT_ACCESS_KEY),
@@ -45,9 +42,6 @@ public class ConfigurationManager {
         return config;
     }
 
-    /**
-     * @return
-     */
     public String getQueueType() {
         String queueType = System.getProperty(ConfigConstants.QUEUE_TYPE);
         if (queueType != null && queueType.trim().equalsIgnoreCase(Constants.RABBITMQ)) {
@@ -57,9 +51,6 @@ public class ConfigurationManager {
         }
     }
 
-    /**
-     * @return
-     */
     public String[] getRabbitMQConfig() {
         if (getQueueType().equals(Constants.RABBITMQ)) {
             String[] config = new String[] {
@@ -76,9 +67,6 @@ public class ConfigurationManager {
         }
     }
 
-    /**
-     * @return
-     */
     public String getNotificationType() {
         String notificationType = System.getProperty(ConfigConstants.NOTIFICATION_TYPE);
         if (notificationType != null && notificationType.trim().equalsIgnoreCase(Constants.SMTP)) {
@@ -88,9 +76,6 @@ public class ConfigurationManager {
         }
     }
 
-    /**
-     * @return
-     */
     public String[] getSMTPConfig() {
         if (getNotificationType().equals(Constants.SMTP)) {
             String[] config = new String[] {
