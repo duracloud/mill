@@ -55,7 +55,6 @@ public class ConfigConstants {
     /*
      * AUDIT LOG GENERATOR
      */
-    public static final String S3_TYPE = "s3.type";
     public static final String AUDIT_LOGS_SPACE_ID = "audit-log-generator.audit-log-space-id";
     public static final String AUDIT_LOG_GENERATOR_AUDIT_LOG_SPACE_ID = "audit-log-generator.audit-log-space-id";
 
