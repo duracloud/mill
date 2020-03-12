@@ -108,12 +108,12 @@ public class TaskWorkerImpl implements TaskWorker {
      */
     protected void init() {
         log.debug("taskworker {} initializing...", this);
-
-        scheduleVisibilityTimeoutExtender(task, new Date(), task.getVisibilityTimeout());
-
+        Integer visibilityTimeout = task.getVisibilityTimeout();
+        if (visibilityTimeout > 0) {
+            scheduleVisibilityTimeoutExtender(task, new Date(), visibilityTimeout);
+        }
         log.debug("taskworker {} initialized", this);
         initialized = true;
-
     }
 
     @Override
