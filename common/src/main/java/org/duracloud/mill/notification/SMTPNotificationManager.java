@@ -33,7 +33,10 @@ public class SMTPNotificationManager implements NotificationManager {
     private String sender;
 
     /**
-     * @param
+     * Sets up and tests a connection to an SMTP server
+     *
+     * @param recipientEmailAddresses
+     * @param configurationManager
      */
     public SMTPNotificationManager(String[] recipientEmailAddresses, ConfigurationManager configurationManager) {
         this.recipientEmailAddresses = recipientEmailAddresses;
