@@ -8,7 +8,8 @@
 package org.duracloud.mill.config;
 
 import org.apache.commons.lang3.StringUtils;
-import org.duracloud.common.constant.Constants;
+import org.duracloud.common.model.EmailerType;
+import org.duracloud.common.queue.QueueType;
 
 /**
  * @author Daniel Bernstein
@@ -42,17 +43,18 @@ public class ConfigurationManager {
         return config;
     }
 
-    public String getQueueType() {
+    public QueueType getQueueType() {
         String queueType = System.getProperty(ConfigConstants.QUEUE_TYPE);
-        if (queueType != null && queueType.trim().equalsIgnoreCase(Constants.RABBITMQ)) {
-            return Constants.RABBITMQ;
+        if (queueType != null &&
+            queueType.trim().equalsIgnoreCase(QueueType.RABBITMQ.toString())) {
+            return QueueType.RABBITMQ;
         } else {
-            return Constants.SQS;
+            return QueueType.SQS;
         }
     }
 
     public String[] getRabbitMQConfig() {
-        if (getQueueType().equals(Constants.RABBITMQ)) {
+        if (getQueueType().equals(QueueType.RABBITMQ)) {
             String[] config = new String[] {
                 System.getProperty(ConfigConstants.RABBITMQ_HOST),
                 System.getProperty(ConfigConstants.RABBITMQ_PORT),
@@ -67,17 +69,18 @@ public class ConfigurationManager {
         }
     }
 
-    public String getNotificationType() {
-        String notificationType = System.getProperty(ConfigConstants.NOTIFICATION_TYPE);
-        if (notificationType != null && notificationType.trim().equalsIgnoreCase(Constants.SMTP)) {
-            return Constants.SMTP;
+    public EmailerType getEmailerType() {
+        String emailerType = System.getProperty(ConfigConstants.EMAILER_TYPE);
+        if (emailerType != null &&
+            emailerType.trim().equalsIgnoreCase(EmailerType.SMTP.toString())) {
+            return EmailerType.SMTP;
         } else {
-            return Constants.SES;
+            return EmailerType.SES;
         }
     }
 
     public String[] getSMTPConfig() {
-        if (getNotificationType().equals(Constants.SMTP)) {
+        if (getEmailerType().equals(EmailerType.SMTP)) {
             String[] config = new String[] {
                     System.getProperty(ConfigConstants.NOTIFICATION_HOST),
                     System.getProperty(ConfigConstants.NOTIFICATION_PORT),

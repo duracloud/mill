@@ -124,7 +124,7 @@ public class PropertyDefinitionListBuilder {
     }
 
     public PropertyDefinitionListBuilder addNotificationConfig() {
-        add(ConfigConstants.NOTIFICATION_TYPE, false);
+        add(ConfigConstants.EMAILER_TYPE, false);
         add(ConfigConstants.NOTIFICATION_HOST, false);
         add(ConfigConstants.NOTIFICATION_PORT, false);
         add(ConfigConstants.NOTIFICATION_USER, false);

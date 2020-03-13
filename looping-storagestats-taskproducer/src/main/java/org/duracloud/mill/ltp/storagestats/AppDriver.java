@@ -10,8 +10,9 @@ package org.duracloud.mill.ltp.storagestats;
 import java.io.File;
 import java.util.List;
 
-import org.duracloud.common.constant.Constants;
 import org.duracloud.common.error.DuraCloudRuntimeException;
+import org.duracloud.common.model.EmailerType;
+import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
@@ -110,8 +111,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
         NotificationManager notificationMananger = null;
-        String notificationType = config.getNotificationType();
-        if (notificationType.equals(Constants.SMTP)) {
+        if (config.getEmailerType() == EmailerType.SMTP) {
             notificationMananger =
                     new SMTPNotificationManager(config.getNotificationRecipients(), config);
         } else {
@@ -120,7 +120,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         }
 
         TaskQueue queue = null;
-        if (config.getQueueType().equals(Constants.RABBITMQ)) {
+        if (config.getQueueType() == QueueType.RABBITMQ) {
             String[] queueConfig = config.getRabbitMQConfig();
             String rmqHost = queueConfig[0];
             Integer rmqPort = Integer.parseInt(queueConfig[1]);

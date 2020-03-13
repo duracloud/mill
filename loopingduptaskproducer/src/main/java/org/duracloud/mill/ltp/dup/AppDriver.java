@@ -14,7 +14,8 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
-import org.duracloud.common.constant.Constants;
+import org.duracloud.common.model.EmailerType;
+import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
@@ -122,9 +123,8 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             policyManager = new DuplicationPolicyManager(policyRepo);
         }
 
-        String queueType = config.getQueueType();
         TaskQueue taskQueue = null;
-        if (config.getQueueType().equals(Constants.RABBITMQ)) {
+        if (config.getQueueType() == QueueType.RABBITMQ) {
             String[] queueConfig = config.getRabbitMQConfig();
             String rmqHost = queueConfig[0];
             Integer rmqPort = Integer.parseInt(queueConfig[1]);
@@ -152,8 +152,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         String stateFilePath = new File(config.getWorkDirectoryPath(), "dup-producer-state.json").getAbsolutePath();
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath, DuplicationMorsel.class);
         NotificationManager notificationMananger = null;
-        String notificationType = config.getNotificationType();
-        if (notificationType.equals(Constants.SMTP)) {
+        if (config.getEmailerType() == EmailerType.SMTP) {
             notificationMananger =
                     new SMTPNotificationManager(config.getNotificationRecipients(), config);
         } else {

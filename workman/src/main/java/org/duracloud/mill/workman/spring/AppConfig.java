@@ -14,7 +14,8 @@ import java.util.List;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
-import org.duracloud.common.constant.Constants;
+import org.duracloud.common.model.EmailerType;
+import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
 import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
@@ -233,14 +234,14 @@ public class AppConfig {
         return new TaskWorkerFactoryImpl(factory, deadLetterQueue);
     }
 
-    private Boolean isRabbitMQ(String queueType) {
-        return queueType.equals(Constants.RABBITMQ);
+    private Boolean isRabbitMQ(QueueType queueType) {
+        return queueType == QueueType.RABBITMQ;
     }
 
     protected List<TaskQueue> createTaskQueues(WorkmanConfigurationManager configurationManager) {
         List<String> taskQueuesNames = configurationManager.getTaskQueueNames();
         List<TaskQueue> taskQueues = new LinkedList<>();
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         String[] queueConfig = null;
         Connection mqConn = null;
         String rmqHost;
@@ -280,7 +281,7 @@ public class AppConfig {
         return taskQueues;
     }
 
-    protected TaskQueue createTaskQueue (String queueType, TaskProducerConfigurationManager configurationManager, String queueName) {
+    protected TaskQueue createTaskQueue (QueueType queueType, TaskProducerConfigurationManager configurationManager, String queueName) {
         TaskQueue taskQueue;
         if (isRabbitMQ(queueType)) {
             String[] queueConfig = configurationManager.getRabbitMQConfig();
@@ -325,49 +326,49 @@ public class AppConfig {
 
     @Bean
     public TaskQueue auditQueue(TaskProducerConfigurationManager configurationManager) {
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager, configurationManager.getAuditQueueName());
-        log.info("created audit queue {} of type: {}", queue, queueType);
+        log.info("created audit queue {} of type: {}", queue.getName(), queueType.toString());
         return queue;
     }
 
     @Bean
     public TaskQueue bitErrorQueue(WorkmanConfigurationManager configurationManager) {
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager, configurationManager.getBitErrorQueueName());
-        log.info("created bit error queue {} of type: {}", queue, queueType);
+        log.info("created bit error queue {} of type: {}", queue.getName(), queueType.toString());
         return queue;
     }
 
     @Bean
     public TaskQueue bitIntegrityQueue(WorkmanConfigurationManager configurationManager) {
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager, configurationManager.getBitIntegrityQueue());
-        log.info("created bit integrity queue {} of type: {}", queue, queueType);
+        log.info("created bit integrity queue {} of type: {}", queue.getName(), queueType.toString());
         return queue;
     }
 
     @Bean
     public TaskQueue bitReportQueue(TaskProducerConfigurationManager configurationManager) {
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getBitReportQueueName());
-        log.info("created bit report queue {} of type: {}", queue, queueType);
+        log.info("created bit report queue {} of type: {}", queue.getName(), queueType.toString());
         return queue;
     }
 
     @Bean
     public TaskQueue duplicationQueue(WorkmanConfigurationManager configurationManager) {
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getHighPriorityDuplicationQueueName());
-        log.info("created duplication queue {} of type: {}", queue, queueType);
+        log.info("created duplication queue {} of type: {}", queue.getName(), queueType.toString());
         return queue;
     }
 
     @Bean
     public TaskQueue deadLetterQueue(WorkmanConfigurationManager configurationManager) {
-        String queueType = configurationManager.getQueueType();
+        QueueType queueType = configurationManager.getQueueType();
         TaskQueue queue = createTaskQueue(queueType, configurationManager,configurationManager.getDeadLetterQueueName());
-        log.info("created dead letter  queue {} of type: {}", queue, queueType);
+        log.info("created dead letter  queue {} of type: {}", queue.getName(), queueType.toString());
         return queue;
     }
 
@@ -426,10 +427,10 @@ public class AppConfig {
     @Bean
     public NotificationManager notificationManager(TaskProducerConfigurationManager configurationManager) {
         String[] recipients = configurationManager.getNotificationRecipients();
-        String notificationType = configurationManager.getNotificationType();
+        EmailerType emailerType = configurationManager.getEmailerType();
         NotificationManager manager;
 
-        if (notificationType.equals(Constants.SMTP)) {
+        if (emailerType == EmailerType.SMTP) {
             manager = new SMTPNotificationManager(recipients, configurationManager);
         } else {
             manager = new SESNotificationManager(recipients);
