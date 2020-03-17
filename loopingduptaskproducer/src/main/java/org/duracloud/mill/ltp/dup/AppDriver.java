@@ -14,8 +14,11 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
+import org.duracloud.common.model.EmailerType;
+import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
@@ -25,12 +28,14 @@ import org.duracloud.mill.dup.DuplicationPolicyManager;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.LocalDuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
+import org.duracloud.mill.dup.repo.SwiftDuplicationPolicyRepo;
 import org.duracloud.mill.ltp.LoopingTaskProducer;
 import org.duracloud.mill.ltp.LoopingTaskProducerConfigurationManager;
 import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
@@ -63,8 +68,11 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         List<PropertyDefinition> defintions =
             new PropertyDefinitionListBuilder().addAws()
+                                               .addSwift()
+                                               .addNotificationConfig()
                                                .addNotifications()
                                                .addMcDb()
+                                               .addRabbitMQConfig()
                                                .addDuplicationLowPriorityQueue()
                                                .addLoopingDupFrequency()
                                                .addLoopingDupMaxQueueSize()
@@ -90,15 +98,47 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         } else {
             DuplicationPolicyRepo policyRepo;
             String bucketSuffix = config.getDuplicationPolicyBucketSuffix();
+            String[] swiftConfig = config.getSwiftConfig();
+            String swiftAccessKey = swiftConfig[0];
+            String swiftSecretKey = swiftConfig[1];
+            String swiftEndpoint = swiftConfig[2];
+            String swiftSigner = swiftConfig[3];
             if (bucketSuffix != null) {
-                policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
+                if (swiftEndpoint != null && !swiftEndpoint.isEmpty()) {
+                    policyRepo = new SwiftDuplicationPolicyRepo(
+                        swiftAccessKey, swiftSecretKey, swiftEndpoint, swiftSigner, bucketSuffix
+                    );
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo(bucketSuffix);
+                }
             } else {
-                policyRepo = new S3DuplicationPolicyRepo();
+                if (swiftEndpoint != null && !swiftEndpoint.isEmpty()) {
+                    policyRepo = new SwiftDuplicationPolicyRepo(
+                        swiftAccessKey, swiftSecretKey, swiftEndpoint, swiftSigner
+                    );
+                } else {
+                    policyRepo = new S3DuplicationPolicyRepo();
+                }
             }
             policyManager = new DuplicationPolicyManager(policyRepo);
         }
 
-        TaskQueue taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
+        TaskQueue taskQueue = null;
+        if (config.getQueueType() == QueueType.RABBITMQ) {
+            String[] queueConfig = config.getRabbitMQConfig();
+            String rmqHost = queueConfig[0];
+            Integer rmqPort = Integer.parseInt(queueConfig[1]);
+            String rmqVhost = queueConfig[2];
+            String rmqExchange = queueConfig[3];
+            String rmqUser = queueConfig[4];
+            String rmqPass = queueConfig[5];
+            taskQueue = new RabbitMQTaskQueue(
+                rmqHost, rmqPort, rmqVhost, rmqExchange, rmqUser, rmqPass,
+                getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY)
+            );
+        } else {
+            taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
+        }
 
         CacheManager cacheManager = CacheManager.create();
         CacheConfiguration cacheConfig = new CacheConfiguration();
@@ -111,8 +151,14 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         String stateFilePath = new File(config.getWorkDirectoryPath(), "dup-producer-state.json").getAbsolutePath();
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath, DuplicationMorsel.class);
-        NotificationManager notificationMananger =
-            new SESNotificationManager(config.getNotificationRecipients());
+        NotificationManager notificationMananger = null;
+        if (config.getEmailerType() == EmailerType.SMTP) {
+            notificationMananger =
+                    new SMTPNotificationManager(config.getNotificationRecipients(), config);
+        } else {
+            notificationMananger =
+                    new SESNotificationManager(config.getNotificationRecipients());
+        }
 
         LoopingDuplicationTaskProducer producer =
             new LoopingDuplicationTaskProducer(credentialsRepo,

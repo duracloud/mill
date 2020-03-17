@@ -11,8 +11,11 @@ import java.io.File;
 import java.util.List;
 
 import org.duracloud.common.error.DuraCloudRuntimeException;
+import org.duracloud.common.model.EmailerType;
+import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.credentials.CredentialsRepo;
@@ -23,6 +26,7 @@ import org.duracloud.mill.ltp.LoopingTaskProducerDriverSupport;
 import org.duracloud.mill.ltp.StateManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
@@ -86,8 +90,10 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         List<PropertyDefinition> defintions =
             new PropertyDefinitionListBuilder().addAws()
+                                               .addNotificationConfig()
                                                .addNotifications()
                                                .addMcDb()
+                                               .addRabbitMQConfig()
                                                .addBitIntegrityQueue()
                                                .addLoopingBitFrequency()
                                                .addLoopingBitMaxQueueSize()
@@ -107,13 +113,40 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
         JpaBitIntegrityReportRepo bitReportRepo = ctx.getBean(JpaBitIntegrityReportRepo.class);
         StorageProviderFactory storageProviderFactory = new StorageProviderFactory();
 
-        NotificationManager notificationMananger =
-            new SESNotificationManager(config.getNotificationRecipients());
-        TaskQueue bitTaskQueue = new SQSTaskQueue(
-            config.getBitIntegrityQueue());
+        NotificationManager notificationMananger = null;
+        if (config.getEmailerType() == EmailerType.SMTP) {
+            notificationMananger =
+                    new SMTPNotificationManager(config.getNotificationRecipients(), config);
+        } else {
+            notificationMananger =
+                    new SESNotificationManager(config.getNotificationRecipients());
+        }
 
-        TaskQueue bitReportQueue = new SQSTaskQueue(
-            config.getBitReportQueueName());
+        TaskQueue bitTaskQueue = null;
+        TaskQueue bitReportQueue = null;
+        if (config.getQueueType() == QueueType.RABBITMQ) {
+            String[] queueConfig = config.getRabbitMQConfig();
+            String rmqHost = queueConfig[0];
+            Integer rmqPort = Integer.parseInt(queueConfig[1]);
+            String rmqVhost = queueConfig[2];
+            String rmqExchange = queueConfig[3];
+            String rmqUser = queueConfig[4];
+            String rmqPass = queueConfig[5];
+            bitTaskQueue = new RabbitMQTaskQueue(
+                rmqHost, rmqPort, rmqVhost, rmqExchange, rmqUser, rmqPass,
+                config.getBitIntegrityQueue()
+            );
+            bitReportQueue = new RabbitMQTaskQueue(
+                rmqHost, rmqPort, rmqVhost, rmqExchange, rmqUser, rmqPass,
+                config.getBitReportQueueName()
+            );
+        } else {
+            bitTaskQueue = new SQSTaskQueue(
+                    config.getBitIntegrityQueue());
+
+            bitReportQueue = new SQSTaskQueue(
+                    config.getBitReportQueueName());
+        }
 
         String stateFilePath = new File(config.getWorkDirectoryPath(),
                                         "bit-producer-state.json").getAbsolutePath();

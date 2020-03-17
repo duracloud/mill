@@ -22,6 +22,10 @@ public class SystemConfig {
     private String duracloudUsername;
     private String duracloudPassword;
     private String auditLogSpaceId;
+    private String swiftAccessKey;
+    private String swiftSecretKey;
+    private String swiftEndpoint;
+    private String swiftSignerType;
 
     public static SystemConfig instance() {
         return instance;
@@ -54,4 +58,37 @@ public class SystemConfig {
     public void setAuditLogSpaceId(String auditLogSpaceId) {
         this.auditLogSpaceId = auditLogSpaceId;
     }
+
+    public String getSwiftAccessKey() {
+        return swiftAccessKey;
+    }
+
+    public void setSwiftAccessKey(String swiftAccessKey) {
+        this.swiftAccessKey = swiftAccessKey;
+    }
+
+    public String getSwiftSecretKey() {
+        return swiftSecretKey;
+    }
+
+    public void setSwiftSecretKey(String swiftSecretKey) {
+        this.swiftSecretKey = swiftSecretKey;
+    }
+
+    public String getSwiftEndpoint() {
+        return swiftEndpoint;
+    }
+
+    public void setSwiftEndpoint(String swiftEndpoint) {
+        this.swiftEndpoint = swiftEndpoint;
+    }
+
+    public String getSwiftSignerType() {
+        return swiftSignerType;
+    }
+
+    public void setSwiftSignerType(String swiftSignerType) {
+        this.swiftSignerType = swiftSignerType;
+    }
+
 }

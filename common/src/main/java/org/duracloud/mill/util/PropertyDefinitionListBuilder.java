@@ -29,6 +29,14 @@ public class PropertyDefinitionListBuilder {
         return this;
     }
 
+    public PropertyDefinitionListBuilder addSwift() {
+        add(ConfigConstants.SWIFT_ACCESS_KEY, false);
+        add(ConfigConstants.SWIFT_SECRET_KEY, false, true);
+        add(ConfigConstants.SWIFT_ENDPOINT, false);
+        add(ConfigConstants.SWIFT_SIGNER_TYPE, false);
+        return this;
+    }
+
     private void add(String name, boolean required, boolean sensitive) {
         definitions.add(new PropertyDefinition(name, null, required, sensitive));
     }
@@ -57,6 +65,21 @@ public class PropertyDefinitionListBuilder {
 
     public PropertyDefinitionListBuilder addDeadLetterQueue() {
         add(ConfigConstants.QUEUE_NAME_DEAD_LETTER, true);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addQueueType() {
+        add(ConfigConstants.QUEUE_TYPE, false);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addRabbitMQConfig() {
+        add(ConfigConstants.RABBITMQ_HOST, false);
+        add(ConfigConstants.RABBITMQ_PORT, false);
+        add(ConfigConstants.RABBITMQ_VHOST, false);
+        add(ConfigConstants.RABBITMQ_EXCHANGE, false);
+        add(ConfigConstants.RABBITMQ_USERNAME, false);
+        add(ConfigConstants.RABBITMQ_PASSWORD, false, true);
         return this;
     }
 
@@ -97,6 +120,15 @@ public class PropertyDefinitionListBuilder {
 
     public PropertyDefinitionListBuilder addBitIntegrityErrorQueue() {
         add(ConfigConstants.QUEUE_NAME_BIT_ERROR, true);
+        return this;
+    }
+
+    public PropertyDefinitionListBuilder addNotificationConfig() {
+        add(ConfigConstants.EMAILER_TYPE, false);
+        add(ConfigConstants.NOTIFICATION_HOST, false);
+        add(ConfigConstants.NOTIFICATION_PORT, false);
+        add(ConfigConstants.NOTIFICATION_USER, false);
+        add(ConfigConstants.NOTIFICATION_PASS, false, true);
         return this;
     }
 

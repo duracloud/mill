@@ -12,15 +12,19 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.duracloud.account.db.repo.DuracloudAccountRepo;
+import org.duracloud.common.model.EmailerType;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.db.repo.JpaSpaceStatsRepo;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.notification.SESNotificationManager;
+import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.util.CommonCommandLineOptions;
 import org.duracloud.mill.util.DriverSupport;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -30,22 +34,26 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @since: Jun 28, 2017
  */
 public class AppDriver extends DriverSupport {
+    public static Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     public AppDriver() {
         super(new CommonCommandLineOptions());
     }
 
     public static void main(String[] args) {
+
+        log.debug(String.valueOf(args));
         new AppDriver().execute(args);
     }
 
     /**
-     * @param cmd
+     * @param
      */
     @Override
     protected void executeImpl(CommandLine commandLine) {
 
         List<PropertyDefinition> defintions = new PropertyDefinitionListBuilder().addAws()
+                                                                                 .addNotificationConfig()
                                                                                  .addNotifications()
                                                                                  .addNotificationsNonTech()
                                                                                  .addMcDb()
@@ -72,8 +80,14 @@ public class AppDriver extends DriverSupport {
             recipients.add(email);
         }
 
-        NotificationManager notification =
-            new SESNotificationManager(recipients.toArray(new String[0]));
+        NotificationManager notification = null;
+        if (configManager.getEmailerType() == EmailerType.SMTP) {
+            notification =
+                    new SMTPNotificationManager(configManager.getNotificationRecipients(), configManager);
+        } else {
+            notification =
+                    new SESNotificationManager(recipients.toArray(new String[0]));
+        }
 
         StorageReporter reporter = new StorageReporter(statsRepo, accountRepo, notification);
         reporter.run();

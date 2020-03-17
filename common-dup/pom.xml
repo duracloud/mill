@@ -56,5 +56,10 @@
       <artifactId>commons-io</artifactId>
     </dependency>
 
+    <dependency>
+       <groupId>org.duracloud</groupId>
+       <artifactId>swiftstorageprovider</artifactId>
+    </dependency>
+
   </dependencies>
 </project>

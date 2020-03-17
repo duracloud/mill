@@ -102,6 +102,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>swiftstorageprovider</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.duracloud.db</groupId>
       <artifactId>mill-db-repo</artifactId>
     </dependency>
