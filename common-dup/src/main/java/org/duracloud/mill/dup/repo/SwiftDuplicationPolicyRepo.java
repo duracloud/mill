@@ -42,7 +42,11 @@ public class SwiftDuplicationPolicyRepo implements DuplicationPolicyRepo {
         init();
     }
 
-    public SwiftDuplicationPolicyRepo(String accessKey, String secretKey, String endpoint, String signer, String policyRepoBucketSuffix) {
+    public SwiftDuplicationPolicyRepo(String accessKey,
+                                      String secretKey,
+                                      String endpoint,
+                                      String signer,
+                                      String policyRepoBucketSuffix) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(OPTS.SWIFT_S3_ENDPOINT.name(), endpoint);
         map.put(OPTS.SWIFT_S3_SIGNER_TYPE.name(), signer);

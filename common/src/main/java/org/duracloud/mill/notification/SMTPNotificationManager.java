@@ -15,7 +15,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.duracloud.mill.config.ConfigurationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
