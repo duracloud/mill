@@ -177,6 +177,7 @@
     <spring.framework.data.jpa.version>1.10.1.RELEASE</spring.framework.data.jpa.version>
     <hibernate.version>5.1.0.Final</hibernate.version>
     <mysql.driver.version>5.1.28</mysql.driver.version>
+    <jackson.version>2.7.4</jackson.version>
     <skipUTs>false</skipUTs>
     <skipITs>true</skipITs>
     <slf4j.version>1.7.6</slf4j.version>
@@ -594,21 +595,21 @@
       </dependency>
 
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-core-asl</artifactId>
-        <version>1.9.5</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-mapper-asl</artifactId>
-        <version>1.9.5</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-xc</artifactId>
-        <version>1.9.5</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
