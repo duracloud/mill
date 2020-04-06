@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>common-dup</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
   <name>DuraCloud Mill Common - Duplication</name>
 
   <parent>
     <artifactId>mill</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -37,23 +37,28 @@
     </dependency>
 
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-core-asl</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-mapper-asl</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-xc</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
     </dependency>
 
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+    </dependency>
+
+    <dependency>
+       <groupId>org.duracloud</groupId>
+       <artifactId>swiftstorageprovider</artifactId>
     </dependency>
 
   </dependencies>

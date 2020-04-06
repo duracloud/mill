@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>workman</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
   <name>DuraCloud Mill Workman</name>
 
   <parent>
     <artifactId>mill</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -150,6 +150,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.duracloud</groupId>
+      <artifactId>swiftstorageprovider</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
     </dependency>
@@ -162,6 +167,12 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-cloudwatch</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.rabbitmq</groupId>
+      <artifactId>amqp-client</artifactId>
+      <version>5.7.0</version>
     </dependency>
 
   </dependencies>

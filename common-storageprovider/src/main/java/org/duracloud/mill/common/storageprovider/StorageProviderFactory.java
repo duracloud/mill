@@ -17,6 +17,7 @@ import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.snapshotstorage.ChronopolisStorageProvider;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
+import org.duracloud.swiftstorage.SwiftStorageProvider;
 
 /**
  * The class knows how to create a <code>StorageProvider</code> based on a set of credentials.
@@ -70,7 +71,12 @@ public class StorageProviderFactory {
                                               credentials.getOptions());
         } else if (storageProviderType.equals(StorageProviderType.CHRONOPOLIS)) {
             return new ChronopolisStorageProvider(credentials.getAccessKey(),
-                                                  credentials.getSecretKey());
+                                                  credentials.getSecretKey(),
+                                                  credentials.getOptions());
+        } else if (storageProviderType.equals(StorageProviderType.SWIFT_S3)) {
+            return new SwiftStorageProvider(credentials.getAccessKey(),
+                                            credentials.getSecretKey(),
+                                            credentials.getOptions());
         }
         throw new RuntimeException(storageProviderType
                                    + " is not a supported storage provider type");

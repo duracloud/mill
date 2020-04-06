@@ -5,14 +5,10 @@
   <groupId>org.duracloud.mill</groupId>
   <artifactId>mill</artifactId>
   <packaging>pom</packaging>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
   <name>DuraCloud Mill</name>
   <description>Task processing system which supports DuraCloud</description>
-  <url>http://duracloud.org</url>
-
-  <prerequisites>
-    <maven>3.0.0</maven>
-  </prerequisites>
+  <url>https://duracloud.org</url>
 
   <inceptionYear>2013</inceptionYear>
 
@@ -35,13 +31,13 @@
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
     </license>
   </licenses>
 
   <organization>
-    <name>DuraSpace</name>
-    <url>http://www.duraspace.org</url>
+    <name>LYRASIS</name>
+    <url>https://lyrasis.org</url>
   </organization>
 
   <scm>
@@ -172,19 +168,19 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <duracloud.version>6.0.0</duracloud.version>
-    <duracloud.db.version>6.0.0</duracloud.db.version>
-    <duraspace-codestyle.version>1.0.0</duraspace-codestyle.version>
+    <duracloud.version>6.2.0-SNAPSHOT</duracloud.version>
+    <duracloud.db.version>6.2.0-SNAPSHOT</duracloud.db.version>
+    <duraspace-codestyle.version>1.1.0</duraspace-codestyle.version>
     <aws.sdk.version>1.11.155</aws.sdk.version>
     <spring.framework.version>4.2.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <spring.framework.data.jpa.version>1.10.1.RELEASE</spring.framework.data.jpa.version>
     <hibernate.version>5.1.0.Final</hibernate.version>
     <mysql.driver.version>5.1.28</mysql.driver.version>
+    <jackson.version>2.7.4</jackson.version>
     <skipUTs>false</skipUTs>
     <skipITs>true</skipITs>
     <slf4j.version>1.7.6</slf4j.version>
-    <enforce-victims.rule.version>1.3.4</enforce-victims.rule.version>
   </properties>
 
   <distributionManagement>
@@ -208,7 +204,7 @@
     <repository>
       <id>central</id>
       <name>Maven Repository Switchboard</name>
-      <url>http://repo1.maven.org/maven2</url>
+      <url>https://repo1.maven.org/maven2</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
@@ -397,15 +393,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.4</version>
-        <dependencies>
-          <dependency>
-            <groupId>com.redhat.victims</groupId>
-            <artifactId>enforce-victims-rule</artifactId>
-            <version>${enforce-victims.rule.version}</version>
-            <type>jar</type>
-          </dependency>
-        </dependencies>
+        <version>3.0.0-M3</version>
         <executions>
           <execution>
             <goals>
@@ -422,21 +410,9 @@
                     <exclude>com.springsource.org.apache.commons.logging</exclude>
                   </excludes>
                 </bannedDependencies>
-              </rules>
-            </configuration>
-          </execution>
-          <execution>
-            <id>enforce-victims-rule</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <rule implementation="com.redhat.victims.VictimsRule">
-                  <metadata>fatal</metadata>
-                  <fingerprint>fatal</fingerprint>
-                  <updates>weekly</updates>
-                </rule>
+                <requireMavenVersion>
+                  <version>[3.5.0,4.0.0)</version>
+                </requireMavenVersion>
               </rules>
             </configuration>
           </execution>
@@ -447,11 +423,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>verify-style</id>
-            <!-- Bind to verify so it runs after package & unit tests, but before install --> 
+            <!-- Bind to verify so it runs after package & unit tests, but before install -->
             <phase>verify</phase>
 
             <goals>
@@ -478,7 +454,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.21</version>
+            <version>8.29</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -619,21 +595,21 @@
       </dependency>
 
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-core-asl</artifactId>
-        <version>1.9.5</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-mapper-asl</artifactId>
-        <version>1.9.5</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-xc</artifactId>
-        <version>1.9.5</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
@@ -791,6 +767,18 @@
       <dependency>
         <groupId>org.duracloud</groupId>
         <artifactId>snapshotstorageprovider</artifactId>
+        <version>${duracloud.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.duracloud</groupId>
+        <artifactId>swiftstorageprovider</artifactId>
         <version>${duracloud.version}</version>
         <exclusions>
           <exclusion>

@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A set of data showing, for a single DuraCloud account, which spaces

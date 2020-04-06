@@ -16,6 +16,7 @@ public class ConfigConstants {
     /*
      * QUEUES
      */
+    public static final String QUEUE_TYPE = "queue.type";
     public static final String QUEUE_NAME_BIT_ERROR = "queue.name.bit-error";
     public static final String QUEUE_NAME_BIT_REPORT = "queue.name.bit-report";
     public static final String QUEUE_NAME_BIT_INTEGRITY = "queue.name.bit-integrity";
@@ -25,6 +26,15 @@ public class ConfigConstants {
     public static final String QUEUE_NAME_STORAGE_STATS = "queue.name.storagestats";
 
     public static final String QUEUE_NAME_DEAD_LETTER = "queue.name.dead-letter";
+
+    //For QUEUE_TYPE=rabbitmq use only
+    public static final String RABBITMQ_HOST = "rabbitmq.host";
+    public static final String RABBITMQ_PORT = "rabbitmq.port";
+    public static final String RABBITMQ_VHOST = "rabbitmq.vhost";
+    public static final String RABBITMQ_EXCHANGE = "rabbitmq.exchange";
+    public static final String RABBITMQ_USERNAME = "rabbitmq.username";
+    public static final String RABBITMQ_PASSWORD = "rabbitmq.password";
+
 
     /*
      * SHARED
@@ -36,6 +46,12 @@ public class ConfigConstants {
     public static final String NOTIFICATION_RECIPIENTS_NON_TECH = "notification.recipients.non-tech";
     public static final String NOTIFICATION_SENDER = "notification.sender";
 
+    public static final String EMAILER_TYPE = "emailer.type";
+    public static final String NOTIFICATION_HOST = "notification.host";
+    public static final String NOTIFICATION_PORT = "notification.port";
+    public static final String NOTIFICATION_USER = "notification.user";
+    public static final String NOTIFICATION_PASS = "notification.pass";
+
     /*
      * AUDIT LOG GENERATOR
      */
@@ -43,10 +59,14 @@ public class ConfigConstants {
     public static final String AUDIT_LOG_GENERATOR_AUDIT_LOG_SPACE_ID = "audit-log-generator.audit-log-space-id";
 
     /*
-     * AWS CREDENTIALS
+     * AWS/SWIFT CREDENTIALS
      */
     public static final String AWS_ACCESS_KEY_ID = "aws.accessKeyId";
     public static final String AWS_SECRET_KEY = "aws.secretKey";
+    public static final String SWIFT_ACCESS_KEY = "swift.accessKey";
+    public static final String SWIFT_SECRET_KEY = "swift.secretKey";
+    public static final String SWIFT_ENDPOINT = "swift.endpoint";
+    public static final String SWIFT_SIGNER_TYPE = "swift.signerType";
 
     /*
      * WORKMAN

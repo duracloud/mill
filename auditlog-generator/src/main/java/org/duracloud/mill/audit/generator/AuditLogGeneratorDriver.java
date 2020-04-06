@@ -45,6 +45,7 @@ public class AuditLogGeneratorDriver extends DriverSupport {
     protected void executeImpl(CommandLine cmd) {
         PropertyDefinitionListBuilder builder = new PropertyDefinitionListBuilder();
         List<PropertyDefinition> list = builder.addAws()
+                                               .addSwift()
                                                .addMillDb()
                                                .addDuracloudAuditSpace()
                                                .addWorkDir()
@@ -56,6 +57,11 @@ public class AuditLogGeneratorDriver extends DriverSupport {
         SystemConfig config = SystemConfig.instance();
         config.setAuditLogSpaceId(System
                                       .getProperty(ConfigConstants.AUDIT_LOGS_SPACE_ID));
+
+        config.setSwiftAccessKey(System.getProperty(ConfigConstants.SWIFT_ACCESS_KEY));
+        config.setSwiftSecretKey(System.getProperty(ConfigConstants.SWIFT_SECRET_KEY));
+        config.setSwiftEndpoint(System.getProperty(ConfigConstants.SWIFT_ENDPOINT));
+        config.setSwiftSignerType(System.getProperty(ConfigConstants.SWIFT_SIGNER_TYPE));
 
         String workDir = System.getProperty(ConfigConstants.GLOBAL_WORK_DIRECTORY_PATH);
         if (workDir == null) {

@@ -77,7 +77,7 @@ public class SpaceLogTest extends AbstractTestBase {
         testWriteNoExistingLogs(contentId);
     }
 
-    @Test
+//    @Test
     public void testWriteNoExistingLogsUTF8() throws Exception {
         testWriteNoExistingLogs("blankHÃ©lÃ¨nÃ¥JÃ¶r.txt新年快乐");
     }
