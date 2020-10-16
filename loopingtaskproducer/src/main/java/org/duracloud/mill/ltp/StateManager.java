@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class StateManager<T extends Morsel> {
     private static Logger log = LoggerFactory.getLogger(StateManager.class);
     private File stateFile;
+    private File tempStateFile;
     private State<T> state = new State<>();
     private Class<T> klazz;
 
@@ -32,6 +34,8 @@ public class StateManager<T extends Morsel> {
      *
      */
     public StateManager(String path, Class<T> klazz) {
+        tempStateFile = new File(path + ".tmp");
+        tempStateFile.deleteOnExit();
         stateFile = new File(path);
         final boolean exists = stateFile.exists();
         final long length = stateFile.length();
@@ -57,8 +61,10 @@ public class StateManager<T extends Morsel> {
     private void flush() {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            mapper.writeValue(this.stateFile, this.state);
+            mapper.writeValue(this.tempStateFile, this.state);
             log.debug("saved {} to {}", this.state, this.stateFile.getAbsolutePath());
+            this.stateFile.delete();
+            FileUtils.moveFile(this.tempStateFile,  this.stateFile);
         } catch (Exception e) {
             throw new RuntimeException("failed to save " + this.state + " to "
                                        + this.stateFile.getAbsolutePath(), e);
