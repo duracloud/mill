@@ -96,6 +96,11 @@ public class LoopingBitIntegrityTaskProducer extends LoopingTaskProducer<BitInte
 
                 AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
                 for (StorageProviderCredentials cred : accountCreds.getProviderCredentials()) {
+                    if (!cred.isConfigured()) {
+                        log.warn("Storage provider {} is not configured on account{}  - skipping...",
+                                cred.getProviderId(), accountCreds.getAccount());
+                        continue;
+                    }
                     String storeId = cred.getProviderId();
                     String storePath = accountPath + "/" + storeId;
                     if (exclusionManager.isExcluded(storePath)) {

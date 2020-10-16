@@ -57,7 +57,7 @@ public abstract class LoopingTaskProducerDriverSupport extends DriverSupport {
     protected abstract LoopingTaskProducer buildTaskProducer();
 
     /**
-     * @param cmd
+     * @param key
      * @return
      */
     protected int getMaxQueueSize(String key) {

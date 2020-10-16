@@ -96,10 +96,14 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         sourceCreds = new StorageProviderCredentials();
         sourceCreds.setPrimary(true);
         sourceCreds.setProviderId("0");
+        sourceCreds.setAccessKey("access-key");
+        sourceCreds.setSecretKey("password-key");
 
         destCreds = new StorageProviderCredentials();
         destCreds.setPrimary(false);
         destCreds.setProviderId("1");
+        destCreds.setAccessKey("access-key");
+        destCreds.setSecretKey("password-key");
 
     }
 
