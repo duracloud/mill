@@ -97,8 +97,8 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
                     for (StorageProviderCredentials cred : accountCreds.getProviderCredentials()) {
                         if (cred.isPrimary()) {
                             if (!cred.isConfigured()) {
-                                log.warn("Storage provider {} is not configured on account{}  - skipping...",
-                                        cred.getProviderId(), accountCreds.getAccount());
+                                log.warn("Storage provider {} is not configured on account {} - skipping...",
+                                         cred.getProviderId(), accountCreds.getAccount());
                                 continue;
                             }
                             StorageProvider provider = getStorageProvider(cred);
