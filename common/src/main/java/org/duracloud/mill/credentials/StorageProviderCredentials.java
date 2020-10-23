@@ -50,6 +50,15 @@ public class StorageProviderCredentials {
         this.setPrimary(primary);
     }
 
+    /**
+     * Returns true if the storage provider credentials are configured.
+     *
+     * @return
+     */
+    public boolean isConfigured() {
+        return this.accessKey != null && this.secretKey != null;
+    }
+
     public String getProviderId() {
         return providerId;
     }
