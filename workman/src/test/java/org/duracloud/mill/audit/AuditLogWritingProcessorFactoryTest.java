@@ -14,7 +14,6 @@ import org.duracloud.mill.workman.TaskProcessorCreationFailedException;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.Mock;
-import org.easymock.TestSubject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +27,6 @@ import org.junit.runner.RunWith;
 @RunWith(EasyMockRunner.class)
 public class AuditLogWritingProcessorFactoryTest extends EasyMockSupport {
 
-    @TestSubject
     private AuditLogWritingProcessorFactory factory;
 
     @Mock
