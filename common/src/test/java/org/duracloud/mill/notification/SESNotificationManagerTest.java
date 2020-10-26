@@ -19,6 +19,7 @@ import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
 import org.duracloud.mill.test.AbstractTestBase;
 import org.easymock.Capture;
+import org.easymock.CaptureType;
 import org.easymock.EasyMock;
 import org.easymock.Mock;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class SESNotificationManagerTest extends AbstractTestBase {
     @Test
     public void testSendEmail() {
         setupSubject();
-        Capture<SendEmailRequest> capture = new Capture<SendEmailRequest>();
+        Capture<SendEmailRequest> capture = Capture.newInstance(CaptureType.FIRST);
         SendEmailResult result = new SendEmailResult();
         EasyMock.expect(client.sendEmail(capture(capture))).andReturn(result);
 

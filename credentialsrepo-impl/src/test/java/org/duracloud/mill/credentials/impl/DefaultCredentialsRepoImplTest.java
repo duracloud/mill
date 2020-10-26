@@ -21,7 +21,6 @@ import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.Mock;
-import org.easymock.TestSubject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +35,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(EasyMockRunner.class)
 public class DefaultCredentialsRepoImplTest extends EasyMockSupport {
-    @TestSubject
     private DefaultCredentialsRepoImpl repo;
     private String testSubdomain = "test";
     private String testStoreId = "1";
