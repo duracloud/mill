@@ -29,8 +29,8 @@ public class PropertyFileHelper {
      * If the resulting system property value does not resolve to an existing file,
      * The system will exit after logging the error.
      *
-     * @param profileFileSystemProperty The system property to check
-     * @param defaultFilePath           The default property file path
+     * @param propertyFileSystemProperty The system property to check
+     * @param defaultPropertyFilePath The default property file path
      */
     public static void loadFromSystemProperty(String propertyFileSystemProperty, String defaultPropertyFilePath) {
         String path = System.getProperty(propertyFileSystemProperty);

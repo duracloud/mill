@@ -88,7 +88,7 @@
     <profile>
       <id>java8-disable-strict-javadoc</id>
       <activation>
-        <jdk>[1.8,)</jdk>
+        <jdk>[1.8,11,)</jdk>
       </activation>
       <properties>
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
@@ -133,6 +133,7 @@
                   <goal>jar</goal>
                 </goals>
                 <configuration>
+                  <source>8</source>
                   <additionalparam>${javadoc.opts}</additionalparam>
                 </configuration>
               </execution>
