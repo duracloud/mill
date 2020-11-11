@@ -81,7 +81,28 @@ public class StateManagerTest {
         morsels = stateManager.getMorsels();
 
         Assert.assertEquals(0, morsels.size());
+    }
 
+    @Test
+    public void testMultipleFlushesOnSameStateManagerInstance() {
+        LinkedHashSet<DuplicationMorsel> morsels = stateManager.getMorsels();
+        Assert.assertEquals(0, morsels.size());
+        final DuplicationMorsel morsel1 = new DuplicationMorsel(testdomain + "1", testspace, testmarker, testpolicy);
+        final DuplicationMorsel morsel2 = new DuplicationMorsel(testdomain + "2", testspace, testmarker, testpolicy);
+        morsels.add(morsel1);
+        morsels.add(morsel2);
+        stateManager.setMorsels(morsels);
+
+        morsels = new LinkedHashSet(stateManager.getMorsels());
+        Assert.assertEquals(2, morsels.size());
+
+        morsels.remove(morsel1);
+        stateManager.setMorsels(morsels);
+        Assert.assertEquals(1, stateManager.getMorsels().size());
+
+        stateManager = new StateManager<DuplicationMorsel>(file.getAbsolutePath(), DuplicationMorsel.class);
+        morsels = stateManager.getMorsels();
+        Assert.assertEquals(1, morsels.size());
     }
 
 }

@@ -34,6 +34,8 @@ public class StateManager<T extends Morsel> {
      *
      */
     public StateManager(String path, Class<T> klazz) {
+        //this temp file is used to prevent state file corruption. See flush() method below
+        //for details.
         tempStateFile = new File(path + ".tmp");
         tempStateFile.deleteOnExit();
         stateFile = new File(path);
@@ -61,10 +63,16 @@ public class StateManager<T extends Morsel> {
     private void flush() {
         ObjectMapper mapper = new ObjectMapper();
         try {
+            //first write results to the temp file
             mapper.writeValue(this.tempStateFile, this.state);
-            log.debug("saved {} to {}", this.state, this.stateFile.getAbsolutePath());
+            log.debug("wrote {} to {}", this.state, this.tempStateFile.getAbsolutePath());
+            //once results have been flushed to the temp file
+            //delete the state file
             this.stateFile.delete();
+            //move the temp state file into its place.
             FileUtils.moveFile(this.tempStateFile,  this.stateFile);
+            log.debug("updated state:  moved  {} to {}", this.tempStateFile.getAbsolutePath(),
+                    this.stateFile.getAbsolutePath());
         } catch (Exception e) {
             throw new RuntimeException("failed to save " + this.state + " to "
                                        + this.stateFile.getAbsolutePath(), e);
