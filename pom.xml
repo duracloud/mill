@@ -169,7 +169,7 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <duracloud.version>6.2.0</duracloud.version>
+    <duracloud.version>6.3.0-SNAPSHOT</duracloud.version>
     <duracloud.db.version>6.3.0-SNAPSHOT</duracloud.db.version>
     <duraspace-codestyle.version>1.1.0</duraspace-codestyle.version>
     <aws.sdk.version>1.11.155</aws.sdk.version>
