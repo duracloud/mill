@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.duracloud.mill</groupId>
   <artifactId>credentialsrepo-impl</artifactId>
-  <version>3.2.0</version>
+  <version>4.0.0</version>
   <name>DuraCloud Mill CredentialsRepo Implementation</name>
 
   <parent>
     <artifactId>mill</artifactId>
     <groupId>org.duracloud.mill</groupId>
-    <version>3.2.0</version>
+    <version>4.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -87,6 +87,16 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+    </dependency>
+
+    <dependency>
+     <groupId>org.glassfish.jaxb</groupId>
+     <artifactId>jaxb-runtime</artifactId>
     </dependency>
 
   </dependencies>

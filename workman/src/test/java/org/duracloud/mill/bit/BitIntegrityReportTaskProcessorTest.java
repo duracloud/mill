@@ -38,11 +38,11 @@ import org.duracloud.reportdata.bitintegrity.BitIntegrityReportResult;
 import org.duracloud.storage.domain.StorageProviderType;
 import org.duracloud.storage.provider.StorageProvider;
 import org.easymock.Capture;
+import org.easymock.CaptureType;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.IAnswer;
 import org.easymock.Mock;
-import org.easymock.TestSubject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +65,6 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
     @Mock
     private BitLogStore bitLogStore;
 
-    @TestSubject
     private BitIntegrityReportTaskProcessor taskProcessor;
 
     @Mock
@@ -133,7 +132,7 @@ public class BitIntegrityReportTaskProcessorTest extends EasyMockSupport {
                                                eq(storeId),
                                                eq(spaceId))).andReturn(it);
 
-        final Capture<InputStream> capture = new Capture<>();
+        final Capture<InputStream> capture = Capture.newInstance(CaptureType.FIRST);
 
         String reportSpace = "x-duracloud-admin";
         expect(this.store.getSpaces()).andReturn(Arrays.asList("aspace").iterator());

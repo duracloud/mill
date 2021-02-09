@@ -1,14 +1,14 @@
-dist: trusty
+dist: bionic
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk11
 notifications:
   email:
     recipients:
       - cibuilds@duracloud.org
     on_success: change
     on_failure: always
-  slack: duraspace:vOBySuKUwM95j2kfbwh0SNxq
+  slack: lyrasis:ctcQAEKjVcDFe9bTyMfH6PtI
 install:
   - mvn install -DskipTests --batch-mode
 script:

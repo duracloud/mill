@@ -86,6 +86,12 @@ public class LoopingStorageStatsTaskProducer extends LoopingTaskProducer<Storage
 
                 AccountCredentials accountCreds = getCredentialsRepo().getAccountCredentials(account);
                 for (StorageProviderCredentials cred : accountCreds.getProviderCredentials()) {
+                    if (!cred.isConfigured()) {
+                        log.warn("Storage provider {} is not configured on account {} - skipping...",
+                                 cred.getProviderId(), accountCreds.getAccount());
+                        continue;
+                    }
+
                     String storePath = accountPath + "/" + cred.getProviderId();
                     if (exclusionManager.isExcluded(storePath)) {
                         continue;

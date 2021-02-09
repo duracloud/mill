@@ -5,7 +5,7 @@
   <groupId>org.duracloud.mill</groupId>
   <artifactId>mill</artifactId>
   <packaging>pom</packaging>
-  <version>3.2.0</version>
+  <version>4.0.0</version>
   <name>DuraCloud Mill</name>
   <description>Task processing system which supports DuraCloud</description>
   <url>https://duracloud.org</url>
@@ -88,7 +88,7 @@
     <profile>
       <id>java8-disable-strict-javadoc</id>
       <activation>
-        <jdk>[1.8,)</jdk>
+        <jdk>[1.8,11,)</jdk>
       </activation>
       <properties>
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
@@ -124,7 +124,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
+            <version>3.2.0</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -133,7 +133,8 @@
                   <goal>jar</goal>
                 </goals>
                 <configuration>
-                  <additionalparam>${javadoc.opts}</additionalparam>
+                  <source>8</source>
+                  <additionalOptions>${javadoc.opts}</additionalOptions>
                 </configuration>
               </execution>
             </executions>
@@ -168,16 +169,18 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <duracloud.version>6.2.0-SNAPSHOT</duracloud.version>
-    <duracloud.db.version>6.2.0-SNAPSHOT</duracloud.db.version>
+    <duracloud.version>7.0.0</duracloud.version>
+    <duracloud.db.version>7.0.0</duracloud.db.version>
     <duraspace-codestyle.version>1.1.0</duraspace-codestyle.version>
     <aws.sdk.version>1.11.155</aws.sdk.version>
     <spring.framework.version>4.2.5.RELEASE</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <spring.framework.data.jpa.version>1.10.1.RELEASE</spring.framework.data.jpa.version>
     <hibernate.version>5.1.0.Final</hibernate.version>
-    <mysql.driver.version>5.1.28</mysql.driver.version>
+    <mysql.driver.version>5.1.49</mysql.driver.version>
     <jackson.version>2.7.4</jackson.version>
+    <jaxb.api.version>2.3.1</jaxb.api.version>
+    <jaxb.runtime.version>2.3.3</jaxb.runtime.version>
     <skipUTs>false</skipUTs>
     <skipITs>true</skipITs>
     <slf4j.version>1.7.6</slf4j.version>
@@ -248,7 +251,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>2.2</version>
+          <version>3.2.1</version>
           <configuration>
             <createDependencyReducedPom>false</createDependencyReducedPom>
           </configuration>
@@ -309,10 +312,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <release>11</release>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
@@ -482,7 +484,7 @@
       <dependency>
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
-        <version>3.2</version>
+        <version>4.0.2</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -658,6 +660,18 @@
           </exclusion>
         </exclusions>
       </dependency>
+
+     <dependency>
+       <groupId>javax.xml.bind</groupId>
+       <artifactId>jaxb-api</artifactId>
+       <version>${jaxb.api.version}</version>
+     </dependency>
+
+     <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>${jaxb.runtime.version}</version>
+     </dependency>
 
       <dependency>
         <groupId>org.duracloud</groupId>
