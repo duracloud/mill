@@ -133,7 +133,6 @@
                   <goal>jar</goal>
                 </goals>
                 <configuration>
-                  <source>8</source>
                   <additionalOptions>${javadoc.opts}</additionalOptions>
                 </configuration>
               </execution>
