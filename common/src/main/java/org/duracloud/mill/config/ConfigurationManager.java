@@ -53,7 +53,7 @@ public class ConfigurationManager {
         }
     }
 
-    public String[] getRabbitMQConfig() {
+    public String[] getRabbitmqConfig() {
         if (getQueueType().equals(QueueType.RABBITMQ)) {
             String[] config = new String[] {
                 System.getProperty(ConfigConstants.RABBITMQ_HOST),

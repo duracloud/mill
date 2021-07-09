@@ -18,7 +18,7 @@ import org.duracloud.common.model.EmailerType;
 import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
-import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitmqTaskQueue;
 import org.duracloud.mill.audit.AuditLogWritingProcessorFactory;
 import org.duracloud.mill.audit.DuplicationTaskProducingProcessorFactory;
 import org.duracloud.mill.audit.SpaceCreatedNotifcationGeneratingProcessorFactory;
@@ -234,7 +234,7 @@ public class AppConfig {
         return new TaskWorkerFactoryImpl(factory, deadLetterQueue);
     }
 
-    private Boolean isRabbitMQ(QueueType queueType) {
+    private Boolean isRabbitmq(QueueType queueType) {
         return queueType == QueueType.RABBITMQ;
     }
 
@@ -251,22 +251,22 @@ public class AppConfig {
         String rmqUser;
         String rmqPass;
 
-        if (isRabbitMQ(queueType)) {
-            queueConfig = configurationManager.getRabbitMQConfig();
+        if (isRabbitmq(queueType)) {
+            queueConfig = configurationManager.getRabbitmqConfig();
             rmqHost = queueConfig[0];
             rmqPort = Integer.parseInt(queueConfig[1]);
             rmqVhost = queueConfig[2];
             rmqUser = queueConfig[4];
             rmqPass = queueConfig[5];
-            mqConn = getRabbitMQConnection(rmqHost, rmqPort, rmqVhost, rmqUser, rmqPass);
+            mqConn = getRabbitmqConnection(rmqHost, rmqPort, rmqVhost, rmqUser, rmqPass);
         }
 
         for (String taskQueueName : taskQueuesNames) {
             TaskQueue taskQueue;
-            if (isRabbitMQ(queueType)) {
+            if (isRabbitmq(queueType)) {
                 if (mqConn != null) {
                     rmqExchange = queueConfig[3];
-                    taskQueue = new RabbitMQTaskQueue(mqConn, rmqExchange, taskQueueName.trim());
+                    taskQueue = new RabbitmqTaskQueue(mqConn, rmqExchange, taskQueueName.trim());
                 } else {
                     break;
                 }
@@ -285,17 +285,17 @@ public class AppConfig {
                                         TaskProducerConfigurationManager configurationManager,
                                         String queueName) {
         TaskQueue taskQueue;
-        if (isRabbitMQ(queueType)) {
-            String[] queueConfig = configurationManager.getRabbitMQConfig();
+        if (isRabbitmq(queueType)) {
+            String[] queueConfig = configurationManager.getRabbitmqConfig();
             String rmqHost = queueConfig[0];
             Integer rmqPort = Integer.parseInt(queueConfig[1]);
             String rmqVhost = queueConfig[2];
             String rmqExchange = queueConfig[3];
             String rmqUser = queueConfig[4];
             String rmqPass = queueConfig[5];
-            Connection mqConn = getRabbitMQConnection(rmqHost, rmqPort, rmqVhost, rmqUser, rmqPass);
+            Connection mqConn = getRabbitmqConnection(rmqHost, rmqPort, rmqVhost, rmqUser, rmqPass);
             if (mqConn != null) {
-                taskQueue = new RabbitMQTaskQueue(mqConn, rmqExchange, queueName.trim());
+                taskQueue = new RabbitmqTaskQueue(mqConn, rmqExchange, queueName.trim());
             } else {
                 return null;
             }
@@ -305,7 +305,7 @@ public class AppConfig {
         return taskQueue;
     }
 
-    protected Connection getRabbitMQConnection(String host,
+    protected Connection getRabbitmqConnection(String host,
                                                Integer port,
                                                String vhost,
                                                String username,
