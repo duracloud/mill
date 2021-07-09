@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.S3Object;
 import org.duracloud.common.util.IOUtil;
@@ -30,7 +30,7 @@ public class S3DuplicationPolicyRepoTest {
 
     @Test
     public void testS3DuplicationPolicyRepo() throws IOException {
-        AmazonS3Client s3Client = EasyMock.createMock(AmazonS3Client.class);
+        AmazonS3 s3Client = EasyMock.createMock(AmazonS3.class);
 
         String policyBucketName = "my-personal-" +
                                   S3DuplicationPolicyRepo.DUP_POLICY_REPO_BUCKET_SUFFIX;

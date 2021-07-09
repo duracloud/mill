@@ -11,7 +11,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
 import org.duracloud.mill.dup.repo.S3DuplicationPolicyRepo;
@@ -27,7 +28,7 @@ import org.junit.Test;
 public class TestPolicyEditor extends BaseSeleniumTest {
     private static final String LOGIN_LOCATOR = "css=#loginButton";
 
-    private static AmazonS3Client s3Client;
+    private static AmazonS3 s3Client;
     private static String bucketName;
 
     /**
@@ -41,7 +42,7 @@ public class TestPolicyEditor extends BaseSeleniumTest {
 
         assertTrue(policyAccountsFile.exists());
         assertTrue(policyFile.exists());
-        s3Client = new AmazonS3Client();
+        s3Client = AmazonS3ClientBuilder.standard().build();
 
         // Create policy bucket
         String accessKey = System.getenv("AWS_ACCESS_KEY_ID");
