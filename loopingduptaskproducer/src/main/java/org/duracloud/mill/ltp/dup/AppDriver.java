@@ -18,7 +18,7 @@ import org.duracloud.common.model.EmailerType;
 import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.aws.SQSTaskQueue;
-import org.duracloud.common.queue.rabbitmq.RabbitMQTaskQueue;
+import org.duracloud.common.queue.rabbitmq.RabbitmqTaskQueue;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
 import org.duracloud.mill.config.ConfigConstants;
@@ -72,7 +72,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                .addNotificationConfig()
                                                .addNotifications()
                                                .addMcDb()
-                                               .addRabbitMQConfig()
+                                               .addRabbitmqConfig()
                                                .addDuplicationLowPriorityQueue()
                                                .addLoopingDupFrequency()
                                                .addLoopingDupMaxQueueSize()
@@ -125,14 +125,14 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
 
         TaskQueue taskQueue = null;
         if (config.getQueueType() == QueueType.RABBITMQ) {
-            String[] queueConfig = config.getRabbitMQConfig();
+            String[] queueConfig = config.getRabbitmqConfig();
             String rmqHost = queueConfig[0];
             Integer rmqPort = Integer.parseInt(queueConfig[1]);
             String rmqVhost = queueConfig[2];
             String rmqExchange = queueConfig[3];
             String rmqUser = queueConfig[4];
             String rmqPass = queueConfig[5];
-            taskQueue = new RabbitMQTaskQueue(
+            taskQueue = new RabbitmqTaskQueue(
                 rmqHost, rmqPort, rmqVhost, rmqExchange, rmqUser, rmqPass,
                 getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY)
             );
