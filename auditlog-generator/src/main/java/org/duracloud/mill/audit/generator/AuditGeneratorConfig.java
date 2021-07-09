@@ -10,7 +10,7 @@ package org.duracloud.mill.audit.generator;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.duracloud.s3storage.S3StorageProvider;
 import org.duracloud.storage.domain.StorageAccount.OPTS;
 import org.duracloud.storage.provider.StorageProvider;
@@ -58,7 +58,7 @@ public class AuditGeneratorConfig {
         } else {
             //build the storage provider with a placeholder key since audit log generator
             //does not depend on creating new spaces.
-            return new S3StorageProvider(new AmazonS3Client(), "aduracloudmillprefix", null);
+            return new S3StorageProvider(AmazonS3ClientBuilder.standard().build(), "aduracloudmillprefix", null);
         }
     }
 

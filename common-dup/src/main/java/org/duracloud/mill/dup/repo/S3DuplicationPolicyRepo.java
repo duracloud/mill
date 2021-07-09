@@ -10,7 +10,8 @@ package org.duracloud.mill.dup.repo;
 import java.io.InputStream;
 import java.util.List;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 
 /**
@@ -25,18 +26,17 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
     public static final String DUP_POLICY_REPO_BUCKET_SUFFIX =
         "duplication-policy-repo";
 
-    private AmazonS3Client s3Client;
+    private AmazonS3 s3Client;
     private String policyRepoBucketName;
     private String policyRepoBucketSuffix;
 
     /**
      * Creates an S3 policy repo connection. Expects that S3 credentials
      * will be available from the environment, as described here:
-     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client
-     * .html#AmazonS3Client%28%29
+     * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
      */
     public S3DuplicationPolicyRepo() {
-        this.s3Client = new AmazonS3Client();
+        this.s3Client = AmazonS3ClientBuilder.standard().build();
         this.policyRepoBucketSuffix = DUP_POLICY_REPO_BUCKET_SUFFIX;
         init();
     }
@@ -45,14 +45,13 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
      * Creates an S3 policy repo connection. Uses the provided bucket suffix.
      * Expects that S3 credentials will be available from the environment,
      * as described here:
-     * http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3Client
-     * .html#AmazonS3Client%28%29
+     * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
      */
     public S3DuplicationPolicyRepo(String policyRepoBucketSuffix) {
-        this(new AmazonS3Client(), policyRepoBucketSuffix);
+        this(AmazonS3ClientBuilder.standard().build(), policyRepoBucketSuffix);
     }
 
-    public S3DuplicationPolicyRepo(AmazonS3Client s3Client, String policyRepoBucketSuffix) {
+    public S3DuplicationPolicyRepo(AmazonS3 s3Client, String policyRepoBucketSuffix) {
         this.s3Client = s3Client;
         this.policyRepoBucketSuffix = policyRepoBucketSuffix;
         init();
@@ -61,7 +60,7 @@ public class S3DuplicationPolicyRepo implements DuplicationPolicyRepo {
     /**
      * Intended for testing
      */
-    public S3DuplicationPolicyRepo(AmazonS3Client s3Client) {
+    public S3DuplicationPolicyRepo(AmazonS3 s3Client) {
         this(s3Client, DUP_POLICY_REPO_BUCKET_SUFFIX);
     }
 
