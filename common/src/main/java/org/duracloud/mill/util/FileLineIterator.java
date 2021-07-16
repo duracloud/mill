@@ -12,6 +12,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.apache.commons.io.LineIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This Iterator's items are lines of a file.  The hasNext() method returns true
@@ -24,6 +26,7 @@ import org.apache.commons.io.LineIterator;
  * Date: 5/2/14
  */
 public class FileLineIterator extends LineIterator {
+    private static Logger log = LoggerFactory.getLogger(FileLineIterator.class);
 
     private File file;
 
@@ -43,7 +46,12 @@ public class FileLineIterator extends LineIterator {
 
     @Override
     public void close() {
-        super.close();
+        try {
+            super.close();
+        } catch (IOException e) {
+            log.error("Error closing iterator: " + e.getMessage(), e);
+        }
+
         file.delete();
     }
 }
