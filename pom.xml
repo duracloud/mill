@@ -824,6 +824,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.javassist</groupId>
+        <artifactId>javassist</artifactId>
+        <version>3.24.0-GA</version>
+      </dependency>
+
+      <dependency>
         <groupId>mysql</groupId>
         <artifactId>mysql-connector-java</artifactId>
         <version>${mysql.driver.version}</version>
