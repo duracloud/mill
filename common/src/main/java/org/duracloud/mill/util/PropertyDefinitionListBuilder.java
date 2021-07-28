@@ -129,6 +129,7 @@ public class PropertyDefinitionListBuilder {
         add(ConfigConstants.NOTIFICATION_PORT, false);
         add(ConfigConstants.NOTIFICATION_USER, false);
         add(ConfigConstants.NOTIFICATION_PASS, false, true);
+        add(ConfigConstants.DURACLOUD_SITE_DOMAIN, false);
         return this;
     }
 

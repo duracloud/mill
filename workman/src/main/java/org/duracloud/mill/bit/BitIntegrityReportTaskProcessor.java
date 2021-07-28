@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.duracloud.common.constant.Constants;
 import org.duracloud.common.retry.Retriable;
 import org.duracloud.common.retry.Retrier;
 import org.duracloud.common.util.ChecksumUtil;
@@ -27,6 +28,7 @@ import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
@@ -184,7 +186,11 @@ public class BitIntegrityReportTaskProcessor extends TaskProcessorBase {
         String storeId = report.getStoreId();
         String spaceId = report.getSpaceId();
 
-        String host = account + ".duracloud.org";
+        String domain = System.getProperty(ConfigConstants.DURACLOUD_SITE_DOMAIN);
+        if (domain == null) {
+            domain = Constants.DEFAULT_DOMAIN;
+        }
+        String host = account + "." + domain;
 
         String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +
                          errors.size() + ")  detected on " + host + ", providerId=" + storeId +
