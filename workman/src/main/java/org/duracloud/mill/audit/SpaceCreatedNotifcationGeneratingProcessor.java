@@ -8,8 +8,7 @@
 package org.duracloud.mill.audit;
 
 import org.duracloud.audit.task.AuditTask;
-import org.duracloud.common.constant.Constants;
-import org.duracloud.mill.config.ConfigConstants;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
 import org.duracloud.mill.workman.TaskProcessor;
@@ -62,11 +61,8 @@ public class SpaceCreatedNotifcationGeneratingProcessor implements TaskProcessor
                           String datetime,
                           String username) {
 
-        String domain = System.getProperty(ConfigConstants.DURACLOUD_SITE_DOMAIN);
-        if (domain == null) {
-            domain = Constants.DEFAULT_DOMAIN;
-        }
-        String host = subdomain + "." + domain;
+        ConfigurationManager configManager = new ConfigurationManager();
+        String host = configManager.getSubdomainDotDefaultDomain(subdomain);
 
         String subject = "New Space on " + host + ", provider " + storeId + ": " +
                          spaceId;

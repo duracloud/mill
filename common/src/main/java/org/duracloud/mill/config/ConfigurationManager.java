@@ -8,6 +8,7 @@
 package org.duracloud.mill.config;
 
 import org.apache.commons.lang3.StringUtils;
+import org.duracloud.common.constant.Constants;
 import org.duracloud.common.model.EmailerType;
 import org.duracloud.common.queue.QueueType;
 
@@ -105,5 +106,17 @@ public class ConfigurationManager {
 
     public String[] getNotificationRecipientsNonTech() {
         return getCommaSeparatedListToArray(ConfigConstants.NOTIFICATION_RECIPIENTS_NON_TECH);
+    }
+
+    public String getDefaultDomain() {
+        String domain = System.getProperty(ConfigConstants.DURACLOUD_SITE_DOMAIN);
+        if (domain == null) {
+            domain = Constants.DEFAULT_DOMAIN;
+        }
+        return domain;
+    }
+
+    public String getSubdomainDotDefaultDomain(String subdomain) {
+        return subdomain + "." + getDefaultDomain();
     }
 }

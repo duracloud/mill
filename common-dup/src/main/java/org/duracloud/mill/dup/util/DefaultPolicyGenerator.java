@@ -19,7 +19,7 @@ import org.duracloud.client.ContentStoreManagerImpl;
 import org.duracloud.common.constant.Constants;
 import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
-import org.duracloud.mill.config.ConfigConstants;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
@@ -75,11 +75,8 @@ public class DefaultPolicyGenerator {
                                                    String rootPass)
         throws ContentStoreException {
 
-        String domain = System.getProperty(ConfigConstants.DURACLOUD_SITE_DOMAIN);
-        if (domain == null) {
-            domain = Constants.DEFAULT_DOMAIN;
-        }
-        String host = account + "." + domain;
+        ConfigurationManager configManager = new ConfigurationManager();
+        String host = configManager.getSubdomainDotDefaultDomain(account);
 
         ContentStoreManager storeManager =
             new ContentStoreManagerImpl(host, DURACLOUD_PORT);
