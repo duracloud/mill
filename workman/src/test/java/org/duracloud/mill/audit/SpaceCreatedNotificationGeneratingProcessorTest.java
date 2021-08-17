@@ -8,16 +8,20 @@
 
 package org.duracloud.mill.audit;
 
-import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.anyString;
+import static org.easymock.EasyMock.capture;
 
 import org.duracloud.audit.task.AuditTask;
+import org.duracloud.mill.config.ConfigConstants;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
+import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.Mock;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,14 +52,33 @@ public class SpaceCreatedNotificationGeneratingProcessorTest extends EasyMockSup
     }
 
     @Test
-    public void testSpaceCreate() throws TaskExecutionFailedException {
+    public void testSpaceCreateDefaultDomain() throws TaskExecutionFailedException {
         AuditTask task = AuditTestHelper.createTestAuditTask();
         task.setAction(AuditTask.ActionType.CREATE_SPACE.name());
 
-        notificationManager.sendEmail(isA(String.class), isA(String.class));
+        Capture<String> cap = EasyMock.newCapture();
+        notificationManager.sendEmail(anyString(), capture(cap));
         EasyMock.expectLastCall().once();
         replayAll();
         new SpaceCreatedNotifcationGeneratingProcessor(task, notificationManager).execute();
+
+        Assert.assertTrue(cap.getValue().contains(".duracloud.org"));
+    }
+
+    @Test
+    public void testSpaceCreateDifferentDomain() throws TaskExecutionFailedException {
+        System.setProperty(ConfigConstants.DURACLOUD_SITE_DOMAIN, "other.domain");
+
+        AuditTask task = AuditTestHelper.createTestAuditTask();
+        task.setAction(AuditTask.ActionType.CREATE_SPACE.name());
+
+        Capture<String> cap = EasyMock.newCapture();
+        notificationManager.sendEmail(anyString(), capture(cap));
+        EasyMock.expectLastCall().once();
+        replayAll();
+        new SpaceCreatedNotifcationGeneratingProcessor(task, notificationManager).execute();
+
+        Assert.assertTrue(cap.getValue().contains(".other.domain"));
     }
 
 }
