@@ -27,6 +27,7 @@ import org.duracloud.mill.bitlog.BitIntegrityResult;
 import org.duracloud.mill.bitlog.BitLogItem;
 import org.duracloud.mill.bitlog.BitLogStore;
 import org.duracloud.mill.common.taskproducer.TaskProducerConfigurationManager;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.db.model.BitIntegrityReport;
 import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.workman.TaskExecutionFailedException;
@@ -184,7 +185,8 @@ public class BitIntegrityReportTaskProcessor extends TaskProcessorBase {
         String storeId = report.getStoreId();
         String spaceId = report.getSpaceId();
 
-        String host = account + ".duracloud.org";
+        ConfigurationManager configManager = new ConfigurationManager();
+        String host = configManager.getSubdomainDotDefaultDomain(account);
 
         String subject = "Bit Integrity Report #" + report.getId() + ": errors (count = " +
                          errors.size() + ")  detected on " + host + ", providerId=" + storeId +

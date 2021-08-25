@@ -52,6 +52,8 @@ public class ConfigConstants {
     public static final String NOTIFICATION_USER = "notification.user";
     public static final String NOTIFICATION_PASS = "notification.pass";
 
+    public static final String DURACLOUD_SITE_DOMAIN = "duracloud-site.domain";
+
     /*
      * AUDIT LOG GENERATOR
      */

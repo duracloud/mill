@@ -19,6 +19,7 @@ import org.duracloud.client.ContentStoreManagerImpl;
 import org.duracloud.common.constant.Constants;
 import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
+import org.duracloud.mill.config.ConfigurationManager;
 import org.duracloud.mill.dup.DuplicationPolicy;
 import org.duracloud.mill.dup.DuplicationStorePolicy;
 import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
@@ -34,7 +35,6 @@ import org.duracloud.mill.dup.repo.DuplicationPolicyRepo;
  */
 public class DefaultPolicyGenerator {
 
-    private static final String DURACLOUD_URL_SUFFIX = ".duracloud.org";
     private static final String DURACLOUD_PORT = "443";
     private static final String DURACLOUD_ROOT_USER = "root";
 
@@ -74,7 +74,10 @@ public class DefaultPolicyGenerator {
     private ContentStoreManager connectToDuraCloud(String account,
                                                    String rootPass)
         throws ContentStoreException {
-        String host = account + DURACLOUD_URL_SUFFIX;
+
+        ConfigurationManager configManager = new ConfigurationManager();
+        String host = configManager.getSubdomainDotDefaultDomain(account);
+
         ContentStoreManager storeManager =
             new ContentStoreManagerImpl(host, DURACLOUD_PORT);
         Credential credential = new Credential(DURACLOUD_ROOT_USER, rootPass);
