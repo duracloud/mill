@@ -1,6 +1,7 @@
 FROM ubuntu:impish
 
 RUN apt update && apt install openjdk-11-jre-headless wget -y
+RUN apt install systemd-sysv -y
 RUN mkdir /opt/app
 
 RUN wget https://collectors.sumologic.com/rest/download/deb/64 -O SumoCollector.deb && chmod +x SumoCollector.deb
