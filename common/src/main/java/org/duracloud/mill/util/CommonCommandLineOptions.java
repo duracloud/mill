@@ -19,6 +19,7 @@ public class CommonCommandLineOptions extends Options {
     private static final long serialVersionUID = 1;
 
     public static final String CONFIG_FILE_OPTION = "c";
+    public static final String WORK_DIR_OPTION = "w";
 
     public CommonCommandLineOptions() {
         super();
@@ -29,5 +30,12 @@ public class CommonCommandLineOptions extends Options {
         configFile.setArgName("file");
         configFile.setRequired(true);
         addOption(configFile);
+
+        Option workdir = new Option(CONFIG_FILE_OPTION, "work-dir", true,
+                "The workdir");
+        workdir.setArgs(1);
+        workdir.setArgName("dir");
+        workdir.setRequired(false);
+        addOption(workdir);
     }
 }

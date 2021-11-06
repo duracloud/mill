@@ -16,6 +16,8 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
+import org.duracloud.mill.config.ConfigConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,6 +89,14 @@ public abstract class DriverSupport {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+            }
+        }
+
+        //override workdir if specified on the commandline
+        if (cmd.hasOption(CommonCommandLineOptions.WORK_DIR_OPTION)) {
+            final var workdir = cmd.getOptionValue(CommonCommandLineOptions.WORK_DIR_OPTION);
+            if (!StringUtils.isBlank(workdir)) {
+                System.setProperty(ConfigConstants.WORK_DIRECTORY_PATH, workdir);
             }
         }
     }
