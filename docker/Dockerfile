@@ -1,11 +1,14 @@
 FROM ubuntu:impish
 
-RUN apt update && apt install openjdk-11-jre-headless wget cron -y
+RUN apt-get update && apt-get install openjdk-11-jre-headless wget cron -y
 RUN mkdir /opt/app
 
-RUN wget https://collectors.sumologic.com/rest/download/deb/64 -O SumoCollector.deb && chmod +x SumoCollector.deb
-RUN dpkg -i SumoCollector.deb
-RUN rm SumoCollector.deb
+RUN wget -q https://collectors.sumologic.com/rest/download/deb/64 -O SumoCollector.deb && \ 
+   chmod +x SumoCollector.deb && \
+   dpkg -i SumoCollector.deb && \
+   rm SumoCollector.deb && \
+   rm -rf /var/lib/apt/lists/*
+
 # the version of the mill
 ARG VERSION
 ADD workman/target/workman-${VERSION}.jar /opt/app/
