@@ -24,14 +24,14 @@ public class CommonCommandLineOptions extends Options {
     public CommonCommandLineOptions() {
         super();
 
-        Option configFile = new Option(CONFIG_FILE_OPTION, "config-file", true,
+        final Option configFile = new Option(CONFIG_FILE_OPTION, "config-file", true,
                                        "A properties file containing configuration info");
         configFile.setArgs(1);
         configFile.setArgName("file");
         configFile.setRequired(true);
         addOption(configFile);
 
-        Option workdir = new Option(CONFIG_FILE_OPTION, "work-dir", true,
+        final Option workdir = new Option(WORK_DIR_OPTION, "work-dir", true,
                 "The workdir");
         workdir.setArgs(1);
         workdir.setArgName("dir");
