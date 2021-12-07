@@ -243,11 +243,6 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     }
 
     @Test
-    public void testSuccessWithOutContentCheckIRODS() throws Exception {
-        testSuccess(StorageProviderType.IRODS, false);
-    }
-
-    @Test
     public void testSourContent() throws Exception {
         StorageProviderType storeType = StorageProviderType.AMAZON_S3;
         storeMockValidChecksum();
