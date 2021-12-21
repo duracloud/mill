@@ -172,8 +172,8 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <duracloud.version>7.1.0-SNAPSHOT</duracloud.version>
-    <duracloud.db.version>7.1.0-SNAPSHOT</duracloud.db.version>
+    <duracloud.version>7.1.0</duracloud.version>
+    <duracloud.db.version>7.1.0</duracloud.db.version>
     <duraspace-codestyle.version>1.1.0</duraspace-codestyle.version>
     <aws.sdk.version>1.12.122</aws.sdk.version>
     <spring.framework.version>4.3.30.RELEASE</spring.framework.version>
@@ -194,13 +194,13 @@
     <repository>
       <id>sonatype-releases</id>
       <name>Sonatype Release Staging Maven Repository</name>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
     </repository>
 
     <snapshotRepository>
       <id>sonatype-snapshots</id>
       <name>Sonatype Snapshots Maven Repository</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
 
   </distributionManagement>
@@ -219,7 +219,7 @@
     <repository>
       <id>sonatype-snapshots</id>
       <name>Sonatype Snapshots Maven Repository</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -231,7 +231,7 @@
 
     <pluginRepository>
       <id>oss.sonatype.org</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
     </pluginRepository>
 
   </pluginRepositories>
@@ -305,9 +305,9 @@
         <extensions>true</extensions>
         <configuration>
           <serverId>sonatype-releases</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
           <!-- Ensures all artifacts are staged together in the same repo -->
-          <stagingProfileId>4f035a66af3dde</stagingProfileId>
+          <stagingProfileId>5fa6dd6036c9f4</stagingProfileId>
           <autoReleaseAfterClose>true</autoReleaseAfterClose>
         </configuration>
       </plugin>
