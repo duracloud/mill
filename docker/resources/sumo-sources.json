@@ -1,0 +1,82 @@
+{
+    "api.version": "v1",
+    "sources": [
+        {   
+            "name": "duracloud-mill-workman",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill.log*"
+        },  
+        {   
+            "name": "duracloud-mill-loopingduptaskproducer",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill-loopingduptaskproducer.log*"
+        },  
+        {
+            "name": "duracloud-mill-loopingbittaskproducer",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill-loopingbittaskproducer.log*"
+        },
+        {   
+            "name": "duracloud-mill-auditlog-generator",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill-auditloggenerator.log*"
+        },  
+        {
+            "name": "duracloud-mill-manifest-cleaner",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill-manifest-cleaner.log*"
+        },
+        {
+            "name": "duracloud-mill-storagestats-loopingtaskproducer",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill-storagestats-taskproducer.log*"
+        },
+        {
+            "name": "duracloud-mill-storage-reporter",
+            "sourceType": "LocalFile",
+            "automaticDateParsing": true,
+            "multilineProcessingEnabled": true,
+            "useAutolineMatching": true,
+            "forceTimeZone": false,
+            "timeZone": "UTC",
+            "category": "duracloud-mill",
+            "pathExpression": "/mill-home/logs/duracloud-mill-storage-reporter.log*"
+        }
+    ]
+}
