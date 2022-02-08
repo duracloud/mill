@@ -113,7 +113,7 @@ jobs:
         platforms: linux/amd64
         push: true
         build-args: VERSION=${{ steps.project_version.outputs.version }}
-        tags: ghcr.io/${{ github.repository }}:latest
+        tags: ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ steps.project_version.outputs.version }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
     - name: Image digest
