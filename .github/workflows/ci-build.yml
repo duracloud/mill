@@ -98,6 +98,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
 
+    - name: Extract Maven project version
+      run: echo ::set-output name=version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+      id: project_version
+
     - name: Build and push
       id: docker_build
       uses: docker/build-push-action@v2
@@ -108,6 +112,7 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         platforms: linux/amd64,linux/arm64
         push: true
+        build-args: VERSION=${{ steps.project_version.outputs.version }}
         tags: ghcr.io/${{ github.repository }}:latest
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
