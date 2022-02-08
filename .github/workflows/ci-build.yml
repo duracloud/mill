@@ -110,7 +110,7 @@ jobs:
         context: ./
         file: ./docker/Dockerfile
         builder: ${{ steps.buildx.outputs.name }}
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         push: true
         build-args: VERSION=${{ steps.project_version.outputs.version }}
         tags: ghcr.io/${{ github.repository }}:latest
