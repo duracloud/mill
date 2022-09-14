@@ -1,4 +1,4 @@
-FROM ubuntu:impish
+FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install openjdk-11-jre-headless wget cron -y
 RUN mkdir /opt/app
