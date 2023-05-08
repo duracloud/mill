@@ -20,7 +20,7 @@ ADD looping-storagestats-taskproducer/target/looping-storagestats-taskproducer-$
 ADD storage-reporter/target/storage-reporter-${VERSION}.jar /opt/app/
 ADD loopingbittaskproducer/target/loopingbittaskproducer-${VERSION}.jar /opt/app/
 ADD docker/scripts/* /opt/app/
-ADD docker/resources/sumo-sources.json /opt/app/
+ADD docker/resources/sumo_sources.json /opt/
 
 ENV LOG_LEVEL=DEBUG
 ENV MILL_VERSION=${VERSION}
