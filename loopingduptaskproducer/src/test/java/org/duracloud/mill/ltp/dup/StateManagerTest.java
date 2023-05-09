@@ -8,6 +8,7 @@
 package org.duracloud.mill.ltp.dup;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -35,7 +36,8 @@ public class StateManagerTest {
      */
     @Before
     public void setUp() throws Exception {
-        file = new File(System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis() + ".json");
+        final var ts = System.currentTimeMillis() + "";
+        file = new File(Path.of(System.getProperty("java.io.tmpdir"), ts, ts + ".json").toString());
         testpolicy = new DuplicationStorePolicy();
         testpolicy.setDestStoreId("0");
         testpolicy.setSrcStoreId("1");

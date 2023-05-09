@@ -11,6 +11,8 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.isA;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -238,7 +240,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         setupLoopingTaskProducerConfig(1);
         stateManager.setMorsels(EasyMock.isA(LinkedHashSet.class));
         StateManager<DuplicationMorsel> stateManagerDelegate =
-            new StateManager<DuplicationMorsel>("fakepath", DuplicationMorsel.class) {
+            new StateManager<DuplicationMorsel>(createStateFilePath(), DuplicationMorsel.class) {
                 @Override
                 public void setMorsels(LinkedHashSet<DuplicationMorsel> morsels2) {
                     morsels.clear();
@@ -270,6 +272,12 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         Assert.assertEquals(sourceCount + destCount, tasksProcessed);
         Assert.assertEquals(0, morsels.size());
 
+    }
+
+    private String createStateFilePath() {
+        final var path = Path.of(System.getProperty("java.io.tmpdir"), System.currentTimeMillis() + ".json").toString();
+        new File(path).deleteOnExit();
+        return path;
     }
 
     /**
