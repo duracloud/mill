@@ -39,6 +39,8 @@ public class StateManager<T extends Morsel> {
         tempStateFile = new File(path + ".tmp");
         tempStateFile.deleteOnExit();
         stateFile = new File(path);
+        //ensure that the parent directory is created.
+        stateFile.getParentFile().mkdirs();
         final boolean exists = stateFile.exists();
         final long length = stateFile.length();
 
