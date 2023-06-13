@@ -52,7 +52,7 @@ public class WorkmanConfigurationManager extends TaskProducerConfigurationManage
     public Long getPolicyManagerRefreshFrequencyMs() {
         String refresh = System.getProperty(ConfigConstants.DUPLICATION_POLICY_REFRESH_FREQUENCY);
         if (refresh != null) {
-            return new Long(refresh);
+            return Long.valueOf(refresh);
         } else {
             return 5 * 60 * 1000l;
         }

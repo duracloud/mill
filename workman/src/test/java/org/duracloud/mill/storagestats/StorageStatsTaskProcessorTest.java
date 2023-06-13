@@ -91,7 +91,7 @@ public class StorageStatsTaskProcessorTest extends EasyMockSupport {
         expect(task.getAttempts()).andReturn(0);
 
         expect(this.manifestItemRepo.getStorageStatsByAccountAndStoreIdAndSpaceId(account, storeId, spaceId))
-            .andReturn(new Object[] {new Object[] {new Long(objectCount), new Long(byteCount)}});
+            .andReturn(new Object[] {new Object[] {objectCount, byteCount}});
         expect(spaceStatsManager.addSpaceStats(isA(Date.class),
                                                eq(account),
                                                eq(storeId),

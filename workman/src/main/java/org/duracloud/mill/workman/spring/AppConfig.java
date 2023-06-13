@@ -437,8 +437,7 @@ public class AppConfig {
     @Bean(initMethod = "init", destroyMethod = "destroy")
     public DuplicationPolicyRefresher duplicationPolicyRefresh(WorkmanConfigurationManager workmanConfigurationManager,
                                                                DuplicationPolicyManager policyManager) {
-        return new DuplicationPolicyRefresher(Long.valueOf(workmanConfigurationManager
-                                                               .getPolicyManagerRefreshFrequencyMs()),
+        return new DuplicationPolicyRefresher(workmanConfigurationManager.getPolicyManagerRefreshFrequencyMs(),
                                               policyManager);
     }
 

@@ -24,6 +24,6 @@ public class LastModifiedDateFileComparator implements Comparator<File> {
      */
     @Override
     public int compare(File o1, File o2) {
-        return -1 * new Long(o1.lastModified()).compareTo(new Long(o2.lastModified()));
+        return -1 * Long.compare(o1.lastModified(), o2.lastModified());
     }
 }
