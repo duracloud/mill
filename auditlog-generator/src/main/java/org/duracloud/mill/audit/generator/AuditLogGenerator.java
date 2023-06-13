@@ -44,12 +44,12 @@ public class AuditLogGenerator {
             // Reads the Audit table, writes each item it finds to a
             // space-specific file
             int maxItemsPerRequest = Integer.parseInt(System.getProperty("max-audit-items-per-request", "1000"));
-            Pageable pageRequest = new PageRequest(0, maxItemsPerRequest);
+            Pageable pageRequest = PageRequest.of(0, maxItemsPerRequest);
 
             while (true) {
                 List<JpaAuditLogItem> items = auditLogItemRepo.findByWrittenFalseOrderByTimestampAsc(pageRequest);
                 if (CollectionUtils.isEmpty(items)) {
-                    log.info("No audit items found for processing: nowhere to go, nothing to do.", items.size());
+                    log.info("No audit items found for processing: nowhere to go, nothing to do.");
                     break;
                 }
 
