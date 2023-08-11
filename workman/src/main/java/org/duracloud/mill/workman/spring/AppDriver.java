@@ -33,6 +33,7 @@ public class AppDriver extends DriverSupport {
     private static final Logger log = LoggerFactory.getLogger(AppDriver.class);
 
     private static final String TASK_QUEUES_OPTION = "q";
+    private static final String MAX_WORKERS_OPTION = "t";
 
     public static final long DEFAULT_POLICY_UPDATE_FREQUENCY_MS = 5 * 60 * 1000;
 
@@ -49,6 +50,14 @@ public class AppDriver extends DriverSupport {
             taskQueues.setArgName("name");
             addOption(taskQueues);
 
+            Option maxWorkerThreads = new Option(MAX_WORKERS_OPTION,
+                    "max-workers",
+                    true,
+                    "An integer specifying the max number of worker threads");
+            maxWorkerThreads.setArgs(1);
+            maxWorkerThreads.setRequired(false);
+            maxWorkerThreads.setArgName("count");
+            addOption(maxWorkerThreads);
         }
     }
 
@@ -69,6 +78,11 @@ public class AppDriver extends DriverSupport {
         String taskQueueNames = cmd.getOptionValue(TASK_QUEUES_OPTION);
         if (taskQueueNames != null) {
             setSystemProperty(ConfigConstants.QUEUE_TASK_ORDERED, taskQueueNames);
+        }
+
+        String maxWorkerThreads = cmd.getOptionValue(MAX_WORKERS_OPTION);
+        if (maxWorkerThreads != null) {
+            setSystemProperty(ConfigConstants.MAX_WORKERS, maxWorkerThreads);
         }
 
         List<PropertyDefinition> defintions =
