@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "running workman";
 # execute workman
-java -Dlog.level=$LOG_LEVEL -Dduracloud.home=$MILL_HOME -jar /opt/app/workman-${MILL_VERSION}.jar -c "${CONFIG_FILE_PATH}" -q "queue.name.dup-high-priority,queue.name.dup-low-priority,queue.name.audit,queue.name.bit-integrity";
+java -Dlog.level=$LOG_LEVEL -Dduracloud.home=$MILL_HOME -jar /opt/app/workman-${MILL_VERSION}.jar -c "${CONFIG_FILE_PATH}" -q "queue.name.dup-high-priority,queue.name.dup-low-priority,queue.name.audit,queue.name.bit-integrity" --max-workers=${MAX_WORKER_THREADS};
