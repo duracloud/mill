@@ -1,7 +1,7 @@
-5,15,25,35,45,55 * * * *  bash -x /opt/app/auditlog-generator-run.sh
-5,25,45 * * * * bash -x /opt/app/manifest-cleaner-run.sh
-0 * * * * bash -x /opt/app/storage-stats-producer-run.sh
-*/7 * * * *  bash -x /opt/app/bit-producer-run.sh
-57 6 * * 1  bash -x /opt/app/storage-reporter-run.sh
-0 * * * *  bash -x /opt/app/efs-cleanup-run.sh
-0,10,20,30,40,50 * * * *  bash -x /opt/app/dup-producer-run.sh
+5,15,25,35,45,55 * * * *  root flock -n /var/lock/auditlog-generator-run.lock /opt/app/auditlog-generator-run.sh
+5,25,45 * * * * root flock -n /var/lock/manifest-cleaner-run.lock /opt/app/manifest-cleaner-run.sh
+0 * * * * root flock -n /var/lock/storage-stats-producer-run.lock /opt/app/storage-stats-producer-run.sh
+*/7 * * * *  root flock -n /var/lock/bit-producer-run.lock /opt/app/bit-producer-run.sh
+57 6 * * 1  root flock -n /var/lock/storage-reporter-run.lock /opt/app/storage-reporter-run.sh
+0 * * * *  root flock -n /var/lock/efs-cleanup-run.lock /opt/app/efs-cleanup-run.sh
+0,10,20,30,40,50 * * * *  root flock -n /var/lock/dup-producer-run.lock /opt/app/dup-producer-run.sh
