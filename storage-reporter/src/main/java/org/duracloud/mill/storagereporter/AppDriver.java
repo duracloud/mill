@@ -7,6 +7,7 @@
  */
 package org.duracloud.mill.storagereporter;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -73,12 +74,8 @@ public class AppDriver extends DriverSupport {
         ConfigurationManager configManager = new ConfigurationManager();
         List<String> recipients = new LinkedList<>();
 
-        for (String email : configManager.getNotificationRecipients()) {
-            recipients.add(email);
-        }
-        for (String email : configManager.getNotificationRecipientsNonTech()) {
-            recipients.add(email);
-        }
+        recipients.addAll(Arrays.asList(configManager.getNotificationRecipients()));
+        recipients.addAll(Arrays.asList(configManager.getNotificationRecipientsNonTech()));
 
         NotificationManager notification = null;
         if (configManager.getEmailerType() == EmailerType.SMTP) {

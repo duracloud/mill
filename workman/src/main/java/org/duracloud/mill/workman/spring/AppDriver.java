@@ -114,7 +114,7 @@ public class AppDriver extends DriverSupport {
 
         String workDirPath = config.getWorkDirectoryPath();
 
-        if (workDirPath == null || workDirPath.trim() == "") {
+        if (workDirPath == null || workDirPath.trim().equals("")) {
             // this should never happen since workDirPath is required,
             // but I'll leave this in here as a sanity check.
             workDirPath = System.getProperty("java.io.tmpdir") + File.separator + "workman-work";

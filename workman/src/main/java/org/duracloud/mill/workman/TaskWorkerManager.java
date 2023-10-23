@@ -81,11 +81,11 @@ public class TaskWorkerManager {
 
     public void init() {
 
-        this.defaultMinWaitTime = new Long(System.getProperty(MIN_WAIT_BEFORE_TAKE_KEY,
-                                                              DEFAULT_MIN_WAIT_BEFORE_TAKE + ""));
+        this.defaultMinWaitTime = Long.valueOf(System.getProperty(MIN_WAIT_BEFORE_TAKE_KEY,
+                                                                  DEFAULT_MIN_WAIT_BEFORE_TAKE + ""));
 
-        Integer maxThreadCount = new Integer(System.getProperty(MAX_WORKER_PROPERTY_KEY,
-                                                                String.valueOf(DEFAULT_MAX_WORKERS)));
+        Integer maxThreadCount = Integer.valueOf(System.getProperty(MAX_WORKER_PROPERTY_KEY,
+                                                                    String.valueOf(DEFAULT_MAX_WORKERS)));
 
         //With a bound pool and unbounded queue, rejection should never occur.
         this.executor = new ThreadPoolExecutor(maxThreadCount,
@@ -114,13 +114,11 @@ public class TaskWorkerManager {
 
                 queueStats.add(formatQueueStat(deadLetterQueue));
 
-                log.info("Status: max_workers={} running_workers={} completed_workers={}" +
-                         queueStats,
-                         new Object[] {getMaxWorkers(),
-                                       executor.getActiveCount(),
-                                       executor.getCompletedTaskCount(),
-                                       StringUtils.join(queueStats, " ")
-                         });
+                log.info("Status: max_workers={} running_workers={} completed_workers={}, {}",
+                         getMaxWorkers(),
+                         executor.getActiveCount(),
+                         executor.getCompletedTaskCount(),
+                         StringUtils.join(queueStats, " "));
             }
 
             private String formatQueueStat(TaskQueue queue) {

@@ -172,15 +172,16 @@
     <log.level.default>INFO</log.level.default>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <duracloud.version>7.1.0</duracloud.version>
-    <duracloud.db.version>7.1.0</duracloud.db.version>
+    <duracloud.version>7.2.0-SNAPSHOT</duracloud.version>
+    <duracloud.db.version>7.2.0-SNAPSHOT</duracloud.db.version>
     <duraspace-codestyle.version>1.1.0</duraspace-codestyle.version>
-    <aws.sdk.version>1.12.122</aws.sdk.version>
-    <spring.framework.version>4.3.30.RELEASE</spring.framework.version>
+    <aws.sdk.version>1.12.548</aws.sdk.version>
+    <spring.framework.version>5.3.29</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
-    <spring.framework.data.jpa.version>1.11.23.RELEASE</spring.framework.data.jpa.version>
-    <hibernate.version>5.4.3.Final</hibernate.version>
-    <mysql.driver.version>5.1.49</mysql.driver.version>
+    <spring.framework.data.jpa.version>2.7.15</spring.framework.data.jpa.version>
+    <hibernate.version>5.4.33.Final</hibernate.version>
+    <hibernate.validator.version>5.4.3.Final</hibernate.validator.version>
+    <mysql.driver.version>8.0.33</mysql.driver.version>
     <jackson.version>2.12.3</jackson.version>
     <jaxb.api.version>2.3.1</jaxb.api.version>
     <jaxb.runtime.version>2.3.3</jaxb.runtime.version>
@@ -512,7 +513,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.2.0</version>
+        <version>1.3.8</version>
       </dependency>
 
       <dependency>
@@ -818,6 +819,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>jboss-logging</artifactId>
+        <version>3.4.1.Final</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-entitymanager</artifactId>
         <version>${hibernate.version}</version>
@@ -826,7 +833,7 @@
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-validator</artifactId>
-        <version>${hibernate.version}</version>
+        <version>${hibernate.validator.version}</version>
       </dependency>
 
       <dependency>
@@ -836,9 +843,15 @@
       </dependency>
 
       <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
         <version>${mysql.driver.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
