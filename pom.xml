@@ -883,9 +883,9 @@
       </dependency>
 
       <dependency>
-        <groupId>net.sf.ehcache</groupId>
+        <groupId>org.ehcache</groupId>
         <artifactId>ehcache</artifactId>
-        <version>2.8.2</version>
+        <version>3.10.0</version>
       </dependency>
 
     </dependencies>
