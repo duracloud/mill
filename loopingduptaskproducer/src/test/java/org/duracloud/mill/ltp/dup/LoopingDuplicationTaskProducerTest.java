@@ -24,8 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.TimeoutException;
 import org.duracloud.common.queue.local.LocalTaskQueue;
@@ -48,6 +46,11 @@ import org.easymock.EasyMockRunner;
 import org.easymock.EasyMockSupport;
 import org.easymock.IAnswer;
 import org.easymock.Mock;
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,7 +74,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     private StorageProvider sourceStore;
     @Mock
     private StorageProvider destStore;
-    private static Cache cache;
+    private static Cache<String, String> cache;
     @Mock
     private DuplicationPolicyManager policyManager;
     @Mock
@@ -115,7 +118,7 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     @After
     public void tearDown() throws Exception {
         verifyAll();
-        cache.removeAll();
+        cache.clear();
     }
 
     /**
@@ -495,9 +498,11 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
      */
     private void setupCache() {
         if (cache == null) {
-            CacheManager cacheManager = CacheManager.getInstance();
-            cacheManager.addCache(CACHE_NAME);
-            cache = cacheManager.getCache(CACHE_NAME);
+            CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+            cacheManager.createCache(CACHE_NAME,
+                                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                                         ResourcePoolsBuilder.heap(10)));
+            cache = cacheManager.getCache(CACHE_NAME, String.class, String.class);
         }
     }
 

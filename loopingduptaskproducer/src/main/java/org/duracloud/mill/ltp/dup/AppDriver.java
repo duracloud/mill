@@ -8,12 +8,9 @@
 package org.duracloud.mill.ltp.dup;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration;
 import org.duracloud.common.model.EmailerType;
 import org.duracloud.common.queue.QueueType;
 import org.duracloud.common.queue.TaskQueue;
@@ -39,6 +36,11 @@ import org.duracloud.mill.notification.SMTPNotificationManager;
 import org.duracloud.mill.util.PropertyDefinition;
 import org.duracloud.mill.util.PropertyDefinitionListBuilder;
 import org.duracloud.mill.util.PropertyVerifier;
+import org.ehcache.Cache;
+import org.ehcache.PersistentCacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,14 +142,15 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             taskQueue = new SQSTaskQueue(getTaskQueueName(ConfigConstants.QUEUE_NAME_DUP_LOW_PRIORITY));
         }
 
-        CacheManager cacheManager = CacheManager.create();
-        CacheConfiguration cacheConfig = new CacheConfiguration();
-        cacheConfig.setName("contentIdCache");
-        cacheConfig.addPersistence(
-            new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.LOCALTEMPSWAP));
-        cacheConfig.setEternal(true);
-        Cache cache = new Cache(cacheConfig);
-        cacheManager.addCache(cache);
+        final Path tmpDir = Path.of(System.getProperty("java.io.tmpdir"));
+        PersistentCacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .with(CacheManagerBuilder.persistence(tmpDir.toFile()))
+            .withCache("contentIdCache",
+                       CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                           String.class, String.class,
+                           ResourcePoolsBuilder.newResourcePoolsBuilder()))
+            .build(true);
+        Cache<String, String> cache = cacheManager.getCache("contentIdCache", String.class, String.class);
 
         String stateFilePath = new File(config.getWorkDirectoryPath(), "dup-producer-state.json").getAbsolutePath();
         StateManager<DuplicationMorsel> stateManager = new StateManager<>(stateFilePath, DuplicationMorsel.class);

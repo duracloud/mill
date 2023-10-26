@@ -10,12 +10,19 @@ package org.duracloud.mill.util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.CacheConfiguration;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.expiry.ExpiryPolicy;
 
 /**
  * Static utility methods pertaining to Iterator instances.
@@ -25,8 +32,29 @@ import net.sf.ehcache.Element;
  */
 public class Iterators {
 
-    private static final CacheManager cacheManager =
-        CacheManager.newInstance(Iterators.class.getResource("/ehcache.xml"));
+    private static final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+    private static final CacheConfiguration<String, String> cacheConfig =
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+            String.class, String.class,
+            ResourcePoolsBuilder.newResourcePoolsBuilder().heap(150, MemoryUnit.MB))
+                                 .withExpiry(new ExpiryPolicy<>() {
+                                     @Override
+                                     public Duration getExpiryForCreation(String s, String s2) {
+                                         return Duration.ofSeconds(86400);
+                                     }
+
+                                     @Override
+                                     public Duration getExpiryForAccess(String s, Supplier<? extends String> supplier) {
+                                         return Duration.ofSeconds(86400);
+                                     }
+
+                                     @Override
+                                     public Duration getExpiryForUpdate(String s, Supplier<? extends String> supplier,
+                                                                        String s2) {
+                                         return Duration.ofSeconds(86400);
+                                     }
+                                 })
+                                 .build();
 
     private Iterators() {
         // Ensures no instances are made of this class, as there are only static members.
@@ -45,8 +73,7 @@ public class Iterators {
     public static Iterator<String> difference(Iterator<String> iterA, Iterator<String> iterB)
         throws IOException {
         String cacheName = "compare-" + System.currentTimeMillis();
-        cacheManager.addCache(cacheName);
-        Cache cache = cacheManager.getCache(cacheName);
+        Cache<String, String> cache = cacheManager.createCache(cacheName, cacheConfig);
 
         while (iterB.hasNext()) {
             String item = iterB.next();
@@ -60,7 +87,7 @@ public class Iterators {
         FileWriter fileWriter = new FileWriter(diffFile);
         while (iterA.hasNext()) {
             String item = iterA.next();
-            if (!cache.isKeyInCache(item)) {
+            if (!cache.containsKey(item)) {
                 // write item to file
                 fileWriter.write(item + "\n");
                 diffCnt++;
@@ -72,8 +99,8 @@ public class Iterators {
         fileWriter.close();
 
         // All done with the cache, clean it up
-        cache.removeAll();
-        cacheManager.removeCache(cache.getName());
+        cache.clear();
+        cacheManager.removeCache(cacheName);
 
         if (diffCnt > 0) {
             return new FileLineIterator(diffFile);
