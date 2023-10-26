@@ -77,7 +77,7 @@ public class Iterators {
 
         while (iterB.hasNext()) {
             String item = iterB.next();
-            cache.put(new Element(item, null));
+            cache.put(item, "");
         }
 
         int diffCnt = 0;

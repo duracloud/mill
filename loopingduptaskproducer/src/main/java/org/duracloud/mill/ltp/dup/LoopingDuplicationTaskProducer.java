@@ -228,7 +228,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
             //load all source into ehcache
             Iterator<String> sourceContentIds = sourceProvider.getSpaceContents(spaceId, null);
             while (sourceContentIds.hasNext()) {
-                cache.put(new Element(sourceContentIds.next(), null));
+                cache.put(sourceContentIds.next(), "");
             }
         } catch (NotFoundException ex) {
             log.info("space not found on source provider: account={}, spaceId={}, storeId={}",
