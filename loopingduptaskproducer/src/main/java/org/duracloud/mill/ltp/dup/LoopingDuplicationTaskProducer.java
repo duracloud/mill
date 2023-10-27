@@ -16,8 +16,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
 import org.duracloud.common.queue.TaskQueue;
 import org.duracloud.common.queue.task.Task;
 import org.duracloud.mill.common.storageprovider.StorageProviderFactory;
@@ -38,6 +36,7 @@ import org.duracloud.mill.notification.NotificationManager;
 import org.duracloud.mill.task.DuplicationTask;
 import org.duracloud.storage.error.NotFoundException;
 import org.duracloud.storage.provider.StorageProvider;
+import org.ehcache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +49,13 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
 
     private DuplicationPolicyManager policyManager;
 
-    private Cache cache;
+    private Cache<String, String> cache;
 
     public LoopingDuplicationTaskProducer(CredentialsRepo credentialsRepo,
                                           StorageProviderFactory storageProviderFactory,
                                           DuplicationPolicyManager policyManager,
                                           TaskQueue taskQueue,
-                                          Cache cache,
+                                          Cache<String, String> cache,
                                           StateManager<DuplicationMorsel> state,
                                           int maxTaskQueueSize,
                                           Frequency frequency,
@@ -78,7 +77,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
     /**
      * @return the cache
      */
-    private Cache getCache() {
+    private Cache<String, String> getCache() {
         return cache;
     }
 
@@ -224,12 +223,12 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
                                                           DuplicationStorePolicy storePolicy,
                                                           StorageProvider sourceProvider,
                                                           StorageProvider destProvider) {
-        Cache cache = getCache();
+        Cache<String, String> cache = getCache();
         try {
             //load all source into ehcache
             Iterator<String> sourceContentIds = sourceProvider.getSpaceContents(spaceId, null);
             while (sourceContentIds.hasNext()) {
-                cache.put(new Element(sourceContentIds.next(), null));
+                cache.put(sourceContentIds.next(), "");
             }
         } catch (NotFoundException ex) {
             log.info("space not found on source provider: account={}, spaceId={}, storeId={}",
@@ -253,7 +252,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
         while (destContentIds.hasNext()) {
             String destContentId = destContentIds.next();
             //if not in cache
-            if (!cache.isKeyInCache(destContentId)) {
+            if (!cache.containsKey(destContentId)) {
                 deletions.add(destContentId);
                 //periodically add deletions to prevent OOM
                 //in case that there are millions of content ids to delete
@@ -275,7 +274,7 @@ public class LoopingDuplicationTaskProducer extends LoopingTaskProducer<Duplicat
                  spaceId,
                  storePolicy.getSrcStoreId(),
                  storePolicy.getDestStoreId());
-        cache.removeAll();
+        cache.clear();
     }
 
     /**

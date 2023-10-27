@@ -87,6 +87,7 @@
         </executions>
       </plugin>
 
+      <!-- Selenium needs to be updated for java 17
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>selenium-maven-plugin</artifactId>
@@ -114,6 +115,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
       <!--
       <plugin>
           <groupId>org.codehaus.mojo</groupId>

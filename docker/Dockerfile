@@ -1,6 +1,6 @@
 FROM ghcr.io/phusion/baseimage:jammy-1.0.1
 
-RUN apt-get update && apt-get install openjdk-11-jre-headless wget vim telnet -y
+RUN apt-get update && apt-get install openjdk-17-jre-headless wget vim telnet -y
 RUN mkdir -p /opt/app
 
 RUN wget -q https://collectors.sumologic.com/rest/download/deb/64 -O SumoCollector.deb && \ 
