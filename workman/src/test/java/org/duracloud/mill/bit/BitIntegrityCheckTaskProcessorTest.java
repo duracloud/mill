@@ -233,6 +233,11 @@ public class BitIntegrityCheckTaskProcessorTest extends EasyMockSupport {
     }
 
     @Test
+    public void testSuccessWithContentCheckSwift() throws Exception {
+        testSuccess(StorageProviderType.SWIFT_S3, true);
+    }
+
+    @Test
     public void testSuccessWithOutContentCheckGlacier() throws Exception {
         testSuccess(StorageProviderType.AMAZON_GLACIER, false);
     }

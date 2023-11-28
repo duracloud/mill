@@ -57,6 +57,7 @@ abstract class BitCheckHandler {
      */
     private static void initializeContentChecksumCalculatingStorageProviders() {
         CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS.add(StorageProviderType.AMAZON_S3);
+        CONTENT_CHECKSUM_CALCULATING_STORAGE_PROVIDERS.add(StorageProviderType.SWIFT_S3);
     }
 
     public final boolean handle(BitCheckExecutionState bitCheckState) throws TaskExecutionFailedException {
