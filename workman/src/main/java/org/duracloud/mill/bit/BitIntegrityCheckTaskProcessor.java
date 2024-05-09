@@ -110,17 +110,14 @@ public class BitIntegrityCheckTaskProcessor extends TaskProcessorBase {
                                                                   checksumHelper,
                                                                   manifestStore);
 
-        Map<String, String> contentProperties = getContentProperties();
-        state.setContentProperties(contentProperties);
-        String storeChecksum = null;
-        if (contentProperties != null) {
-            storeChecksum = contentProperties.get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM);
+        final var cprops = getContentProperties();
+        state.setContentProperties(cprops);
+        if (cprops != null) {
+            state.setStoreChecksum(cprops.get(StorageProvider.PROPERTIES_CONTENT_CHECKSUM));
+            state.setContentSize(cprops.get(StorageProvider.PROPERTIES_CONTENT_SIZE));
         }
 
-        state.setStoreChecksum(storeChecksum);
-
-        String manifestChecksum = getManifestChecksum();
-        state.setManifestChecksum(manifestChecksum);
+        state.setManifestChecksum(getManifestChecksum());
         boolean handled = false;
         for (BitCheckHandler handler : getHandlers()) {
             if (handler.handle(state)) {
