@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.HttpHeaders;
 
@@ -48,6 +50,8 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
     private File workDir;
     private ManifestStore manifestStore;
 
+    private List<File> cachedFiles = new ArrayList<>();
+
     private final Logger log =
         LoggerFactory.getLogger(DuplicationTaskProcessor.class);
 
@@ -62,6 +66,10 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         this.destStore = destStore;
         this.workDir = workDir;
         this.manifestStore = manifestStore;
+    }
+
+    public List<File> getCachedFiles() {
+        return this.cachedFiles;
     }
 
     @Override
@@ -389,45 +397,53 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         ChecksumUtil checksumUtil = new ChecksumUtil(MD5);
         boolean localChecksumMatch = false;
         int attempt = 0;
-
         File localFile = null;
-        while (!localChecksumMatch && attempt < 3) {
-            // Get content stream
-            try (InputStream sourceStream = getSourceContent(spaceId, contentId)) {
-                // Cache content locally
-                localFile = cacheContent(sourceStream);
-                // Check content
-                String localChecksum = checksumUtil.generateChecksum(localFile);
-                if (sourceChecksum.equals(localChecksum)) {
-                    localChecksumMatch = true;
-                } else {
+        try {
+            while (!localChecksumMatch && attempt < 3) {
+                // Get content stream
+                try (InputStream sourceStream = getSourceContent(spaceId, contentId)) {
+                    // Cache content locally
+                    localFile = cacheContent(sourceStream);
+                    // Check content
+                    String localChecksum = checksumUtil.generateChecksum(localFile);
+                    if (sourceChecksum.equals(localChecksum)) {
+                        localChecksumMatch = true;
+                    } else {
+                        // if the local checksums don't match we need to clean up the local file
+                        // since the next attempt will use a different file path.
+                        cleanup(localFile);
+                    }
+                } catch (Exception e) {
+                    //if the local file failed to be cached for the checksum generation failed
+                    //we'll need to remove the local file since it will be restreamed to a different
+                    //file.
                     cleanup(localFile);
+                    log.warn("Error generating checksum for source content: " + e.getMessage(), e);
                 }
-            } catch (Exception e) {
-                log.warn("Error generating checksum for source content: " + e.getMessage(), e);
+                attempt++;
             }
-            attempt++;
-        }
 
-        // Put content
-        if (localChecksumMatch) {
-            putDestinationContent(spaceId,
-                                  contentId,
-                                  sourceChecksum,
-                                  sourceProperties,
-                                  localFile);
-            log.info(
-                "Successfully duplicated id={} dup_size={} space={} account={}",
-                contentId,
-                localFile.length(),
-                spaceId, dupTask.getAccount());
-        } else {
+            // Put content
+            if (localChecksumMatch) {
+                putDestinationContent(spaceId,
+                        contentId,
+                        sourceChecksum,
+                        sourceProperties,
+                        localFile);
+                log.info(
+                        "Successfully duplicated id={} dup_size={} space={} account={}",
+                        contentId,
+                        localFile.length(),
+                        spaceId, dupTask.getAccount());
+            } else {
+                String msg = "Unable to retrieve content which matches the" +
+                        " expected source checksum of: " + sourceChecksum;
+                throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg));
+            }
+
+        } finally {
             cleanup(localFile);
-            String msg = "Unable to retrieve content which matches the" +
-                         " expected source checksum of: " + sourceChecksum;
-            throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg));
         }
-        cleanup(localFile);
     }
 
     /*
@@ -458,16 +474,12 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
         File localFile = null;
         try {
             localFile = File.createTempFile("content-item", ".tmp", workDir);
+            this.cachedFiles.add(localFile);
             try (OutputStream outStream = FileUtils.openOutputStream(localFile)) {
                 IOUtils.copy(inStream, outStream);
             }
-            inStream.close();
-        } catch (IOException e) {
-
-            if (localFile != null) {
-                cleanup(localFile);
-            }
-
+        } catch (Exception e) {
+            cleanup(localFile);
             String msg = "Unable to cache content file due to: " + e.getMessage();
             throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
@@ -507,7 +519,6 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
                 }
             });
         } catch (Exception e) {
-            cleanup(file);
             String msg = "Error attempting to add destination content: " + e.getMessage();
             throw new DuplicationTaskExecutionFailedException(buildFailureMessage(msg), e);
         }
@@ -515,7 +526,9 @@ public class DuplicationTaskProcessor extends TaskProcessorBase {
 
     private void cleanup(File file) {
         try {
-            FileUtils.forceDelete(file);
+            if (file != null && file.exists()) {
+                FileUtils.forceDelete(file);
+            }
         } catch (IOException e) {
             log.info("Unable to delete temp file: " + file.getAbsolutePath() +
                      " due to: " + e.getMessage(), e);
