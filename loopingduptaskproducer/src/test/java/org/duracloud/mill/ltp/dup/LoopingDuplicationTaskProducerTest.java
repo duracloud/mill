@@ -7,6 +7,10 @@
  */
 package org.duracloud.mill.ltp.dup;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -54,7 +58,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.easymock.EasyMock.*;
 
 /**
  * @author Daniel Bernstein
