@@ -41,6 +41,7 @@ import org.ehcache.PersistentCacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.config.units.MemoryUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
     @Override
     protected LoopingTaskProducer buildTaskProducer() {
 
-        List<PropertyDefinition> defintions =
+        List<PropertyDefinition> definitions =
             new PropertyDefinitionListBuilder().addAws()
                                                .addSwift()
                                                .addNotificationConfig()
@@ -82,7 +83,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
                                                .addLocalDuplicationDir()
                                                .addWorkDir()
                                                .build();
-        PropertyVerifier verifier = new PropertyVerifier(defintions);
+        PropertyVerifier verifier = new PropertyVerifier(definitions);
         verifier.verify(System.getProperties());
 
         LoopingTaskProducerConfigurationManager config = new LoopingTaskProducerConfigurationManager();
@@ -148,7 +149,7 @@ public class AppDriver extends LoopingTaskProducerDriverSupport {
             .withCache("contentIdCache",
                        CacheConfigurationBuilder.newCacheConfigurationBuilder(
                            String.class, String.class,
-                           ResourcePoolsBuilder.newResourcePoolsBuilder()))
+                           ResourcePoolsBuilder.newResourcePoolsBuilder().disk(100, MemoryUnit.MB, true)))
             .build(true);
         Cache<String, String> cache = cacheManager.getCache("contentIdCache", String.class, String.class);
 
