@@ -51,11 +51,13 @@ import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.config.units.EntryUnit;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 
 /**
  * @author Daniel Bernstein
@@ -118,7 +120,9 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     @After
     public void tearDown() throws Exception {
         verifyAll();
-        cache.clear();
+        if (cache != null) {
+            cache.clear();
+        }
     }
 
     /**
@@ -183,7 +187,8 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
     }
 
     private void setupLoopingTaskProducerConfig(int times) {
-        expect(this.config.getWorkDirectoryPath()).andReturn("java.io.tmpdir").times(times);
+        expect(this.config.getWorkDirectoryPath()).andReturn(
+                String.valueOf(Path.of(System.getProperty("java.io.tmpdir")))).times(times);
     }
 
     private void setupNotificationManager() {
@@ -275,6 +280,37 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
         Assert.assertEquals(sourceCount + destCount, tasksProcessed);
         Assert.assertEquals(0, morsels.size());
 
+    }
+
+    /**
+     * Test setting up the ehcache CacheManager without a resource pool
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetupCacheWithoutStore() throws Exception {
+        replayAll();
+        CacheManager testCacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+        testCacheManager.createCache(CACHE_NAME,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                        ResourcePoolsBuilder.newResourcePoolsBuilder()));
+        Cache<String, String> testCache = testCacheManager.getCache(CACHE_NAME, String.class, String.class);
+        testCache.clear();
+        testCacheManager.close();
+    }
+
+    /**
+     * Test setting up the ehcache CacheManager with a resource pool
+     */
+    @Test
+    public void testSetupCacheWithStore() {
+        replayAll();
+        CacheManager testCacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+        testCacheManager.createCache(CACHE_NAME,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                        ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, EntryUnit.ENTRIES)));
+        Cache<String, String> testCache = testCacheManager.getCache(CACHE_NAME, String.class, String.class);
+        Assert.assertNotNull(testCache);
+        testCache.clear();
+        testCacheManager.close();
     }
 
     private String createStateFilePath() {
@@ -501,7 +537,8 @@ public class LoopingDuplicationTaskProducerTest extends EasyMockSupport {
             CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
             cacheManager.createCache(CACHE_NAME,
                                      CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
-                                         ResourcePoolsBuilder.heap(10)));
+                                         ResourcePoolsBuilder.newResourcePoolsBuilder()
+                                                 .heap(10, EntryUnit.ENTRIES)));
             cache = cacheManager.getCache(CACHE_NAME, String.class, String.class);
         }
     }
