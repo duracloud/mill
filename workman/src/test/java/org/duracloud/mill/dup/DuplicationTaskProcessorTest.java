@@ -593,4 +593,116 @@ public class DuplicationTaskProcessorTest {
         taskProcessor.execute();
     }
 
+    @Test
+    public void testDuplicationFailsDueToCachedFileChecksumNotMatchingDestinationChecksum() throws Exception {
+        // Check space
+        destStore.createSpace(EasyMock.eq(spaceId));
+        EasyMock.expectLastCall().once();
+
+        // Prepare source content
+        String content = "source-content";
+        ChecksumUtil checksumUtil = new ChecksumUtil(ChecksumUtil.Algorithm.MD5);
+        final String srcChecksum = checksumUtil.generateChecksum(content);
+        final String destChecksum = "changed-checksum";
+        final String mimetype = "text/plain";
+
+        // Source properties
+        Map<String, String> srcProps = new HashMap<>();
+        srcProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, srcChecksum);
+        srcProps.put(StorageProvider.PROPERTIES_CONTENT_MIMETYPE, mimetype);
+        EasyMock.expect(srcStore.getContentProperties(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId)))
+                .andReturn(srcProps);
+
+        Map<String, String> destProps = new HashMap<>();
+        destProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, destChecksum);
+        destProps.put(StorageProvider.PROPERTIES_CONTENT_MIMETYPE, mimetype);
+        EasyMock.expect(destStore.getContentProperties(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId)))
+                .andReturn(destProps);
+
+        // Get source content
+        InputStream contentStream = IOUtil.writeStringToStream(content);
+        RetrievedContent retrievedContent = new RetrievedContent();
+        retrievedContent.setContentStream(contentStream);
+        EasyMock.expect(srcStore.getContent(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId)))
+                .andReturn(retrievedContent);
+
+        // Add dest content
+        EasyMock.expect(destStore.addContent(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId),
+                        EasyMock.eq(mimetype),
+                        EasyMock.eq(srcProps),
+                        EasyMock.eq((long) content.length()),
+                        EasyMock.eq(srcChecksum),
+                        EasyMock.<InputStream>anyObject()))
+                .andReturn("bad-checksum").times(4);
+
+        replayMocks();
+
+        try {
+            taskProcessor.execute();
+            fail("Expected exception not thrown.");
+        } catch (DuplicationTaskExecutionFailedException ex) {
+            assertTrue(true);
+        }
+
+        assertTrue(!taskProcessor.getCachedFiles().isEmpty());
+        for (File file : taskProcessor.getCachedFiles()) {
+            assertTrue(!file.exists());
+        }
+    }
+
+    @Test
+    public void testDuplicationFailsDueToCachedFileChecksumDoesNotMatchSourceChecksum() throws Exception {
+        // Check space
+        destStore.createSpace(EasyMock.eq(spaceId));
+        EasyMock.expectLastCall().once();
+
+        // Prepare source content
+        String content = "source-content";
+        ChecksumUtil checksumUtil = new ChecksumUtil(ChecksumUtil.Algorithm.MD5);
+        final String srcChecksum = checksumUtil.generateChecksum(content);
+        final String destChecksum = "changed-checksum";
+        final String mimetype = "text/plain";
+
+        // Source properties
+        Map<String, String> srcProps = new HashMap<>();
+        srcProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, srcChecksum);
+        srcProps.put(StorageProvider.PROPERTIES_CONTENT_MIMETYPE, mimetype);
+        EasyMock.expect(srcStore.getContentProperties(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId)))
+                .andReturn(srcProps);
+
+        Map<String, String> destProps = new HashMap<>();
+        destProps.put(StorageProvider.PROPERTIES_CONTENT_CHECKSUM, destChecksum);
+        destProps.put(StorageProvider.PROPERTIES_CONTENT_MIMETYPE, mimetype);
+        EasyMock.expect(destStore.getContentProperties(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId)))
+                .andReturn(destProps);
+
+        // Get mismatching source content
+        InputStream contentStream = IOUtil.writeStringToStream(content + "changed");
+        RetrievedContent retrievedContent = new RetrievedContent();
+        retrievedContent.setContentStream(contentStream);
+        EasyMock.expect(srcStore.getContent(EasyMock.eq(spaceId),
+                        EasyMock.eq(contentId)))
+                .andReturn(retrievedContent).times(3);
+
+        replayMocks();
+
+        try {
+            taskProcessor.execute();
+            fail("Expected exception not thrown.");
+        } catch (DuplicationTaskExecutionFailedException ex) {
+            assertTrue(true);
+        }
+
+        assertTrue(!taskProcessor.getCachedFiles().isEmpty());
+        for (File file : taskProcessor.getCachedFiles()) {
+            assertTrue(!file.exists());
+        }
+    }
+
 }
