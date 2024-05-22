@@ -25,6 +25,8 @@ class BitCheckExecutionState {
     private StorageProviderType storageProviderType;
     private String manifestChecksum;
     private String storeChecksum;
+
+    private String contentSize;
     private Map<String, String> contentProperties;
     private BitLogStore bitLogStore;
     private TaskQueue bitErrorQueue;
@@ -132,6 +134,14 @@ class BitCheckExecutionState {
 
     public void setStoreChecksum(String storeChecksum) {
         this.storeChecksum = storeChecksum;
+    }
+
+    public String getContentSize() {
+        return contentSize;
+    }
+
+    public void setContentSize(String contentSize) {
+        this.contentSize = contentSize;
     }
 
     public void setContentProperties(Map<String, String> contentProperties) {

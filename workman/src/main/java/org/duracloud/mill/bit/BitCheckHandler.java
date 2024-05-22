@@ -73,13 +73,15 @@ abstract class BitCheckHandler {
                 }
 
                 writeResult(result.getResult(),
-                            bitCheckState.getManifestChecksum(),
-                            bitCheckState.getStoreChecksum(),
-                            contentChecksum,
-                            bitCheckState.getBitLogStore(),
-                            bitCheckState.getStorageProviderType(),
-                            bitCheckState.getTask(),
-                            result.getMessage());
+                        bitCheckState.getManifestChecksum(),
+                        bitCheckState.getStoreChecksum(),
+                        contentChecksum,
+                        bitCheckState.getContentSize(),
+                        bitCheckState.getBitLogStore(),
+                        bitCheckState.getStorageProviderType(),
+                        bitCheckState.getTask(),
+                        result.getMessage()
+                );
             }
             return true;
         } else {
@@ -152,6 +154,7 @@ abstract class BitCheckHandler {
                              final String manifestChecksum,
                              final String storeChecksum,
                              final String contentChecksum,
+                             final String contentSize,
                              final BitLogStore bitLogStore,
                              final StorageProviderType storageProviderType,
                              final BitIntegrityCheckTask bitTask,
@@ -187,7 +190,7 @@ abstract class BitCheckHandler {
         String message = MessageFormat
             .format("Checksum result={0} account={1} storeId={2} storeType={3} space={4}"
                     + " contentId={5} manifestChecksum={6} storeChecksum={7}"
-                    + " contentChecksum={8}",
+                    + " contentChecksum={8} contentSize={9}",
                     result,
                     bitTask.getAccount(),
                     bitTask.getStoreId(),
@@ -196,7 +199,8 @@ abstract class BitCheckHandler {
                     bitTask.getContentId(),
                     manifestChecksum,
                     storeChecksum,
-                    contentChecksum);
+                    contentChecksum,
+                    contentSize);
 
         if (result == BitIntegrityResult.SUCCESS) {
             log.info(message);
