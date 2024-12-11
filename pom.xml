@@ -173,16 +173,16 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <duracloud.version>8.1.0</duracloud.version>
-    <duracloud.db.version>8.0.0</duracloud.db.version>
+    <duracloud.db.version>8.0.2</duracloud.db.version>
     <duraspace-codestyle.version>1.1.0</duraspace-codestyle.version>
-    <aws.sdk.version>1.12.548</aws.sdk.version>
+    <aws.sdk.version>1.12.723</aws.sdk.version>
     <spring.framework.version>5.3.29</spring.framework.version>
     <powermock.version>1.5.4</powermock.version>
     <spring.framework.data.jpa.version>2.7.15</spring.framework.data.jpa.version>
     <hibernate.version>5.4.33.Final</hibernate.version>
     <hibernate.validator.version>5.4.3.Final</hibernate.validator.version>
     <mysql.driver.version>8.0.33</mysql.driver.version>
-    <jackson.version>2.12.3</jackson.version>
+    <jackson.version>2.18.2</jackson.version>
     <jaxb.api.version>2.3.1</jaxb.api.version>
     <jaxb.runtime.version>2.3.3</jaxb.runtime.version>
     <skipUTs>false</skipUTs>
@@ -550,6 +550,22 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-dbcp2</artifactId>
         <version>2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-core</artifactId>
+        <version>${aws.sdk.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
