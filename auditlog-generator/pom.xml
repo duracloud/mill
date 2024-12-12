@@ -80,6 +80,12 @@
       <groupId>org.duracloud</groupId>
       <artifactId>synctool</artifactId>
       <version>${duracloud.version}</version>
+      <exclusions>
+      <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+      </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
